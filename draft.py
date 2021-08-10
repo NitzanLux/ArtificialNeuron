@@ -1,3 +1,55 @@
+Skip
+to
+content
+Search or jump
+to…
+
+Pull
+requests
+Issues
+Marketplace
+Explore
+
+
+@goolux
+
+
+SelfishGene
+/
+neuron_as_deep_net
+3
+223
+Code
+Issues
+Pull
+requests
+Actions
+Projects
+Wiki
+Security
+Insights
+neuron_as_deep_net / fit_CNN.py /
+
+
+@orena1
+
+
+orena1
+python3
+compatibility
+Latest
+commit
+e402d1b
+on
+May
+20, 2020
+History
+1
+contributor
+810
+lines(623
+sloc)  39.6
+KB
 
 import numpy as np
 import pandas as pd
