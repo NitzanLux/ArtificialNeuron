@@ -152,17 +152,17 @@ class IntersectionBlock(SegmentNetwork):
 
 
 class RootBlock(SegmentNetwork):
-    def __init__(self, input_shape: Tuple[int, int],channels_number):
+    def __init__(self, input_shape: Tuple[int, int], channels_number):
         super(RootBlock, self).__init__()
-        self.spike_prediction = nn.Conv2d(channels_number, 1, (1,input_shape[1]))
-        self.voltage_prediction = nn.Conv2d(channels_number, 1, (1,input_shape[1]))
+        self.spike_prediction = nn.Conv2d(channels_number, 1, kernel_size=(1, 1))
+        self.voltage_prediction = nn.Conv2d(channels_number, 1, kernel_size=(1, input_shape[1]))
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
         v = self.voltage_prediction(x)
-        x = self.spike_prediction(x)
-        x = self.sigmoid(x)
-        return v, x
+        s = self.spike_prediction(x)
+        s = self.sigmoid(s)
+        return v, s
 
 
 class NeuronConvNet(nn.Module):
@@ -199,7 +199,7 @@ class NeuronConvNet(nn.Module):
                                                                                activation_function)  # todo: add parameters
 
             elif segment.type == SectionType.SOMA:
-                self.last_layer = RootBlock(input_shape,channel_output)  # the last orgen in tree is the root
+                self.last_layer = RootBlock(input_shape, channel_output)  # the last orgen in tree is the root
             else:
                 assert False, "Type not found"
 
@@ -225,7 +225,9 @@ class NeuronConvNet(nn.Module):
                 representative_dict[node.representative] = self.modules_dict[self.segemnt_ids[node]](
                     representative_dict[node.prev_nodes[0].representative], input)
             elif node.type == SectionType.SOMA:
-                out = self.last_layer(representative_dict[0])
+                input = [representative_dict[i] for i in node.get_prev_node_representative()]
+                input = torch.cat(input, dim=SYNAPSE_DIMENTION)
+                out = self.last_layer(input)
                 break
             else:
                 assert False, "Type not found"

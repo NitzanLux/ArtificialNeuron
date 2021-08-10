@@ -59,10 +59,11 @@ USE_CVODE = True
 synapse_type = 'NMDA'
 # synapse_type = 'AMPA'
 # synapse_type = 'AMPA_SK'
-base_path_for_data=r"C:\Users\ninit\Documents\university\Idan Lab\dendritic tree project\data"
-path_functions = lambda type_of_data, type_of_synapse: "%s\L5PC_%s_%s\\"% (base_path_for_data,type_of_synapse, type_of_data)
+base_path_for_data = r"C:\Users\ninit\Documents\university\Idan Lab\dendritic tree project\data"
+path_functions = lambda type_of_data, type_of_synapse: "%s\L5PC_%s_%s\\" % (
+base_path_for_data, type_of_synapse, type_of_data)
 
-include_DVT=False
+include_DVT = False
 
 train_data_dir, valid_data_dir, test_data_dir, models_dir = '', '', '', ''
 num_DVT_components = 20 if synapse_type == 'NMDA' else 30
@@ -95,7 +96,7 @@ def learning_parameters_iter() -> Generator[Tuple[int, int, float, Tuple[float, 
     DVT_loss_mult_factor = 0.1
 
     if include_DVT:
-        DVT_loss_mult_factor=0
+        DVT_loss_mult_factor = 0
     for i in range(num_epochs // 5):
         learning_rate_per_epoch = 0.0001
         loss_weights_per_epoch = [1.0, 0.0200, DVT_loss_mult_factor * 0.00005]
@@ -527,7 +528,7 @@ DVT_threshold = 3
 # train PCA model
 _, _, _, y_DVTs = parse_sim_experiment_file_with_DVT(train_files[0])
 X_pca_DVT = np.reshape(y_DVTs, [y_DVTs.shape[0], -1]).T
-DVT_PCA_model=None
+DVT_PCA_model = None
 if False:
     DVT_PCA_model = decomposition.PCA(n_components=num_DVT_components, whiten=True)
     DVT_PCA_model.fit(X_pca_DVT)
@@ -608,15 +609,16 @@ for epoch, learning_parms in enumerate(learning_parameters_iter()):
     train_steps_per_epoch = len(train_data_generator)
 
 
-    def custom_loss(output, target,has_dvt=False):
+    def custom_loss(output, target, has_dvt=False):
         cross_entropy_loss = nn.CrossEntropyLoss()
         mse_loss = nn.MSELoss()
-        loss= loss_weights[0] * cross_entropy_loss(output[0], target[0]) + \
+        loss = loss_weights[0] * cross_entropy_loss(output[0], target[0]) + \
                loss_weights[1] * mse_loss(output[1], target[1])
 
         if has_dvt:
-            loss+=loss_weights[2] * mse_loss(output[2], target[2])
+            loss += loss_weights[2] * mse_loss(output[2], target[2])
         return loss
+
 
     optimizer = optim.Adam(network.parameters(), lr=learning_rate)
 

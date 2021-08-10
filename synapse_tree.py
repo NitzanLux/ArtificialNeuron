@@ -4,7 +4,6 @@ from enum import Enum
 import neuron
 import re
 
-
 NUMBER_OF_PREVIUSE_SEGMENTS_IN_BRANCH = 1
 
 
@@ -164,10 +163,11 @@ class SynapseNode:
 
 
 class SectionNode:
-    ID=0
-    def __init__(self, branch_or_synapse_nodes: [List['SectionNode'], 'SynapseNode', 'SectionNode']):
+    ID = 0
+
+    def __init__(self, branch_or_synapse_nodes: [List['SectionNode'], 'SynapseNode', 'SectionNode'],is_soma=False):
         self.id = str(SectionNode.ID)
-        SectionNode.ID+=1
+        SectionNode.ID += 1
         self.prev_nodes = []
         self.depth = None
         self.synapse_nodes_dict: Dict[int, 'SynapseNode'] = {}
@@ -176,7 +176,7 @@ class SectionNode:
                 self.synapse_nodes_dict[node.id] = node
             self.type = SectionType.BRANCH_LEAF
             self.representative = min(self.synapse_nodes_dict.keys())
-        elif isinstance(branch_or_synapse_nodes, list):
+        elif isinstance(branch_or_synapse_nodes, list) and not is_soma:
             for branch in branch_or_synapse_nodes:
                 branch.next_node = self
                 self.prev_nodes.append(branch)
@@ -184,9 +184,12 @@ class SectionNode:
             self.representative = self.prev_nodes[0].representative
             self.type = SectionType.BRANCH_INTERSECTION
         else:  # if soma
-            self.prev_nodes.append(branch_or_synapse_nodes)
-            self.prev_nodes[0].next_node = self
-            self.representative = branch_or_synapse_nodes.representative
+            self.prev_nodes = sorted(self.prev_nodes, key=lambda node: node.representative)
+            for branch in branch_or_synapse_nodes:
+                branch.next_node = self
+                self.prev_nodes.append(branch)
+            self.prev_nodes = sorted(self.prev_nodes, key=lambda node: node.representative)
+            self.representative = self.prev_nodes[0].representative
             self.type = SectionType.SOMA
         self.next_node = None
 
@@ -208,9 +211,10 @@ class SectionNode:
             return len(self.synapse_nodes_dict)
         elif self.type == SectionType.BRANCH:
             return len(self.synapse_nodes_dict) + NUMBER_OF_PREVIUSE_SEGMENTS_IN_BRANCH
-        elif self.type == SectionType.BRANCH_INTERSECTION or self.type==SectionType.SOMA:
+        elif self.type == SectionType.BRANCH_INTERSECTION:
             return len(self.prev_nodes)
-
+        elif self.type == SectionType.SOMA:
+            return len(self.prev_nodes)
 
     def get_prev_node_representative(self):
         return [prev.representative for prev in self.prev_nodes]
@@ -246,7 +250,6 @@ class SectionNode:
             current_node = stack.pop(0)
             order_stack.append(current_node)
             if current_node.type == SectionType.BRANCH:
-
                 current_node = current_node.prev_nodes[0]
                 order_stack.append(current_node)
 
@@ -304,45 +307,42 @@ class SectionNode:
     def pretty_print(self):
         root = self.find_soma()
         root.update_depth()
-        max_depth=root.max_depth()
-        level_array=[[]for _ in range(max_depth+1)]
-        stack=[root]
-        while(len(stack)>0):
-            cur_node=stack.pop(0)
+        max_depth = root.max_depth()
+        level_array = [[] for _ in range(max_depth + 1)]
+        stack = [root]
+        while (len(stack) > 0):
+            cur_node = stack.pop(0)
             level_array[cur_node.depth].append((cur_node))
             if cur_node.prev_nodes:
                 stack.extend(cur_node.prev_nodes)
 
-        max_length_of_level=max(level_array,key=lambda x:len(x))
+        max_length_of_level = max(level_array, key=lambda x: len(x))
         print(max_length_of_level)
-        string_matrix = [[] for _ in range(max_depth+1)]
-        for i,str_arr in enumerate(string_matrix):
-            spacing = len(max_length_of_level)//(len(level_array[i])+1)
-            max_str=max(level_array[i],key=lambda x:len(str(x.representative)))
+        string_matrix = [[] for _ in range(max_depth + 1)]
+        for i, str_arr in enumerate(string_matrix):
+            spacing = len(max_length_of_level) // (len(level_array[i]) + 1)
+            max_str = max(level_array[i], key=lambda x: len(str(x.representative)))
             max_str = str(max_str.representative)
-            added_spacing=len(" |_ ")
+            added_spacing = len(" |_ ")
             counter = 0
             for current_node in level_array[i]:
-                for _ in range(spacing-1):
-                    string_matrix[counter]+=" "*len(max_str)
-                    counter+=1
+                for _ in range(spacing - 1):
+                    string_matrix[counter] += " " * len(max_str)
+                    counter += 1
                 cur_str = str(current_node.representative)
                 add_gap = len(max_str) - len(cur_str)
-                cur_str +=" "*add_gap
-                counter+=1
-            while(counter==max_length_of_level):
-                string_matrix[i] += " " *len(max_str)
+                cur_str += " " * add_gap
+                counter += 1
+            while (counter == max_length_of_level):
+                string_matrix[i] += " " * len(max_str)
                 counter += 1
         for s in string_matrix:
             print("".join(s))
 
 
-
-
-
 def build_graph(model: neuron.hoc.HocObject,
-                segment_index_mapping: [Dict[neuron.nrn.Segment, int], List[neuron.nrn.Segment],None]=None) -> [None,
-                                                                                                      SectionNode]:
+                segment_index_mapping: [Dict[neuron.nrn.Segment, int], List[neuron.nrn.Segment], None] = None) -> [None,
+                                                                                                                   SectionNode]:
     if not segment_index_mapping:
         list_of_basal_sections = [model.dend[x] for x in range(len(model.dend))]
         list_of_apical_sections = [model.apic[x] for x in range(len(model.apic))]
@@ -351,7 +351,7 @@ def build_graph(model: neuron.hoc.HocObject,
         for k, section in enumerate(all_sections):
             for currSegment in section:
                 all_segments.append(currSegment)
-        segment_index_mapping=all_segments
+        segment_index_mapping = all_segments
     if isinstance(segment_index_mapping, list):
         segment_index_mapping = create_from_histogram_mapping(segment_index_mapping)
 
@@ -365,9 +365,7 @@ def build_graph(model: neuron.hoc.HocObject,
         if sub_tree:
             is_tree_none = False
             segments.append(sub_tree)
-    return None if is_tree_none else SectionNode(SectionNode(segments))  # intresection_banch and then soma.
-
-
+    return None if is_tree_none else SectionNode(segments,is_soma=True) # intresection_banch and then soma.
 
 
 def _build_subtree(section: neuron.nrn.Section, segment_index_mapping: Dict[neuron.nrn.Segment, int]) -> [None,
@@ -421,7 +419,6 @@ def _build_subtree(section: neuron.nrn.Section, segment_index_mapping: Dict[neur
 
 def create_from_histogram_mapping(segment_histogram: List[neuron.nrn.Segment]):
     return {seg: i for i, seg in enumerate(segment_histogram)}
-
 
 # %%
 # a = SynapseNode.build_graph(np.array([0, 1, 1, 3, 4, 3]), np.array([[0, 2, 1, 0, 0, 0],
