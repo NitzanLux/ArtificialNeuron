@@ -61,7 +61,7 @@ synapse_type = 'NMDA'
 # synapse_type = 'AMPA_SK'
 base_path_for_data = r"C:\Users\ninit\Documents\university\Idan Lab\dendritic tree project\data"
 path_functions = lambda type_of_data, type_of_synapse: "%s\L5PC_%s_%s\\" % (
-base_path_for_data, type_of_synapse, type_of_data)
+    base_path_for_data, type_of_synapse, type_of_data)
 
 include_DVT = False
 
@@ -440,9 +440,9 @@ class SimulationDataGenerator(Dataset):
         'Denotes the total number of samples'
         return self.batches_per_epoch
 
-    def __iter__(self):
-        for i in range(len(self)):
-            yield self[i]
+    # def __iter__(self):
+    #     for i in range(len(self)):
+    #         yield self[i]
 
     def __getitem__(self, batch_ind_within_epoch):
 
@@ -596,6 +596,10 @@ for epoch, learning_parms in enumerate(learning_parameters_iter()):
     epoch_start_time = time.time()
 
     batch_size, train_steps_per_epoch, learning_rate, loss_weights = learning_parms
+    print("bate_size: %i\ntrain_steps_per_epoch: %i \nlearning_rate:%0.3f \nloss_weights: %s" % (batch_size,
+                                                                                                 train_steps_per_epoch,
+                                                                                                 learning_rate,
+                                                                                                 str(loss_weights)))
     # prepare data generators
     train_data_generator = SimulationDataGenerator(train_files, num_files_per_epoch=train_files_per_epoch,
                                                    batch_size=batch_size,
@@ -610,10 +614,12 @@ for epoch, learning_parms in enumerate(learning_parameters_iter()):
 
 
     def custom_loss(output, target, has_dvt=False):
-        cross_entropy_loss = nn.CrossEntropyLoss()
+        binary_cross_entropy_loss = nn.BCELoss()
         mse_loss = nn.MSELoss()
-        loss = loss_weights[0] * cross_entropy_loss(output[0], target[0]) + \
-               loss_weights[1] * mse_loss(output[1], target[1])
+
+        loss = loss_weights[0] * binary_cross_entropy_loss(output[0],
+                                                           target[0])  # removing channel dimention
+        loss += loss_weights[1] * mse_loss(output[1].squeeze(1), target[1].squeeze(1))
 
         if has_dvt:
             loss += loss_weights[2] * mse_loss(output[2], target[2])
@@ -628,21 +634,25 @@ for epoch, learning_parms in enumerate(learning_parameters_iter()):
         print(i)
         # zero the parameter gradients
         optimizer.zero_grad()
-
+        print(i, "a")
         # forward + backward + optimize
         outputs = network(inputs)
+        print(i, "b")
         loss = custom_loss(outputs, labels)
+        print(i, "c")
 
         loss.backward()
+        print(i, "d")
         optimizer.step()
 
+        print(i, "c")
         # print statistics
         running_loss += loss.item()
         current_loss = loss.item()
         print(current_loss)
     writer.add_scalar("Loss/train", running_loss, epoch)
     print('-----------------------------------------------')
-    print('starting epoch %d:' % (learning_schedule))
+    print('starting epoch %d:' % (epoch))
     print('-----------------------------------------------')
     print('loss weights = %s' % (str(loss_weights)))
     print('learning_rate = %.7f' % (learning_rate))
@@ -651,7 +661,7 @@ for epoch, learning_parms in enumerate(learning_parameters_iter()):
     if i % num_steps_multiplier == num_steps_multiplier - 1:
         for key in history.history.keys():
             training_history_dict[key] += history.history[key]
-        training_history_dict['learning_schedule'] += [learning_schedule] * num_steps_multiplier
+        # training_history_dict['learning_schedule'] += [epo] * num_steps_multiplier
         training_history_dict['batch_size'] += [batch_size] * num_steps_multiplier
         training_history_dict['learning_rate'] += [learning_rate] * num_steps_multiplier
         training_history_dict['loss_weights'] += [loss_weights] * num_steps_multiplier
