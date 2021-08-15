@@ -90,33 +90,38 @@ valid_files_per_epoch = max(1, int(validation_fraction * train_files_per_epoch))
 
 
 def learning_parameters_iter() -> Generator[Tuple[int, int, float, Tuple[float, float, float]], None, None]:
-    batch_size_per_epoch = 1
+    batch_size_per_epoch = 20
     num_epochs = 10
     num_train_steps_per_epoch = 100
     DVT_loss_mult_factor = 0.1
-
+    learning_rate_counter=0
     if include_DVT:
         DVT_loss_mult_factor = 0
     for i in range(num_epochs // 5):
-        learning_rate_per_epoch = 0.0001
+        learning_rate_counter+=1
+        learning_rate_per_epoch = 1/(learning_rate_counter*100)
         loss_weights_per_epoch = [1.0, 0.0200, DVT_loss_mult_factor * 0.00005]
         yield batch_size_per_epoch, num_train_steps_per_epoch, learning_rate_per_epoch, loss_weights_per_epoch
     for i in range(num_epochs // 5):
-        learning_rate_per_epoch = 0.00003
+        learning_rate_counter += 1
+        learning_rate_per_epoch = 1 / (learning_rate_counter * 100)
         loss_weights_per_epoch = [2.0, 0.0100, DVT_loss_mult_factor * 0.00003]
         yield batch_size_per_epoch, num_train_steps_per_epoch, learning_rate_per_epoch, loss_weights_per_epoch
     for i in range(num_epochs // 5):
-        learning_rate_per_epoch = 0.00001
+        learning_rate_counter += 1
+        learning_rate_per_epoch = 1 / (learning_rate_counter * 100)
         loss_weights_per_epoch = [4.0, 0.0100, DVT_loss_mult_factor * 0.00001]
         yield batch_size_per_epoch, num_train_steps_per_epoch, learning_rate_per_epoch, loss_weights_per_epoch
 
     for i in range(num_epochs // 5):
-        learning_rate_per_epoch = 0.000003
+        learning_rate_counter += 1
+        learning_rate_per_epoch = 1 / (learning_rate_counter * 100)
         loss_weights_per_epoch = [8.0, 0.0100, DVT_loss_mult_factor * 0.0000001]
         yield batch_size_per_epoch, num_train_steps_per_epoch, learning_rate_per_epoch, loss_weights_per_epoch
 
     for i in range(num_epochs // 5 + num_epochs % 5):
-        learning_rate_per_epoch = 0.000001
+        learning_rate_counter += 1
+        learning_rate_per_epoch = 1 / (learning_rate_counter * 100)
         loss_weights_per_epoch = [9.0, 0.0030, DVT_loss_mult_factor * 0.00000001]
         yield batch_size_per_epoch, num_train_steps_per_epoch, learning_rate_per_epoch, loss_weights_per_epoch
 
@@ -165,12 +170,12 @@ tree = build_graph(L5PC)
 
 architecture_dict = {"segment_tree": tree,
                      "time_domain_shape": input_window_size,
-                     "kernel_size_2d": 5,
-                     "kernel_size_1d": 11,
+                     "kernel_size_2d": 11,
+                     "kernel_size_1d": 81,
                      "stride": 1,
                      "dilation": 1,
                      "channel_input": 1,  # synapse number
-                     "channels_number": 4,
+                     "channels_number": 8,
                      "channel_output": 4,
                      "activation_function": nn.ReLU}
 network = neuronal_model.NeuronConvNet(**architecture_dict).double()
@@ -388,16 +393,17 @@ def sample_windows_from_sims(sim_experiment_files, batch_size=16, window_size_ms
             yield (X_batch, [y_spike_batch, y_soma_batch, y_DVT_batch])
 
 
-class SimulationDataGenerator(Dataset):
+class SimulationDataGenerator():
     'Characterizes a dataset for PyTorch'
 
-    def __init__(self, sim_experiment_files, num_files_per_epoch=10,
-                 batch_size=8, window_size_ms=300, file_load=0.3, DVT_PCA_model=None,
-                 ignore_time_from_start=500, y_train_soma_bias=-67.7, y_soma_threshold=-55.0, y_DTV_threshold=3.0):
+    def __init__(self, sim_experiment_files, buffer_size_in_files=12, epoch_size=100,
+                 batch_size=8, sample_ratio_to_shaffel=10, window_size_ms=300, file_load=0.3, DVT_PCA_model=None,
+                 ignore_time_from_start=500, y_train_soma_bias=-67.7, y_soma_threshold=-55.0, y_DTV_threshold=3.0,
+                 shuffle_files=True, include_DVT=True):
         'data generator initialization'
-
+        self.include_DVT = include_DVT
         self.sim_experiment_files = sim_experiment_files
-        self.num_files_per_epoch = num_files_per_epoch
+        self.buffer_size_in_files = buffer_size_in_files
         self.batch_size = batch_size
         self.window_size_ms = window_size_ms
         self.ignore_time_from_start = ignore_time_from_start
@@ -406,110 +412,109 @@ class SimulationDataGenerator(Dataset):
         self.y_train_soma_bias = y_train_soma_bias
         self.y_soma_threshold = y_soma_threshold
         self.y_DTV_threshold = y_DTV_threshold
-
-        self.curr_epoch_files_to_use = None
-        self.on_epoch_end()
+        self.sample_ratio_to_shuffle = sample_ratio_to_shaffel
+        self.shuffle_files = shuffle_files
+        self.epoch_size = epoch_size
         self.curr_file_index = -1
-        self.load_new_file()
-        self.batches_per_file_dict = {}
-
-        # gather information regarding the loaded file
-        self.num_simulations_per_file, self.sim_duration_ms, self.num_segments = self.X.shape
-        self.num_output_channels_y1 = self.y_spike.shape[2]
-        self.num_output_channels_y2 = self.y_soma.shape[2]
-        self.num_output_channels_y3 = self.y_DVT.shape[2]
-
-        # determine how many batches in total can enter in the file
-        self.max_batches_per_file = (self.num_simulations_per_file * self.sim_duration_ms) / (
-                self.batch_size * self.window_size_ms)
-        self.batches_per_file = int(self.file_load * self.max_batches_per_file)
-        self.batches_per_epoch = self.batches_per_file * self.num_files_per_epoch
-
-        print('-------------------------------------------------------------------------')
-
-        print('file load = %.4f, max batches per file = %d, batches per epoch = %d' % (self.file_load,
-                                                                                       self.max_batches_per_file,
-                                                                                       self.batches_per_epoch))
-        print('num batches per file = %d. coming from (%dx%d),(%dx%d)' % (
-            self.batches_per_file, self.num_simulations_per_file,
-            self.sim_duration_ms, self.batch_size, self.window_size_ms))
-
-        print('-------------------------------------------------------------------------')
+        self.files_counter = 0
+        self.batch_counter = 0
+        self.reload_files()
 
     def __len__(self):
         'Denotes the total number of samples'
-        return self.batches_per_epoch
+        return self.epoch_size
 
-    # def __iter__(self):
-    #     for i in range(len(self)):
-    #         yield self[i]
+    def __iter__(self):
+        """create epoch iterator"""
+        for i in range(self.epoch_size):
+            selected_sim_inds = np.random.choice(range(self.X.shape[0]), size=self.batch_size,
+                                                 replace=True)  # number of simulations per file
+            selected_time_inds = np.random.choice(range(self.sampling_start_time, self.X.shape[1]),
+                                                  size=self.batch_size, replace=False)  # simulation duration
+            yield self[selected_sim_inds, selected_time_inds]
 
-    def __getitem__(self, batch_ind_within_epoch):
+            self.batch_counter += self.batch_size
+            if self.batch_counter / self.X.shape[0] >= self.sample_ratio_to_shuffle:
+                self.reload_files()
 
-        'Generate one batch of data'
+    def __getitem__(self, item):
+        """
+        get items
+        :param: item :   batches: indexes of samples , win_time: last time point index
+        :return:items (X, y_spike,y_soma ,y_DVT [if exists])
+        """
+        sim_ind, win_time = item
+        # windows = np.linspace(win_time-self.window_size_ms,win_time,self.window_size_ms+1,dtype=np.int).T[:,:-1] #multidimensional arange
+        # sim_ind=np.repeat(sim_ind,axis=1)
+        # mask = np.zeros_like(self.X)
+        # mask[sim_ind,windows,...]=1
+        win_ind, sim_ind = np.meshgrid(np.arange(self.window_size_ms - 1, -1, -1), sim_ind)
+        win_ind = win_time[:, np.newaxis] - win_ind
+        X_batch = self.X[sim_ind, win_ind, ...][:, np.newaxis, ...]  # newaxis for channel dimensions
+        y_spike_batch = self.y_spike[sim_ind, win_ind, ...][:, np.newaxis, ...]
+        y_soma_batch = self.y_soma[sim_ind, win_ind, ...][:, np.newaxis, ...]
+        if self.include_DVT:
+            y_DVT_batch = self.y_DVT[sim_ind, win_ind, ...][:, np.newaxis, ...]
+            # return the actual batch
+            return (torch.from_numpy(X_batch),
+                    [torch.from_numpy(y_spike_batch), torch.from_numpy(y_soma_batch), torch.from_numpy(y_DVT_batch)])
 
-        if ((batch_ind_within_epoch + 1) % self.batches_per_file) == 0:
-            self.load_new_file()
+        return (torch.from_numpy(X_batch), [torch.from_numpy(y_spike_batch), torch.from_numpy(y_soma_batch)])
 
-        # randomly sample simulations for current batch
-        selected_sim_inds = np.random.choice(range(self.num_simulations_per_file), size=self.batch_size, replace=True)
-
-        # randomly sample timepoints for current batch
-        sampling_start_time = max(self.ignore_time_from_start, self.window_size_ms)
-        selected_time_inds = np.random.choice(range(sampling_start_time, self.sim_duration_ms), size=self.batch_size,
-                                              replace=False)
-
-        # gather batch and yield it
-        X_batch = np.zeros((self.batch_size, self.window_size_ms, self.num_segments))
-        y_spike_batch = np.zeros((self.batch_size, self.window_size_ms, self.num_output_channels_y1))
-        y_soma_batch = np.zeros((self.batch_size, self.window_size_ms, self.num_output_channels_y2))
-        y_DVT_batch = np.zeros((self.batch_size, self.window_size_ms, self.num_output_channels_y3))
-        for k, (sim_ind, win_time) in enumerate(zip(selected_sim_inds, selected_time_inds)):
-            X_batch[k, :, :] = self.X[sim_ind, win_time - self.window_size_ms:win_time, :]
-            y_spike_batch[k, :, :] = self.y_spike[sim_ind, win_time - self.window_size_ms:win_time, :]
-            y_soma_batch[k, :, :] = self.y_soma[sim_ind, win_time - self.window_size_ms:win_time, :]
-            y_DVT_batch[k, :, :] = self.y_DVT[sim_ind, win_time - self.window_size_ms:win_time, :]
-
-        # increment the number of batches collected from each file
-        try:
-            self.batches_per_file_dict[self.curr_file_in_use] = self.batches_per_file_dict[self.curr_file_in_use] + 1
-        except:
-            self.batches_per_file_dict[self.curr_file_in_use] = 1
-
-        # return the actual batch
-        return (X_batch, [y_spike_batch, y_soma_batch, y_DVT_batch])
-
-    def on_epoch_end(self):
+    def reload_files(self):
         'selects new subset of files to draw samples from'
+        self.batch_counter = 0
+        if self.shuffle_files:
+            self.curr_files_to_use = np.random.choice(self.sim_experiment_files, size=self.buffer_size_in_files,
+                                                      replace=False)
+        else:
 
-        self.curr_epoch_files_to_use = np.random.choice(self.sim_experiment_files, size=self.num_files_per_epoch,
-                                                        replace=False)
+            self.curr_files_to_use = self.sim_experiment_files[
+                                     (self.files_counter * self_buffer_size_in_files) % len(self.sim_experiment_files):
+                                     ((self.files_counter + 1) * self_buffer_size_in_files) % len(
+                                         self.sim_experiment_files)]  # cyclic reloading
+            self.files_counter += 1
+        self.load_files_to_buffer()
+        self.sampling_start_time = max(self.ignore_time_from_start, self.window_size_ms)
 
-    def load_new_file(self):
+    def load_files_to_buffer(self):
         'load new file to draw batches from'
-
-        self.curr_file_index = (self.curr_file_index + 1) % self.num_files_per_epoch
         # update the current file in use
-        self.curr_file_in_use = self.curr_epoch_files_to_use[self.curr_file_index]
+        self.X = []
+        self.y_spike = []
+        self.y_soma = []
+        self.y_DVT = []
 
         # load the file
-        X, y_spike, y_soma, y_DVT = parse_sim_experiment_file_with_DVT(self.curr_file_in_use,
-                                                                       DVT_PCA_model=self.DVT_PCA_model)
+        for f in self.curr_files_to_use:
+            if self.include_DVT:
+                X, y_spike, y_soma, y_DVT = parse_sim_experiment_file_with_DVT(f, DVT_PCA_model=self.DVT_PCA_model)
+                y_DVT = np.transpose(y_DVT, axes=[2, 1, 0])
+                self.y_DVT.append(y_DVT)
 
-        # reshape to what is needed
-        X = np.transpose(X, axes=[2, 1, 0])
-        y_spike = y_spike.T[:, :, np.newaxis]
-        y_soma = y_soma.T[:, :, np.newaxis]
-        y_DVT = np.transpose(y_DVT, axes=[2, 1, 0])
+            else:
+                X, y_spike, y_soma = parse_sim_experiment_file(f)
+            # reshape to what is needed
+            X = np.transpose(X, axes=[2, 1, 0])
+            y_spike = y_spike.T[:, :, np.newaxis]
+            y_soma = y_soma.T[:, :, np.newaxis]
+
+            y_soma = y_soma - self.y_train_soma_bias
+            self.X.append(X)
+            self.y_spike.append(y_spike)
+            self.y_soma.append(y_soma)
+
+        self.X = np.vstack(self.X)
+        self.y_spike = np.vstack(self.y_spike)
+        self.y_soma = np.vstack(self.y_soma)
+        if self.include_DVT:
+            self.y_DVT = np.vstack(self.y_DVT)
 
         # threshold the signals
-        y_soma[y_soma > self.y_soma_threshold] = self.y_soma_threshold
-        y_DVT[y_DVT > self.y_DTV_threshold] = self.y_DTV_threshold
-        y_DVT[y_DVT < -self.y_DTV_threshold] = -self.y_DTV_threshold
-
-        y_soma = y_soma - self.y_train_soma_bias
-
-        self.X, self.y_spike, self.y_soma, self.y_DVT = X, y_spike, y_soma, y_DVT
+        self.y_soma[self.y_soma > self.y_soma_threshold] = self.y_soma_threshold
+        if self.include_DVT:
+            self.y_DVT[self.y_DVT > self.y_DTV_threshold] = self.y_DTV_threshold
+            self.y_DVT[self.y_DVT < -self.y_DTV_threshold] = -self.y_DTV_threshold
 
 
 # %%
@@ -525,18 +530,17 @@ train_files = glob.glob(data_dir + '*_6_secDuration_*')[:1]
 v_threshold = -55  # todo should i remove threshold?
 DVT_threshold = 3
 
-# train PCA model
-_, _, _, y_DVTs = parse_sim_experiment_file_with_DVT(train_files[0])
-X_pca_DVT = np.reshape(y_DVTs, [y_DVTs.shape[0], -1]).T
+# # train PCA model
+# _, _, _, y_DVTs = parse_sim_experiment_file_with_DVT(train_files[0])
+# X_pca_DVT = np.reshape(y_DVTs, [y_DVTs.shape[0], -1]).T
+# DVT_PCA_model = decomposition.PCA(n_components=num_DVT_components, whiten=True)
+# DVT_PCA_model.fit(X_pca_DVT)
+#
+# total_explained_variance = 100 * DVT_PCA_model.explained_variance_ratio_.sum()
+# print('finished training DVT PCA model. total_explained variance = %.1f%s' % (total_explained_variance, '%'))
 DVT_PCA_model = None
-if False:
-    DVT_PCA_model = decomposition.PCA(n_components=num_DVT_components, whiten=True)
-    DVT_PCA_model.fit(X_pca_DVT)
 
-    total_explained_variance = 100 * DVT_PCA_model.explained_variance_ratio_.sum()
-    print('finished training DVT PCA model. total_explained variance = %.1f%s' % (total_explained_variance, '%'))
 print('--------------------------------------------------------------------')
-
 X_train, y_spike_train, y_soma_train, y_DVT_train = parse_multiple_sim_experiment_files_with_DVT(train_files,
                                                                                                  DVT_PCA_model=DVT_PCA_model)
 # apply symmetric DVT threshold (the threshold is in units of standard deviations)
@@ -588,11 +592,29 @@ print(architecture_overview)
 print('-----------------------------------------------')
 
 # %% train
+# prepare data generators
+batch_size = 8
+train_data_generator = SimulationDataGenerator(train_files, buffer_size_in_files=train_files_per_epoch,
+                                               batch_size=batch_size,epoch_size=10,
+                                               window_size_ms=input_window_size, file_load=train_file_load,
+                                               DVT_PCA_model=DVT_PCA_model)
+# validation_data_generator = SimulationDataGenerator(validation_files, )
+loss_counter = 0
+saving_counter = 0
 
 training_history_dict = {}
+training_history_dict['learning_schedule'] = []
+training_history_dict['batch_size'] = []
+training_history_dict['learning_rate'] = []
+training_history_dict['loss_weights'] = []
+training_history_dict['num_train_samples'] = []
+training_history_dict['num_train_steps'] = []
+training_history_dict['train_files_histogram'] = []
+training_history_dict['valid_files_histogram'] = []
+
 for epoch, learning_parms in enumerate(learning_parameters_iter()):
     running_loss = 0.0
-
+    saving_counter += 1
     epoch_start_time = time.time()
 
     batch_size, train_steps_per_epoch, learning_rate, loss_weights = learning_parms
@@ -600,16 +622,12 @@ for epoch, learning_parms in enumerate(learning_parameters_iter()):
                                                                                                  train_steps_per_epoch,
                                                                                                  learning_rate,
                                                                                                  str(loss_weights)))
-    # prepare data generators
-    train_data_generator = SimulationDataGenerator(train_files, num_files_per_epoch=train_files_per_epoch,
-                                                   batch_size=batch_size,
-                                                   window_size_ms=input_window_size, file_load=train_file_load,
-                                                   DVT_PCA_model=DVT_PCA_model)
     # valid_data_generator = SimulationDataGenerator(valid_files, num_files_per_epoch=valid_files_per_epoch,
     #                                                batch_size=batch_size,
     #                                                window_size_ms=input_window_size, file_load=valid_file_load,
     #                                                DVT_PCA_model=DVT_PCA_model) todo: cheack about it
-    train_dataloader = DataLoader(train_data_generator, batch_size=batch_size, shuffle=True)
+
+    train_data_generator.batch_size = batch_size
     train_steps_per_epoch = len(train_data_generator)
 
 
@@ -628,29 +646,23 @@ for epoch, learning_parms in enumerate(learning_parameters_iter()):
 
     optimizer = optim.Adam(network.parameters(), lr=learning_rate)
 
-    for i, data in enumerate(train_dataloader):
+    for i, data in enumerate(train_data_generator):
         # get the inputs; data is a list of [inputs, labels]
         inputs, labels = data
-        print(i)
         # zero the parameter gradients
         optimizer.zero_grad()
-        print(i, "a")
         # forward + backward + optimize
         outputs = network(inputs)
-        print(i, "b")
         loss = custom_loss(outputs, labels)
-        print(i, "c")
-
         loss.backward()
-        print(i, "d")
         optimizer.step()
-
-        print(i, "c")
+        writer.add_scalar("Loss/Train/Batch", loss.item(), loss_counter)
+        loss_counter += 1
         # print statistics
         running_loss += loss.item()
         current_loss = loss.item()
-        print(current_loss)
-    writer.add_scalar("Loss/train", running_loss, epoch)
+        print(current_loss/batch_size,running_loss)
+    writer.add_scalar("Loss/Train", running_loss, epoch)
     print('-----------------------------------------------')
     print('starting epoch %d:' % (epoch))
     print('-----------------------------------------------')
@@ -658,19 +670,17 @@ for epoch, learning_parms in enumerate(learning_parameters_iter()):
     print('learning_rate = %.7f' % (learning_rate))
     print('batch_size = %d' % (batch_size))
     print('-----------------------------------------------')
-    if i % num_steps_multiplier == num_steps_multiplier - 1:
-        for key in history.history.keys():
-            training_history_dict[key] += history.history[key]
-        # training_history_dict['learning_schedule'] += [epo] * num_steps_multiplier
-        training_history_dict['batch_size'] += [batch_size] * num_steps_multiplier
-        training_history_dict['learning_rate'] += [learning_rate] * num_steps_multiplier
-        training_history_dict['loss_weights'] += [loss_weights] * num_steps_multiplier
-        training_history_dict['num_train_samples'] += [batch_size * train_steps_per_epoch] * num_steps_multiplier
-        training_history_dict['num_train_steps'] += [train_steps_per_epoch] * num_steps_multiplier
-        training_history_dict['train_files_histogram'] += [train_data_generator.batches_per_file_dict]
-        training_history_dict['valid_files_histogram'] += [valid_data_generator.batches_per_file_dict]
 
-    num_training_samples = num_training_samples + num_steps_multiplier * train_steps_per_epoch * batch_size
+    training_history_dict['learning_schedule'] += [epoch]
+    training_history_dict['batch_size'].append(batch_size)
+    training_history_dict['learning_rate'].append(learning_rate)
+    training_history_dict['loss_weights'].append(loss_weights)
+    training_history_dict['num_train_samples'].append(batch_size*train_steps_per_epoch)
+    training_history_dict['num_train_steps'].append(train_steps_per_epoch)
+    # training_history_dict['train_files_histogram'] += [train_data_generator.batches_per_file_dict]
+    # training_history_dict['valid_files_histogram'] += [valid_data_generator.batches_per_file_dict]
+    #
+    # num_training_samples = num_training_samples + num_steps_multiplier * train_steps_per_epoch * batch_size
 
     print('-----------------------------------------------------------------------------------------')
     epoch_duration_sec = time.time() - epoch_start_time
@@ -679,23 +689,23 @@ for epoch, learning_parms in enumerate(learning_parameters_iter()):
     print('-----------------------------------------------------------------------------------------')
 
     # save model every once and a while
-    if np.array(training_history_dict['val_spikes_loss'][-3:]).mean() < 0.03:
+    if saving_counter % 15 == 0:
         model_ID = np.random.randint(100000)
         modelID_str = 'ID_%d' % (model_ID)
         train_string = 'samples_%d' % (num_training_samples)
-        if len(training_history_dict['val_spikes_loss']) >= 10:
-            train_MSE = 10000 * np.array(training_history_dict['spikes_loss'][-7:]).mean()
-            valid_MSE = 10000 * np.array(training_history_dict['val_spikes_loss'][-7:]).mean()
-        else:
-            train_MSE = 10000 * np.array(training_history_dict['spikes_loss']).mean()
-            valid_MSE = 10000 * np.array(training_history_dict['val_spikes_loss']).mean()
+        # if len(training_history_dict['val_spikes_loss']) >= 10:
+        #     train_MSE = 10000 * np.array(training_history_dict['spikes_loss'][-7:]).mean()
+        #     valid_MSE = 10000 * np.array(training_history_dict['val_spikes_loss'][-7:]).mean()
+        # else:
+        #     train_MSE = 10000 * np.array(training_history_dict['spikes_loss']).mean()
+        #     valid_MSE = 10000 * np.array(training_history_dict['val_spikes_loss']).mean()
 
-        results_overview = 'LogLoss_train_%d_valid_%d' % (train_MSE, valid_MSE)
-        current_datetime = str(pd.datetime.now())[:-10].replace(':', '_').replace(' ', '__')
-        model_filename = models_dir + '%s__%s__%s__%s__%s__%s.h5' % (
-            model_prefix, architecture_overview, current_datetime, train_string, results_overview, modelID_str)
-        auxilary_filename = models_dir + '%s__%s__%s__%s__%s__%s.pickle' % (
-            model_prefix, architecture_overview, current_datetime, train_string, results_overview, modelID_str)
+        # results_overview = 'LogLoss_train_%d_valid_%d' % (train_MSE, valid_MSE)
+        # current_datetime = str(pd.datetime.now())[:-10].replace(':', '_').replace(' ', '__')
+        # model_filename = models_dir + '%s__%s__%s__%s__%s__%s.h5' % (
+        #     model_prefix, architecture_overview, current_datetime, train_string, results_overview, modelID_str)
+        # auxilary_filename = models_dir + '%s__%s__%s__%s__%s__%s.pickle' % (
+        #     model_prefix, architecture_overview, current_datetime, train_string, results_overview, modelID_str)
 
         print('-----------------------------------------------------------------------------------------')
         print('finished epoch %d/%d. saving...\n     "%s"\n     "%s"' % (
@@ -705,31 +715,31 @@ for epoch, learning_parms in enumerate(learning_parameters_iter()):
         network.save(model_filename)
 
         # # save all relevent training params (in raw and unprocessed way)
-        # model_hyperparams_and_training_dict = {}
-        # model_hyperparams_and_training_dict['data_dict'] = data_dict
+        model_hyperparams_and_training_dict = {}
+        model_hyperparams_and_training_dict['data_dict'] = data_dict
         # model_hyperparams_and_training_dict['architecture_dict'] = architecture_dict
         # model_hyperparams_and_training_dict['learning_schedule_dict'] = learning_schedule_dict
-        # model_hyperparams_and_training_dict['training_history_dict'] = training_history_dict
-
+        model_hyperparams_and_training_dict['training_history_dict'] = training_history_dict
         pickle.dump(model_hyperparams_and_training_dict, open(auxilary_filename, "wb"), protocol=2)
+network.save(model_filename)
 
 # %% show learning curves
 
 # gather losses
-train_spikes_loss_list = training_history_dict['spikes_loss']
-valid_spikes_loss_list = training_history_dict['val_spikes_loss']
-train_somatic_loss_list = training_history_dict['somatic_loss']
-valid_somatic_loss_list = training_history_dict['val_somatic_loss']
-train_dendritic_loss_list = training_history_dict['dendritic_loss']
-valid_dendritic_loss_list = training_history_dict['val_dendritic_loss']
-train_total_loss_list = training_history_dict['loss']
-valid_total_loss_list = training_history_dict['val_loss']
+# train_spikes_loss_list = training_history_dict['spikes_loss']
+# valid_spikes_loss_list = training_history_dict['val_spikes_loss']
+# train_somatic_loss_list = training_history_dict['somatic_loss']
+# valid_somatic_loss_list = training_history_dict['val_somatic_loss']
+# train_dendritic_loss_list = training_history_dict['dendritic_loss']
+# valid_dendritic_loss_list = training_history_dict['val_dendritic_loss']
+# train_total_loss_list = training_history_dict['loss']
+# valid_total_loss_list = training_history_dict['val_loss']
 
-learning_epoch_list = training_history_dict['learning_schedule']
-batch_size_list = training_history_dict['batch_size']
-learning_rate = training_history_dict['learning_rate']
-loss_spikes_weight_list = [x[0] for x in training_history_dict['loss_weights']]
-loss_soma_weight_list = [x[1] for x in training_history_dict['loss_weights']]
-loss_dendrites_weight_list = [x[2] for x in training_history_dict['loss_weights']]
-
-num_iterations = list(range(len(train_spikes_loss_list)))
+# learning_epoch_list = training_history_dict['learning_schedule']
+# batch_size_list = training_history_dict['batch_size']
+# learning_rate = training_history_dict['learning_rate']
+# loss_spikes_weight_list = [x[0] for x in training_history_dict['loss_weights']]
+# loss_soma_weight_list = [x[1] for x in training_history_dict['loss_weights']]
+# loss_dendrites_weight_list = [x[2] for x in training_history_dict['loss_weights']]
+#
+# num_iterations = list(range(len(train_spikes_loss_list)))

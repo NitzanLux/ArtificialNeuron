@@ -68,7 +68,8 @@ class BranchLeafBlock(SegmentNetwork):
 
         self.batch_normalization = torch.nn.BatchNorm2d(channels_number)
 
-        padding_factor = self.keep_dimensions_by_padding_claculator((input_shape[0], 1), (kernel_size_1d, 1), stride,
+        padding_factor = self.keep_dimensions_by_padding_claculator((input_shape[0], 1),
+                                                                    (kernel_size_1d, input_shape[1]), stride,
                                                                     dilation)
 
         self.conv1d = weight_norm(nn.Conv2d(channels_number, channel_output, (kernel_size_1d, input_shape[1]),
@@ -94,22 +95,16 @@ class BranchBlock(SegmentNetwork):
                  dilation=1,
                  activation_function=nn.ReLU):
         super(BranchBlock, self).__init__()
-
-        # padding_factor = self.keep_dimensions_by_padding_claculator((input_shape[0],1), (kernel_size_2d,1), stride, dilation)
-        # self.conv2d_prev = weight_norm(
-        #     nn.Conv2d(channels_number, channels_number, (kernel_size_2d,1),  # todo: weight_norm???
-        #               stride=stride, padding=padding_factor, dilation=dilation))
-
         padding_factor = self.keep_dimensions_by_padding_claculator(
             (input_shape[0], input_shape[1] - NUMBER_OF_PREVIUSE_SEGMENTS_IN_BRANCH), kernel_size_2d, stride, dilation)
-        self.conv2d_x = weight_norm(nn.Conv2d(channel_input, channels_number, kernel_size_2d,  # todo: weight_norm???
+        self.conv2d_x = weight_norm(nn.Conv2d(channel_input, channel_output, kernel_size_2d,  # todo: weight_norm???
                                               stride=stride, padding=padding_factor, dilation=dilation))
         self.activation_function = activation_function()
 
-        self.batch_normalization = torch.nn.BatchNorm2d(channels_number)
+        self.batch_normalization = torch.nn.BatchNorm2d(channel_output)
         padding_factor = self.keep_dimensions_by_padding_claculator((input_shape[0], 1), (kernel_size_1d, 1), stride,
                                                                     dilation)
-        self.conv1d = weight_norm(nn.Conv2d(channels_number, channel_output, (kernel_size_1d, input_shape[1]),
+        self.conv1d = weight_norm(nn.Conv2d(channel_output, channel_output, (kernel_size_1d, input_shape[1]),
                                             stride=stride, padding=padding_factor,
                                             dilation=dilation))
         self.init_weights()
@@ -139,7 +134,7 @@ class IntersectionBlock(SegmentNetwork):
 
                                                                     stride, dilation)
 
-        self.conv1d_1 = weight_norm(nn.Conv2d(channels_number, channel_output, (kernel_size_1d, 1),
+        self.conv1d_1 = weight_norm(nn.Conv2d(channel_output, channels_number, (kernel_size_1d, 1),
                                               stride=stride, padding=padding_factor,
                                               dilation=dilation))
         self.activation = activation_function()
@@ -193,7 +188,7 @@ class NeuronConvNet(nn.Module):
                                                                            kernel_size_1d, stride, dilation,
                                                                            activation_function)  # todo: add parameters
             elif segment.type == SectionType.BRANCH_INTERSECTION:
-                self.modules_dict[self.segemnt_ids[segment]] = IntersectionBlock(input_shape, channels_number,
+                self.modules_dict[self.segemnt_ids[segment]] = IntersectionBlock(input_shape, channel_input,
                                                                                  channels_number,
                                                                                  channel_output, kernel_size_2d,
                                                                                  kernel_size_1d, stride, dilation,
@@ -211,6 +206,7 @@ class NeuronConvNet(nn.Module):
                 assert False, "Type not found"
 
     def forward(self, x):
+        x = x.type(torch.DoubleTensor)
         if self.include_dendritic_voltage_tracing:  # todo add functionality
             pass
         representative_dict = {}
