@@ -1,7 +1,12 @@
 import os
+import pickle
 from typing import Tuple
-from synapse_tree import SectionNode, SectionType, NUMBER_OF_PREVIUSE_SEGMENTS_IN_BRANCH
+
+import torch
 import torch.nn as nn
+from torch.nn.utils import weight_norm
+
+from synapse_tree import SectionNode, SectionType, NUMBER_OF_PREVIUSE_SEGMENTS_IN_BRANCH
 
 # set SEED
 os.environ["SEED"] = "42"
@@ -12,21 +17,22 @@ SYNAPSE_DIMENTION = 3
 epsp_num = 60
 ipsp_num = 20
 
-from subprocess import call
 import os
 import numpy as np
 
 FNULL = open(os.devnull, 'w')
-
+if torch.cuda.is_available():
+    coda = "cuda"
+    torch.cuda.set_device('cuda:0')
+    print("\n******   Cuda available!!!   *****")
+else:
+    dev = "cpu"
 # set SEED
 os.environ["SEED"] = "42"
 
 # ======================
 #     TCN Components
 # ======================
-import torch
-import torch.nn as nn
-from torch.nn.utils import weight_norm
 
 
 class SegmentNetwork(nn.Module):
@@ -63,7 +69,7 @@ class BranchLeafBlock(SegmentNetwork):
         padding_factor = self.keep_dimensions_by_padding_claculator(input_shape, kernel_size_2d, stride, dilation)
 
         self.conv2d = weight_norm(nn.Conv2d(channel_input, channels_number, kernel_size_2d,  # todo: weight_norm???
-                                            stride=stride, padding=padding_factor, dilation=dilation))
+                                            stride=stride, padding=padding_factor, dilation=dilation)).cuda()
         self.activation_function = activation_function()
 
         self.batch_normalization = torch.nn.BatchNorm2d(channels_number)
@@ -74,7 +80,7 @@ class BranchLeafBlock(SegmentNetwork):
 
         self.conv1d = weight_norm(nn.Conv2d(channels_number, channel_output, (kernel_size_1d, input_shape[1]),
                                             stride=stride, padding=padding_factor,
-                                            dilation=dilation))  # todo: weight_norm???
+                                            dilation=dilation).cuda()) # todo: weight_norm???
         # todo: collapse?
         self.init_weights()
         self.net = nn.Sequential(self.conv2d, self.activation_function,
@@ -172,6 +178,7 @@ class NeuronConvNet(nn.Module):
                  dilation, channel_input, channels_number, channel_output,
                  activation_function=nn.ReLU, include_dendritic_voltage_tracing=True):
         super(NeuronConvNet, self).__init__()
+        assert kernel_size_1d%2==1 and kernel_size_2d%2==1 ,"cannot assert even kernel size"
         self.include_dendritic_voltage_tracing = include_dendritic_voltage_tracing
         self.segment_tree = segment_tree
         self.segemnt_ids = dict()
@@ -186,7 +193,7 @@ class NeuronConvNet(nn.Module):
                 self.modules_dict[self.segemnt_ids[segment]] = BranchBlock(input_shape, channel_input, channels_number,
                                                                            channel_output, kernel_size_2d,
                                                                            kernel_size_1d, stride, dilation,
-                                                                           activation_function)  # todo: add parameters
+                                                                           activation_function) # todo: add parameters
             elif segment.type == SectionType.BRANCH_INTERSECTION:
                 self.modules_dict[self.segemnt_ids[segment]] = IntersectionBlock(input_shape, channel_input,
                                                                                  channels_number,
@@ -198,7 +205,7 @@ class NeuronConvNet(nn.Module):
                                                                                channels_number,
                                                                                channel_output, kernel_size_2d,
                                                                                kernel_size_1d, stride, dilation,
-                                                                               activation_function)  # todo: add parameters
+                                                                               activation_function) # todo: add parameters
 
             elif segment.type == SectionType.SOMA:
                 self.last_layer = RootBlock(input_shape, channel_output)  # the last orgen in tree is the root
