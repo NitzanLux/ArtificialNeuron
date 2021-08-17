@@ -181,7 +181,7 @@ architecture_dict = {"segment_tree": tree,
                      "channel_output": 4,
                      "activation_function": nn.ReLU}
 network = neuronal_model.NeuronConvNet(**architecture_dict).double()
-network.to('cuda')
+network.cuda()
 
 # %% some helper functions
 # ------------------------------------------------------------------
@@ -457,10 +457,10 @@ class SimulationDataGenerator():
         if self.include_DVT:
             y_DVT_batch = self.y_DVT[sim_ind, win_ind, ...][:, np.newaxis, ...]
             # return the actual batch
-            return (torch.from_numpy(X_batch).to('cuda'),
-                    [torch.from_numpy(y_spike_batch).to('cuda'), torch.from_numpy(y_soma_batch).to('cuda'), torch.from_numpy(y_DVT_batch).to('cuda')])
+            return (torch.from_numpy(X_batch),
+                    [torch.from_numpy(y_spike_batch), torch.from_numpy(y_soma_batch), torch.from_numpy(y_DVT_batch)])
 
-        return (torch.from_numpy(X_batch).cuda(), [torch.from_numpy(y_spike_batch).cuda(), torch.from_numpy(y_soma_batch).cuda()])
+        return (torch.from_numpy(X_batch), [torch.from_numpy(y_spike_batch), torch.from_numpy(y_soma_batch)])
 
     def reload_files(self):
         'selects new subset of files to draw samples from'
@@ -642,6 +642,9 @@ for epoch, learning_parms in enumerate(learning_parameters_iter()):
 
 
     def custom_loss(output, target, has_dvt=False):
+        if output[0].device != target[0].device:
+            for i in range(len(target)-1+has_dvt): #same processor for comperison
+                target[i] = target[i].to(output[i].device)
         binary_cross_entropy_loss = nn.BCELoss()
         mse_loss = nn.MSELoss()
         loss = loss_weights[0] * binary_cross_entropy_loss(output[0],

@@ -69,7 +69,7 @@ class BranchLeafBlock(SegmentNetwork):
         padding_factor = self.keep_dimensions_by_padding_claculator(input_shape, kernel_size_2d, stride, dilation)
 
         self.conv2d = weight_norm(nn.Conv2d(channel_input, channels_number, kernel_size_2d,  # todo: weight_norm???
-                                            stride=stride, padding=padding_factor, dilation=dilation)).cuda()
+                                            stride=stride, padding=padding_factor, dilation=dilation))
         self.activation_function = activation_function()
 
         self.batch_normalization = torch.nn.BatchNorm2d(channels_number)
@@ -80,7 +80,7 @@ class BranchLeafBlock(SegmentNetwork):
 
         self.conv1d = weight_norm(nn.Conv2d(channels_number, channel_output, (kernel_size_1d, input_shape[1]),
                                             stride=stride, padding=padding_factor,
-                                            dilation=dilation).cuda()) # todo: weight_norm???
+                                            dilation=dilation)) # todo: weight_norm???
         # todo: collapse?
         self.init_weights()
         self.net = nn.Sequential(self.conv2d, self.activation_function,
@@ -183,12 +183,12 @@ class NeuronConvNet(nn.Module):
         self.segment_tree = segment_tree
         self.segemnt_ids = dict()
         self.modules_dict = nn.ModuleDict()
+        self.is_cuda=False
         input_shape = (0, 0)  # default for outer scope usage
         for segment in segment_tree:
             self.segemnt_ids[segment] = segment.id
             param_number = segment.get_number_of_parameters_for_nn()
             input_shape = (time_domain_shape, param_number)
-            print(segment.type)
             if segment.type == SectionType.BRANCH:
                 self.modules_dict[self.segemnt_ids[segment]] = BranchBlock(input_shape, channel_input, channels_number,
                                                                            channel_output, kernel_size_2d,
@@ -212,16 +212,21 @@ class NeuronConvNet(nn.Module):
             else:
                 assert False, "Type not found"
 
+
+    def cuda(self,**argv):
+        super(NeuronConvNet,self).cuda(**argv)
+        self.is_cuda=True
+
     def forward(self, x):
-        x = x.type(torch.DoubleTensor)
+        x = x.type(torch.cuda.DoubleTensor)if self.is_cuda else x.type(torch.DoubleTensor)
         if self.include_dendritic_voltage_tracing:  # todo add functionality
             pass
         representative_dict = {}
         out = None
         for node in self.segment_tree:
             if node.type == SectionType.BRANCH_LEAF:
-                representative_dict[node.representative] = self.modules_dict[self.segemnt_ids[node]](
-                    x[..., list(node.synapse_nodes_dict.keys())])
+                input = x[..., list(node.synapse_nodes_dict.keys())]
+                representative_dict[node.representative] = self.modules_dict[self.segemnt_ids[node]](input)
 
                 assert representative_dict[node.representative].shape[3] == 1
 
