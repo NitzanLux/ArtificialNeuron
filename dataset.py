@@ -353,9 +353,9 @@ def get_list_of_sections():
     pass
 
 #%% define NEURON model
-morphology_path = "neuron_as_deep_net-master/L5PC_NEURON_simulation/morphologies/cell1.asc"
-biophysical_model_path = "neuron_as_deep_net-master/L5PC_NEURON_simulation/L5PCbiophys5b.hoc"
-biophysical_model_tamplate_path = "neuron_as_deep_net-master/L5PC_NEURON_simulation/L5PCtemplate_2.hoc"
+morphology_path = "L5PC_NEURON_simulation/morphologies/cell1.asc"
+biophysical_model_path = "L5PC_NEURON_simulation/L5PCbiophys5b.hoc"
+biophysical_model_tamplate_path = "L5PC_NEURON_simulation/L5PCtemplate_2.hoc"
 
 L5PC=get_neuron_model(morphology_path,biophysical_model_path,biophysical_model_tamplate_path)
 

@@ -106,9 +106,9 @@ def load_model():
             cvode.active(1)
         return L5PC
 
-    morphology_path = "neuron_as_deep_net-master/L5PC_NEURON_simulation/morphologies/cell1.asc"
-    biophysical_model_path = "neuron_as_deep_net-master/L5PC_NEURON_simulation/L5PCbiophys5b.hoc"
-    biophysical_model_tamplate_path = "neuron_as_deep_net-master/L5PC_NEURON_simulation/L5PCtemplate_2.hoc"
+    morphology_path = "L5PC_NEURON_simulation/morphologies/cell1.asc"
+    biophysical_model_path = "L5PC_NEURON_simulation/L5PCbiophys5b.hoc"
+    biophysical_model_tamplate_path = "L5PC_NEURON_simulation/L5PCtemplate_2.hoc"
 
     input_window_size = 400
     num_segments = 2 * 639
