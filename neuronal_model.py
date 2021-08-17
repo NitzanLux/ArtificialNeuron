@@ -28,7 +28,7 @@ import torch
 import torch.nn as nn
 from torch.nn.utils import weight_norm
 
-
+#todo implement 1D convolution.
 class SegmentNetwork(nn.Module):
     def __init__(self):
         super(SegmentNetwork, self).__init__()
