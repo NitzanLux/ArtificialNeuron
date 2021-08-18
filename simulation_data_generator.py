@@ -381,7 +381,7 @@ def sample_windows_from_sims(sim_experiment_files, batch_size=16, window_size_ms
         X = np.transpose(X, axes=[2, 1, 0])
         y_spike = y_spike.T[:, :, np.newaxis]
         y_soma = y_soma.T[:, :, np.newaxis]
-        y_DVT = USE_CVODE = Truenp.transpose(y_DVT, axes=[2, 1, 0])
+        y_DVT = np.transpose(y_DVT, axes=[2, 1, 0])
 
         # threshold the signals
         y_soma[y_soma > y_soma_threshold] = y_soma_threshold
