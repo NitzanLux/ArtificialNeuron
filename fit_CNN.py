@@ -64,29 +64,29 @@ def learning_parameters_iter() -> Generator[Tuple[int, int, float, Tuple[float, 
     epoch_in_each_step = num_epochs // 5 + (num_epochs % 5 != 0)
     for i in range(epoch_in_each_step):
         learning_rate_counter += 1
-        learning_rate_per_epoch = 1 / (learning_rate_counter * 100)
+        learning_rate_per_epoch = 1 / (learning_rate_counter * 10)
         loss_weights_per_epoch = [1.0, 0.0200, DVT_loss_mult_factor * 0.00005]
         yield epoch_size, num_train_steps_per_epoch, learning_rate_per_epoch, loss_weights_per_epoch
     for i in range(epoch_in_each_step):
         learning_rate_counter += 1
-        learning_rate_per_epoch = 1 / (learning_rate_counter * 100)
+        learning_rate_per_epoch = 1 / (learning_rate_counter * 10)
         loss_weights_per_epoch = [2.0, 0.0100, DVT_loss_mult_factor * 0.00003]
         yield epoch_size, num_train_steps_per_epoch, learning_rate_per_epoch, loss_weights_per_epoch
     for i in range(epoch_in_each_step):
         learning_rate_counter += 1
-        learning_rate_per_epoch = 1 / (learning_rate_counter * 100)
+        learning_rate_per_epoch = 1 / (learning_rate_counter * 10)
         loss_weights_per_epoch = [4.0, 0.0100, DVT_loss_mult_factor * 0.00001]
         yield epoch_size, num_train_steps_per_epoch, learning_rate_per_epoch, loss_weights_per_epoch
 
     for i in range(num_epochs // 5):
         learning_rate_counter += 1
-        learning_rate_per_epoch = 1 / (learning_rate_counter * 100)
+        learning_rate_per_epoch = 1 / (learning_rate_counter * 10)
         loss_weights_per_epoch = [8.0, 0.0100, DVT_loss_mult_factor * 0.0000001]
         yield epoch_size, num_train_steps_per_epoch, learning_rate_per_epoch, loss_weights_per_epoch
 
     for i in range(num_epochs // 5 + num_epochs % 5):
         learning_rate_counter += 1
-        learning_rate_per_epoch = 1 / (learning_rate_counter * 100)
+        learning_rate_per_epoch = 1 / (learning_rate_counter * 10)
         loss_weights_per_epoch = [9.0, 0.0030, DVT_loss_mult_factor * 0.00000001]
         yield epoch_size, num_train_steps_per_epoch, learning_rate_per_epoch, loss_weights_per_epoch
 
@@ -270,7 +270,7 @@ for epoch, learning_parms in enumerate(learning_parameters_iter()):
         valid_input, valid_labels = valid_data
         # zero the parameter gradients
         optimizer.zero_grad()
-        # forward + backward + optimizebatch_size_per_epoch
+        # forward + backward + optimize
         outputs = network(inputs)
         loss = custom_loss(outputs, labels)
         loss.backward()
