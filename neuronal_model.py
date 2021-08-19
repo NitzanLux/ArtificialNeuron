@@ -262,3 +262,10 @@ class NeuronConvNet(nn.Module):
     def save(self, path):
         with open('%s.pkl' % path, 'wb') as outp:
             pickle.dump(self, outp, pickle.HIGHEST_PROTOCOL)
+
+    @staticmethod
+    def load(path):
+        neuronal_model=None
+        with open('%s.pkl' % path, 'rb') as outp:
+            neuronal_model = pickle.load(outp)
+        return neuronal_model
