@@ -1,6 +1,6 @@
 import pickle
 import sys
-from neuron import h
+from neuron import h,gui
 import numpy as np
 import torch
 import time
@@ -429,11 +429,11 @@ def sample_windows_from_sims(sim_experiment_files, batch_size=16, window_size_ms
 
 
 def get_neuron_model(morphology_path: str, biophysical_model_path: str, biophysical_model_tamplate_path: str):
-    h.load_file('nrngui.hoc')
     h.load_file("import3d.hoc")
-
-    h.load_file(biophysical_model_path)
+    h.load_file('nrngui.hoc')
     h.load_file(biophysical_model_tamplate_path)
+    h.load_file(biophysical_model_path)
+
     L5PC = h.L5PCtemplate(morphology_path)
 
     cvode = h.CVode()

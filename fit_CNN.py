@@ -1,3 +1,4 @@
+print("Aaaaa")
 import glob
 from typing import Generator, Tuple
 from project_path import *
@@ -6,9 +7,10 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
 
+from simulation_data_generator import *
+
 import neuronal_model
 from synapse_tree import build_graph
-from simulation_data_generator import *
 
 # from dataset import get_neuron_model
 
@@ -45,18 +47,16 @@ num_DVT_components = 20 if synapse_type == 'NMDA' else 30
 # validation_fraction = 0.5
 train_file_load = 0.2
 valid_file_load = 0.2
-num_steps_multiplier = 10
 
 
 # train_files_per_epoch = 1
 # valid_files_per_epoch = max(1, int(validation_fraction * train_files_per_epoch))
-epoch_size = 5
+epoch_size = 20
 num_epochs = 40
 batch_size_train=15
-batch_size_validation=8
+batch_size_validation=4
 
 def learning_parameters_iter() -> Generator[Tuple[int, int, float, Tuple[float, float, float]], None, None]:
-    num_train_steps_per_epoch = 10
     DVT_loss_mult_factor = 0.1
     learning_rate_counter = 0
     if include_DVT:
@@ -66,29 +66,29 @@ def learning_parameters_iter() -> Generator[Tuple[int, int, float, Tuple[float, 
         learning_rate_counter += 1
         learning_rate_per_epoch = 1 / (learning_rate_counter * 10)
         loss_weights_per_epoch = [1.0, 0.0200, DVT_loss_mult_factor * 0.00005]
-        yield epoch_size, num_train_steps_per_epoch, learning_rate_per_epoch, loss_weights_per_epoch
+        yield epoch_size,  learning_rate_per_epoch, loss_weights_per_epoch
     for i in range(epoch_in_each_step):
         learning_rate_counter += 1
         learning_rate_per_epoch = 1 / (learning_rate_counter * 10)
         loss_weights_per_epoch = [2.0, 0.0100, DVT_loss_mult_factor * 0.00003]
-        yield epoch_size, num_train_steps_per_epoch, learning_rate_per_epoch, loss_weights_per_epoch
+        yield epoch_size,  learning_rate_per_epoch, loss_weights_per_epoch
     for i in range(epoch_in_each_step):
         learning_rate_counter += 1
         learning_rate_per_epoch = 1 / (learning_rate_counter * 10)
         loss_weights_per_epoch = [4.0, 0.0100, DVT_loss_mult_factor * 0.00001]
-        yield epoch_size, num_train_steps_per_epoch, learning_rate_per_epoch, loss_weights_per_epoch
+        yield epoch_size,  learning_rate_per_epoch, loss_weights_per_epoch
 
     for i in range(num_epochs // 5):
         learning_rate_counter += 1
         learning_rate_per_epoch = 1 / (learning_rate_counter * 10)
         loss_weights_per_epoch = [8.0, 0.0100, DVT_loss_mult_factor * 0.0000001]
-        yield epoch_size, num_train_steps_per_epoch, learning_rate_per_epoch, loss_weights_per_epoch
+        yield epoch_size,  learning_rate_per_epoch, loss_weights_per_epoch
 
     for i in range(num_epochs // 5 + num_epochs % 5):
         learning_rate_counter += 1
         learning_rate_per_epoch = 1 / (learning_rate_counter * 10)
         loss_weights_per_epoch = [9.0, 0.0030, DVT_loss_mult_factor * 0.00000001]
-        yield epoch_size, num_train_steps_per_epoch, learning_rate_per_epoch, loss_weights_per_epoch
+        yield epoch_size,  learning_rate_per_epoch, loss_weights_per_epoch
 
 # ------------------------------------------------------------------
 # define network architecture params
@@ -98,10 +98,12 @@ def learning_parameters_iter() -> Generator[Tuple[int, int, float, Tuple[float, 
 input_window_size = 400
 num_segments = 2 * 639
 num_syn_types = 1
-
-L5PC = get_neuron_model(MORPHOLOGY_PATH, BIOPHYSICAL_MODEL_PATH, BIOPHYSICAL_MODEL_TAMPLATE_PATH)
-tree = build_graph(L5PC)
-
+# print("i")
+# L5PC = get_neuron_model(MORPHOLOGY_PATH, BIOPHYSICAL_MODEL_PATH, BIOPHYSICAL_MODEL_TAMPLATE_PATH)
+# tree = build_graph(L5PC)
+# print("i")
+with open("tree.pkl",'rb') as file:
+    tree = pickle.load(file)
 architecture_dict = {"segment_tree": tree,
                      "time_domain_shape": input_window_size,
                      "kernel_size_2d": 5,
@@ -123,43 +125,6 @@ dataset_generation_start_time = time.time()
 data_dir = TRAIN_DATA_DIR
 train_files = glob.glob(data_dir + '*_6_secDuration_*')[:1]
 
-v_threshold = -55  # todo should i remove threshold?
-DVT_threshold = 3
-
-# # train PCA model
-
-
-
-
-# _, _, _, y_DVTs = parse_sim_experiment_file_with_DVT(train_files[0])
-# X_pca_DVT = np.reshape(y_DVTs, [y_DVTs.shape[0], -1]).T
-# DVT_PCA_model = decomposition.PCA(n_components=num_DVT_components, whiten=True)
-# DVT_PCA_model.fit(X_pca_DVT)
-#
-# total_explained_variance = 100 * DVT_PCA_model.explained_variance_ratio_.sum()
-# print('finished training DVT PCA model. total_explained variance = %.1f%s' % (total_explained_variance, '%'))
-DVT_PCA_model = None
-
-
-
-
-
-print('--------------------------------------------------------------------')
-
-X_train, y_spike_train, y_soma_train, y_DVT_train = parse_multiple_sim_experiment_files_with_DVT(train_files,
-                                                                                                 DVT_PCA_model=DVT_PCA_model)
-# apply symmetric DVT threshold (the threshold is in units of standard deviations)
-y_DVT_train[y_DVT_train > DVT_threshold] = DVT_threshold
-y_DVT_train[y_DVT_train < -DVT_threshold] = -DVT_threshold
-
-y_soma_train[y_soma_train > v_threshold] = v_threshold  # todo what should i do with it?
-
-sim_duration_ms = y_soma_train.shape[0]
-sim_duration_sec = float(sim_duration_ms) / 1000
-
-num_simulations_train = X_train.shape[-1]
-# %%
-DVT_PCA_model = None
 # %% train model (in data streaming way)
 if torch.cuda.is_available():
     dev = "cuda:0"
@@ -195,7 +160,7 @@ print('-----------------------------------------------')
 print(model_prefix)
 print(architecture_overview)
 print('-----------------------------------------------')
-
+DVT_PCA_model = None
 # %% train
 # prepare data generators
 train_data_generator = SimulationDataGenerator(train_files, buffer_size_in_files=10,
@@ -235,12 +200,9 @@ for epoch, learning_parms in enumerate(learning_parameters_iter()):
     running_loss = 0.
     saving_counter += 1
     epoch_start_time = time.time()
-
-    batch_size, train_steps_per_epoch, learning_rate, loss_weights = learning_parms
-    print("bate_size: %i\ntrain_steps_per_epoch: batch_size_per_epoch%i \nlearning_rate:%0.3f \nloss_weights: %s" % (batch_size,
-                                                                                                 train_steps_per_epoch,
-                                                                                                 learning_rate,
-                                                                                                 str(loss_weights)))
+    epoch_batch_counter=0
+    batch_size,  learning_rate, loss_weights = learning_parms
+    print("bate_size: %i\nlearning_rate:%0.3f \nloss_weights: %s" % (batch_size,learning_rate,str(loss_weights)))
 
     train_data_generator.batch_size = batch_size
     train_steps_per_epoch = len(train_data_generator)
@@ -279,6 +241,7 @@ for epoch, learning_parms in enumerate(learning_parameters_iter()):
         validation_loss = custom_loss(network(valid_input), valid_labels)
         writer.add_scalar("Loss/Validation/Batch", validation_loss.item(), batch_counter)
         batch_counter += 1  # todo change to batch size?
+        epoch_batch_counter +=1
         # print statistics
         running_loss += loss.item()
         validation_runing_loss += validation_loss.item()
@@ -286,10 +249,10 @@ for epoch, learning_parms in enumerate(learning_parameters_iter()):
               "avg valid: %0.10f\n"
               "train l: %0.10f\t"
               "validation l: %0.10f" % (
-                  running_loss / batch_counter, validation_runing_loss / batch_counter, loss.item(),
+                  running_loss / epoch_batch_counter, validation_runing_loss / epoch_batch_counter, loss.item(),
                   validation_loss.item()))
-    writer.add_scalar("Loss/Train", running_loss, epoch)
-    writer.add_scalar("Loss/Validation", validation_runing_loss, epoch)
+    writer.add_scalar("Loss/Train/epoch", running_loss, epoch)
+    writer.add_scalar("Loss/Validation/epoch", validation_runing_loss, epoch)
 
     print('-----------------------------------------------')
     print('starting epoch %d:' % (epoch))
@@ -303,21 +266,16 @@ for epoch, learning_parms in enumerate(learning_parameters_iter()):
     training_history_dict['batch_size'].append(batch_size)
     training_history_dict['learning_rate'].append(learning_rate)
     training_history_dict['loss_weights'].append(loss_weights)
-    training_history_dict['num_train_samples'].append(batch_size * train_steps_per_epoch)
-    training_history_dict['num_train_steps'].append(train_steps_per_epoch)
-    # training_history_dict['train_files_histogram'] += [train_data_generator.batches_per_file_dict]
-    # training_history_dict['valid_files_histogram'] += [valid_data_generator.batches_per_file_dict]
-    #
-    # num_training_samples = num_training_samples + num_steps_multiplier * train_steps_per_epoch * batch_size
+    training_history_dict['num_train_samples'].append(batch_size)
 
     print('-----------------------------------------------------------------------------------------')
     epoch_duration_sec = time.time() - epoch_start_time
     print('total time it took to calculate epoch was %.3f seconds (%.3f batches/second)' % (
-        epoch_duration_sec, float(train_steps_per_epoch * num_steps_multiplier) / epoch_duration_sec))
+        epoch_duration_sec,epoch_size / epoch_duration_sec))
     print('-----------------------------------------------------------------------------------------')
 
     # save model every once a while
-    if saving_counter % 1 == 0:
+    if saving_counter % 80 == 0:
         model_ID = np.random.randint(100000)
         modelID_str = 'ID_%d' % (model_ID)
         train_string = 'samples_%d' % (batch_counter)
@@ -338,10 +296,15 @@ for epoch, learning_parms in enumerate(learning_parameters_iter()):
         # # save all relevent training params (in raw and unprocessed way)
         model_hyperparams_and_training_dict = {}
         model_hyperparams_and_training_dict['data_dict'] = data_dict
-        # model_hyperparams_and_training_dict['architecture_dict'] = architecture_dict
-        # model_hyperparams_and_training_dict['learning_schedule_dict'] = learning_schedule_dict
         model_hyperparams_and_training_dict['training_history_dict'] = training_history_dict
-        # pickle.dump(model_hyperparams_and_training_dict, open(auxilary_filename, "wb"), protocol=2)
+
+model_ID = np.random.randint(100000)
+modelID_str = 'ID_%d' % (model_ID)
+train_string = 'samples_%d' % (batch_counter)
+current_datetime = str(pd.datetime.now())[:-10].replace(':', '_').replace(' ', '__')
+model_prefix = '%s_Tree_TCN' % (synapse_type)
+model_filename = MODELS_DIR + '%s__%s__%s__%s' % (
+    model_prefix, current_datetime, train_string, modelID_str)
 network.save(model_filename)
 
 # %% show learning curves
