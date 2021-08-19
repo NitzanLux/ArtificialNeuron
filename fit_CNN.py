@@ -50,8 +50,8 @@ num_steps_multiplier = 10
 
 # train_files_per_epoch = 1
 # valid_files_per_epoch = max(1, int(validation_fraction * train_files_per_epoch))
-epoch_size = 10
-num_epochs = 80
+epoch_size = 5
+num_epochs = 40
 batch_size_train=15
 batch_size_validation=8
 
@@ -104,15 +104,15 @@ tree = build_graph(L5PC)
 
 architecture_dict = {"segment_tree": tree,
                      "time_domain_shape": input_window_size,
-                     "kernel_size_2d": 11,
-                     "kernel_size_1d": 19,
+                     "kernel_size_2d": 5,
+                     "kernel_size_1d": 15,
                      "stride": 1,
                      "dilation": 1,
                      "channel_input": 1,  # synapse number
                      "channels_number": 8,
                      "channel_output": 4,
                      "activation_function": nn.ReLU}
-network = neuronal_model.NeuronConvNet(**architecture_dict).double()
+network = neuronal_model.NeuronConvNet(**architecture_dict)
 network.cuda()
 
 # %%

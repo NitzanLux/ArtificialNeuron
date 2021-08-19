@@ -211,10 +211,13 @@ class NeuronConvNet(nn.Module):
                 self.last_layer = RootBlock(input_shape, channel_output)  # the last orgen in tree is the root
             else:
                 assert False, "Type not found"
+            self.double()
 
-    @override
-    def cuda(self):
-        super(NeuronConvNet,self).cuda()
+    def count_parameters(model):
+        return sum(p.numel() for p in model.parameters() if p.requires_grad)
+
+    def cuda(self,**kwargs):
+        super(NeuronConvNet,self).cuda(**kwargs)
         self.is_cuda=True
 
     def forward(self, x):

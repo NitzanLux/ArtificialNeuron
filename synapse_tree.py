@@ -165,7 +165,7 @@ class SynapseNode:
 class SectionNode:
     ID = 0
 
-    def __init__(self, branch_or_synapse_nodes: [List['SectionNode'], 'SynapseNode', 'SectionNode'],is_soma=False):
+    def __init__(self, branch_or_synapse_nodes: [List['SectionNode'], 'SynapseNode', 'SectionNode'], is_soma=False):
         self.id = str(SectionNode.ID)
         SectionNode.ID += 1
         self.prev_nodes = []
@@ -177,20 +177,26 @@ class SectionNode:
             self.type = SectionType.BRANCH_LEAF
             self.representative = min(self.synapse_nodes_dict.keys())
         elif isinstance(branch_or_synapse_nodes, list) and not is_soma:
+            min_representative = None
             for branch in branch_or_synapse_nodes:
+                if min_representative:
+                    min_representative = min(min_representative, branch.representative)
+                else:
+                    min_representative = branch.representative
                 branch.next_node = self
                 self.prev_nodes.append(branch)
-            self.prev_nodes = sorted(self.prev_nodes, key=lambda node: node.representative)
-            self.representative = self.prev_nodes[0].representative
+            self.representative = min_representative
             self.type = SectionType.BRANCH_INTERSECTION
         else:  # if soma
-            self.prev_nodes = sorted(self.prev_nodes, key=lambda node: node.representative)
+            min_representative = None
             for branch in branch_or_synapse_nodes:
+                if min_representative:
+                    min_representative = min(min_representative, branch.representative)
+                else:
+                    min_representative = branch.representative
                 branch.next_node = self
                 self.prev_nodes.append(branch)
-            self.prev_nodes = sorted(self.prev_nodes, key=lambda node: node.representative)
-            self.representative = self.prev_nodes[0].representative
-            self.representative = min_rpresentative
+            self.representative = min_representative
             self.type = SectionType.SOMA
         self.next_node = None
 
@@ -204,7 +210,7 @@ class SectionNode:
         # else:
         child_node.next_node = self
         self.prev_nodes.append(child_node)
-        self.representative = min(self.representative, child_node.representative)
+        self.representative = min([node.representative for node in self.prev_nodes])
         self.type = SectionType.BRANCH
 
     def get_number_of_parameters_for_nn(self):
@@ -251,7 +257,6 @@ class SectionNode:
             current_node = stack.pop(0)
             order_stack.append(current_node)
             if current_node.type == SectionType.BRANCH:
-
                 current_node = current_node.prev_nodes[0]
                 order_stack.append(current_node)
 
@@ -367,7 +372,7 @@ def build_graph(model: neuron.hoc.HocObject,
         if sub_tree:
             is_tree_none = False
             segments.append(sub_tree)
-    return None if is_tree_none else SectionNode(segments,is_soma=True) # intresection_banch and then soma.
+    return None if is_tree_none else SectionNode(segments, is_soma=True)  # intresection_banch and then soma.
 
 
 def _build_subtree(section: neuron.nrn.Section, segment_index_mapping: Dict[neuron.nrn.Segment, int]) -> [None,
@@ -421,7 +426,6 @@ def _build_subtree(section: neuron.nrn.Section, segment_index_mapping: Dict[neur
 
 def create_from_histogram_mapping(segment_histogram: List[neuron.nrn.Segment]):
     return {seg: i for i, seg in enumerate(segment_histogram)}
-
 
 # %%
 # a = SynapseNode.build_graph(np.array([0, 1, 1, 3, 4, 3]), np.array([[0, 2, 1, 0, 0, 0],
