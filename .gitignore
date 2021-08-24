@@ -5,4 +5,5 @@
 /models/
 /project_path.py
 /L5PC_NEURON_simulation/
-/L5PC_NEURON_simulation/
+/first_run.py
+/test_slurm.py

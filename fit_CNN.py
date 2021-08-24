@@ -1,4 +1,6 @@
-print("Aaaaa")
+import logging
+
+logging.error("Aaaaa")
 import glob
 from typing import Generator, Tuple
 from project_path import *
@@ -6,16 +8,28 @@ import pandas as pd
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
-
+from torchvision.transforms import GaussianBlur
 from simulation_data_generator import *
 
 import neuronal_model
+
+import argparse
+
+# parser = argparse.ArgumentParser(description='Process some integers.')
+# parser.add_argument('id', metavar='N', type=int,
+#                     help='job id')
+# args = parser.parse_args()
+#
+# logging.error("done imports")
+# logging.error("My id {0}".format(args.id))
+
+# sys.exit() # todo remove me
 from synapse_tree import build_graph
 
 # from dataset import get_neuron_model
 
 # tensorboard logger
-writer = SummaryWriter()
+writer = SummaryWriter()  # todo add jobid parameter
 # from dataset import
 
 # some fixes for python 3
@@ -24,7 +38,6 @@ if sys.version_info[0] < 3:
 else:
 
     basestring = str
-
 
 print('-----------------------------------')
 use_multiprocessing = True
@@ -48,16 +61,17 @@ num_DVT_components = 20 if synapse_type == 'NMDA' else 30
 train_file_load = 0.2
 valid_file_load = 0.2
 
-
 # train_files_per_epoch = 1
 # valid_files_per_epoch = max(1, int(validation_fraction * train_files_per_epoch))
-epoch_size = 20
-num_epochs = 40
-batch_size_train=15
-batch_size_validation=4
+epoch_size = 15
+num_epochs = 80
+batch_size_train = 15
+batch_size_validation = 15
+
 
 def learning_parameters_iter() -> Generator[Tuple[int, int, float, Tuple[float, float, float]], None, None]:
     DVT_loss_mult_factor = 0.1
+    sigma = 10
     learning_rate_counter = 0
     if include_DVT:
         DVT_loss_mult_factor = 0
@@ -66,29 +80,30 @@ def learning_parameters_iter() -> Generator[Tuple[int, int, float, Tuple[float, 
         learning_rate_counter += 1
         learning_rate_per_epoch = 1 / (learning_rate_counter * 10)
         loss_weights_per_epoch = [1.0, 0.0200, DVT_loss_mult_factor * 0.00005]
-        yield epoch_size,  learning_rate_per_epoch, loss_weights_per_epoch
+        yield epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / i
     for i in range(epoch_in_each_step):
         learning_rate_counter += 1
         learning_rate_per_epoch = 1 / (learning_rate_counter * 10)
         loss_weights_per_epoch = [2.0, 0.0100, DVT_loss_mult_factor * 0.00003]
-        yield epoch_size,  learning_rate_per_epoch, loss_weights_per_epoch
+        yield epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / i
     for i in range(epoch_in_each_step):
         learning_rate_counter += 1
         learning_rate_per_epoch = 1 / (learning_rate_counter * 10)
         loss_weights_per_epoch = [4.0, 0.0100, DVT_loss_mult_factor * 0.00001]
-        yield epoch_size,  learning_rate_per_epoch, loss_weights_per_epoch
+        yield epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / i
 
     for i in range(num_epochs // 5):
         learning_rate_counter += 1
         learning_rate_per_epoch = 1 / (learning_rate_counter * 10)
         loss_weights_per_epoch = [8.0, 0.0100, DVT_loss_mult_factor * 0.0000001]
-        yield epoch_size,  learning_rate_per_epoch, loss_weights_per_epoch
+        yield epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / i
 
     for i in range(num_epochs // 5 + num_epochs % 5):
         learning_rate_counter += 1
         learning_rate_per_epoch = 1 / (learning_rate_counter * 10)
         loss_weights_per_epoch = [9.0, 0.0030, DVT_loss_mult_factor * 0.00000001]
-        yield epoch_size,  learning_rate_per_epoch, loss_weights_per_epoch
+        yield epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / i
+
 
 # ------------------------------------------------------------------
 # define network architecture params
@@ -101,19 +116,19 @@ num_syn_types = 1
 # print("i")
 # L5PC = get_neuron_model(MORPHOLOGY_PATH, BIOPHYSICAL_MODEL_PATH, BIOPHYSICAL_MODEL_TAMPLATE_PATH)
 # tree = build_graph(L5PC)
-# print("i")
-with open("tree.pkl",'rb') as file:
+# print("i")temporal loss neural network
+with open("tree.pkl", 'rb') as file:
     tree = pickle.load(file)
 architecture_dict = {"segment_tree": tree,
                      "time_domain_shape": input_window_size,
-                     "kernel_size_2d": 5,
-                     "kernel_size_1d": 15,
+                     "kernel_size_2d": 15,
+                     "kernel_size_1d": 21,
                      "stride": 1,
                      "dilation": 1,
                      "channel_input": 1,  # synapse number
-                     "channels_number": 8,
-                     "channel_output": 4,
-                     "activation_function": nn.ReLU}
+                     "channels_number": 20,
+                     "channel_output": 8,
+                     "activation_function": lambda: nn.LeakyReLU(0.25)}
 network = neuronal_model.NeuronConvNet(**architecture_dict)
 network.cuda()
 
@@ -143,6 +158,7 @@ test_files = glob.glob(TEST_DATA_DIR + '*_128_simulationRuns*_6_secDuration_*')
 data_dict = {}
 data_dict['train_files'] = train_files
 data_dict['valid_files'] = valid_files
+
 data_dict['test_files'] = test_files
 
 print('number of training files is %d' % (len(train_files)))
@@ -179,7 +195,6 @@ saving_counter = 0
 # print('finished training DVT PCA model. total_explained variance = %.1f%s' % (total_explained_variance, '%'))
 DVT_PCA_model = None
 
-
 training_history_dict = {}
 training_history_dict['learning_schedule'] = []
 training_history_dict['batch_size'] = []
@@ -200,9 +215,9 @@ for epoch, learning_parms in enumerate(learning_parameters_iter()):
     running_loss = 0.
     saving_counter += 1
     epoch_start_time = time.time()
-    epoch_batch_counter=0
-    batch_size,  learning_rate, loss_weights = learning_parms
-    print("bate_size: %i\nlearning_rate:%0.3f \nloss_weights: %s" % (batch_size,learning_rate,str(loss_weights)))
+    epoch_batch_counter = 0
+    batch_size, learning_rate, loss_weights, sigma = learning_parms
+    print("bate_size: %i\nlearning_rate:%0.3f \nloss_weights: %s" % (batch_size, learning_rate, str(loss_weights)))
 
     train_data_generator.batch_size = batch_size
     train_steps_per_epoch = len(train_data_generator)
@@ -214,9 +229,12 @@ for epoch, learning_parms in enumerate(learning_parameters_iter()):
                 target[i] = target[i].to(output[i].device)
         binary_cross_entropy_loss = nn.BCELoss()
         mse_loss = nn.MSELoss()
-        loss = loss_weights[0] * binary_cross_entropy_loss(output[0],
-                                                           target[0])  # removing channel dimention
+        # loss = loss_weights[0] * binary_cross_entropy_loss(output[0],
+        #                                                    target[0])  # removing channel dimention
+        g_blur = GaussianBlur(30, sigma=sigma)
+        loss = loss_weights[0] * mse_loss(g_blur(output[0]) - g_blur(target[0]))
         loss += loss_weights[1] * mse_loss(output[1].squeeze(1), target[1].squeeze(1))
+        # loss = mse_loss(output[1].squeeze(1), target[1].squeeze(1))
 
         if has_dvt:
             loss += loss_weights[2] * mse_loss(output[2], target[2])
@@ -241,7 +259,7 @@ for epoch, learning_parms in enumerate(learning_parameters_iter()):
         validation_loss = custom_loss(network(valid_input), valid_labels)
         writer.add_scalar("Loss/Validation/Batch", validation_loss.item(), batch_counter)
         batch_counter += 1  # todo change to batch size?
-        epoch_batch_counter +=1
+        epoch_batch_counter += 1
         # print statistics
         running_loss += loss.item()
         validation_runing_loss += validation_loss.item()
@@ -250,10 +268,10 @@ for epoch, learning_parms in enumerate(learning_parameters_iter()):
               "train l: %0.10f\t"
               "validation l: %0.10f" % (
                   running_loss / epoch_batch_counter, validation_runing_loss / epoch_batch_counter, loss.item(),
-                  validation_loss.item()))
+                  validation_loss.item()), flush=True)
+        writer.flush()
     writer.add_scalar("Loss/Train/epoch", running_loss, epoch)
     writer.add_scalar("Loss/Validation/epoch", validation_runing_loss, epoch)
-
     print('-----------------------------------------------')
     print('starting epoch %d:' % (epoch))
     print('-----------------------------------------------')
@@ -271,11 +289,11 @@ for epoch, learning_parms in enumerate(learning_parameters_iter()):
     print('-----------------------------------------------------------------------------------------')
     epoch_duration_sec = time.time() - epoch_start_time
     print('total time it took to calculate epoch was %.3f seconds (%.3f batches/second)' % (
-        epoch_duration_sec,epoch_size / epoch_duration_sec))
+        epoch_duration_sec, epoch_size / epoch_duration_sec))
     print('-----------------------------------------------------------------------------------------')
 
     # save model every once a while
-    if saving_counter % 80 == 0:
+    if saving_counter % 20 == 0:
         model_ID = np.random.randint(100000)
         modelID_str = 'ID_%d' % (model_ID)
         train_string = 'samples_%d' % (batch_counter)
@@ -306,7 +324,7 @@ model_prefix = '%s_Tree_TCN' % (synapse_type)
 model_filename = MODELS_DIR + '%s__%s__%s__%s' % (
     model_prefix, current_datetime, train_string, modelID_str)
 network.save(model_filename)
-
+writer.close()
 # %% show learning curves
 
 # gather losses
