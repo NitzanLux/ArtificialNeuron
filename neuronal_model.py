@@ -35,11 +35,6 @@ os.environ["SEED"] = "42"
 # ======================
 
 
-class Kernel2DInParts(nn.Module):
-    def __init__(self,kernel_size_2d):
-        super(Kernel2DInParts, self).__init__()
-
-        self.kernels = []
 class SegmentNetwork(nn.Module):
     def __init__(self):
         super(SegmentNetwork, self).__init__()
@@ -64,17 +59,7 @@ class SegmentNetwork(nn.Module):
         p = p.astype(int)
         return tuple(p)
 
-    def kernel_2D_in_parts(self,channel_input, channels_number,input_shape, kernel_size_2d, stride, dilation):
-        """
-        create 2d kernel from kernel size of 3.
-        :param channel_input:
-        :param channels_number:
-        :param input_shape:
-        :param kernel_size_2d:
-        :param stride:
-        :param dilation:
-        :return:
-        """
+    def kernel_2D_in_parts(self,channel_input, channels_number,input_shape, kernel_size_2d, stride, dilation): #fixme pleaseeee
         kernels_arr=[]
         kernel_factor = kernel_size_2d//2
         padding_factor = self.keep_dimensions_by_padding_claculator(input_shape, 3, stride, dilation)
@@ -100,10 +85,10 @@ class BranchLeafBlock(SegmentNetwork):
                  dilation=1,
                  activation_function=nn.ReLU):
         super(BranchLeafBlock, self).__init__()
-        # padding_factor = self.keep_dimensions_by_padding_claculator(input_shape, kernel_size_2d, stride, dilation)
-        # self.conv2d = weight_norm(nn.Conv2d(channel_input, channels_number, kernel_size_2d,  # todo: weight_norm???
-        #                                     stride=stride, padding=padding_factor, dilation=dilation))
-        self.conv2d = self.kernel_2D_in_parts(channel_input, channels_number,input_shape,kernel_size_2d,stride,dilation)
+        padding_factor = self.keep_dimensions_by_padding_claculator(input_shape, kernel_size_2d, stride, dilation)
+        self.conv2d = weight_norm(nn.Conv2d(channel_input, channels_number, kernel_size_2d,  # todo: weight_norm???
+                                            stride=stride, padding=padding_factor, dilation=dilation))
+        # self.conv2d = self.kernel_2D_in_parts(channel_input, channels_number,input_shape,kernel_size_2d,stride,dilation)
         self.activation_function = activation_function()
 
         self.batch_normalization = torch.nn.BatchNorm2d(channels_number)
@@ -135,12 +120,12 @@ class BranchBlock(SegmentNetwork): #FIXME fix the channels and its movment in th
                  dilation=1,
                  activation_function=nn.ReLU):
         super(BranchBlock, self).__init__()
-        # padding_factor = self.keep_dimensions_by_padding_claculator(
-        #     (input_shape[0], input_shape[1] - NUMBER_OF_PREVIUSE_SEGMENTS_IN_BRANCH), kernel_size_2d, stride, dilation)
-        # self.conv2d_x = weight_norm(nn.Conv2d(channel_input, channel_output, kernel_size_2d,  # todo: weight_norm???
-        #                                       stride=stride, padding=padding_factor, dilation=dilation))
-        self.conv2d_x = self.kernel_2D_in_parts((input_shape[0], input_shape[1] - NUMBER_OF_PREVIUSE_SEGMENTS_IN_BRANCH), channel_input, channel_output, kernel_size_2d, stride,
-                                              dilation)
+        padding_factor = self.keep_dimensions_by_padding_claculator(
+            (input_shape[0], input_shape[1] - NUMBER_OF_PREVIUSE_SEGMENTS_IN_BRANCH), kernel_size_2d, stride, dilation)
+        self.conv2d_x = weight_norm(nn.Conv2d(channel_input, channel_output, kernel_size_2d,  # todo: weight_norm???
+                                              stride=stride, padding=padding_factor, dilation=dilation))
+        # self.conv2d_x = self.kernel_2D_in_parts((input_shape[0], input_shape[1] - NUMBER_OF_PREVIUSE_SEGMENTS_IN_BRANCH), channel_input, channel_output, kernel_size_2d, stride,
+        #                                       dilation)
 
         self.activation_function = activation_function()
 
@@ -265,7 +250,7 @@ class NeuronConvNet(nn.Module):
         out = None
         for node in self.segment_tree:
             if node.type == SectionType.BRANCH_LEAF:
-                input = x[..., list(node.synapse_nodes_dict.keys())]
+                input = x[..., list(node.synapse_nodes_dict.keys())] # todo make it in order
                 representative_dict[node.representative] = self.modules_dict[self.segemnt_ids[node]](input)
 
                 assert representative_dict[node.representative].shape[3] == 1
