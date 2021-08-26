@@ -241,7 +241,9 @@ class NeuronConvNet(nn.Module):
     def cuda(self,**kwargs):
         super(NeuronConvNet,self).cuda(**kwargs)
         self.is_cuda=True
-
+    def cpu(self,**kwargs):
+        super(NeuronConvNet,self).cpu(**kwargs)
+        self.is_cuda=False
     def forward(self, x):
         x = x.type(torch.cuda.DoubleTensor)if self.is_cuda else x.type(torch.DoubleTensor)
         if self.include_dendritic_voltage_tracing:  # todo add functionality
@@ -288,6 +290,6 @@ class NeuronConvNet(nn.Module):
     @staticmethod
     def load(path):
         neuronal_model=None
-        with open('%s.pkl' % path, 'rb') as outp:
+        with open('%s' % path, 'rb') as outp:
             neuronal_model = pickle.load(outp)
         return neuronal_model

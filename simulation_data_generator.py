@@ -105,6 +105,10 @@ class SimulationDataGenerator():
         self.y_DVT = []
 
         # load the file
+
+
+
+
         for f in self.curr_files_to_use:
             if self.include_DVT:
                 X, y_spike, y_soma, y_DVT = parse_sim_experiment_file_with_DVT(f, DVT_PCA_model=self.DVT_PCA_model)
