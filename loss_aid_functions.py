@@ -68,4 +68,6 @@ class GaussianSmoothing(nn.Module):
         Returns:
             filtered (torch.Tensor): Filtered output.
         """
+        if self.weight.device != input.device:
+            self.weight = self.weight.to(input.device)
         return self.conv(input, weight=self.weight, groups=self.groups)

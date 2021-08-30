@@ -65,8 +65,8 @@ valid_file_load = 0.2
 # valid_files_per_epoch = max(1, int(validation_fraction * train_files_per_epoch))
 epoch_size = 15
 num_epochs = 15000
-batch_size_train = 10
-batch_size_validation = 3
+batch_size_train = 15
+batch_size_validation = 15
 
 
 def learning_parameters_iter() -> Generator[Tuple[int, int, float, Tuple[float, float, float]], None, None]:
@@ -121,12 +121,12 @@ with open("tree.pkl", 'rb') as file:
     tree = pickle.load(file)
 architecture_dict = {"segment_tree": tree,
                      "time_domain_shape": input_window_size,
-                     "kernel_size_2d": 13,
-                     "kernel_size_1d": 21,
+                     "kernel_size_2d": 23,
+                     "kernel_size_1d": 51,
                      "stride": 1,
                      "dilation": 1,
                      "channel_input_number": 1,  # synapse number
-                     "inner_scope_channel_number":  20,
+                     "inner_scope_channel_number":  30,
                      "channel_output_number": 7,
                      "activation_function": lambda: nn.LeakyReLU(0.25)}
 network = neuronal_model.NeuronConvNet(**architecture_dict)
@@ -149,7 +149,7 @@ else:
 device = torch.device(dev)
 print('-----------------------------------------------')
 print('finding data')
-print('-----------------------------------------------')
+print('-----------------------------------------------', flush=True)
 
 train_files = glob.glob(TRAIN_DATA_DIR + '*_128_simulationRuns*_6_secDuration_*')
 valid_files = glob.glob(VALID_DATA_DIR + '*_128_simulationRuns*_6_secDuration_*')
@@ -175,7 +175,7 @@ print('about to start training...')
 print('-----------------------------------------------')
 print(model_prefix)
 print(architecture_overview)
-print('-----------------------------------------------')
+print('-----------------------------------------------', flush=True)
 DVT_PCA_model = None
 # %% train
 # prepare data generators
@@ -217,7 +217,7 @@ for epoch, learning_parms in enumerate(learning_parameters_iter()):
     epoch_start_time = time.time()
     epoch_batch_counter = 0
     batch_size, learning_rate, loss_weights, sigma = learning_parms
-    print("bate_size: %i\nlearning_rate:%0.3f \nloss_weights: %s" % (batch_size, learning_rate, str(loss_weights)))
+    print("bate_size: %i\nlearning_rate:%0.3f \nloss_weights: %s" % (batch_size, learning_rate, str(loss_weights)), flush=True)
 
     train_data_generator.batch_size = batch_size
     train_steps_per_epoch = len(train_data_generator)
@@ -232,7 +232,7 @@ for epoch, learning_parms in enumerate(learning_parameters_iter()):
         loss = loss_weights[0] * binary_cross_entropy_loss(output[0],
                                                            target[0])  # removing channel dimention
 
-        g_blur = GaussianSmoothing(1,31,sigma,1)
+        g_blur = GaussianSmoothing(1,31,sigma,1).cuda()
 
         loss += loss_weights[0] * mse_loss(g_blur(output[0].squeeze(3)) ,g_blur(target[0].squeeze(3)))
 
