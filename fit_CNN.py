@@ -65,8 +65,8 @@ valid_file_load = 0.2
 # valid_files_per_epoch = max(1, int(validation_fraction * train_files_per_epoch))
 epoch_size = 15
 num_epochs = 15000
-batch_size_train = 15
-batch_size_validation = 5
+batch_size_train = 10
+batch_size_validation = 3
 
 
 def learning_parameters_iter() -> Generator[Tuple[int, int, float, Tuple[float, float, float]], None, None]:
@@ -234,7 +234,7 @@ for epoch, learning_parms in enumerate(learning_parameters_iter()):
 
         g_blur = GaussianSmoothing(1,31,sigma,1)
 
-        loss += loss_weights[0] * mse_loss(GaussianSmoothing(output[0].squeeze(3)) ,g_blur(target[0].squeeze(3)))
+        loss += loss_weights[0] * mse_loss(g_blur(output[0].squeeze(3)) ,g_blur(target[0].squeeze(3)))
 
         loss += loss_weights[1] * mse_loss(output[1].squeeze(1), target[1].squeeze(1))
         # loss = mse_loss(output[1].squeeze(1), target[1].squeeze(1))
