@@ -229,10 +229,12 @@ for epoch, learning_parms in enumerate(learning_parameters_iter()):
                 target[i] = target[i].to(output[i].device)
         binary_cross_entropy_loss = nn.BCELoss()
         mse_loss = nn.MSELoss()
-        # loss = loss_weights[0] * binary_cross_entropy_loss(output[0],
-        #                                                    target[0])  # removing channel dimention
-        g_blur = GaussianBlur(30, sigma=sigma)
-        loss = loss_weights[0] * mse_loss(g_blur(output[0]) - g_blur(target[0]))
+        loss = loss_weights[0] * binary_cross_entropy_loss(output[0],
+                                                           target[0])  # removing channel dimention
+
+        g_blur = GaussianBlur(31, sigma=sigma)
+        loss += loss_weights[0] * mse_loss(g_blur(output[0]) ,g_blur(target[0]))
+
         loss += loss_weights[1] * mse_loss(output[1].squeeze(1), target[1].squeeze(1))
         # loss = mse_loss(output[1].squeeze(1), target[1].squeeze(1))
 
