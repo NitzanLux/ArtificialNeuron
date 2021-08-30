@@ -122,7 +122,7 @@ with open("tree.pkl", 'rb') as file:
 architecture_dict = {"segment_tree": tree,
                      "time_domain_shape": input_window_size,
                      "kernel_size_2d": 15,
-                     "kernel_size_1d": 21,
+                     "kernel_size_1d": 90,
                      "stride": 1,
                      "dilation": 1,
                      "channel_input": 1,  # synapse number
