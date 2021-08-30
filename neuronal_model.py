@@ -67,23 +67,28 @@ class SegmentNetwork(nn.Module):
                            , input_shape, kernel_size_2d, stride,
                            dilation):  # fixme pleaseeee
         kernels_arr = []
-        kernel_factor = kernel_size_2d // 2
-        padding_factor = self.keep_dimensions_by_padding_claculator(input_shape, 3, stride, dilation)
+        if isinstance(kernel_size_2d, int):
+            kernel_size=(3,3)
+            kernel_factor = kernel_size_2d // 2
+        else: #todo if tuple change it
+            kernel_size=(3,3)
+            kernel_factor = kernel_size_2d // 2
+        padding_factor = self.keep_dimensions_by_padding_claculator(input_shape,kernel_size, stride, dilation)
         in_channel_number = channel_input_number
         out_channel_number = inner_scope_channel_number
 
         if kernel_size_2d:  # if it already of size 3
-            return weight_norm(nn.Conv2d(channel_input_number
-                                         , inner_scope_channel_number, 3,
-                                         stride=stride, padding=padding_factor, dilation=dilation))
+            return nn.Conv2d(channel_input_number
+                             , inner_scope_channel_number, kernel_size,
+                             stride=stride, padding=padding_factor, dilation=dilation)
         flag = True
         for i in range(kernel_factor):
             if flag:  # first insert the input channel
-                kernels_arr.append(weight_norm(nn.Conv2d(in_channel_number, out_channel_number, 3,
+                kernels_arr.append(weight_norm(nn.Conv2d(in_channel_number, out_channel_number, kernel_size,
                                                          stride=stride, padding=padding_factor, dilation=dilation)))
                 in_channel_number = max(in_channel_number, out_channel_number)
                 flag = False
-            kernels_arr.append(weight_norm(nn.Conv2d(in_channel_number, out_channel_number, 3,
+            kernels_arr.append(weight_norm(nn.Conv2d(in_channel_number, out_channel_number, kernel_size,
                                                      stride=stride, padding=padding_factor, dilation=dilation)))
         return nn.Sequential(*kernels_arr)
 
@@ -94,14 +99,16 @@ class BranchLeafBlock(SegmentNetwork):
                  , channel_output_number, kernel_size_2d,
                  kernel_size_1d, stride=1, dilation=1, activation_function=nn.ReLU):
         super(BranchLeafBlock, self).__init__()
-        padding_factor = self.keep_dimensions_by_padding_claculator(input_shape, kernel_size_2d, stride, dilation)
-        self.conv2d = nn.Conv2d(channel_input_number
-                                , inner_scope_channel_number
-                                , kernel_size_2d,
-                                stride=stride, padding=padding_factor, dilation=dilation)
-        # self.conv2d = self.kernel_2D_in_parts(channel_input_number
-        # , inner_scope_channel_number
-        # ,input_shape,kernel_size_2d,stride,dilation)
+
+        # padding_factor = self.keep_dimensions_by_padding_claculator(input_shape, kernel_size_2d, stride, dilation)
+        # self.conv2d = nn.Conv2d(channel_input_number
+        #                         , inner_scope_channel_number
+        #                         , kernel_size_2d,
+        #                         stride=stride, padding=padding_factor, dilation=dilation)
+        self.conv2d = self.kernel_2D_in_parts(channel_input_number
+                                              , inner_scope_channel_number
+                                              , input_shape, kernel_size_2d, stride, dilation)
+
         self.activation_function = activation_function()
 
         padding_factor = self.keep_dimensions_by_padding_claculator((input_shape[0], 1),
@@ -134,18 +141,17 @@ class BranchBlock(SegmentNetwork):  # FIXME fix the channels and its movment in 
                  dilation=1,
                  activation_function=nn.ReLU):
         super(BranchBlock, self).__init__()
-        padding_factor = self.keep_dimensions_by_padding_claculator(
-            (input_shape[0], input_shape[1] - NUMBER_OF_PREVIUSE_SEGMENTS_IN_BRANCH), kernel_size_2d, stride, dilation)
-        self.conv2d_x = nn.Conv2d(channel_input_number
-                                  , channel_output, kernel_size_2d,  # todo: weight_norm???
-                                  stride=stride, padding=padding_factor, dilation=dilation)
-        # self.conv2d_x = self.kernel_2D_in_parts((input_shape[0], input_shape[1] - NUMBER_OF_PREVIUSE_SEGMENTS_IN_BRANCH), channel_input_number
-        # , channel_output, kernel_size_2d, stride,
-        #                                       dilation)
+        # padding_factor = self.keep_dimensions_by_padding_claculator(
+        #     (input_shape[0], input_shape[1] - NUMBER_OF_PREVIUSE_SEGMENTS_IN_BRANCH), kernel_size_2d, stride, dilation)
+        # self.conv2d_x = nn.Conv2d(channel_input_number
+        #                           , channel_output, kernel_size_2d,  # todo: weight_norm???
+        #                           stride=stride, padding=padding_factor, dilation=dilation)
+        self.conv2d_x = self.kernel_2D_in_parts(channel_input_number, channel_output,
+                                                (input_shape[0],input_shape[1]- NUMBER_OF_PREVIUSE_SEGMENTS_IN_BRANCH) #binary by our priors about the neuron
+                                                , kernel_size_2d, stride, dilation)
 
         self.activation_function = activation_function()
 
-        # self.batch_normalization = torch.nn.BatchNorm2d(channel_output)
         padding_factor = self.keep_dimensions_by_padding_claculator((input_shape[0], 1), (kernel_size_1d, 1), stride,
                                                                     dilation)
         self.conv1d = nn.Conv2d(channel_output, channel_output, (kernel_size_1d, input_shape[1]),
@@ -183,8 +189,7 @@ class IntersectionBlock(SegmentNetwork):
                                   stride=stride, padding=padding_factor,
                                   dilation=dilation)
         self.activation = activation_function()
-        # self.batch_normalization = torch.nn.BatchNorm2d(inner_scope_channel_number
-        # )
+
         padding_factor = self.keep_dimensions_by_padding_claculator((input_shape[0], 1), (kernel_size_1d, 1),
                                                                     stride, dilation)
         self.conv1d_2 = nn.Conv2d(inner_scope_channel_number

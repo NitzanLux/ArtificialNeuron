@@ -80,29 +80,29 @@ def learning_parameters_iter() -> Generator[Tuple[int, int, float, Tuple[float, 
         learning_rate_counter += 1
         learning_rate_per_epoch = 1 / (learning_rate_counter * 10)
         loss_weights_per_epoch = [1.0, 0.0200, DVT_loss_mult_factor * 0.00005]
-        yield epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / i
+        yield epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / learning_rate_counter
     for i in range(epoch_in_each_step):
         learning_rate_counter += 1
         learning_rate_per_epoch = 1 / (learning_rate_counter * 10)
         loss_weights_per_epoch = [2.0, 0.0100, DVT_loss_mult_factor * 0.00003]
-        yield epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / i
+        yield epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / learning_rate_counter
     for i in range(epoch_in_each_step):
         learning_rate_counter += 1
         learning_rate_per_epoch = 1 / (learning_rate_counter * 10)
         loss_weights_per_epoch = [4.0, 0.0100, DVT_loss_mult_factor * 0.00001]
-        yield epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / i
+        yield epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / learning_rate_counter
 
     for i in range(num_epochs // 5):
         learning_rate_counter += 1
         learning_rate_per_epoch = 1 / (learning_rate_counter * 10)
         loss_weights_per_epoch = [8.0, 0.0100, DVT_loss_mult_factor * 0.0000001]
-        yield epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / i
+        yield epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / learning_rate_counter
 
     for i in range(num_epochs // 5 + num_epochs % 5):
         learning_rate_counter += 1
         learning_rate_per_epoch = 1 / (learning_rate_counter * 10)
         loss_weights_per_epoch = [9.0, 0.0030, DVT_loss_mult_factor * 0.00000001]
-        yield epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / i
+        yield epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / learning_rate_counter
 
 
 # ------------------------------------------------------------------
@@ -122,12 +122,12 @@ with open("tree.pkl", 'rb') as file:
 architecture_dict = {"segment_tree": tree,
                      "time_domain_shape": input_window_size,
                      "kernel_size_2d": 15,
-                     "kernel_size_1d": 90,
+                     "kernel_size_1d": 9,
                      "stride": 1,
                      "dilation": 1,
-                     "channel_input": 1,  # synapse number
-                     "channels_number": 20,
-                     "channel_output": 8,
+                     "channel_input_number": 1,  # synapse number
+                     "inner_scope_channel_number": 3,
+                     "channel_output_number": 3,
                      "activation_function": lambda: nn.LeakyReLU(0.25)}
 network = neuronal_model.NeuronConvNet(**architecture_dict)
 network.cuda()
