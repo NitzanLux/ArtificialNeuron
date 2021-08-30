@@ -8,9 +8,9 @@ import pandas as pd
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
-from torchvision.transforms import GaussianBlur
-from simulation_data_generator import *
 
+from simulation_data_generator import *
+from loss_aid_functions import GaussianSmoothing
 import neuronal_model
 
 import argparse
@@ -64,7 +64,7 @@ valid_file_load = 0.2
 # train_files_per_epoch = 1
 # valid_files_per_epoch = max(1, int(validation_fraction * train_files_per_epoch))
 epoch_size = 15
-num_epochs = 1500
+num_epochs = 15000
 batch_size_train = 15
 batch_size_validation = 5
 
@@ -121,13 +121,13 @@ with open("tree.pkl", 'rb') as file:
     tree = pickle.load(file)
 architecture_dict = {"segment_tree": tree,
                      "time_domain_shape": input_window_size,
-                     "kernel_size_2d": 21,
-                     "kernel_size_1d": 41,
+                     "kernel_size_2d": 13,
+                     "kernel_size_1d": 21,
                      "stride": 1,
                      "dilation": 1,
                      "channel_input_number": 1,  # synapse number
-                     "inner_scope_channel_number":  14,
-                     "channel_output_number": 9,
+                     "inner_scope_channel_number":  20,
+                     "channel_output_number": 7,
                      "activation_function": lambda: nn.LeakyReLU(0.25)}
 network = neuronal_model.NeuronConvNet(**architecture_dict)
 network.cuda()
@@ -232,8 +232,9 @@ for epoch, learning_parms in enumerate(learning_parameters_iter()):
         loss = loss_weights[0] * binary_cross_entropy_loss(output[0],
                                                            target[0])  # removing channel dimention
 
-        g_blur = GaussianBlur(31, sigma=sigma)
-        loss += loss_weights[0] * mse_loss(g_blur(output[0]) ,g_blur(target[0]))
+        g_blur = GaussianSmoothing(1,31,sigma,1)
+
+        loss += loss_weights[0] * mse_loss(GaussianSmoothing(output[0].squeeze(3)) ,g_blur(target[0].squeeze(3)))
 
         loss += loss_weights[1] * mse_loss(output[1].squeeze(1), target[1].squeeze(1))
         # loss = mse_loss(output[1].squeeze(1), target[1].squeeze(1))
