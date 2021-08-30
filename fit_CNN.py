@@ -64,9 +64,9 @@ valid_file_load = 0.2
 # train_files_per_epoch = 1
 # valid_files_per_epoch = max(1, int(validation_fraction * train_files_per_epoch))
 epoch_size = 15
-num_epochs = 80
+num_epochs = 1500
 batch_size_train = 15
-batch_size_validation = 15
+batch_size_validation = 5
 
 
 def learning_parameters_iter() -> Generator[Tuple[int, int, float, Tuple[float, float, float]], None, None]:
@@ -121,13 +121,13 @@ with open("tree.pkl", 'rb') as file:
     tree = pickle.load(file)
 architecture_dict = {"segment_tree": tree,
                      "time_domain_shape": input_window_size,
-                     "kernel_size_2d": 15,
-                     "kernel_size_1d": 9,
+                     "kernel_size_2d": 21,
+                     "kernel_size_1d": 41,
                      "stride": 1,
                      "dilation": 1,
                      "channel_input_number": 1,  # synapse number
-                     "inner_scope_channel_number": 3,
-                     "channel_output_number": 3,
+                     "inner_scope_channel_number":  14,
+                     "channel_output_number": 9,
                      "activation_function": lambda: nn.LeakyReLU(0.25)}
 network = neuronal_model.NeuronConvNet(**architecture_dict)
 network.cuda()

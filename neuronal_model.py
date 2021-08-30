@@ -65,7 +65,7 @@ class SegmentNetwork(nn.Module):
     def kernel_2D_in_parts(self, channel_input_number
                            , inner_scope_channel_number
                            , input_shape, kernel_size_2d, stride,
-                           dilation):  # fixme pleaseeee
+                           dilation,activation_function=None):
         kernels_arr = []
         if isinstance(kernel_size_2d, int):
             kernel_size=(3,3)
@@ -88,6 +88,9 @@ class SegmentNetwork(nn.Module):
                                                          stride=stride, padding=padding_factor, dilation=dilation)))
                 in_channel_number = max(in_channel_number, out_channel_number)
                 flag = False
+                continue
+            if activation_function:
+                kernels_arr.append(activation_function)
             kernels_arr.append(weight_norm(nn.Conv2d(in_channel_number, out_channel_number, kernel_size,
                                                      stride=stride, padding=padding_factor, dilation=dilation)))
         return nn.Sequential(*kernels_arr)
@@ -107,7 +110,7 @@ class BranchLeafBlock(SegmentNetwork):
         #                         stride=stride, padding=padding_factor, dilation=dilation)
         self.conv2d = self.kernel_2D_in_parts(channel_input_number
                                               , inner_scope_channel_number
-                                              , input_shape, kernel_size_2d, stride, dilation)
+                                              , input_shape, kernel_size_2d, stride, dilation,activation_function)
 
         self.activation_function = activation_function()
 
@@ -148,7 +151,7 @@ class BranchBlock(SegmentNetwork):  # FIXME fix the channels and its movment in 
         #                           stride=stride, padding=padding_factor, dilation=dilation)
         self.conv2d_x = self.kernel_2D_in_parts(channel_input_number, channel_output,
                                                 (input_shape[0],input_shape[1]- NUMBER_OF_PREVIUSE_SEGMENTS_IN_BRANCH) #binary by our priors about the neuron
-                                                , kernel_size_2d, stride, dilation)
+                                                , kernel_size_2d, stride, dilation,activation_function)
 
         self.activation_function = activation_function()
 
