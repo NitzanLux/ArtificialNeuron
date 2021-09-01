@@ -187,7 +187,7 @@ def train_network(config):
     writer = SummaryWriter()  # todo add jobid parameter
     load_files_names()
     DVT_PCA_model = None
-    train_data_generator = SimulationDataGenerator(train_files, buffer_size_in_files=10,
+    train_data_generator = SimulationDataGenerator(train_files, buffer_size_in_files=15,
                                                    batch_size=config.batch_size_train, epoch_size=config.epoch_size,
                                                    window_size_ms=config.input_window_size,
                                                    file_load=config.train_file_load,
