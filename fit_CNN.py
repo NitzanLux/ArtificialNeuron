@@ -14,6 +14,7 @@ from general_aid_function import *
 from simulation_data_generator import *
 from loss_aid_functions import GaussianSmoothing
 import neuronal_model
+import wandb
 
 
 # parser = argparse.ArgumentParser(description='Process some integers.')
@@ -81,8 +82,12 @@ architecture_dict = AttrDict(segment_tree=tree,
                              activation_function=lambda: nn.LeakyReLU(0.25))
 config.architecture_dict = architecture_dict
 
-network = neuronal_model.NeuronConvNet(**architecture_dict)
-network.cuda()
+
+def build_model(config):
+    network = neuronal_model.NeuronConvNet(**(config.architecture_dict))
+    network.cuda()
+    return network
+
 
 
 def learning_parameters_iter() -> Generator[Tuple[int, int, float, Tuple[float, float, float]], None, None]:
@@ -126,13 +131,6 @@ print('--------------------------------------------------------------------')
 print('started calculating PCA for DVT model')
 
 
-def load_files_names():
-    global train_files, valid_files
-    dataset_generation_start_time = time.time()
-    data_dir = TRAIN_DATA_DIR
-    train_files = glob.glob(TRAIN_DATA_DIR + '*_128_simulationRuns*_6_secDuration_*')
-    valid_files = glob.glob(VALID_DATA_DIR + '*_128_simulationRuns*_6_secDuration_*')
-    test_files = glob.glob(TEST_DATA_DIR + '*_128_simulationRuns*_6_secDuration_*')
 
 
 
@@ -147,23 +145,21 @@ print('-----------------------------------------------')
 print('finding data')
 print('-----------------------------------------------', flush=True)
 
-
-
-
-
-
-
-
+def load_files_names():
+    train_files = glob.glob(TRAIN_DATA_DIR + '*_128_simulationRuns*_6_secDuration_*')
+    valid_files = glob.glob(VALID_DATA_DIR + '*_128_simulationRuns*_6_secDuration_*')
+    test_files = glob.glob(TEST_DATA_DIR + '*_128_simulationRuns*_6_secDuration_*')
+    return train_files,valid_files, test_files
 
 def batch_train(network,optimizer,custom_loss,inputs, labels):
     # zero the parameter gradients
     optimizer.zero_grad()
     # forward + backward + optimize
     outputs = network(inputs)
-    loss = custom_loss(outputs, labels)
-    loss.backward()
+    general_loss,loss_bcel,loss_mse,loss_dvt= custom_loss(outputs, labels)
+    general_loss.backward()
     optimizer.step()
-    return loss
+    return general_loss.item(),loss_bcel,loss_mse,loss_dvt
 
 
 def save_model(network,batch_counter,saving_counter):
@@ -184,9 +180,10 @@ def save_model(network,batch_counter,saving_counter):
 
 
 def train_network(config):
-    writer = SummaryWriter()  # todo add jobid parameter
-    load_files_names()
+
+    train_files,valid_files, test_files = load_files_names()
     DVT_PCA_model = None
+
     train_data_generator = SimulationDataGenerator(train_files, buffer_size_in_files=15,
                                                    batch_size=config.batch_size_train, epoch_size=config.epoch_size,
                                                    window_size_ms=config.input_window_size,
@@ -200,10 +197,8 @@ def train_network(config):
                                                         DVT_PCA_model=DVT_PCA_model)
     batch_counter = 0
     saving_counter = 0
-    avarage_loss_spike_validation = 0.
-    avarage_loss_spike_train = 0.
-    avarage_loss_voltage_validation = 0.
-    avarage_loss_voltage_train = 0.
+    model = build_model(config)
+    wandb.watch(model,log='all',log_freq=10)
     for epoch, learning_parms in enumerate(learning_parameters_iter()):
 
         validation_runing_loss = 0.
@@ -216,7 +211,6 @@ def train_network(config):
               flush=True)
 
         train_data_generator.batch_size = batch_size
-        train_steps_per_epoch = len(train_data_generator)
 
         def custom_loss(output, target, has_dvt=False):
             if output[0].device != target[0].device:
@@ -224,49 +218,56 @@ def train_network(config):
                     target[i] = target[i].to(output[i].device)
             binary_cross_entropy_loss = nn.BCELoss()
             mse_loss = nn.MSELoss()
-            loss = loss_weights[0] * binary_cross_entropy_loss(output[0],
+            general_loss=0
+            loss_bcel = loss_weights[0] * binary_cross_entropy_loss(output[0],
                                                                target[0])  # removing channel dimention
             # g_blur = GaussianSmoothing(1, 31, sigma, 1).to('cuda', torch.double)
             # loss += loss_weights[0] * mse_loss(g_blur(output[0].squeeze(3)), g_blur(target[0].squeeze(3)))
-            loss += loss_weights[1] * mse_loss(output[1].squeeze(1), target[1].squeeze(1))
-
+            loss_mse = loss_weights[1] * mse_loss(output[1].squeeze(1), target[1].squeeze(1))
+            loss_dvt = 0
             if has_dvt:
-                loss += loss_weights[2] * mse_loss(output[2], target[2])
-            return loss
+                loss_dvt = loss_weights[2] * mse_loss(output[2], target[2])
+                general_loss=loss_bcel+loss_mse+loss_dvt
+                return general_loss,loss_bcel.item(),loss_mse.item(),loss_dvt.item()
+            general_loss = loss_bcel + loss_mse
+            return general_loss, loss_bcel.item(), loss_mse.item(), loss_dvt
 
-        optimizer = optim.Adam(network.parameters(), lr=learning_rate)
+        optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
         for i, data_train_valid in enumerate(zip(train_data_generator, validation_data_generator)):
             # get the inputs; data is a list of [inputs, labels]
             train_data, valid_data = data_train_valid
             valid_input, valid_labels = valid_data
 
-            train_loss = batch_train(network,optimizer,custom_loss, *train_data)
+            train_loss = batch_train(model,optimizer,custom_loss, *train_data)
+            train_log(train_loss,i,epoch,"train")
             with torch.no_grad():
-                validation_loss = custom_loss(network(valid_input), valid_labels)
-            # writer.add_scalar("Loss/Train/Batch", train_loss.item(), batch_counter)
-            # writer.add_scalar("Loss/Validation/Batch", validation_loss.item(), batch_counter)
+                validation_loss = custom_loss(model(valid_input), valid_labels)
+            train_log(validation_loss, i, epoch, "validation")
             # batch_counter += 1  # todo change to batch size?
             # epoch_batch_counter += 1
             # print statistics
             # running_loss += train_loss.item()
             # validation_runing_loss += validation_loss.item()
-            # print("avg train: %0.10f\t"
-            #       "avg valid: %0.10f\n"
-            #       "train l: %0.10f\t"
-            #       "validation l: %0.10f" % (
-            #     running_loss / epoch_batch_counter, validation_runing_loss / epoch_batch_counter, train_loss.item(),
-            #     validation_loss.item()), flush=True)
-            writer.flush()
-        # writer.add_scalar("Loss/Train/epoch", running_loss, epoch)
-        # writer.add_scalar("Loss/Validation/epoch", validation_runing_loss, epoch)
-
         # save model every once a while
         if saving_counter % 20 == 0:
-            save_model(network,batch_counter,saving_counter)
-    save_model(network,batch_counter,saving_counter)
-    writer.close()
+            save_model(model,batch_counter,saving_counter)
+    save_model(model,batch_counter,saving_counter)
 
+def model_pipline(hyperparameters):
+    wandb.login()
+    with wandb.init(project="ArtificialNeuron",config=hyperparameters,entity='nilu'):
+        config=wandb.config
+        train_network(config)
 
-train_network(config)
-
+def train_log(loss,step,epoch ,additional_str=''):
+    general_loss, loss_bcel, loss_mse, loss_dvt = loss
+    wandb.log({"epoch":epoch,"general loss %s"%additional_str:general_loss},step=step)
+    wandb.log({"epoch":epoch,"mse loss %s"%additional_str:loss_mse},step=step)
+    wandb.log({"epoch":epoch,"bcel loss %s"%additional_str:loss_bcel},step=step)
+    wandb.log({"epoch":epoch,"dvt loss %s"%additional_str:loss_dvt},step=step)
+    print("step %d, epoch %d %s"%(step,epoch,additional_str))
+    print("general loss ",general_loss)
+    print("mse loss ",loss_mse)
+    print("bcel loss ",loss_bcel)
+    print("dvt loss ",loss_dvt)
