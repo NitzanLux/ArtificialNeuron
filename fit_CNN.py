@@ -8,6 +8,8 @@ from typing import Generator, Tuple
 from project_path import *
 import pandas as pd
 import torch.nn as nn
+import torch
+
 import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
 from general_aid_function import *
@@ -15,7 +17,7 @@ from simulation_data_generator import *
 from loss_aid_functions import GaussianSmoothing
 import neuronal_model
 import wandb
-
+WANDB_API_KEY="2725e59f8f4484605300fdf4da4c270ff0fe44a3"
 
 # parser = argparse.ArgumentParser(description='Process some integers.')
 # parser.add_argument('id', metavar='N', type=int,
@@ -32,6 +34,9 @@ import wandb
 # tensorboard logger
 # from dataset import
 
+
+# api =wandb.login()
+# run=api.run()
 # some fixes for python 3
 if sys.version_info[0] < 3:
     pass
@@ -183,7 +188,7 @@ def train_network(config):
 
     train_files,valid_files, test_files = load_files_names()
     DVT_PCA_model = None
-
+    print("loading data...",flush=True)
     train_data_generator = SimulationDataGenerator(train_files, buffer_size_in_files=15,
                                                    batch_size=config.batch_size_train, epoch_size=config.epoch_size,
                                                    window_size_ms=config.input_window_size,
@@ -199,6 +204,8 @@ def train_network(config):
     saving_counter = 0
     model = build_model(config)
     wandb.watch(model,log='all',log_freq=10)
+    print("start training...",flush=True)
+
     for epoch, learning_parms in enumerate(learning_parameters_iter()):
 
         validation_runing_loss = 0.
@@ -271,3 +278,4 @@ def train_log(loss,step,epoch ,additional_str=''):
     print("mse loss ",loss_mse)
     print("bcel loss ",loss_bcel)
     print("dvt loss ",loss_dvt)
+model_pipline(config)

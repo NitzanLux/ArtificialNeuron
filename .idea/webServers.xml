@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="cea62be9-9167-4533-a442-82bc6516c809" name="bream@elsc.huji.ac.il">
+        <fileTransfer rootFolder="/ems/elsc-labs/segev-i" accessType="SFTP" host="bream.elsc.huji.ac.il" port="22" sshConfigId="20036a7c-027e-42fa-aa45-a521c8418b27" sshConfig="nitzan.luxembourg@bream.elsc.huji.ac.il:22 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

@@ -45,7 +45,10 @@ def plot_network_and_actual_results(file_path: [str, List[str]], model_path: [st
         regex_match = re.search('(?<=ID_)[0-9]+(?=\.pkl)', p)
         model_id = regex_match.group(0)
         out = network(X_batch)
-        plt.plot(out[1].detach().numpy()[0, 0, :, :], label=model_id)
+        out_var= out[1].detach().numpy()[0, 0, :, :]
+        spike= out[0].detach().numpy()[0, 0, :, :]
+        plt.scatter(np.arange(out_var.shape[0]),spike)
+        plt.plot((out_var-np.min(out_var))/(np.max(out_var)-np.min(out_var))*(np.max(y_soma_batch)-np.min(y_soma_batch))+np.min(y_soma_batch), label=model_id)
     plt.legend()
     plt.show()
 
@@ -54,7 +57,7 @@ def plot_network_and_actual_results(file_path: [str, List[str]], model_path: [st
 
 
 plot_network_and_actual_results(
-    "/ems/elsc-labs/segev-i/david.beniaguev/Reseach/Single_Neuron_InOut/ExperimentalData/L5PC_NMDA_valid_mixed/exBas_0_750_inhBasDiff_-550_200__exApic_0_800_inhApicDiff_-550_200__saved_InputSpikes_DVTs__811_outSpikes__128_simulationRuns__6_secDuration__randomSeed_100512.p"
+    r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\data\exBas_0_750_inhBasDiff_-550_200__exApic_0_800_inhApicDiff_-550_200__saved_InputSpikes_DVTs__811_outSpikes__128_simulationRuns__6_secDuration__randomSeed_100512.p"
     ,
-    "/ems/elsc-labs/segev-i/nitzan.luxembourg/projects/dendritic_tree/ArtificialNeuron/models",
-    2, 0, 800)
+    r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDANMDA_Tree_TCN__2021-08-31__15_45__samples_11400__ID_2372.pkl",
+    2, 0, 1800)
