@@ -75,7 +75,7 @@ num_DVT_components = 20 if synapse_type == 'NMDA' else 30
 # ------------------------------------------------------------------
 config = AttrDict(input_window_size=400, num_segments=2 * 639, num_syn_types=1,
                   epoch_size=15, num_epochs=15000, batch_size_train=15, batch_size_validation=15, train_file_load=0.2,
-                  valid_file_load=0.2,optimizer_type="SGD")
+                  valid_file_load=0.2,optimizer_type="SGD",model_path=None)
 
 architecture_dict = AttrDict(segment_tree_path="tree.pkl",
                              time_domain_shape=config.input_window_size,
@@ -92,16 +92,19 @@ config.update(architecture_dict)
 
 
 def build_model(config):
-    architecture_dict = dict(
-        activation_function=lambda :getattr(nn, config.activation_function_name_and_args[0])(
-            *config.activation_function_name_and_args[1:]),
-        segment_tree=load_tree_from_path(config.segment_tree_path),
-        include_dendritic_voltage_tracing=config.include_dendritic_voltage_tracing,
-        time_domain_shape=config.input_window_size, kernel_size_2d=config.kernel_size_2d,
-        kernel_size_1d=config.kernel_size_1d, stride=config.stride, dilation=config.dilation,
-        channel_input_number=config.channel_input_number, inner_scope_channel_number=config.inner_scope_channel_number,
-        channel_output_number=config.channel_output_number)
-    network = neuronal_model.NeuronConvNet(**(architecture_dict))
+    if config.model_path is None:
+        architecture_dict = dict(
+            activation_function=lambda :getattr(nn, config.activation_function_name_and_args[0])(
+                *config.activation_function_name_and_args[1:]),
+            segment_tree=load_tree_from_path(config.segment_tree_path),
+            include_dendritic_voltage_tracing=config.include_dendritic_voltage_tracing,
+            time_domain_shape=config.input_window_size, kernel_size_2d=config.kernel_size_2d,
+            kernel_size_1d=config.kernel_size_1d, stride=config.stride, dilation=config.dilation,
+            channel_input_number=config.channel_input_number, inner_scope_channel_number=config.inner_scope_channel_number,
+            channel_output_number=config.channel_output_number)
+        network = neuronal_model.NeuronConvNet(**(architecture_dict))
+    else:
+        network = neuronal_model.NeuronConvNet.load(config.model_path)
     network.cuda()
     return network
 
@@ -255,7 +258,7 @@ def train_network(config):
             general_loss = loss_bcel + loss_mse
             return general_loss, loss_bcel.item(), loss_mse.item(), loss_dvt
 
-        optimizer = getattr(optim,config.optimizer)(model.parameters(), lr=learning_rate)
+        optimizer = getattr(optim,config.optimizer_type)(model.parameters(), lr=learning_rate)
 
         for i, data_train_valid in enumerate(zip(train_data_generator, validation_data_generator)):
             # get the inputs; data is a list of [inputs, labels]
@@ -286,6 +289,7 @@ def model_pipline(hyperparameters):
 
 
 def train_log(loss, step, epoch, additional_str=''):
+    print(step)
     general_loss, loss_bcel, loss_mse, loss_dvt = loss
     wandb.log({"epoch": epoch, "general loss %s" % additional_str: general_loss}, step=step)
     wandb.log({"epoch": epoch, "mse loss %s" % additional_str: loss_mse}, step=step)
