@@ -2,7 +2,7 @@ import os
 # import pickle as pickle #python 3.7 compatibility
 import pickle  #python 3.8+ compatibility
 from typing import Tuple
-from torchviz import make_dot
+# from torchviz import make_dot
 import torch
 import torch.nn as nn
 from torch.nn.utils import weight_norm
