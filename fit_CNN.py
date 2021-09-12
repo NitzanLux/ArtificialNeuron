@@ -254,7 +254,7 @@ def train_network(config):
             train_log(train_loss, batch_counter, epoch,learning_rate,sigma,weights, "train")
             with torch.no_grad():
                 validation_loss = custom_loss(model(valid_input), valid_labels)
-            train_log(validation_loss, batch_counter, epoch,learning_rate,sigma,weights, "validation")
+            train_log(validation_loss, batch_counter, epoch, "validation") #without train logging.
             epoch_batch_counter+=1
 
         # save model every once a while
@@ -296,18 +296,18 @@ def model_pipline(hyperparameters):
         train_network(config)
 
 
-def train_log(loss, step, epoch,learning_rate,sigma,weights, additional_str=''):
+def train_log(loss, step, epoch,learning_rate=None,sigma=None,weights=None, additional_str=''):
     general_loss, loss_bcel, loss_mse, loss_dvt = loss
     wandb.log({"epoch": epoch, "general loss %s" % additional_str: general_loss}, step=step)
     wandb.log({"epoch": epoch, "mse loss %s" % additional_str: loss_mse}, step=step)
     wandb.log({"epoch": epoch, "bcel loss %s" % additional_str: loss_bcel}, step=step)
     wandb.log({"epoch": epoch, "dvt loss %s" % additional_str: loss_dvt}, step=step)
-
-    wandb.log({"epoch": epoch, "learning rate %s" % additional_:learning_rate},step =step)#add training parameters per step
-    wandb.log({"epoch": epoch, "dvt weight %s" % additional_:weights[2]},step =step)#add training parameters per step
-    wandb.log({"epoch": epoch, "mse weight %s" % additional_:weights[1]},step =step)#add training parameters per step
-    wandb.log({"epoch": epoch, "bcel weight %s" % additional_:weights[0]},step =step)#add training parameters per step
-    wandb.log({"epoch": epoch, "sigma %s" % additional_:sigma},step =step)#add training parameters per step
+    if learning_rate is None or sigma is None or weights is None:
+        wandb.log({"epoch": epoch, "learning rate %s" % additional_:learning_rate},step =step)#add training parameters per step
+        wandb.log({"epoch": epoch, "dvt weight %s" % additional_:weights[2]},step =step)#add training parameters per step
+        wandb.log({"epoch": epoch, "mse weight %s" % additional_:weights[1]},step =step)#add training parameters per step
+        wandb.log({"epoch": epoch, "bcel weight %s" % additional_:weights[0]},step =step)#add training parameters per step
+        wandb.log({"epoch": epoch, "sigma %s" % additional_:sigma},step =step)#add training parameters per step
 
     print("step %d, epoch %d %s" % (step, epoch, additional_str))
     print("general loss ", general_loss)
