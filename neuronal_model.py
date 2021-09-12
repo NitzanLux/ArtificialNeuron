@@ -1,11 +1,12 @@
 import os
-import pickle
+# import pickle as pickle #python 3.7 compatibility
+import pickle  #python 3.8+ compatibility
 from typing import Tuple
-
+from torchviz import make_dot
 import torch
 import torch.nn as nn
 from torch.nn.utils import weight_norm
-
+from project_path import TRAIN_DATA_DIR
 from synapse_tree import SectionNode, SectionType, NUMBER_OF_PREVIUSE_SEGMENTS_IN_BRANCH
 
 # set SEED
@@ -65,15 +66,15 @@ class SegmentNetwork(nn.Module):
     def kernel_2D_in_parts(self, channel_input_number
                            , inner_scope_channel_number
                            , input_shape, kernel_size_2d, stride,
-                           dilation,activation_function=None):
+                           dilation, activation_function=None):
         kernels_arr = []
         if isinstance(kernel_size_2d, int):
-            kernel_size=(3,3)
+            kernel_size = (3, 3)
             kernel_factor = kernel_size_2d // 2
-        else: #todo if tuple change it
-            kernel_size=(3,3)
+        else:  # todo if tuple change it
+            kernel_size = (3, 3)
             kernel_factor = kernel_size_2d // 2
-        padding_factor = self.keep_dimensions_by_padding_claculator(input_shape,kernel_size, stride, dilation)
+        padding_factor = self.keep_dimensions_by_padding_claculator(input_shape, kernel_size, stride, dilation)
         in_channel_number = channel_input_number
         out_channel_number = inner_scope_channel_number
 
@@ -110,7 +111,7 @@ class BranchLeafBlock(SegmentNetwork):
         #                         stride=stride, padding=padding_factor, dilation=dilation)
         self.conv2d = self.kernel_2D_in_parts(channel_input_number
                                               , inner_scope_channel_number
-                                              , input_shape, kernel_size_2d, stride, dilation,activation_function)
+                                              , input_shape, kernel_size_2d, stride, dilation, activation_function)
 
         self.activation_function = activation_function()
 
@@ -150,8 +151,9 @@ class BranchBlock(SegmentNetwork):  # FIXME fix the channels and its movment in 
         #                           , channel_output, kernel_size_2d,  # todo: weight_norm???
         #                           stride=stride, padding=padding_factor, dilation=dilation)
         self.conv2d_x = self.kernel_2D_in_parts(channel_input_number, channel_output,
-                                                (input_shape[0],input_shape[1]- NUMBER_OF_PREVIUSE_SEGMENTS_IN_BRANCH) #binary by our priors about the neuron
-                                                , kernel_size_2d, stride, dilation,activation_function)
+                                                (input_shape[0], input_shape[1] - NUMBER_OF_PREVIUSE_SEGMENTS_IN_BRANCH)
+                                                # binary by our priors about the neuron
+                                                , kernel_size_2d, stride, dilation, activation_function)
 
         self.activation_function = activation_function()
 
@@ -318,11 +320,9 @@ class NeuronConvNet(nn.Module):
                 break
             else:
                 assert False, "Type not found"
-            # todo: add final layer.
-
         return out
 
-    def save(self, path):
+    def save(self, path): #todo fix
         with open('%s.pkl' % path, 'wb') as outp:
             pickle.dump(self, outp, pickle.HIGHEST_PROTOCOL)
 
@@ -332,3 +332,15 @@ class NeuronConvNet(nn.Module):
         with open('%s' % path, 'rb') as outp:
             neuronal_model = pickle.load(outp)
         return neuronal_model
+
+    # def plot_model(self, config, dummy_file=None): fixme
+    #     if dummy_file is None:
+    #         dummy_file = glob.glob(TRAIN_DATA_DIR + '*_128_simulationRuns*_6_secDuration_*')
+    #     train_data_generator = SimulationDataGenerator(dummy_file, buffer_size_in_files=1,
+    #                                                    batch_size=1, epoch_size=1,
+    #                                                    window_size_ms=config.input_window_size,
+    #                                                    file_load=config.train_file_load,
+    #                                                    DVT_PCA_model=None)
+    #     batch = next(iter(train_data_generator))
+    #     yhat = self(batch.text)
+    #     make_dot(yhat,param=dict(list(self.named_parameters())).render("model",format='png') )

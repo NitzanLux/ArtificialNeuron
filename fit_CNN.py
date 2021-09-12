@@ -259,24 +259,24 @@ def train_network(config):
             return general_loss, loss_bcel.item(), loss_mse.item(), loss_dvt
 
         optimizer = getattr(optim,config.optimizer_type)(model.parameters(), lr=learning_rate)
-
         for i, data_train_valid in enumerate(zip(train_data_generator, validation_data_generator)):
             # get the inputs; data is a list of [inputs, labels]
             train_data, valid_data = data_train_valid
             valid_input, valid_labels = valid_data
-
+            batch_counter+=1
             train_loss = batch_train(model, optimizer, custom_loss, *train_data)
-            train_log(train_loss, i, epoch, "train")
+            train_log(train_loss, batch_counter, epoch, "train")
             with torch.no_grad():
                 validation_loss = custom_loss(model(valid_input), valid_labels)
-            train_log(validation_loss, i, epoch, "validation")
+            train_log(validation_loss, batch_counter, epoch, "validation")
+            epoch_batch_counter+=1
             # batch_counter += 1  # todo change to batch size?
             # epoch_batch_counter += 1
             # print statistics
             # running_loss += train_loss.item()
             # validation_runing_loss += validation_loss.item()
         # save model every once a while
-        if saving_counter % 20 == 0:
+        if saving_counter % 90 == 0:
             save_model(model, batch_counter, saving_counter)
     save_model(model, batch_counter, saving_counter)
 
