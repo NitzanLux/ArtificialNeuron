@@ -9,7 +9,7 @@ from project_path import *
 import pandas as pd
 import torch.nn as nn
 import torch
-
+from typing import Dict
 import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
 from general_aid_function import *
@@ -18,6 +18,7 @@ from loss_aid_functions import GaussianSmoothing
 import neuronal_model
 import wandb
 from synapse_tree import SectionNode
+from email_by_demand import send_mail
 BUFFER_SIZE_IN_FILES_VALID = 2
 
 BUFFER_SIZE_IN_FILES_TRAINING = 5
@@ -91,7 +92,7 @@ architecture_dict = AttrDict(segment_tree_path="tree.pkl",
 config.update(architecture_dict)
 
 
-def build_model(config):
+def build_model_from_config(config:Dict):
     if config.model_path is None:
         architecture_dict = dict(
             activation_function=lambda :getattr(nn, config.activation_function_name_and_args[0])(
@@ -117,7 +118,7 @@ def load_tree_from_path(path: str) -> SectionNode:
 
 def learning_parameters_iter() -> Generator[Tuple[int, int, float, Tuple[float, float, float]], None, None]:
     DVT_loss_mult_factor = 0.1
-    sigma = 10
+    sigma = 100
     learning_rate_counter = 0
     if include_DVT:
         DVT_loss_mult_factor = 0
@@ -206,7 +207,7 @@ def train_network(config):
     train_files, valid_files, test_files = load_files_names()
     DVT_PCA_model = None
     print("loading model...", flush=True)
-    model = build_model(config)
+    model = build_model_from_config(config)
     print("loading data...", flush=True)
     train_data_generator = SimulationDataGenerator(train_files, buffer_size_in_files=BUFFER_SIZE_IN_FILES_TRAINING,
                                                    batch_size=config.batch_size_train, epoch_size=config.epoch_size,
@@ -238,26 +239,7 @@ def train_network(config):
 
         train_data_generator.batch_size = batch_size
 
-        def custom_loss(output, target, has_dvt=False):
-            if output[0].device != target[0].device:
-                for i in range(len(target) - 1 + has_dvt):  # same processor for comperison
-                    target[i] = target[i].to(output[i].device)
-            binary_cross_entropy_loss = nn.BCELoss()
-            mse_loss = nn.MSELoss()
-            general_loss = 0
-            loss_bcel = loss_weights[0] * binary_cross_entropy_loss(output[0],
-                                                                    target[0])  # removing channel dimention
-            # g_blur = GaussianSmoothing(1, 31, sigma, 1).to('cuda', torch.double)
-            # loss += loss_weights[0] * mse_loss(g_blur(output[0].squeeze(3)), g_blur(target[0].squeeze(3)))
-            loss_mse = loss_weights[1] * mse_loss(output[1].squeeze(1), target[1].squeeze(1))
-            loss_dvt = 0
-            if has_dvt:
-                loss_dvt = loss_weights[2] * mse_loss(output[2], target[2])
-                general_loss = loss_bcel + loss_mse + loss_dvt
-                return general_loss, loss_bcel.item(), loss_mse.item(), loss_dvt.item()
-            general_loss = loss_bcel + loss_mse
-            return general_loss, loss_bcel.item(), loss_mse.item(), loss_dvt
-
+        custom_loss = create_custom_loss(loss_weights,config.input_window_size,sigma)
         optimizer = getattr(optim,config.optimizer_type)(model.parameters(), lr=learning_rate)
         for i, data_train_valid in enumerate(zip(train_data_generator, validation_data_generator)):
             # get the inputs; data is a list of [inputs, labels]
@@ -270,16 +252,38 @@ def train_network(config):
                 validation_loss = custom_loss(model(valid_input), valid_labels)
             train_log(validation_loss, batch_counter, epoch, "validation")
             epoch_batch_counter+=1
-            # batch_counter += 1  # todo change to batch size?
-            # epoch_batch_counter += 1
-            # print statistics
-            # running_loss += train_loss.item()
-            # validation_runing_loss += validation_loss.item()
+
         # save model every once a while
         if saving_counter % 90 == 0:
             save_model(model, batch_counter, saving_counter)
     save_model(model, batch_counter, saving_counter)
 
+
+def create_custom_loss(loss_weights,window_size,sigma):
+    inner_loss_weights = torch.arange(window_size)
+    inner_loss_weights = 1-torch.exp(-(inner_loss_weights)/sigma)
+    def custom_loss(output, target, has_dvt=False):
+
+        if output[0].device != target[0].device:
+            for i in range(len(target) - 1 + has_dvt):  # same processor for comperison
+                target[i] = target[i].to(output[i].device)
+        binary_cross_entropy_loss = nn.BCELoss(inner_loss_weights)
+        mse_loss = nn.MSELoss(inner_loss_weights)
+        general_loss = 0
+        loss_bcel = loss_weights[0] * binary_cross_entropy_loss(output[0],
+                                                                target[0])  # removing channel dimention
+        # g_blur = GaussianSmoothing(1, 31, sigma, 1).to('cuda', torch.double)
+        # loss += loss_weights[0] * mse_loss(g_blur(output[0].squeeze(3)), g_blur(target[0].squeeze(3)))
+        loss_mse = loss_weights[1] * mse_loss(output[1].squeeze(1), target[1].squeeze(1))
+        loss_dvt = 0
+        if has_dvt:
+            loss_dvt = loss_weights[2] * mse_loss(output[2], target[2])
+            general_loss = loss_bcel + loss_mse + loss_dvt
+            return general_loss, loss_bcel.item(), loss_mse.item(), loss_dvt.item()
+        general_loss = loss_bcel + loss_mse
+        return general_loss, loss_bcel.item(), loss_mse.item(), loss_dvt
+
+    return custom_loss
 
 def model_pipline(hyperparameters):
     wandb.login()
@@ -288,18 +292,28 @@ def model_pipline(hyperparameters):
         train_network(config)
 
 
-def train_log(loss, step, epoch, additional_str=''):
-    print(step)
+def train_log(loss, step, epoch,learning_rate,sigma,weights, additional_str=''):
     general_loss, loss_bcel, loss_mse, loss_dvt = loss
     wandb.log({"epoch": epoch, "general loss %s" % additional_str: general_loss}, step=step)
     wandb.log({"epoch": epoch, "mse loss %s" % additional_str: loss_mse}, step=step)
     wandb.log({"epoch": epoch, "bcel loss %s" % additional_str: loss_bcel}, step=step)
     wandb.log({"epoch": epoch, "dvt loss %s" % additional_str: loss_dvt}, step=step)
+
+    wandb.log({"epoch": epoch, "learning rate %s" % additional_:learning_rate},step =step)#add training parameters per step
+    wandb.log({"epoch": epoch, "dvt weight %s" % additional_:weights[2]},step =step)#add training parameters per step
+    wandb.log({"epoch": epoch, "mse weight %s" % additional_:weights[1]},step =step)#add training parameters per step
+    wandb.log({"epoch": epoch, "bcel weight %s" % additional_:weights[0]},step =step)#add training parameters per step
+    wandb.log({"epoch": epoch, "sigma %s" % additional_:sigma},step =step)#add training parameters per step
+
     print("step %d, epoch %d %s" % (step, epoch, additional_str))
     print("general loss ", general_loss)
     print("mse loss ", loss_mse)
     print("bcel loss ", loss_bcel)
     print("dvt loss ", loss_dvt)
 
+try:
+    model_pipline(config)
+except e:
+    send_mail("nitzan.luxembourg@mail.huji.ac.il","somthing went wrong",e)
 
-model_pipline(config)
+send_mail("nitzan.luxembourg@mail.huji.ac.il","finished run","finished run")

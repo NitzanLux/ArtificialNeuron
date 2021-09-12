@@ -7,3 +7,4 @@
 /L5PC_NEURON_simulation/
 /first_run.py
 /test_slurm.py
+/email_by_demand.py

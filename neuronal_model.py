@@ -8,7 +8,8 @@ import torch.nn as nn
 from torch.nn.utils import weight_norm
 from project_path import TRAIN_DATA_DIR
 from synapse_tree import SectionNode, SectionType, NUMBER_OF_PREVIUSE_SEGMENTS_IN_BRANCH
-
+import os
+import numpy as np
 # set SEED
 os.environ["SEED"] = "42"
 
@@ -18,8 +19,7 @@ SYNAPSE_DIMENTION = 3
 epsp_num = 60
 ipsp_num = 20
 
-import os
-import numpy as np
+
 
 FNULL = open(os.devnull, 'w')
 if torch.cuda.is_available():
