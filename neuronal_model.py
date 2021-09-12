@@ -227,32 +227,40 @@ class RootBlock(SegmentNetwork):
 
 
 class NeuronConvNet(nn.Module):
-    def __init__(self, segment_tree: SectionNode, time_domain_shape, kernel_size_2d, kernel_size_1d, stride,
+    def __init__(self,segment_tree  ,time_domain_shape ,
+            is_cuda=False,include_dendritic_voltage_tracing=False,segemnt_ids=None):
+        super(NeuronConvNet, self).__init__()
+        self.include_dendritic_voltage_tracing = include_dendritic_voltage_tracing
+        self.segment_tree = segment_tree
+        self.segemnt_ids = segemnt_ids if segemnt_ids is not None else dict()
+        self.time_domain_shape=time_domain_shape
+        self.modules_dict = nn.ModuleDict()
+        self.is_cuda = is_cuda
+    @staticmethod
+    def build_model(segment_tree: SectionNode, time_domain_shape, kernel_size_2d, kernel_size_1d, stride,
                  dilation, channel_input_number
                  , inner_scope_channel_number
                  , channel_output_number,
-                 activation_function=nn.ReLU, include_dendritic_voltage_tracing=True):
-        super(NeuronConvNet, self).__init__()
+                 activation_function=nn.ReLU,is_cuda=False, include_dendritic_voltage_tracing=True):
         assert kernel_size_1d % 2 == 1 and kernel_size_2d % 2 == 1, "cannot assert even kernel size"
-        self.include_dendritic_voltage_tracing = include_dendritic_voltage_tracing
-        self.segment_tree = segment_tree
-        self.segemnt_ids = dict()
-        self.modules_dict = nn.ModuleDict()
-        self.is_cuda = False
+        model = NeuronConvNet(segment_tree  ,time_domain_shape ,is_cuda,include_dendritic_voltage_tracing)
+        model.include_dendritic_voltage_tracing = include_dendritic_voltage_tracing
+        model.segment_tree = segment_tree
+        model.time_domain_shape=time_domain_shape
         input_shape = (0, 0)  # default for outer scope usage
         for segment in segment_tree:
-            self.segemnt_ids[segment] = segment.id
+            model.segemnt_ids[segment] = segment.id
             param_number = segment.get_number_of_parameters_for_nn()
             input_shape = (time_domain_shape, param_number)
             if segment.type == SectionType.BRANCH:
-                self.modules_dict[self.segemnt_ids[segment]] = BranchBlock(input_shape, channel_input_number
+                model.modules_dict[model.segemnt_ids[segment]] = BranchBlock(input_shape, channel_input_number
                                                                            , inner_scope_channel_number
                                                                            ,
                                                                            channel_output_number, kernel_size_2d,
                                                                            kernel_size_1d, stride, dilation,
                                                                            activation_function)  # todo: add parameters
             elif segment.type == SectionType.BRANCH_INTERSECTION:
-                self.modules_dict[self.segemnt_ids[segment]] = IntersectionBlock(input_shape, channel_input_number
+                model.modules_dict[model.segemnt_ids[segment]] = IntersectionBlock(input_shape, channel_input_number
                                                                                  ,
                                                                                  inner_scope_channel_number
                                                                                  ,
@@ -260,7 +268,7 @@ class NeuronConvNet(nn.Module):
                                                                                  kernel_size_1d, stride, dilation,
                                                                                  activation_function)  # todo: add parameters
             elif segment.type == SectionType.BRANCH_LEAF:
-                self.modules_dict[self.segemnt_ids[segment]] = BranchLeafBlock(input_shape, channel_input_number
+                model.modules_dict[model.segemnt_ids[segment]] = BranchLeafBlock(input_shape, channel_input_number
                                                                                ,
                                                                                inner_scope_channel_number
                                                                                ,
@@ -269,11 +277,11 @@ class NeuronConvNet(nn.Module):
                                                                                activation_function)  # todo: add parameters
 
             elif segment.type == SectionType.SOMA:
-                self.last_layer = RootBlock(input_shape, channel_output_number)  # the last orgen in tree is the root
+                model.last_layer = RootBlock(input_shape, channel_output_number)  # the last orgen in tree is the root
             else:
                 assert False, "Type not found"
-            self.double()
-
+        model.double()
+        return model
     def count_parameters(model):
         return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
@@ -323,14 +331,22 @@ class NeuronConvNet(nn.Module):
         return out
 
     def save(self, path): #todo fix
+        data_dict = dict(include_dendritic_voltage_tracing = self.include_dendritic_voltage_tracing,
+            segment_tree =  self.segment_tree,
+            segemnt_ids = self.segemnt_ids,
+            time_domain_shape= self.time_domain_shape,
+            is_cuda = False)
+        state_dict=self.state_dict()
         with open('%s.pkl' % path, 'wb') as outp:
-            pickle.dump(self, outp, pickle.HIGHEST_PROTOCOL)
+            pickle.dump((data_dict,state_dict), outp, pickle.HIGHEST_PROTOCOL)
 
     @staticmethod
     def load(path):
         neuronal_model = None
         with open('%s' % path, 'rb') as outp:
-            neuronal_model = pickle.load(outp)
+            neuronal_model_data = pickle.load(outp)
+        model = NeuronConvNet(**neuronal_model_data[0])
+        model.load_state_dict(neuronal_model_data[1])
         return neuronal_model
 
     # def plot_model(self, config, dummy_file=None): fixme
