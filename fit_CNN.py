@@ -99,7 +99,7 @@ architecture_dict = AttrDict(segment_tree_path="tree.pkl",
                              inner_scope_channel_number=30,
                              channel_output_number=7,
                              activation_function_name_and_args=("LeakyReLU", 0.25),
-                             include_dendritic_voltage_tracing=True)
+                             include_dendritic_voltage_tracing=False)
 config.update(architecture_dict)
 config.model_filename,config.auxilary_filename=generate_model_name()
 
@@ -226,7 +226,7 @@ def train_network(config):
     batch_counter = 0
     saving_counter = 0
 
-    wandb.watch(model, log='all', log_freq=10)
+    wandb.watch(model, log='all', log_freq=100)
     print("start training...", flush=True)
 
     for epoch, learning_parms in enumerate(learning_parameters_iter()):
@@ -258,26 +258,28 @@ def train_network(config):
             epoch_batch_counter+=1
 
         # save model every once a while
-        if saving_counter % 90 == 0:
+        if saving_counter % 1 == 0:
             save_model(model, saving_counter,config)
     save_model(model, saving_counter,config)
 
 
 def create_custom_loss(loss_weights,window_size,sigma):
-    inner_loss_weights = torch.arange(window_size)
-    inner_loss_weights = 1-torch.exp(-(inner_loss_weights)/sigma)
+    # inner_loss_weights = torch.arange(window_size)
+    # inner_loss_weights = 1-torch.exp(-(inner_loss_weights)/sigma)
+    # sqrt_inner_loss_weights = torch.sqrt(inner_loss_weights).unsqueeze(0).unsqueeze(inner_loss_weights)
     def custom_loss(output, target, has_dvt=False):
 
         if output[0].device != target[0].device:
             for i in range(len(target) - 1 + has_dvt):  # same processor for comperison
                 target[i] = target[i].to(output[i].device)
-        binary_cross_entropy_loss = nn.BCELoss(inner_loss_weights)
-        mse_loss = nn.MSELoss(inner_loss_weights)
+        binary_cross_entropy_loss = nn.BCELoss()
+        mse_loss = nn.MSELoss()
         general_loss = 0
         loss_bcel = loss_weights[0] * binary_cross_entropy_loss(output[0],
                                                                 target[0])  # removing channel dimention
         # g_blur = GaussianSmoothing(1, 31, sigma, 1).to('cuda', torch.double)
         # loss += loss_weights[0] * mse_loss(g_blur(output[0].squeeze(3)), g_blur(target[0].squeeze(3)))
+
         loss_mse = loss_weights[1] * mse_loss(output[1].squeeze(1), target[1].squeeze(1))
         loss_dvt = 0
         if has_dvt:
@@ -291,7 +293,7 @@ def create_custom_loss(loss_weights,window_size,sigma):
 
 def model_pipline(hyperparameters):
     wandb.login()
-    with wandb.init(project="ArtificialNeuron", config=hyperparameters, entity='nilu'):
+    with wandb.init(project="ArtificialNeuron", config=hyperparameters, entity='nilu',allow_val_change=True):
         config = wandb.config
         train_network(config)
 
