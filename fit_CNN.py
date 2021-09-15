@@ -251,14 +251,14 @@ def train_network(config):
             valid_input, valid_labels = valid_data
             batch_counter+=1
             train_loss = batch_train(model, optimizer, custom_loss, *train_data)
-            train_log(train_loss, batch_counter, epoch,learning_rate,sigma,weights, "train")
+            train_log(train_loss, batch_counter, epoch,learning_rate,sigma,loss_weights, "train")
             with torch.no_grad():
                 validation_loss = custom_loss(model(valid_input), valid_labels)
             train_log(validation_loss, batch_counter, epoch, "validation") #without train logging.
             epoch_batch_counter+=1
 
         # save model every once a while
-        if saving_counter % 1 == 0:
+        if saving_counter % 90 == 0:
             save_model(model, saving_counter,config)
     save_model(model, saving_counter,config)
 
