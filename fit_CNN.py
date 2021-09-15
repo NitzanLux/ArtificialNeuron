@@ -295,7 +295,6 @@ def model_pipline(hyperparameters):
     wandb.login()
     with wandb.init(project="ArtificialNeuron", config=hyperparameters, entity='nilu',allow_val_change=True):
         config = wandb.config
-        congig.update(allow_val_change=True)
         train_network(config)
 
 
@@ -305,12 +304,12 @@ def train_log(loss, step, epoch,learning_rate=None,sigma=None,weights=None, addi
     wandb.log({"epoch": epoch, "mse loss %s" % additional_str: loss_mse}, step=step)
     wandb.log({"epoch": epoch, "bcel loss %s" % additional_str: loss_bcel}, step=step)
     wandb.log({"epoch": epoch, "dvt loss %s" % additional_str: loss_dvt}, step=step)
-    if learning_rate is None or sigma is None or weights is None:
-        wandb.log({"epoch": epoch, "learning rate %s" % additional_:learning_rate},step =step)#add training parameters per step
-        wandb.log({"epoch": epoch, "dvt weight %s" % additional_:weights[2]},step =step)#add training parameters per step
-        wandb.log({"epoch": epoch, "mse weight %s" % additional_:weights[1]},step =step)#add training parameters per step
-        wandb.log({"epoch": epoch, "bcel weight %s" % additional_:weights[0]},step =step)#add training parameters per step
-        wandb.log({"epoch": epoch, "sigma %s" % additional_:sigma},step =step)#add training parameters per step
+    if learning_rate is not None and sigma is not None and weights is not None:
+        wandb.log({"epoch": epoch, "learning rate %s" % additional_str:learning_rate},step =step)#add training parameters per step
+        wandb.log({"epoch": epoch, "dvt weight %s" % additional_str:weights[2]},step =step)#add training parameters per step
+        wandb.log({"epoch": epoch, "mse weight %s" % additional_str:weights[1]},step =step)#add training parameters per step
+        wandb.log({"epoch": epoch, "bcel weight %s" % additional_str:weights[0]},step =step)#add training parameters per step
+        wandb.log({"epoch": epoch, "sigma %s" % additional_str:sigma},step =step)#add training parameters per step
 
     print("step %d, epoch %d %s" % (step, epoch, additional_str))
     print("general loss ", general_loss)
