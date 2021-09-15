@@ -295,6 +295,7 @@ def model_pipline(hyperparameters):
     wandb.login()
     with wandb.init(project="ArtificialNeuron", config=hyperparameters, entity='nilu',allow_val_change=True):
         config = wandb.config
+        congig.update(allow_val_change=True)
         train_network(config)
 
 
