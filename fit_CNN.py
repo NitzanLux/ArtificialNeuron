@@ -230,7 +230,7 @@ def train_network(config):
     print("start training...", flush=True)
 
     for epoch, learning_parms in enumerate(learning_parameters_iter()):
-        config.epoch_counter +=1
+        config.update(dict(epoch_counter=config.epoch_counter+1))
         validation_runing_loss = 0.
         running_loss = 0.
         saving_counter += 1
@@ -245,7 +245,8 @@ def train_network(config):
         custom_loss = create_custom_loss(loss_weights,config.input_window_size,sigma)
         optimizer = getattr(optim,config.optimizer_type)(model.parameters(), lr=learning_rate)
         for i, data_train_valid in enumerate(zip(train_data_generator, validation_data_generator)):
-            config.batch_counter+=1
+            # config.batch_counter+=1
+            config.update(dict(batch_counter=config.batch_counter + 1))
             # get the inputs; data is a list of [inputs, labels]
             train_data, valid_data = data_train_valid
             valid_input, valid_labels = valid_data
