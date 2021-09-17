@@ -109,9 +109,9 @@ class BranchLeafBlock(SegmentNetwork):
         #                         , inner_scope_channel_number
         #                         , kernel_size_2d,
         #                         stride=stride, padding=padding_factor, dilation=dilation)
-        self.conv2d = self.kernel_2D_in_parts(channel_input_number
-                                              , inner_scope_channel_number
-                                              , input_shape, kernel_size_2d, stride, dilation, activation_function)
+        self.conv2d_BranchLeafBlock = self.kernel_2D_in_parts(channel_input_number
+                                                              , inner_scope_channel_number
+                                                              , input_shape, kernel_size_2d, stride, dilation, activation_function)
 
         self.activation_function = activation_function()
 
@@ -119,18 +119,18 @@ class BranchLeafBlock(SegmentNetwork):
                                                                     (kernel_size_1d, input_shape[1]), stride,
                                                                     dilation)
 
-        self.conv1d = nn.Conv2d(inner_scope_channel_number
-                                , channel_output_number, (kernel_size_1d, input_shape[1]),
-                                stride=stride, padding=padding_factor,
-                                dilation=dilation)  # todo: weight_norm???
+        self.conv1d_BranchLeafBlock = nn.Conv2d(inner_scope_channel_number
+                                                , channel_output_number, (kernel_size_1d, input_shape[1]),
+                                                stride=stride, padding=padding_factor,
+                                                dilation=dilation)  # todo: weight_norm???
         # todo: collapse?
         self.init_weights()
-        self.net = nn.Sequential(self.conv2d, self.activation_function,
-                                 self.conv1d, self.activation_function)
+        self.net = nn.Sequential(self.conv2d_BranchLeafBlock, self.activation_function,
+                                 self.conv1d_BranchLeafBlock, self.activation_function)
 
     def init_weights(self):
-        self.conv2d.weight.data.normal_(0, 0.01)
-        self.conv1d.weight.data.normal_(0, 0.01)
+        self.conv2d_BranchLeafBlock.weight.data.normal_(0, 0.01)
+        self.conv1d_BranchLeafBlock.weight.data.normal_(0, 0.01)
 
     def forward(self, x):
         out = self.net(x)
@@ -150,28 +150,28 @@ class BranchBlock(SegmentNetwork):  # FIXME fix the channels and its movment in 
         # self.conv2d_x = nn.Conv2d(channel_input_number
         #                           , channel_output, kernel_size_2d,  # todo: weight_norm???
         #                           stride=stride, padding=padding_factor, dilation=dilation)
-        self.conv2d_x = self.kernel_2D_in_parts(channel_input_number, channel_output,
-                                                (input_shape[0], input_shape[1] - NUMBER_OF_PREVIUSE_SEGMENTS_IN_BRANCH)
-                                                # binary by our priors about the neuron
-                                                , kernel_size_2d, stride, dilation, activation_function)
+        self.conv2d_x_BranchBlock = self.kernel_2D_in_parts(channel_input_number, channel_output,
+                                                            (input_shape[0], input_shape[1] - NUMBER_OF_PREVIUSE_SEGMENTS_IN_BRANCH)
+                                                            # binary by our priors about the neuron
+                                                            , kernel_size_2d, stride, dilation, activation_function)
 
         self.activation_function = activation_function()
 
         padding_factor = self.keep_dimensions_by_padding_claculator((input_shape[0], 1), (kernel_size_1d, 1), stride,
                                                                     dilation)
-        self.conv1d = nn.Conv2d(channel_output, channel_output, (kernel_size_1d, input_shape[1]),
-                                stride=stride, padding=padding_factor,
-                                dilation=dilation)
+        self.conv1d_BranchBlock = nn.Conv2d(channel_output, channel_output, (kernel_size_1d, input_shape[1]),
+                                            stride=stride, padding=padding_factor,
+                                            dilation=dilation)
         self.init_weights()
-        self.net = nn.Sequential(self.conv1d, self.activation_function)
+        self.net = nn.Sequential(self.conv1d_BranchBlock, self.activation_function)
 
     def init_weights(self):
-        self.conv1d.weight.data.normal_(0, 0.01)
-        self.conv2d_x.weight.data.normal_(0, 0.01)
+        self.conv1d_BranchBlock.weight.data.normal_(0, 0.01)
+        self.conv2d_x_BranchBlock.weight.data.normal_(0, 0.01)
         # self.conv2d_prev.weight.data.normal_(0, 0.01)
 
     def forward(self, prev_segment, x):
-        x = self.conv2d_x(x)
+        x = self.conv2d_x_BranchBlock(x)
         out = torch.cat((x, prev_segment), dim=SYNAPSE_DIMENTION)
         out = self.net(out)
         return out
@@ -189,19 +189,19 @@ class IntersectionBlock(SegmentNetwork):
 
                                                                     stride, dilation)
 
-        self.conv1d_1 = nn.Conv2d(channel_output_number, inner_scope_channel_number
-                                  , (kernel_size_1d, 1),
-                                  stride=stride, padding=padding_factor,
-                                  dilation=dilation)
+        self.conv1d_1_IntersectionBlock = nn.Conv2d(channel_output_number, inner_scope_channel_number
+                                                    , (kernel_size_1d, 1),
+                                                    stride=stride, padding=padding_factor,
+                                                    dilation=dilation)
         self.activation = activation_function()
 
         padding_factor = self.keep_dimensions_by_padding_claculator((input_shape[0], 1), (kernel_size_1d, 1),
                                                                     stride, dilation)
-        self.conv1d_2 = nn.Conv2d(inner_scope_channel_number
-                                  , channel_output_number, (kernel_size_1d, input_shape[1]),
-                                  stride=stride, padding=padding_factor,
-                                  dilation=dilation)
-        self.net = nn.Sequential(self.conv1d_1, self.activation, self.conv1d_2)
+        self.conv1d_2_IntersectionBlock = nn.Conv2d(inner_scope_channel_number
+                                                    , channel_output_number, (kernel_size_1d, input_shape[1]),
+                                                    stride=stride, padding=padding_factor,
+                                                    dilation=dilation)
+        self.net = nn.Sequential(self.conv1d_1_IntersectionBlock, self.activation, self.conv1d_2_IntersectionBlock)
 
     def forward(self, x):
         out = self.net(x)

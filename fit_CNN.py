@@ -136,31 +136,31 @@ def learning_parameters_iter() -> Generator[Tuple[int, int, float, Tuple[float, 
     epoch_in_each_step = config.num_epochs // 5 + (config.num_epochs % 5 != 0)
     for i in range(epoch_in_each_step):
         learning_rate_counter += 1
-        learning_rate_per_epoch = 1 / (learning_rate_counter * 100)
+        learning_rate_per_epoch = 1 / (config.batch_counter * 100)
         loss_weights_per_epoch = [1.0, 0.0200, DVT_loss_mult_factor * 0.00005]
-        yield config.epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / learning_rate_counter
+        yield config.epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / config.batch_counter
     for i in range(epoch_in_each_step):
         learning_rate_counter += 1
-        learning_rate_per_epoch = 1 / (learning_rate_counter * 100)
+        learning_rate_per_epoch = 1 / (config.batch_counter * 100)
         loss_weights_per_epoch = [2.0, 0.0100, DVT_loss_mult_factor * 0.00003]
-        yield config.epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / learning_rate_counter
+        yield config.epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / config.batch_counter
     for i in range(epoch_in_each_step):
         learning_rate_counter += 1
-        learning_rate_per_epoch = 1 / (learning_rate_counter * 100)
+        learning_rate_per_epoch = 1 / (config.batch_counter * 100)
         loss_weights_per_epoch = [4.0, 0.0100, DVT_loss_mult_factor * 0.00001]
-        yield config.epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / learning_rate_counter
+        yield config.epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / config.batch_counter
 
     for i in range(config.num_epochs // 5):
         learning_rate_counter += 1
-        learning_rate_per_epoch = 1 / (learning_rate_counter * 10)
+        learning_rate_per_epoch = 1 / (config.batch_counter * 10)
         loss_weights_per_epoch = [8.0, 0.0100, DVT_loss_mult_factor * 0.0000001]
-        yield config.epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / learning_rate_counter
+        yield config.epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / config.batch_counter
 
     for i in range(config.num_epochs // 5 + config.num_epochs % 5):
         learning_rate_counter += 1
-        learning_rate_per_epoch = 1 / (learning_rate_counter * 10)
+        learning_rate_per_epoch = 1 / (config.batch_counter * 10)
         loss_weights_per_epoch = [9.0, 0.0030, DVT_loss_mult_factor * 0.00000001]
-        yield config.epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / learning_rate_counter
+        yield config.epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / config.batch_counter
 
 
 # %%
@@ -307,9 +307,8 @@ def train_log(loss, step, epoch,learning_rate=None,sigma=None,weights=None, addi
     wandb.log({"epoch": epoch, "dvt loss %s" % additional_str: loss_dvt}, step=step)
     if learning_rate is not None and sigma is not None and weights is not None:
         wandb.log({"epoch": epoch, "learning rate %s" % additional_str:learning_rate},step =step)#add training parameters per step
-        wandb.log({"epoch": epoch, "dvt weight %s" % additional_str:weights[2]},step =step)#add training parameters per step
-        wandb.log({"epoch": epoch, "mse weight %s" % additional_str:weights[1]},step =step)#add training parameters per step
-        wandb.log({"epoch": epoch, "bcel weight %s" % additional_str:weights[0]},step =step)#add training parameters per step
+        wandb.log({"epoch": epoch, "dvt weight (normalize to bcel) %s" % additional_str:weights[2]/weights[0]},step =step)#add training parameters per step
+        wandb.log({"epoch": epoch, "mse weight (normalize to bcel) %s" % additional_str:weights[1]/weights[0]},step =step)#add training parameters per step
         wandb.log({"epoch": epoch, "sigma %s" % additional_str:sigma},step =step)#add training parameters per step
 
     print("step %d, epoch %d %s" % (step, epoch, additional_str))
