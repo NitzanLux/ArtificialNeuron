@@ -201,7 +201,7 @@ def batch_train(network, optimizer, custom_loss, inputs, labels):
 def save_model(network, saving_counter,config):
     print('-----------------------------------------------------------------------------------------')
     print('finished epoch %d. saving...\n     "%s"\n     "%s"' % (
-        saving_counter, model_filename.split('/')[-1], config.auxilary_filename.split('/')[-1]))
+        saving_counter, config.model_filename.split('/')[-1], config.auxilary_filename.split('/')[-1]))
     print('-----------------------------------------------------------------------------------------')
     network.save(config.model_filename)
 
