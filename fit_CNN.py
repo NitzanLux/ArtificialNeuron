@@ -226,7 +226,7 @@ def train_network(config):
     batch_counter = 0
     saving_counter = 0
 
-    wandb.watch(model, log='all', log_freq=100)
+    wandb.watch(model, log='all', log_freq=200)
     print("start training...", flush=True)
 
     for epoch, learning_parms in enumerate(learning_parameters_iter()):
