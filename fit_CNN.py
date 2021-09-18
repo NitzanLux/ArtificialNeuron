@@ -136,31 +136,31 @@ def learning_parameters_iter() -> Generator[Tuple[int, int, float, Tuple[float, 
     epoch_in_each_step = config.num_epochs // 5 + (config.num_epochs % 5 != 0)
     for i in range(epoch_in_each_step):
         learning_rate_counter += 1
-        learning_rate_per_epoch = 1 / np.sqrt(config.batch_counter * 100)
+        learning_rate_per_epoch = 1 / np.sqrt(config.batch_counter * 100+1)
         loss_weights_per_epoch = [1.0, 0.0200, DVT_loss_mult_factor * 0.00005]
-        yield config.epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / config.batch_counter
+        yield config.epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / (config.batch_counter+1)
     for i in range(epoch_in_each_step):
         learning_rate_counter += 1
-        learning_rate_per_epoch = 1 / np.sqrt(config.batch_counter * 100)
+        learning_rate_per_epoch = 1 / np.sqrt(config.batch_counter * 100+1)
         loss_weights_per_epoch = [2.0, 0.0100, DVT_loss_mult_factor * 0.00003]
-        yield config.epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / config.batch_counter
+        yield config.epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / (config.batch_counter+1)
     for i in range(epoch_in_each_step):
         learning_rate_counter += 1
-        learning_rate_per_epoch = 1 / np.sqrt(config.batch_counter * 100)
+        learning_rate_per_epoch = 1 / np.sqrt(config.batch_counter * 100+1)
         loss_weights_per_epoch = [4.0, 0.0100, DVT_loss_mult_factor * 0.00001]
-        yield config.epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / config.batch_counter
+        yield config.epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / (config.batch_counter+1)
 
     for i in range(config.num_epochs // 5):
         learning_rate_counter += 1
-        learning_rate_per_epoch = 1 / np.sqrt(config.batch_counter * 10)
+        learning_rate_per_epoch = 1 / np.sqrt(config.batch_counter * 100+1)
         loss_weights_per_epoch = [8.0, 0.0100, DVT_loss_mult_factor * 0.0000001]
-        yield config.epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / config.batch_counter
+        yield config.epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / (config.batch_counter+1)
 
     for i in range(config.num_epochs // 5 + config.num_epochs % 5):
         learning_rate_counter += 1
-        learning_rate_per_epoch = 1 / np.sqrt(config.batch_counter * 10)
+        learning_rate_per_epoch = 1 / np.sqrt(config.batch_counter * 100+1)
         loss_weights_per_epoch = [9.0, 0.0030, DVT_loss_mult_factor * 0.00000001]
-        yield config.epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / config.batch_counter
+        yield config.epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / (config.batch_counter+1)
 
 
 # %%
