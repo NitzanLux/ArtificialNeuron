@@ -206,7 +206,7 @@ def save_model(network, saving_counter,config):
     network.save(config.model_filename)
 
 
-def train_network(config):
+def train_network(config,document_on_wandb=True):
     train_files, valid_files, test_files = load_files_names()
     DVT_PCA_model = None
     print("loading model...", flush=True)
@@ -225,8 +225,8 @@ def train_network(config):
                                                         DVT_PCA_model=DVT_PCA_model)
     batch_counter = 0
     saving_counter = 0
-
-    wandb.watch(model, log='all', log_freq=200)
+    if document_on_wandb:
+        wandb.watch(model, log='all', log_freq=200)
     print("start training...", flush=True)
 
     for epoch, learning_parms in enumerate(learning_parameters_iter()):
@@ -252,10 +252,12 @@ def train_network(config):
             valid_input, valid_labels = valid_data
             batch_counter+=1
             train_loss = batch_train(model, optimizer, custom_loss, *train_data)
-            train_log(train_loss, batch_counter, epoch,learning_rate,sigma,loss_weights, "train")
+            if document_on_wandb:
+                train_log(train_loss, batch_counter, epoch,learning_rate,sigma,loss_weights, "train")
             with torch.no_grad():
                 validation_loss = custom_loss(model(valid_input), valid_labels)
-            train_log(validation_loss, batch_counter, epoch, "validation") #without train logging.
+            if document_on_wandb:
+                train_log(validation_loss, batch_counter, epoch, "validation") #without train logging.
             epoch_batch_counter+=1
 
         # save model every once a while
@@ -288,16 +290,20 @@ def create_custom_loss(loss_weights,window_size,sigma):
             general_loss = loss_bcel + loss_mse + loss_dvt
             return general_loss, loss_bcel.item(), loss_mse.item(), loss_dvt.item()
         general_loss = loss_bcel + loss_mse
-        return general_loss, loss_bcel.item(), loss_mse.item(), loss_dvt
+        # return general_loss, loss_bcel.item(), loss_mse.item(), loss_dvt
+        return general_loss, 0, 0, loss_dvt
 
     return custom_loss
 
-def model_pipline(hyperparameters):
-    wandb.login()
-    with wandb.init(project="ArtificialNeuron", config=hyperparameters, entity='nilu',allow_val_change=True):
-        config = wandb.config
+def model_pipline(hyperparameters,document_on_wandb=True):
+    if document_on_wandb:
+        wandb.login()
+        with wandb.init(project="ArtificialNeuron", config=hyperparameters, entity='nilu',allow_val_change=True):
+            config = wandb.config
+            train_network(config)
+    else:
+        config =hyperparameters
         train_network(config)
-
 
 def train_log(loss, step, epoch,learning_rate=None,sigma=None,weights=None, additional_str=''):
     general_loss, loss_bcel, loss_mse, loss_dvt = loss
@@ -318,7 +324,7 @@ def train_log(loss, step, epoch,learning_rate=None,sigma=None,weights=None, addi
     print("dvt loss ", loss_dvt)
 
 try:
-    model_pipline(config)
+    model_pipline(config,False)
 except Exception as e:
     # send_mail("nitzan.luxembourg@mail.huji.ac.il","somthing went wrong",e)
     raise e
