@@ -93,7 +93,7 @@ def generate_model_name():
 # define network architecture params
 # ------------------------------------------------------------------
 config = AttrDict(input_window_size=400, num_segments=2 * 639, num_syn_types=1,
-                  epoch_size=4, num_epochs=15000, batch_size_train=15, batch_size_validation=15, train_file_load=0.2,
+                  epoch_size=1, num_epochs=15000, batch_size_train=15, batch_size_validation=15, train_file_load=0.2,
                   valid_file_load=0.2, optimizer_type="SGD", model_path=None, batch_counter=0, epoch_counter=0)
 
 architecture_dict = AttrDict(segment_tree_path="tree.pkl",
