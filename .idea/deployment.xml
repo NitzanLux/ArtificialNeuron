@@ -1,11 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" serverName="bream@elsc.huji.ac.il" remoteFilesAllowedToDisappearOnAutoupload="false">
+  <component name="PublishConfigData" serverName="nitzan.luxembourg@bs-cluster.elsc.huji.ac.il:22" remoteFilesAllowedToDisappearOnAutoupload="false">
     <serverData>
       <paths name="bream@elsc.huji.ac.il">
         <serverdata>
           <mappings>
             <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="nitzan.luxembourg@bs-cluster.elsc.huji.ac.il:22">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/tmp/pycharm_project_717" local="$PROJECT_DIR$" />
           </mappings>
         </serverdata>
       </paths>

@@ -1,5 +1,5 @@
 import logging
-
+import os
 import torch
 
 logging.error("Aaaaa")
@@ -19,11 +19,14 @@ import neuronal_model
 import wandb
 from synapse_tree import SectionNode
 from email_by_demand import send_mail
+
 BUFFER_SIZE_IN_FILES_VALID = 2
 
 BUFFER_SIZE_IN_FILES_TRAINING = 5
 WANDB_API_KEY = "2725e59f8f4484605300fdf4da4c270ff0fe44a3"
-
+# for dibugging
+if False:
+    os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
 # parser = argparse.ArgumentParser(description='Process some integers.')
 # parser.add_argument('id', metavar='N', type=int,
 #                     help='job id')
@@ -63,6 +66,8 @@ print('------------------------------------------------------------------')
 synapse_type = 'NMDA'
 include_DVT = False
 num_DVT_components = 20 if synapse_type == 'NMDA' else 30
+
+
 # ------------------------------------------------------------------
 # learning schedule params
 # ------------------------------------------------------------------
@@ -81,38 +86,42 @@ def generate_model_name():
         model_prefix, current_datetime, modelID_str)
     auxilary_filename = MODELS_DIR + '\\%s__%s__%s.pickle' % (
         model_prefix, current_datetime, modelID_str)
-    return model_filename,auxilary_filename
+    return model_filename, auxilary_filename
+
+
 # ------------------------------------------------------------------
 # define network architecture params
 # ------------------------------------------------------------------
 config = AttrDict(input_window_size=400, num_segments=2 * 639, num_syn_types=1,
                   epoch_size=15, num_epochs=15000, batch_size_train=15, batch_size_validation=15, train_file_load=0.2,
-                  valid_file_load=0.2,optimizer_type="SGD",model_path=None,batch_counter=0,epoch_counter=0)
+                  valid_file_load=0.2, optimizer_type="SGD", model_path=None, batch_counter=0, epoch_counter=0)
 
 architecture_dict = AttrDict(segment_tree_path="tree.pkl",
                              time_domain_shape=config.input_window_size,
-                             kernel_size_2d=23,
-                             kernel_size_1d=51,
+                             kernel_size_2d=61,
+                             kernel_size_1d=101,
                              stride=1,
                              dilation=1,
                              channel_input_number=1,  # synapse number
                              inner_scope_channel_number=30,
                              channel_output_number=7,
-                             activation_function_name_and_args=("LeakyReLU", 0.25),
+                             activation_function_name_and_args=("LeakyReLU", 0.5),
                              include_dendritic_voltage_tracing=False)
 config.update(architecture_dict)
-config.model_filename,config.auxilary_filename=generate_model_name()
+config.model_filename, config.auxilary_filename = generate_model_name()
 
-def build_model_from_config(config:Dict):
+
+def build_model_from_config(config: Dict):
     if config.model_path is None:
         architecture_dict = dict(
-            activation_function=lambda :getattr(nn, config.activation_function_name_and_args[0])(
+            activation_function=lambda: getattr(nn, config.activation_function_name_and_args[0])(
                 *config.activation_function_name_and_args[1:]),
             segment_tree=load_tree_from_path(config.segment_tree_path),
             include_dendritic_voltage_tracing=config.include_dendritic_voltage_tracing,
             time_domain_shape=config.input_window_size, kernel_size_2d=config.kernel_size_2d,
             kernel_size_1d=config.kernel_size_1d, stride=config.stride, dilation=config.dilation,
-            channel_input_number=config.channel_input_number, inner_scope_channel_number=config.inner_scope_channel_number,
+            channel_input_number=config.channel_input_number,
+            inner_scope_channel_number=config.inner_scope_channel_number,
             channel_output_number=config.channel_output_number)
         network = neuronal_model.NeuronConvNet.build_model(**(architecture_dict))
     else:
@@ -136,31 +145,31 @@ def learning_parameters_iter() -> Generator[Tuple[int, int, float, Tuple[float, 
     epoch_in_each_step = config.num_epochs // 5 + (config.num_epochs % 5 != 0)
     for i in range(epoch_in_each_step):
         learning_rate_counter += 1
-        learning_rate_per_epoch = 1 / np.sqrt(config.batch_counter * 100+1)
+        learning_rate_per_epoch = 1 / (np.sqrt(config.batch_counter + 1) * 100)
         loss_weights_per_epoch = [1.0, 0.0200, DVT_loss_mult_factor * 0.00005]
-        yield config.epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / (config.batch_counter+1)
+        yield config.epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / (config.batch_counter + 1)
     for i in range(epoch_in_each_step):
         learning_rate_counter += 1
-        learning_rate_per_epoch = 1 / np.sqrt(config.batch_counter * 100+1)
+        learning_rate_per_epoch = 1 / (np.sqrt(config.batch_counter + 1) * 100)
         loss_weights_per_epoch = [2.0, 0.0100, DVT_loss_mult_factor * 0.00003]
-        yield config.epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / (config.batch_counter+1)
+        yield config.epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / (config.batch_counter + 1)
     for i in range(epoch_in_each_step):
         learning_rate_counter += 1
-        learning_rate_per_epoch = 1 / np.sqrt(config.batch_counter * 100+1)
+        learning_rate_per_epoch = 1 / (np.sqrt(config.batch_counter + 1) * 100)
         loss_weights_per_epoch = [4.0, 0.0100, DVT_loss_mult_factor * 0.00001]
-        yield config.epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / (config.batch_counter+1)
+        yield config.epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / (config.batch_counter + 1)
 
     for i in range(config.num_epochs // 5):
         learning_rate_counter += 1
-        learning_rate_per_epoch = 1 / np.sqrt(config.batch_counter * 100+1)
+        learning_rate_per_epoch = 1 / (np.sqrt(config.batch_counter + 1) * 100)
         loss_weights_per_epoch = [8.0, 0.0100, DVT_loss_mult_factor * 0.0000001]
-        yield config.epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / (config.batch_counter+1)
+        yield config.epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / (config.batch_counter + 1)
 
     for i in range(config.num_epochs // 5 + config.num_epochs % 5):
         learning_rate_counter += 1
-        learning_rate_per_epoch = 1 / np.sqrt(config.batch_counter * 100+1)
+        learning_rate_per_epoch = 1 / np.sqrt(config.batch_counter * 100 + 1)
         loss_weights_per_epoch = [9.0, 0.0030, DVT_loss_mult_factor * 0.00000001]
-        yield config.epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / (config.batch_counter+1)
+        yield config.epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / (config.batch_counter + 1)
 
 
 # %%
@@ -194,11 +203,12 @@ def batch_train(network, optimizer, custom_loss, inputs, labels):
     general_loss, loss_bcel, loss_mse, loss_dvt = custom_loss(outputs, labels)
     general_loss.backward()
     optimizer.step()
-    return general_loss.item(), loss_bcel, loss_mse, loss_dvt
+    out = general_loss.item(), loss_bcel, loss_mse, loss_dvt
+
+    return out
 
 
-
-def save_model(network, saving_counter,config):
+def save_model(network, saving_counter, config):
     print('-----------------------------------------------------------------------------------------')
     print('finished epoch %d. saving...\n     "%s"\n     "%s"' % (
         saving_counter, config.model_filename.split('/')[-1], config.auxilary_filename.split('/')[-1]))
@@ -206,11 +216,12 @@ def save_model(network, saving_counter,config):
     network.save(config.model_filename)
 
 
-def train_network(config,document_on_wandb=True):
+def train_network(config, document_on_wandb=True):
     train_files, valid_files, test_files = load_files_names()
     DVT_PCA_model = None
     print("loading model...", flush=True)
     model = build_model_from_config(config)
+    print("model parmeters: %d"%model.count_parameters())
     print("loading data...", flush=True)
     train_data_generator = SimulationDataGenerator(train_files, buffer_size_in_files=BUFFER_SIZE_IN_FILES_TRAINING,
                                                    batch_size=config.batch_size_train, epoch_size=config.epoch_size,
@@ -230,7 +241,7 @@ def train_network(config,document_on_wandb=True):
     print("start training...", flush=True)
 
     for epoch, learning_parms in enumerate(learning_parameters_iter()):
-        config.update(dict(epoch_counter=config.epoch_counter+1),allow_val_change=True)
+        config.update(dict(epoch_counter=config.epoch_counter + 1), allow_val_change=True)
         validation_runing_loss = 0.
         running_loss = 0.
         saving_counter += 1
@@ -242,31 +253,32 @@ def train_network(config,document_on_wandb=True):
 
         train_data_generator.batch_size = batch_size
 
-        custom_loss = create_custom_loss(loss_weights,config.input_window_size,sigma)
-        optimizer = getattr(optim,config.optimizer_type)(model.parameters(), lr=learning_rate)
+        custom_loss = create_custom_loss(loss_weights, config.input_window_size, sigma)
+        optimizer = getattr(optim, config.optimizer_type)(model.parameters(), lr=learning_rate)
         for i, data_train_valid in enumerate(zip(train_data_generator, validation_data_generator)):
             # config.batch_counter+=1
-            config.update(dict(batch_counter=config.batch_counter + 1),allow_val_change=True)
+            config.update(dict(batch_counter=config.batch_counter + 1), allow_val_change=True)
             # get the inputs; data is a list of [inputs, labels]
             train_data, valid_data = data_train_valid
             valid_input, valid_labels = valid_data
-            batch_counter+=1
+            batch_counter += 1
+            # debug_custom_loss = lambda par,ams:custom_loss(par,ams,i)#debugging
             train_loss = batch_train(model, optimizer, custom_loss, *train_data)
             if document_on_wandb:
-                train_log(train_loss, batch_counter, epoch,learning_rate,sigma,loss_weights, "train")
+                train_log(train_loss, batch_counter, epoch, learning_rate, sigma, loss_weights, "train")
             with torch.no_grad():
                 validation_loss = custom_loss(model(valid_input), valid_labels)
-            if document_on_wandb:
-                train_log(validation_loss, batch_counter, epoch, "validation") #without train logging.
-            epoch_batch_counter+=1
+                if document_on_wandb:
+                    train_log(validation_loss, batch_counter, epoch, "validation")  # without train logging.
+            epoch_batch_counter += 1
 
         # save model every once a while
         if saving_counter % 90 == 0:
-            save_model(model, saving_counter,config)
-    save_model(model, saving_counter,config)
+            save_model(model, saving_counter, config)
+    save_model(model, saving_counter, config)
 
 
-def create_custom_loss(loss_weights,window_size,sigma):
+def create_custom_loss(loss_weights, window_size, sigma):
     # inner_loss_weights = torch.arange(window_size)
     # inner_loss_weights = 1-torch.exp(-(inner_loss_weights)/sigma)
     # sqrt_inner_loss_weights = torch.sqrt(inner_loss_weights).unsqueeze(0).unsqueeze(inner_loss_weights)
@@ -278,8 +290,14 @@ def create_custom_loss(loss_weights,window_size,sigma):
         binary_cross_entropy_loss = nn.BCELoss()
         mse_loss = nn.MSELoss()
         general_loss = 0
-        loss_bcel = loss_weights[0] * binary_cross_entropy_loss(output[0],
-                                                                target[0])  # removing channel dimention
+        try:
+
+            loss_bcel = loss_weights[0] * binary_cross_entropy_loss(output[0],
+                                                                    target[0])  # removing channel dimention
+            print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        except Exception as e:
+
+            print("a")
         # g_blur = GaussianSmoothing(1, 31, sigma, 1).to('cuda', torch.double)
         # loss += loss_weights[0] * mse_loss(g_blur(output[0].squeeze(3)), g_blur(target[0].squeeze(3)))
 
@@ -290,32 +308,37 @@ def create_custom_loss(loss_weights,window_size,sigma):
             general_loss = loss_bcel + loss_mse + loss_dvt
             return general_loss, loss_bcel.item(), loss_mse.item(), loss_dvt.item()
         general_loss = loss_bcel + loss_mse
-        # return general_loss, loss_bcel.item(), loss_mse.item(), loss_dvt
-        return general_loss, 0, 0, loss_dvt
+        return general_loss, loss_bcel.item(), loss_mse.item(), loss_dvt
+        # return general_loss, 0, 0, loss_dvt
 
     return custom_loss
 
-def model_pipline(hyperparameters,document_on_wandb=True):
+
+def model_pipline(hyperparameters, document_on_wandb=True):
     if document_on_wandb:
         wandb.login()
-        with wandb.init(project="ArtificialNeuron", config=hyperparameters, entity='nilu',allow_val_change=True):
+        with wandb.init(project="ArtificialNeuron", config=hyperparameters, entity='nilu', allow_val_change=True):
             config = wandb.config
             train_network(config)
     else:
-        config =hyperparameters
+        config = hyperparameters
         train_network(config)
 
-def train_log(loss, step, epoch,learning_rate=None,sigma=None,weights=None, additional_str=''):
+
+def train_log(loss, step, epoch, learning_rate=None, sigma=None, weights=None, additional_str=''):
     general_loss, loss_bcel, loss_mse, loss_dvt = loss
     wandb.log({"epoch": epoch, "general loss %s" % additional_str: general_loss}, step=step)
     wandb.log({"epoch": epoch, "mse loss %s" % additional_str: loss_mse}, step=step)
     wandb.log({"epoch": epoch, "bcel loss %s" % additional_str: loss_bcel}, step=step)
     wandb.log({"epoch": epoch, "dvt loss %s" % additional_str: loss_dvt}, step=step)
     if learning_rate is not None and sigma is not None and weights is not None:
-        wandb.log({"epoch": epoch, "learning rate %s" % additional_str:learning_rate},step =step)#add training parameters per step
-        wandb.log({"epoch": epoch, "dvt weight (normalize to bcel) %s" % additional_str:weights[2]/weights[0]},step =step)#add training parameters per step
-        wandb.log({"epoch": epoch, "mse weight (normalize to bcel) %s" % additional_str:weights[1]/weights[0]},step =step)#add training parameters per step
-        wandb.log({"epoch": epoch, "sigma %s" % additional_str:sigma},step =step)#add training parameters per step
+        wandb.log({"epoch": epoch, "learning rate %s" % additional_str: learning_rate},
+                  step=step)  # add training parameters per step
+        wandb.log({"epoch": epoch, "dvt weight (normalize to bcel) %s" % additional_str: weights[2] / weights[0]},
+                  step=step)  # add training parameters per step
+        wandb.log({"epoch": epoch, "mse weight (normalize to bcel) %s" % additional_str: weights[1] / weights[0]},
+                  step=step)  # add training parameters per step
+        wandb.log({"epoch": epoch, "sigma %s" % additional_str: sigma}, step=step)  # add training parameters per step
 
     print("step %d, epoch %d %s" % (step, epoch, additional_str))
     print("general loss ", general_loss)
@@ -323,8 +346,9 @@ def train_log(loss, step, epoch,learning_rate=None,sigma=None,weights=None, addi
     print("bcel loss ", loss_bcel)
     print("dvt loss ", loss_dvt)
 
+
 try:
-    model_pipline(config,False)
+    model_pipline(config)
 except Exception as e:
     # send_mail("nitzan.luxembourg@mail.huji.ac.il","somthing went wrong",e)
     raise e
