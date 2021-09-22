@@ -145,7 +145,8 @@ def learning_parameters_iter() -> Generator[Tuple[int, int, float, Tuple[float, 
     for i in range(epoch_in_each_step):
         learning_rate_per_epoch = 1./((config.batch_counter+1) * 100)
         loss_weights_per_epoch = [1.0, 1/((config.batch_counter + 1)), DVT_loss_mult_factor * 0.00005]
-        yield config.batch_size_train, learning_rate_per_epoch, loss_weights_per_epoch, sigma / (config.batch_counter + 1)for i in range(epoch_in_each_step):
+        yield config.batch_size_train, learning_rate_per_epoch, loss_weights_per_epoch, sigma / (config.batch_counter + 1)
+    for i in range(epoch_in_each_step):
         learning_rate_per_epoch = 1./((config.batch_counter+1) * 100)
         loss_weights_per_epoch = [1.0, 1/((config.batch_counter + 1)), DVT_loss_mult_factor * 0.00003]
         yield config.batch_size_train, learning_rate_per_epoch, loss_weights_per_epoch, sigma / (config.batch_counter + 1)
