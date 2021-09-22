@@ -290,14 +290,8 @@ def create_custom_loss(loss_weights, window_size, sigma):
         binary_cross_entropy_loss = nn.BCELoss()
         mse_loss = nn.MSELoss()
         general_loss = 0
-        try:
-
-            loss_bcel = loss_weights[0] * binary_cross_entropy_loss(output[0],
+        loss_bcel = loss_weights[0] * binary_cross_entropy_loss(output[0],
                                                                     target[0])  # removing channel dimention
-            print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        except Exception as e:
-
-            print("a")
         # g_blur = GaussianSmoothing(1, 31, sigma, 1).to('cuda', torch.double)
         # loss += loss_weights[0] * mse_loss(g_blur(output[0].squeeze(3)), g_blur(target[0].squeeze(3)))
 
