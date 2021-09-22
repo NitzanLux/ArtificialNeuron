@@ -139,35 +139,29 @@ def load_tree_from_path(path: str) -> SectionNode:
 def learning_parameters_iter() -> Generator[Tuple[int, int, float, Tuple[float, float, float]], None, None]:
     DVT_loss_mult_factor = 0.1
     sigma = 100
-    learning_rate_counter = 0
     if include_DVT:
         DVT_loss_mult_factor = 0
     epoch_in_each_step = config.num_epochs // 5 + (config.num_epochs % 5 != 0)
     for i in range(epoch_in_each_step):
-        learning_rate_counter += 1
-        learning_rate_per_epoch = 1 / ((config.batch_counter//4) * 100)
+        learning_rate_per_epoch = 1 / (((config.batch_counter//4)+1) * 1000)
         loss_weights_per_epoch = [1.0, 0.0200, DVT_loss_mult_factor * 0.00005]
         yield config.epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / (config.batch_counter + 1)
     for i in range(epoch_in_each_step):
-        learning_rate_counter += 1
-        learning_rate_per_epoch = 1 / ((config.batch_counter//4) * 100)
+        learning_rate_per_epoch = 1 / (((config.batch_counter//4)+1) * 1000)
         loss_weights_per_epoch = [2.0, 0.0100, DVT_loss_mult_factor * 0.00003]
         yield config.epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / (config.batch_counter + 1)
     for i in range(epoch_in_each_step):
-        learning_rate_counter += 1
-        learning_rate_per_epoch = 1 / ((config.batch_counter//4) * 100)
+        learning_rate_per_epoch = 1 / (((config.batch_counter//4)+1) * 1000)
         loss_weights_per_epoch = [4.0, 0.0100, DVT_loss_mult_factor * 0.00001]
         yield config.epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / (config.batch_counter + 1)
 
     for i in range(config.num_epochs // 5):
-        learning_rate_counter += 1
-        learning_rate_per_epoch = 1 / ((config.batch_counter//4) * 100)
+        learning_rate_per_epoch = 1 / (((config.batch_counter//4)+1) * 1000)
         loss_weights_per_epoch = [8.0, 0.0100, DVT_loss_mult_factor * 0.0000001]
         yield config.epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / (config.batch_counter + 1)
 
     for i in range(config.num_epochs // 5 + config.num_epochs % 5):
-        learning_rate_counter += 1
-        learning_rate_per_epoch = 1 / ((config.batch_counter//4) * 100)
+        learning_rate_per_epoch = 1 / (((config.batch_counter//4)+1) * 1000)
         loss_weights_per_epoch = [9.0, 0.0030, DVT_loss_mult_factor * 0.00000001]
         yield config.epoch_size, learning_rate_per_epoch, loss_weights_per_epoch, sigma / (config.batch_counter + 1)
 
@@ -203,7 +197,7 @@ def batch_train(network, optimizer, custom_loss, inputs, labels):
     general_loss, loss_bcel, loss_mse, loss_dvt = custom_loss(outputs, labels)
     general_loss.backward()
     optimizer.step()
-    out = general_loss.item(), loss_bcel, loss_mse, loss_dvt
+    out = general_loss, loss_bcel, loss_mse, loss_dvt
 
     return out
 
@@ -321,7 +315,7 @@ def model_pipline(hyperparameters, document_on_wandb=True):
 
 def train_log(loss, step, epoch, learning_rate=None, sigma=None, weights=None, additional_str=''):
     general_loss, loss_bcel, loss_mse, loss_dvt = loss
-    wandb.log({"epoch": epoch, "general loss %s" % additional_str: general_loss}, step=step)
+    wandb.log({"epoch": epoch, "general loss %s" % additional_str: general_loss.item()}, step=step)
     wandb.log({"epoch": epoch, "mse loss %s" % additional_str: loss_mse}, step=step)
     wandb.log({"epoch": epoch, "bcel loss %s" % additional_str: loss_bcel}, step=step)
     wandb.log({"epoch": epoch, "dvt loss %s" % additional_str: loss_dvt}, step=step)
@@ -335,7 +329,7 @@ def train_log(loss, step, epoch, learning_rate=None, sigma=None, weights=None, a
         wandb.log({"epoch": epoch, "sigma %s" % additional_str: sigma}, step=step)  # add training parameters per step
 
     print("step %d, epoch %d %s" % (step, epoch, additional_str))
-    print("general loss ", general_loss)
+    print("general loss ", general_loss.item())
     print("mse loss ", loss_mse)
     print("bcel loss ", loss_bcel)
     print("dvt loss ", loss_dvt)
