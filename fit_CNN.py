@@ -259,11 +259,11 @@ def train_network(config, document_on_wandb=True):
             # debug_custom_loss = lambda par,ams:custom_loss(par,ams,i)#debugging
             train_loss = batch_train(model, optimizer, custom_loss, *train_data)
             if document_on_wandb:
-                train_log(train_loss, batch_counter, epoch, learning_rate, sigma, loss_weights, "train")
+                train_log(train_loss, batch_counter, epoch, learning_rate, sigma, loss_weights, additional_str="train")
             with torch.no_grad():
                 validation_loss = custom_loss(model(valid_input), valid_labels)
                 if document_on_wandb:
-                    train_log(validation_loss, batch_counter, epoch, "validation")  # without train logging.
+                    train_log(validation_loss, batch_counter, epoch, additional_str="validation")  # without train logging.
             epoch_batch_counter += 1
 
         # save model every once a while
