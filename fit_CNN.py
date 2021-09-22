@@ -143,25 +143,25 @@ def learning_parameters_iter() -> Generator[Tuple[int, int, float, Tuple[float, 
         DVT_loss_mult_factor = 0
     epoch_in_each_step = config.num_epochs // 5 + (config.num_epochs % 5 != 0)
     for i in range(epoch_in_each_step):
-        learning_rate_per_epoch = 1./((config.batch_counter+1) * 1000)
+        learning_rate_per_epoch = 1./((config.batch_counter+1) * 2000)
         loss_weights_per_epoch = [1.0, 1/((config.batch_counter + 1)), DVT_loss_mult_factor * 0.00005]
         yield config.batch_size_train, learning_rate_per_epoch, loss_weights_per_epoch, sigma / (config.batch_counter + 1)
     for i in range(epoch_in_each_step):
-        learning_rate_per_epoch = 1./((config.batch_counter+1) * 1000)
+        learning_rate_per_epoch = 1./((config.batch_counter+1) * 2000)
         loss_weights_per_epoch = [1.0, 1/((config.batch_counter + 1)), DVT_loss_mult_factor * 0.00003]
         yield config.batch_size_train, learning_rate_per_epoch, loss_weights_per_epoch, sigma / (config.batch_counter + 1)
     for i in range(epoch_in_each_step):
-        learning_rate_per_epoch = 1./((config.batch_counter+1) * 1000)
+        learning_rate_per_epoch = 1./((config.batch_counter+1) * 2000)
         loss_weights_per_epoch = [1.0, 1/((config.batch_counter + 1)), DVT_loss_mult_factor * 0.00001]
         yield config.batch_size_train, learning_rate_per_epoch, loss_weights_per_epoch, sigma / (config.batch_counter + 1)
 
     for i in range(config.num_epochs // 5):
-        learning_rate_per_epoch = 1./((config.batch_counter+1) * 1000)
+        learning_rate_per_epoch = 1./((config.batch_counter+1) * 2000)
         loss_weights_per_epoch = [1.0, 1/((config.batch_counter + 1)), DVT_loss_mult_factor * 0.0000001]
         yield config.batch_size_train, learning_rate_per_epoch, loss_weights_per_epoch, sigma / (config.batch_counter + 1)
 
     for i in range(config.num_epochs // 5 + config.num_epochs % 5):
-        learning_rate_per_epoch = 1./((config.batch_counter+1) * 1000)
+        learning_rate_per_epoch = 1./((config.batch_counter+1) * 2000)
         loss_weights_per_epoch = [1.0, 1/((config.batch_counter + 1)), DVT_loss_mult_factor * 0.00000001]
         yield config.batch_size_train, learning_rate_per_epoch, loss_weights_per_epoch, sigma / (config.batch_counter + 1)
 
