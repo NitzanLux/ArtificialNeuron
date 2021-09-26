@@ -381,3 +381,7 @@ class NeuronConvNet(nn.Module):
     #     batch = next(iter(train_data_generator))
     #     yhat = self(batch.text)
     #     make_dot(yhat,param=dict(list(self.named_parameters())).render("model",format='png') )
+def load_tree_from_path(path: str) -> SectionNode:
+    with open(path, 'rb') as file:
+        tree = pickle.load(file)
+    return tree

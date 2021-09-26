@@ -101,16 +101,6 @@ architecture_dict = AttrDict(segment_tree_path="tree.pkl",
 config.update(architecture_dict)
 config.model_filename, config.auxilary_filename = generate_model_name()
 
-
-
-
-
-def load_tree_from_path(path: str) -> SectionNode:
-    with open(path, 'rb') as file:
-        tree = pickle.load(file)
-    return tree
-
-
 def learning_parameters_iter() -> Generator[Tuple[int, int, float, Tuple[float, float, float]], None, None]:
     DVT_loss_mult_factor = 0.1
     sigma = 100
