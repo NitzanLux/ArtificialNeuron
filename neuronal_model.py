@@ -363,9 +363,9 @@ class NeuronConvNet(nn.Module):
                 channel_input_number=config.channel_input_number,
                 inner_scope_channel_number=config.inner_scope_channel_number,
                 channel_output_number=config.channel_output_number)
-            network = neuronal_model.NeuronConvNet.build_model(**(architecture_dict))
+            network = NeuronConvNet.build_model(**(architecture_dict))
         else:
-            network = neuronal_model.NeuronConvNet.load(config.model_path)
+            network = NeuronConvNet.load(config.model_path)
         network.cuda()
         return network
 
