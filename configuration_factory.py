@@ -5,6 +5,9 @@ import pandas as pd
 from simulation_data_generator import *
 from typing import Dict
 from synapse_tree import SectionNode
+import json
+
+
 synapse_type = 'NMDA'
 include_DVT = False
 num_DVT_components = 20 if synapse_type == 'NMDA' else 30
@@ -22,22 +25,22 @@ def generate_model_name():
     return model_filename,auxilary_filename
 
 
-def build_model_from_config(config:Dict):
-    if config.model_path is None:
-        architecture_dict = dict(
-            activation_function=lambda :getattr(nn, config.activation_function_name_and_args[0])(
-                *config.activation_function_name_and_args[1:]),
-            segment_tree=load_tree_from_path(config.segment_tree_path),
-            include_dendritic_voltage_tracing=config.include_dendritic_voltage_tracing,
-            time_domain_shape=config.input_window_size, kernel_size_2d=config.kernel_size_2d,
-            kernel_size_1d=config.kernel_size_1d, stride=config.stride, dilation=config.dilation,
-            channel_input_number=config.channel_input_number, inner_scope_channel_number=config.inner_scope_channel_number,
-            channel_output_number=config.channel_output_number)
-        network = neuronal_model.NeuronConvNet.build_model(**(architecture_dict))
-    else:
-        network = neuronal_model.NeuronConvNet.load(config.model_path)
-    network.cuda()
-    return network
+# def build_model_from_config(config:Dict):
+#     if config.model_path is None:
+#         architecture_dict = dict(
+#             activation_function=lambda :getattr(nn, config.activation_function_name_and_args[0])(
+#                 *config.activation_function_name_and_args[1:]),
+#             segment_tree=load_tree_from_path(config.segment_tree_path),
+#             include_dendritic_voltage_tracing=config.include_dendritic_voltage_tracing,
+#             time_domain_shape=config.input_window_size, kernel_size_2d=config.kernel_size_2d,
+#             kernel_size_1d=config.kernel_size_1d, stride=config.stride, dilation=config.dilation,
+#             channel_input_number=config.channel_input_number, inner_scope_channel_number=config.inner_scope_channel_number,
+#             channel_output_number=config.channel_output_number)
+#         network = neuronal_model.NeuronConvNet.build_model(**(architecture_dict))
+#     else:
+#         network = neuronal_model.NeuronConvNet.load(config.model_path)
+#     network.cuda()
+#     return network
 
 
 def load_tree_from_path(path: str) -> SectionNode:
@@ -63,6 +66,13 @@ def config_factory():
                                  channel_output_number=7,
                                  activation_function_name_and_args=("LeakyReLU", 0.25),
                                  include_dendritic_voltage_tracing=False)
+
     config.update(architecture_dict)
+    if config.model_path is not None:
+        model = neuronal_model.NeuronConvNet.load(config.model_path)
+    else:
+        model = neuronal_model.NeuronConvNet.build_model_from_config(config)
     config.model_filename,config.auxilary_filename=generate_model_name()
-    return config
+    with open('file.txt', 'w') as file:
+        file.write(json.dumps(exDict))  # use `json.loads` to do the reverse
+    return config,model

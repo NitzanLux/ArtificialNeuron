@@ -37,15 +37,6 @@ if False:
 
 # sys.exit() # todo remove me
 
-# from dataset import get_neuron_model
-
-# tensorboard logger
-# from dataset import
-
-
-# api =wandb.login()
-# run=api.run()
-# some fixes for python 3
 if sys.version_info[0] < 3:
     pass
 else:
@@ -111,23 +102,7 @@ config.update(architecture_dict)
 config.model_filename, config.auxilary_filename = generate_model_name()
 
 
-def build_model_from_config(config: Dict):
-    if config.model_path is None:
-        architecture_dict = dict(
-            activation_function=lambda: getattr(nn, config.activation_function_name_and_args[0])(
-                *config.activation_function_name_and_args[1:]),
-            segment_tree=load_tree_from_path(config.segment_tree_path),
-            include_dendritic_voltage_tracing=config.include_dendritic_voltage_tracing,
-            time_domain_shape=config.input_window_size, kernel_size_2d=config.kernel_size_2d,
-            kernel_size_1d=config.kernel_size_1d, stride=config.stride, dilation=config.dilation,
-            channel_input_number=config.channel_input_number,
-            inner_scope_channel_number=config.inner_scope_channel_number,
-            channel_output_number=config.channel_output_number)
-        network = neuronal_model.NeuronConvNet.build_model(**(architecture_dict))
-    else:
-        network = neuronal_model.NeuronConvNet.load(config.model_path)
-    network.cuda()
-    return network
+
 
 
 def load_tree_from_path(path: str) -> SectionNode:
@@ -145,25 +120,25 @@ def learning_parameters_iter() -> Generator[Tuple[int, int, float, Tuple[float, 
     for i in range(epoch_in_each_step):
         learning_rate_per_epoch = 1./((config.batch_counter+1) * 100)
         loss_weights_per_epoch = [1.0, 1/((config.batch_counter + 1)), DVT_loss_mult_factor * 0.00005]
-        yield config.batch_size_train, learning_rate_per_epoch, loss_weights_per_epoch, sigma / (config.batch_counter + 1)
+        yield config.batch_size_train, 0.001, loss_weights_per_epoch, sigma / (config.batch_counter + 1)
     for i in range(epoch_in_each_step):
         learning_rate_per_epoch = 1./((config.batch_counter+1) * 100)
         loss_weights_per_epoch = [1.0, 1/((config.batch_counter + 1)), DVT_loss_mult_factor * 0.00003]
-        yield config.batch_size_train, learning_rate_per_epoch, loss_weights_per_epoch, sigma / (config.batch_counter + 1)
+        yield config.batch_size_train, 0.001, loss_weights_per_epoch, sigma / (config.batch_counter + 1)
     for i in range(epoch_in_each_step):
         learning_rate_per_epoch = 1./((config.batch_counter+1) * 100)
         loss_weights_per_epoch = [1.0, 1/((config.batch_counter + 1)), DVT_loss_mult_factor * 0.00001]
-        yield config.batch_size_train, learning_rate_per_epoch, loss_weights_per_epoch, sigma / (config.batch_counter + 1)
+        yield config.batch_size_train, 0.001, loss_weights_per_epoch, sigma / (config.batch_counter + 1)
 
     for i in range(config.num_epochs // 5):
         learning_rate_per_epoch = 1./((config.batch_counter+1) * 100)
         loss_weights_per_epoch = [1.0, 1/((config.batch_counter + 1)), DVT_loss_mult_factor * 0.0000001]
-        yield config.batch_size_train, learning_rate_per_epoch, loss_weights_per_epoch, sigma / (config.batch_counter + 1)
+        yield config.batch_size_train, 0.001, loss_weights_per_epoch, sigma / (config.batch_counter + 1)
 
     for i in range(config.num_epochs // 5 + config.num_epochs % 5):
         learning_rate_per_epoch = 1./((config.batch_counter+1) * 100)
         loss_weights_per_epoch = [1.0, 1/((config.batch_counter + 1)), DVT_loss_mult_factor * 0.00000001]
-        yield config.batch_size_train, learning_rate_per_epoch, loss_weights_per_epoch, sigma / (config.batch_counter + 1)
+        yield config.batch_size_train, 0.001, loss_weights_per_epoch, sigma / (config.batch_counter + 1)
 
 
 # %%
