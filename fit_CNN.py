@@ -35,7 +35,7 @@ if False:
 # logging.error("done imports")
 # logging.error("My id {0}".format(args.id))
 
-# sys.exit() # todo remove me
+
 
 if sys.version_info[0] < 3:
     pass
@@ -85,7 +85,8 @@ def generate_model_name():
 # ------------------------------------------------------------------
 config = AttrDict(input_window_size=400, num_segments=2 * 639, num_syn_types=1,
                   epoch_size=10, num_epochs=15000, batch_size_train=15, batch_size_validation=15, train_file_load=0.2,
-                  valid_file_load=0.2, optimizer_type="Adam",optimizer_params={}, model_path=None, batch_counter=0, epoch_counter=0)
+                  valid_file_load=0.2, optimizer_type="Adam",optimizer_params={}, model_path=None, batch_counter=0,
+                  epoch_counter=0)
 
 architecture_dict = AttrDict(segment_tree_path="tree.pkl",
                              time_domain_shape=config.input_window_size,
@@ -94,7 +95,7 @@ architecture_dict = AttrDict(segment_tree_path="tree.pkl",
                              stride=1,
                              dilation=1,
                              channel_input_number=1,  # synapse number
-                             inner_scope_channel_number=15,
+                             inner_scope_channel_number=14,
                              channel_output_number=7,
                              activation_function_name_and_args=("LeakyReLU", 0.25),
                              include_dendritic_voltage_tracing=False)
@@ -108,27 +109,27 @@ def learning_parameters_iter() -> Generator[Tuple[int, int, float, Tuple[float, 
         DVT_loss_mult_factor = 0
     epoch_in_each_step = config.num_epochs // 5 + (config.num_epochs % 5 != 0)
     for i in range(epoch_in_each_step):
-        learning_rate_per_epoch = 1./((config.batch_counter+1) * 100)
+        learning_rate_per_epoch = 1./((config.batch_counter+1) * 10000)
         loss_weights_per_epoch = [1.0, 1/((config.batch_counter + 1)), DVT_loss_mult_factor * 0.00005]
-        yield config.batch_size_train, 0.001, loss_weights_per_epoch, sigma / (config.batch_counter + 1)
+        yield config.batch_size_train, learning_rate_per_epoch, loss_weights_per_epoch, sigma / (config.batch_counter + 1)
     for i in range(epoch_in_each_step):
-        learning_rate_per_epoch = 1./((config.batch_counter+1) * 100)
+        learning_rate_per_epoch = 1./((config.batch_counter+1) * 10000)
         loss_weights_per_epoch = [1.0, 1/((config.batch_counter + 1)), DVT_loss_mult_factor * 0.00003]
-        yield config.batch_size_train, 0.001, loss_weights_per_epoch, sigma / (config.batch_counter + 1)
+        yield config.batch_size_train, learning_rate_per_epoch, loss_weights_per_epoch, sigma / (config.batch_counter + 1)
     for i in range(epoch_in_each_step):
-        learning_rate_per_epoch = 1./((config.batch_counter+1) * 100)
+        learning_rate_per_epoch = 1./((config.batch_counter+1) * 10000)
         loss_weights_per_epoch = [1.0, 1/((config.batch_counter + 1)), DVT_loss_mult_factor * 0.00001]
-        yield config.batch_size_train, 0.001, loss_weights_per_epoch, sigma / (config.batch_counter + 1)
+        yield config.batch_size_train, learning_rate_per_epoch, loss_weights_per_epoch, sigma / (config.batch_counter + 1)
 
     for i in range(config.num_epochs // 5):
-        learning_rate_per_epoch = 1./((config.batch_counter+1) * 100)
+        learning_rate_per_epoch = 1./((config.batch_counter+1) * 10000)
         loss_weights_per_epoch = [1.0, 1/((config.batch_counter + 1)), DVT_loss_mult_factor * 0.0000001]
-        yield config.batch_size_train, 0.001, loss_weights_per_epoch, sigma / (config.batch_counter + 1)
+        yield config.batch_size_train, learning_rate_per_epoch, loss_weights_per_epoch, sigma / (config.batch_counter + 1)
 
     for i in range(config.num_epochs // 5 + config.num_epochs % 5):
-        learning_rate_per_epoch = 1./((config.batch_counter+1) * 100)
+        learning_rate_per_epoch = 1./((config.batch_counter+1) * 10000)
         loss_weights_per_epoch = [1.0, 1/((config.batch_counter + 1)), DVT_loss_mult_factor * 0.00000001]
-        yield config.batch_size_train, 0.001, loss_weights_per_epoch, sigma / (config.batch_counter + 1)
+        yield config.batch_size_train, learning_rate_per_epoch, loss_weights_per_epoch, sigma / (config.batch_counter + 1)
 
 
 # %%
