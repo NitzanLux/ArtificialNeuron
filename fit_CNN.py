@@ -189,7 +189,7 @@ def train_network(config, document_on_wandb=True):
     train_files, valid_files, test_files = load_files_names()
     DVT_PCA_model = None
     print("loading model...", flush=True)
-    model = build_model_from_config(config)
+    model = neuronal_model.NeuronConvNet.build_model_from_config(config)
     print("model parmeters: %d"%model.count_parameters())
     print("loading data...", flush=True)
     train_data_generator = SimulationDataGenerator(train_files, buffer_size_in_files=BUFFER_SIZE_IN_FILES_TRAINING,
