@@ -2,7 +2,7 @@ from os import listdir
 from os.path import isfile, join,isdir
 import matplotlib.pyplot as plt
 import simulation_data_generator as sdg
-import neuronal_model
+from neuron_network import neuronal_model
 import numpy as np
 import torch
 from typing import List

@@ -1,22 +1,12 @@
 import unittest
-import glob
 import sys
-import time
-from typing import Iterable, Callable, Generator, List, Tuple
-import numpy as np
-import pandas as pd
-import torch
+from typing import Generator, Tuple
 import torch.nn as nn
-import torch.optim as optim
-from sklearn import decomposition
 from torch.utils.tensorboard import SummaryWriter
-from torch.utils.data import Dataset, DataLoader
 
-import neuronal_model
+from neuron_network import neuronal_model
 from synapse_tree import build_graph
-import neuron
 from neuron import h
-from neuron import gui
 
 # from dataset import get_neuron_model
 
@@ -26,9 +16,8 @@ writer = SummaryWriter()
 
 # some fixes for python 3
 if sys.version_info[0] < 3:
-    import cPickle as pickle
+    pass
 else:
-    import pickle
 
     basestring = str
 

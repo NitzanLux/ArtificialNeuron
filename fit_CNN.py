@@ -1,151 +1,33 @@
 import logging
 import os
-import torch
-
+import configuration_factory
 logging.error("Aaaaa")
 import glob
 from typing import Generator, Tuple
 from project_path import *
-import pandas as pd
 import torch.nn as nn
-import torch
-from typing import Dict
 import torch.optim as optim
-from torch.utils.tensorboard import SummaryWriter
-from general_aid_function import *
 from simulation_data_generator import *
-from loss_aid_functions import GaussianSmoothing
-import neuronal_model
+from neuron_network import neuronal_model
 import wandb
-from synapse_tree import SectionNode
-from email_by_demand import send_mail
+import argparse
+import dynamic_learning_parameters_factory as dlpf
+BUFFER_SIZE_IN_FILES_VALID = 1
 
-BUFFER_SIZE_IN_FILES_VALID = 2
-
-BUFFER_SIZE_IN_FILES_TRAINING = 5
+BUFFER_SIZE_IN_FILES_TRAINING = 1
 WANDB_API_KEY = "2725e59f8f4484605300fdf4da4c270ff0fe44a3"
 # for dibugging
-if False:
-    os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
-# parser = argparse.ArgumentParser(description='Process some integers.')
-# parser.add_argument('id', metavar='N', type=int,
-#                     help='job id')
-# args = parser.parse_args()
-#
-# logging.error("done imports")
-# logging.error("My id {0}".format(args.id))
 
-
-
-if sys.version_info[0] < 3:
-    pass
-else:
-
-    basestring = str
-
-print('-----------------------------------')
-use_multiprocessing = True
-num_workers = 4
-print('------------------------------------------------------------------')
-print('use_multiprocessing = %s, num_workers = %d' % (str(use_multiprocessing), num_workers))
-print('------------------------------------------------------------------')
-
+print('-----------------------------------------------')
+print('finding data')
+print('-----------------------------------------------', flush=True)
 # ------------------------------------------------------------------
 # basic configurations and directories
 # ------------------------------------------------------------------
 
 synapse_type = 'NMDA'
 include_DVT = False
-num_DVT_components = 20 if synapse_type == 'NMDA' else 30
-
-
-# ------------------------------------------------------------------
-# learning schedule params
-# ------------------------------------------------------------------
-# validation_fraction = 0.5
-
-# L5PC = get_neuron_model(MORPHOLOGY_PATH, BIOPHYSICAL_MODEL_PATH, BIOPHYSICAL_MODEL_TAMPLATE_PATH)
-# tree = build_graph(L5PC)
-
-def generate_model_name():
-    model_ID = np.random.randint(1000)
-    modelID_str = 'ID_%d' % (model_ID)
-    # train_string = 'samples_%d' % (batch_counter)
-    current_datetime = str(pd.datetime.now())[:-10].replace(':', '_').replace(' ', '__')
-    model_prefix = '%s_Tree_TCN' % (synapse_type)
-    model_filename = MODELS_DIR + '%s__%s__%s' % (
-        model_prefix, current_datetime, modelID_str)
-    auxilary_filename = MODELS_DIR + '\\%s__%s__%s.pickle' % (
-        model_prefix, current_datetime, modelID_str)
-    return model_filename, auxilary_filename
-
-
-# ------------------------------------------------------------------
-# define network architecture params
-# ------------------------------------------------------------------
-config = AttrDict(input_window_size=400, num_segments=2 * 639, num_syn_types=1,
-                  epoch_size=10, num_epochs=15000, batch_size_train=15, batch_size_validation=15, train_file_load=0.2,
-                  valid_file_load=0.2, optimizer_type="Adam",optimizer_params={}, model_path=None, batch_counter=0,
-                  epoch_counter=0)
-
-architecture_dict = AttrDict(segment_tree_path="tree.pkl",
-                             time_domain_shape=config.input_window_size,
-                             kernel_size_2d=31,
-                             kernel_size_1d=79,
-                             stride=1,
-                             dilation=1,
-                             channel_input_number=1,  # synapse number
-                             inner_scope_channel_number=14,
-                             channel_output_number=7,
-                             activation_function_name_and_args=("LeakyReLU", 0.25),
-                             include_dendritic_voltage_tracing=False)
-config.update(architecture_dict)
-config.model_filename, config.auxilary_filename = generate_model_name()
-
-def learning_parameters_iter() -> Generator[Tuple[int, int, float, Tuple[float, float, float]], None, None]:
-    DVT_loss_mult_factor = 0.1
-    sigma = 100
-    if include_DVT:
-        DVT_loss_mult_factor = 0
-    epoch_in_each_step = config.num_epochs // 5 + (config.num_epochs % 5 != 0)
-    for i in range(epoch_in_each_step):
-        learning_rate_per_epoch = 1./((config.batch_counter+1) * 10000)
-        loss_weights_per_epoch = [1.0, 1/((config.batch_counter + 1)), DVT_loss_mult_factor * 0.00005]
-        yield config.batch_size_train, learning_rate_per_epoch, loss_weights_per_epoch, sigma / (config.batch_counter + 1)
-    for i in range(epoch_in_each_step):
-        learning_rate_per_epoch = 1./((config.batch_counter+1) * 10000)
-        loss_weights_per_epoch = [1.0, 1/((config.batch_counter + 1)), DVT_loss_mult_factor * 0.00003]
-        yield config.batch_size_train, learning_rate_per_epoch, loss_weights_per_epoch, sigma / (config.batch_counter + 1)
-    for i in range(epoch_in_each_step):
-        learning_rate_per_epoch = 1./((config.batch_counter+1) * 10000)
-        loss_weights_per_epoch = [1.0, 1/((config.batch_counter + 1)), DVT_loss_mult_factor * 0.00001]
-        yield config.batch_size_train, learning_rate_per_epoch, loss_weights_per_epoch, sigma / (config.batch_counter + 1)
-
-    for i in range(config.num_epochs // 5):
-        learning_rate_per_epoch = 1./((config.batch_counter+1) * 10000)
-        loss_weights_per_epoch = [1.0, 1/((config.batch_counter + 1)), DVT_loss_mult_factor * 0.0000001]
-        yield config.batch_size_train, learning_rate_per_epoch, loss_weights_per_epoch, sigma / (config.batch_counter + 1)
-
-    for i in range(config.num_epochs // 5 + config.num_epochs % 5):
-        learning_rate_per_epoch = 1./((config.batch_counter+1) * 10000)
-        loss_weights_per_epoch = [1.0, 1/((config.batch_counter + 1)), DVT_loss_mult_factor * 0.00000001]
-        yield config.batch_size_train, learning_rate_per_epoch, loss_weights_per_epoch, sigma / (config.batch_counter + 1)
-
-
-# %%
-print('--------------------------------------------------------------------')
-print('started calculating PCA for DVT model')
-
-# %% train model (in data streaming way)
-if torch.cuda.is_available():
-    dev = "cuda:0"
-    print("\n******   Cuda available!!!   *****")
-else:
-    dev = "cpu"
-device = torch.device(dev)
-print('-----------------------------------------------')
-print('finding data')
-print('-----------------------------------------------', flush=True)
+# num_DVT_components = 20 if synapse_type == 'NMDA' else 30
 
 
 def load_files_names():
@@ -170,17 +52,19 @@ def batch_train(network, optimizer, custom_loss, inputs, labels):
 
 def save_model(network, saving_counter, config):
     print('-----------------------------------------------------------------------------------------')
-    print('finished epoch %d. saving...\n     "%s"\n     "%s"' % (
-        saving_counter, config.model_filename.split('/')[-1], config.auxilary_filename.split('/')[-1]))
+    print('finished epoch %d. saving...\n     "%s"\n"' % (
+        saving_counter, config.model_filename.split('/')[-1]))
     print('-----------------------------------------------------------------------------------------')
-    network.save(config.model_filename)
+    network.save(os.path.join(MODELS_DIR,config.model_filename,config.model_filename))
 
 
 def train_network(config, document_on_wandb=True):
+    global dynamic_parameter_loss_genrator, custom_loss, optimizer
     train_files, valid_files, test_files = load_files_names()
     DVT_PCA_model = None
     print("loading model...", flush=True)
     model = neuronal_model.NeuronConvNet.build_model_from_config(config)
+    model.cuda()
     print("model parmeters: %d"%model.count_parameters())
     print("loading data...", flush=True)
     train_data_generator = SimulationDataGenerator(train_files, buffer_size_in_files=BUFFER_SIZE_IN_FILES_TRAINING,
@@ -196,25 +80,33 @@ def train_network(config, document_on_wandb=True):
                                                         DVT_PCA_model=DVT_PCA_model)
     batch_counter = 0
     saving_counter = 0
+    if not config.dynamic_learning_params:
+        optimizer = getattr(optim, config.optimizer_type)(model.parameters(),
+                                                          **config.optimizer_params)
+        loss_weights = config.constant_loss_weights
+        sigma = config.constant_sigma
+        learning_rate = None
+        custom_loss = create_custom_loss(loss_weights, config.input_window_size, sigma)
+    else:
+        learning_rate, loss_weights, sigma=0.001,[1]*3,0.1
+        dynamic_parameter_loss_genrator=getattr(dlpf,config.dynamic_learning_params_function)(config)
+
     if document_on_wandb:
         wandb.watch(model, log='all', log_freq=4)
     print("start training...", flush=True)
 
-    for epoch, learning_parms in enumerate(learning_parameters_iter()):
+    for epoch in range(config.num_epochs):
         config.update(dict(epoch_counter=config.epoch_counter + 1), allow_val_change=True)
         validation_runing_loss = 0.
         running_loss = 0.
         saving_counter += 1
         epoch_start_time = time.time()
         epoch_batch_counter = 0
-        batch_size, learning_rate, loss_weights, sigma = learning_parms
-        print("bate_size: %i\nlearning_rate:%0.3f \nloss_weights: %s" % (batch_size, learning_rate, str(loss_weights)),
-              flush=True)
+        if config.dynamic_learning_params:
+            learning_rate, loss_weights, sigma = next(dynamic_parameter_loss_genrator)
+            custom_loss = create_custom_loss(loss_weights, config.input_window_size, sigma)
+            optimizer = getattr(optim, config.optimizer_type)(model.parameters(), lr=learning_rate,**config.optimizer_params)
 
-        train_data_generator.batch_size = batch_size
-
-        custom_loss = create_custom_loss(loss_weights, config.input_window_size, sigma)
-        optimizer = getattr(optim, config.optimizer_type)(model.parameters(), lr=learning_rate,**config.optimizer_params)
         for i, data_train_valid in enumerate(zip(train_data_generator, validation_data_generator)):
             # config.batch_counter+=1
             config.update(dict(batch_counter=config.batch_counter + 1), allow_val_change=True)
@@ -222,7 +114,7 @@ def train_network(config, document_on_wandb=True):
             train_data, valid_data = data_train_valid
             valid_input, valid_labels = valid_data
             batch_counter += 1
-            # debug_custom_loss = lambda par,ams:custom_loss(par,ams,i)#debugging
+
             train_loss = batch_train(model, optimizer, custom_loss, *train_data)
             if document_on_wandb:
                 train_log(train_loss, batch_counter, epoch, learning_rate, sigma, loss_weights, additional_str="train")
@@ -285,13 +177,15 @@ def train_log(loss, step, epoch, learning_rate=None, sigma=None, weights=None, a
     wandb.log({"epoch": epoch, "mse loss %s" % additional_str: loss_mse}, step=step)
     wandb.log({"epoch": epoch, "bcel loss %s" % additional_str: loss_bcel}, step=step)
     wandb.log({"epoch": epoch, "dvt loss %s" % additional_str: loss_dvt}, step=step)
-    if learning_rate is not None and sigma is not None and weights is not None:
+    if learning_rate is not None:
         wandb.log({"epoch": epoch, "learning rate %s" % additional_str: learning_rate},
                   step=step)  # add training parameters per step
+    if  weights is not None:
         wandb.log({"epoch": epoch, "dvt weight (normalize to bcel) %s" % additional_str: weights[2] / weights[0]},
                   step=step)  # add training parameters per step
         wandb.log({"epoch": epoch, "mse weight (normalize to bcel) %s" % additional_str: weights[1] / weights[0]},
                   step=step)  # add training parameters per step
+    if  sigma is not None:
         wandb.log({"epoch": epoch, "sigma %s" % additional_str: sigma}, step=step)  # add training parameters per step
 
     print("step %d, epoch %d %s" % (step, epoch, additional_str))
@@ -300,10 +194,19 @@ def train_log(loss, step, epoch, learning_rate=None, sigma=None, weights=None, a
     print("bcel loss ", loss_bcel)
     print("dvt loss ", loss_dvt)
 
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Add configuration file')
+    parser.add_argument(dest="config_path", type=str,
+                        help='configuration file for path')
+    args = parser.parse_args()
+    config = configuration_factory.load_config_file(args.config_path)
 
-try:
-    model_pipline(config)
-except Exception as e:
-    # send_mail("nitzan.luxembourg@mail.huji.ac.il","somthing went wrong",e)
-    raise e
-# send_mail("nitzan.luxembourg@mail.huji.ac.il","finished run","finished run")
+    # set SEED
+    torch.manual_seed(config.torch_seed)
+    np.random.seed(config.numpy_seed)
+    try:
+        model_pipline(config)
+    except Exception as e:
+        # send_mail("nitzan.luxembourg@mail.huji.ac.il","somthing went wrong",e)
+        raise e
+    # send_mail("nitzan.luxembourg@mail.huji.ac.il","finished run","finished run")
