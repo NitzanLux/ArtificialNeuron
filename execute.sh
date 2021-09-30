@@ -21,4 +21,4 @@ fi
 path=$(dirname $SCRIPT_PATH)
 
 # put your script here - example script is sitting with this bash script
-python3 $path/fit_CNN.py $SLURM_JOB_ID
+python3 $path/fit_CNN.py "models/NMDA/simplest_model_NMDA_Tree_TCN__2021-09-29__15_57__ID_3196/simplest_model_NMDA_Tree_TCN__2021-09-29__15_57__ID_3196.config" $SLURM_JOB_ID
