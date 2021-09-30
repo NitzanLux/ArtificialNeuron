@@ -1,7 +1,7 @@
 import logging
 import os
+import random
 import configuration_factory
-logging.error("Aaaaa")
 import glob
 from typing import Generator, Tuple
 from project_path import *
@@ -17,6 +17,7 @@ BUFFER_SIZE_IN_FILES_VALID = 1
 BUFFER_SIZE_IN_FILES_TRAINING = 1
 WANDB_API_KEY = "2725e59f8f4484605300fdf4da4c270ff0fe44a3"
 # for dibugging
+# logging.error("Aaaaa")
 
 print('-----------------------------------------------')
 print('finding data')
@@ -59,7 +60,7 @@ def save_model(network, saving_counter, config):
 
 
 def train_network(config, document_on_wandb=True):
-    global dynamic_parameter_loss_genrator, custom_loss, optimizer
+    global dynamic_parameter_loss_genrator, custom_loss
     train_files, valid_files, test_files = load_files_names()
     DVT_PCA_model = None
     print("loading model...", flush=True)
@@ -194,19 +195,25 @@ def train_log(loss, step, epoch, learning_rate=None, sigma=None, weights=None, a
     print("bcel loss ", loss_bcel)
     print("dvt loss ", loss_dvt)
 
-if __name__ == '__main__':
+
+def run_fit_cnn():
+    global e
     parser = argparse.ArgumentParser(description='Add configuration file')
     parser.add_argument(dest="config_path", type=str,
                         help='configuration file for path')
     args = parser.parse_args()
     config = configuration_factory.load_config_file(args.config_path)
-
     # set SEED
     torch.manual_seed(config.torch_seed)
     np.random.seed(config.numpy_seed)
+    random.seed(config.random_seed)
     try:
         model_pipline(config)
     except Exception as e:
         # send_mail("nitzan.luxembourg@mail.huji.ac.il","somthing went wrong",e)
         raise e
+
+
+if __name__ == '__main__':
+    run_fit_cnn()
     # send_mail("nitzan.luxembourg@mail.huji.ac.il","finished run","finished run")
