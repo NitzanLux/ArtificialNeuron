@@ -214,6 +214,6 @@ def run_fit_cnn():
         raise e
 
 
-if __name__ == '__main__':
-    run_fit_cnn()
+
+run_fit_cnn()
     # send_mail("nitzan.luxembourg@mail.huji.ac.il","finished run","finished run")
