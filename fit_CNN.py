@@ -215,6 +215,6 @@ def run_fit_cnn():
         raise e
 
 
-
+print(sys.argv)
 run_fit_cnn()
     # send_mail("nitzan.luxembourg@mail.huji.ac.il","finished run","finished run")
