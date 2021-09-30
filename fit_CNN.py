@@ -202,6 +202,7 @@ def run_fit_cnn():
     parser.add_argument(dest="config_path", type=str,
                         help='configuration file for path')
     args = parser.parse_args()
+    print(args)
     config = configuration_factory.load_config_file(args.config_path)
     # set SEED
     torch.manual_seed(config.torch_seed)
