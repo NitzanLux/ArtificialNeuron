@@ -201,6 +201,7 @@ def run_fit_cnn():
     parser = argparse.ArgumentParser(description='Add configuration file')
     parser.add_argument(dest="config_path", type=str,
                         help='configuration file for path')
+    parser.add_argument(dest="job_id",help="the job id",type=str)
     args = parser.parse_args()
     print(args)
     config = configuration_factory.load_config_file(args.config_path)
@@ -215,6 +216,6 @@ def run_fit_cnn():
         raise e
 
 
-print(sys.argv)
+
 run_fit_cnn()
     # send_mail("nitzan.luxembourg@mail.huji.ac.il","finished run","finished run")
