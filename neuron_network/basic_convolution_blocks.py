@@ -11,7 +11,8 @@ from project_path import TRAIN_DATA_DIR
 from synapse_tree import SectionNode, SectionType, NUMBER_OF_PREVIUSE_SEGMENTS_IN_BRANCH
 import os
 import numpy as np
-
+import torch.nn as nn
+import torch.nn.functional as F
 from neuron_network.block_aid_functions import *
 SYNAPSE_DIMENTION_POSITION = 3
 
