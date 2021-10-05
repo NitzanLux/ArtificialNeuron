@@ -81,8 +81,8 @@ class BranchBlock(nn.Module):  # FIXME fix the channels and its movment in the b
         self.conv1d_BranchBlock = nn.Conv2d(channel_output_number, channel_output_number, (kernel_size_1d, input_shape[1]),
                                             stride=stride, padding=padding_factor,
                                             dilation=dilation)
-        self.init_weights()
         self.net = nn.Sequential(self.conv1d_BranchBlock, self.activation_function)
+        self.init_weights()
 
     def init_weights(self):
         self.conv2d_x_BranchBlock.weight.data.normal_(0, 0.05)
