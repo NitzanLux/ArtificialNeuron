@@ -38,9 +38,10 @@ class NeuronConvNet(nn.Module):
         self.time_domain_shape = time_domain_shape
         self.modules_dict = nn.ModuleDict()
         self.is_cuda = is_cuda
-        self.build_model(**network_kwargs)
+        self.network_kwargs = network_kwargs
+        self.build_model(**self.network_kwargs)
 
-    def build_model(self, activation_function,**network_kwargs):
+    def build_model(self,**network_kwargs):
         # assert kernel_size_1d % 2 == 1 and kernel_size_2d % 2 == 1, "cannot assert even kernel size"
         if self.architecture_type==ArchitectureType.BASIC_CONV.value:
             branch_class= basic_convolution_blocks.BranchBlock
@@ -51,24 +52,33 @@ class NeuronConvNet(nn.Module):
             assert False,"type is not known"
 
         # model = NeuronConvNet(segment_tree, time_domain_shape, is_cuda, include_dendritic_voltage_tracing)
+        a_base_function=getattr(nn,self.network_kwargs["activation_function_name"])
+        activation_function =lambda:(a_base_function(
+                    self.network_kwargs["activation_function_kargs"])) #unknown bug
+        sub_network_kargs = dict()
+        sub_network_kargs["activation_function"]=activation_function
+        for k in network_kwargs.keys():
+            if "activation_function" in k:
+                continue
+            sub_network_kargs[k]=network_kwargs[k]
         input_shape = (0, 0)  # default for outer scope usage
         for segment in self.segment_tree:
             self.segemnt_ids[segment] = segment.id
             param_number = segment.get_number_of_parameters_for_nn()
             input_shape = (self.time_domain_shape, param_number)
             if segment.type == SectionType.BRANCH:
-                self.modules_dict[self.segemnt_ids[segment]] = branch_class(input_shape, activation_function,
-                                                                            **network_kwargs)  # todo: add parameters
+                self.modules_dict[self.segemnt_ids[segment]] = branch_class(input_shape,
+                                                                            **sub_network_kargs)  # todo: add parameters
             elif segment.type == SectionType.BRANCH_INTERSECTION:
-                self.modules_dict[self.segemnt_ids[segment]] = intersection_class(input_shape, activation_function,
-                                                                                  **network_kwargs)  # todo: add parameters
+                self.modules_dict[self.segemnt_ids[segment]] = intersection_class(input_shape,
+                                                                                  **sub_network_kargs)  # todo: add parameters
             elif segment.type == SectionType.BRANCH_LEAF:
-                self.modules_dict[self.segemnt_ids[segment]] = branch_leaf_class(input_shape, activation_function,
-                                                                                 **network_kwargs)  # todo: add parameters
+                self.modules_dict[self.segemnt_ids[segment]] = branch_leaf_class(input_shape,
+                                                                                 **sub_network_kargs)  # todo: add parameters
 
             elif segment.type == SectionType.SOMA:
-                self.last_layer = root_class(input_shape, activation_function,
-                                             **network_kwargs)  # todo: add parameters
+                self.last_layer = root_class(input_shape,
+                                             **sub_network_kargs)  # todo: add parameters
             else:
                 assert False, "Type not found"
         self.double()
@@ -128,6 +138,7 @@ class NeuronConvNet(nn.Module):
                          segemnt_ids=self.segemnt_ids,
                          time_domain_shape=self.time_domain_shape,
                          is_cuda=False)
+        data_dict.update(self.network_kwargs)
         state_dict = self.state_dict()
         with open('%s.pkl' % path, 'wb') as outp:
             pickle.dump((data_dict, state_dict), outp, pickle.HIGHEST_PROTOCOL)
@@ -137,8 +148,8 @@ class NeuronConvNet(nn.Module):
         neuronal_model = None
         with open('%s.pkl' % path, 'rb') as outp:
             neuronal_model_data = pickle.load(outp)
-        model = NeuronConvNet(**neuronal_model_data[0])
-        model.load_state_dict(neuronal_model_data[1]) #fixme this this should
+        neuronal_model = NeuronConvNet(**neuronal_model_data[0])
+        neuronal_model.load_state_dict(neuronal_model_data[1]) #fixme this this should
         return neuronal_model
 
     @staticmethod
@@ -146,8 +157,8 @@ class NeuronConvNet(nn.Module):
         if config.model_path is None:
             architecture_dict = dict(
                 architecture_type=config.architecture_type,
-                activation_function=lambda:(getattr(nn, config.activation_function_name)(
-                    **config.activation_function_kargs)),
+                activation_function_name =config.activation_function_name,
+                activation_function_kargs = config.activation_function_kargs,
                 segment_tree=load_tree_from_path(config.segment_tree_path),
                 include_dendritic_voltage_tracing=config.include_dendritic_voltage_tracing,
                 time_domain_shape=config.input_window_size, kernel_size_2d=config.kernel_size_2d,
