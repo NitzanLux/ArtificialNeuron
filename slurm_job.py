@@ -174,4 +174,4 @@ job_factory = SlurmJobFactory(MODELS_DIR)
 with open(os.path.join(MODELS_DIR,"%s.json"%configs_file) ,'r') as file:
     configs = json.load(file)
 for i,conf in enumerate(configs):
-    job_factory.send_job("job%i"%i,'python3 $path/fit_CNN.py "%s" $SLURM_JOB_ID'%str(os.path.join(MODELS_DIR,conf)),True)
+    job_factory.send_job("job%i"%i,'python3 $path/fit_CNN.py "%s" $SLURM_JOB_ID'%str(os.path.join(MODELS_DIR,*conf)),True)
