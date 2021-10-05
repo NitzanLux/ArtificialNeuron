@@ -224,12 +224,12 @@ def run_fit_cnn():
     torch.manual_seed(int(config.torch_seed))
     np.random.seed(int(config.numpy_seed))
     random.seed(int(config.random_seed))
-    try:
-        model_pipline(config)
+    # try:
+    model_pipline(config)
         # configuration_factory.
-    except Exception as e:
+    # except Exception as e:
         # send_mail("nitzan.luxembourg@mail.huji.ac.il","somthing went wrong",e)
-        raise e
+        # raise e
 
 
 run_fit_cnn()
