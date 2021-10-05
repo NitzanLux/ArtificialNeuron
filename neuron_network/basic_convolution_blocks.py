@@ -49,8 +49,8 @@ class BranchLeafBlock(nn.Module):
                                  self.conv1d_BranchLeafBlock, self.activation_function)
 
     def init_weights(self):
-        self.conv2d_BranchLeafBlock.weight.data.normal_(0, 0.01)
-        self.conv1d_BranchLeafBlock.weight.data.normal_(0, 0.01)
+        self.conv2d_BranchLeafBlock.weight.data.normal_(0, 0.05)
+        self.conv1d_BranchLeafBlock.weight.data.normal_(0, 0.05)
 
     def forward(self, x):
         out = self.net(x)
@@ -85,8 +85,8 @@ class BranchBlock(nn.Module):  # FIXME fix the channels and its movment in the b
         self.net = nn.Sequential(self.conv1d_BranchBlock, self.activation_function)
 
     def init_weights(self):
-        self.conv1d_BranchBlock.weight.data.normal_(0, 0.01)
-        self.conv2d_x_BranchBlock.weight.data.normal_(0, 0.01)
+        self.conv2d_x_BranchBlock.weight.data.normal_(0, 0.05)
+        self.net.weights.data.normal_(0, 0.05)
         # self.conv2d_prev.weight.data.normal_(0, 0.01)
 
     def forward(self, prev_segment, x):
@@ -125,6 +125,9 @@ class IntersectionBlock(nn.Module):
     def forward(self, x):
         out = self.net(x)
         return out
+    def init_weights(self):
+        self.net.weights.data.normal_(0, 0.05)
+        # self.conv2d_prev.weight.data.normal_(0, 0.01)
 
 
 class RootBlock(nn.Module):
@@ -146,3 +149,8 @@ class RootBlock(nn.Module):
         s = self.spike_prediction(x)
         s = self.sigmoid(s)
         return s, v
+
+    def init_weights(self):
+        self.voltage_prediction.weight.data.normal_(0, 0.05)
+        self.spike_prediction.weight.data.normal_(0, 0.05)
+        # self.conv2d_prev.weight.data.normal_(0, 0.01)

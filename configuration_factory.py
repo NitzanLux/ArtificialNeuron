@@ -94,6 +94,9 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
     if config_new_path is None:
         os.mkdir(os.path.join(MODELS_DIR, config.model_filename))
         config_new_path = [config.model_filename]
+    torch.manual_seed(int(config.torch_seed))
+    np.random.seed(int(config.numpy_seed))
+    random.seed(int(config.random_seed))
     if save_model_to_config_dir:
         if config.model_path is None:
             model = neuronal_model.NeuronConvNet.build_model_from_config(config)
