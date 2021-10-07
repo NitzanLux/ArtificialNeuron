@@ -170,7 +170,7 @@ args = parser.parse_args()
 print(args)
 configs_file= args.configs_paths
 
-job_factory = SlurmJobFactory("/cluster_logs")
+job_factory = SlurmJobFactory("cluster_logs")
 with open(os.path.join(MODELS_DIR,"%s.json"%configs_file) ,'r') as file:
     configs = json.load(file)
 for i,conf in enumerate(configs):
