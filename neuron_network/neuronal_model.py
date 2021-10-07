@@ -187,8 +187,10 @@ class NeuronConvNet(nn.Module):
 
     def init_weights(self,sd=0.05):
         def init_params(m):
-            m.weight.data.normal_(0, sd)
-            m.bias.data.normal_(0, sd)
+            if hasattr(m,"weight"):
+                m.weight.data.normal_(0, sd)
+            if hasattr(m,"bias"):
+                m.bias.data.normal_(0, sd)
         self.apply(init_params)
 def load_tree_from_path(path: str) -> SectionNode:
     with open(path, 'rb') as file:
