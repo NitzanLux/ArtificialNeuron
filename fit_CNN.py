@@ -60,9 +60,9 @@ def save_model(network, saving_counter, config):
         saving_counter, config.model_filename.split('/')[-1]))
     print('-----------------------------------------------------------------------------------------')
 
-    if os.path.exists(os.join(*config.model_path)):  # overwrite
-        os.remove(os.join(*config.model_path))
-    network.save(os.join(*config.model_path))
+    if os.path.exists(os.path.join(*config.model_path)):  # overwrite
+        os.remove(os.path.join(*config.model_path))
+    network.save(os.path.join(*config.model_path))
     configuration_factory.overwrite_config(config)
 
 
