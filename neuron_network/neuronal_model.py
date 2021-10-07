@@ -7,7 +7,7 @@ import torch
 import torch.nn as nn
 from general_aid_function import *
 from torch.nn.utils import weight_norm
-from project_path import TRAIN_DATA_DIR
+from project_path import TRAIN_DATA_DIR,MODELS_DIR
 from synapse_tree import SectionNode, SectionType, NUMBER_OF_PREVIUSE_SEGMENTS_IN_BRANCH
 import os
 import numpy as np
