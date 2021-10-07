@@ -1,4 +1,6 @@
 from typing import Generator, Tuple
+import numpy as np
+
 include_DVT=False
 def learning_parameters_iter(config) -> Generator[Tuple[int, float, Tuple[float, float, float]], None, None]:
     sigma = 100
