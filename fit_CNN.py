@@ -120,7 +120,7 @@ def train_network(config, document_on_wandb=True):
         if config.dynamic_learning_params:
             learning_rate, loss_weights, sigma = next(dynamic_parameter_loss_genrator)
             custom_loss = create_custom_loss(loss_weights, config.input_window_size, sigma)
-            config.optimizer_params.lr = learning_rate
+            config.optimizer_params["lr"] = learning_rate
             optimizer = getattr(optim, config.optimizer_type)(model.parameters(),
                                                               **config.optimizer_params)
 
