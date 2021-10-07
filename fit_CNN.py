@@ -96,7 +96,7 @@ def train_network(config, document_on_wandb=True):
         sigma = config.constant_sigma
         learning_rate = None
         custom_loss = create_custom_loss(loss_weights, config.input_window_size, sigma)
-        if not lr in config.optimizer_params:
+        if not "lr" in config.optimizer_params:
             config.optimizer_params.lr = config.constant_learning_rate
         else:
             config.constant_learning_rate = config.optimizer_params.lr
