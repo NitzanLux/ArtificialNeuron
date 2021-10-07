@@ -169,7 +169,7 @@ class NeuronConvNet(nn.Module):
              )
             network = NeuronConvNet(**(architecture_dict))
         else:
-            network = NeuronConvNet.load(os.path.join(config.model_path))
+            network = NeuronConvNet.load(os.path.join(*config.model_path))
         network.cuda()
         return network
 
