@@ -60,7 +60,7 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                       train_file_load=0.5, valid_file_load=0.5,
                       optimizer_type="AdamW", optimizer_params={},
                       batch_counter=0, epoch_counter=0,  # default counter
-                      torch_seed=42, numpy_seed=21, random_seed=12,
+                      torch_seed=42, numpy_seed=21, random_seed=12,init_weights_sd=0.05,
                       dynamic_learning_params=True,
                       constant_loss_weights=[1., 1. / 2., 0.], constant_sigma=0.1, constant_learning_rate=0.001,
                       dynamic_learning_params_function="learning_parameters_iter",
@@ -84,6 +84,7 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
     config.update(kargs)  # override by kargs
     if is_new_name or not ("model_filename" in config):
         config.model_filename = generate_model_name(config.model_tag)
+    print(config.model_filename)
     if generate_random_seeds:
         max_seed_number = sum([2 ** i for i in range(32)]) - 1  # maximal seed
         np.random.seed()
@@ -92,11 +93,15 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
         config.torch_seed, config.numpy_seed, config.random_seed = float(config.torch_seed), float(
             config.numpy_seed), float(config.random_seed)
     if config_new_path is None:
-        os.mkdir(os.path.join(MODELS_DIR, config.model_filename))
+        try:
+            os.mkdir(os.path.join(MODELS_DIR, config.model_filename))
+        except FileExistsError as e:
+            print("Folder with name %s already exists trying again"%config.model_filename)
+            return config_factory(save_model_to_config_dir, config_new_path, generate_random_seeds,
+                           is_new_name,
+                           **kargs)
+
         config_new_path = [config.model_filename]
-    torch.manual_seed(int(config.torch_seed))
-    np.random.seed(int(config.numpy_seed))
-    random.seed(int(config.random_seed))
     if save_model_to_config_dir:
         if config.model_path is None:
             model = neuronal_model.NeuronConvNet.build_model_from_config(config)

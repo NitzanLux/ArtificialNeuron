@@ -72,6 +72,8 @@ def train_network(config, document_on_wandb=True):
     DVT_PCA_model = None
     print("loading model...", flush=True)
     model = neuronal_model.NeuronConvNet.build_model_from_config(config)
+    if config.epoch.counter==0:
+        model.init_weights(config.init_weights_sd)
     model.cuda()
     print("model parmeters: %d" % model.count_parameters())
     print("loading data...", flush=True)
