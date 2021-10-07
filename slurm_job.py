@@ -12,7 +12,7 @@ timelimit_argument_str = "-t 3-23:00:00"
 # timelimit_argument_str = "-t 2-23:00:00"
 GPU_argument_str = "--gres=gpu:1"
 CPU_argument_str = "-c 1"
-DEFAULT_MEM = 20000
+DEFAULT_MEM = 30000
 # RAM_argument_str = "--mem 20000"
 
 # TODO: some time add ss-gpu.q also
