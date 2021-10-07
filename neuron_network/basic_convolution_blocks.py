@@ -81,12 +81,13 @@ class BranchBlock(nn.Module):  # FIXME fix the channels and its movment in the b
         self.conv1d_BranchBlock = nn.Conv2d(channel_output_number, channel_output_number, (kernel_size_1d, input_shape[1]),
                                             stride=stride, padding=padding_factor,
                                             dilation=dilation)
-        self.net = nn.Sequential(self.conv1d_BranchBlock, self.activation_function)
         self.init_weights()
+        self.net = nn.Sequential(self.conv1d_BranchBlock, self.activation_function)
 
     def init_weights(self):
-        self.conv2d_x_BranchBlock.weight.data.normal_(0, 0.05)
-        self.net.weights.data.normal_(0, 0.05)
+        pass
+        # self.conv2d_x_BranchBlock.weight.data.normal_(0, 0.05)
+        # self.conv1d_BranchBlock.weights.data.normal_(0, 0.05)
         # self.conv2d_prev.weight.data.normal_(0, 0.01)
 
     def forward(self, prev_segment, x):
@@ -126,7 +127,8 @@ class IntersectionBlock(nn.Module):
         out = self.net(x)
         return out
     def init_weights(self):
-        self.net.weights.data.normal_(0, 0.05)
+        self.conv1d_2_IntersectionBlock.data.normal_(0, 0.05)
+        self.conv1d_1_IntersectionBlock.data.normal_(0, 0.05)
         # self.conv2d_prev.weight.data.normal_(0, 0.01)
 
 
