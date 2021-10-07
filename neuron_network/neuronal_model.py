@@ -52,9 +52,9 @@ class NeuronConvNet(nn.Module):
             assert False,"type is not known"
 
         # model = NeuronConvNet(segment_tree, time_domain_shape, is_cuda, include_dendritic_voltage_tracing)
-        a_base_function=getattr(nn,self.network_kwargs["activation_function_name"])
-        activation_function =lambda:(a_base_function(
-                    self.network_kwargs["activation_function_kargs"])) #unknown bug
+        activation_function_base_function=getattr(nn,self.network_kwargs["activation_function_name"])
+        activation_function =lambda:(activation_function_base_function(
+                    **self.network_kwargs["activation_function_kargs"])) #unknown bug
         sub_network_kargs = dict()
         sub_network_kargs["activation_function"]=activation_function
         for k in network_kwargs.keys():
