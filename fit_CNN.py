@@ -13,9 +13,9 @@ import wandb
 import argparse
 import dynamic_learning_parameters_factory as dlpf
 
-BUFFER_SIZE_IN_FILES_VALID = 5
+BUFFER_SIZE_IN_FILES_VALID = 1
 
-BUFFER_SIZE_IN_FILES_TRAINING = 15
+BUFFER_SIZE_IN_FILES_TRAINING = 6
 WANDB_API_KEY = "2725e59f8f4484605300fdf4da4c270ff0fe44a3"
 # for dibugging
 # logging.error("Aaaaa")
