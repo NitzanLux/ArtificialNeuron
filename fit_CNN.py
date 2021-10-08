@@ -12,7 +12,7 @@ from neuron_network import neuronal_model
 import wandb
 import argparse
 import dynamic_learning_parameters_factory as dlpf
-
+from general_aid_function import *
 BUFFER_SIZE_IN_FILES_VALID = 1
 
 BUFFER_SIZE_IN_FILES_TRAINING = 6
@@ -63,7 +63,7 @@ def save_model(network, saving_counter, config):
     if os.path.exists(os.path.join(MODELS_DIR,*config.model_path)):  # overwrite
         os.remove(os.path.join(MODELS_DIR,*config.model_path))
     network.save(os.path.join(MODELS_DIR,*config.model_path))
-    configuration_factory.overwrite_config(dict(config))
+    configuration_factory.overwrite_config(AttrDict(config))
 
 
 def train_network(config, document_on_wandb=True):

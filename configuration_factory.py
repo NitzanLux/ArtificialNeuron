@@ -111,7 +111,7 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
             model= neuronal_model.NeuronConvNet.load(os.path.join(MODELS_DIR,*config.model_path))
             config.model_path = config_new_path+[config.model_filename]
             model.save(os.path.join(MODELS_DIR,*config.model_path))
-    config.config_path=config_new_path+[ '%s.config' % config.model_filename]
+    config.config_path = config_new_path+[ '%s.config' % config.model_filename]
     save_config(config)
     return config.config_path
 
