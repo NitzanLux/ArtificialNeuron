@@ -118,7 +118,7 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
 
 def overwrite_config(config, **kargs):
     config.update(kargs)
-    os.remove(os.join(*config.config_path))
+    os.remove(os.path.join(*config.config_path))
     save_config(config)
 
 
