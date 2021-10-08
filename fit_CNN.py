@@ -63,7 +63,7 @@ def save_model(network, saving_counter, config):
     if os.path.exists(os.path.join(MODELS_DIR,*config.model_path)):  # overwrite
         os.remove(os.path.join(MODELS_DIR,*config.model_path))
     network.save(os.path.join(MODELS_DIR,*config.model_path))
-    configuration_factory.overwrite_config(config)
+    configuration_factory.overwrite_config(dict(config))
 
 
 def train_network(config, document_on_wandb=True):
