@@ -146,7 +146,7 @@ class NeuronConvNet(nn.Module):
     @staticmethod
     def load(path):
         neuronal_model = None
-        with open('%s.pkl' % path, 'rb') as outp:
+        with open('%s.pkl' % path if path[-len(".pkl"):]!=".pkl" else path, 'rb') as outp:
             neuronal_model_data = pickle.load(outp)
         neuronal_model = NeuronConvNet(**neuronal_model_data[0])
         neuronal_model.load_state_dict(neuronal_model_data[1]) #fixme this this should

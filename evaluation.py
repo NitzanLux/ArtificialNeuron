@@ -48,7 +48,8 @@ def plot_network_and_actual_results(file_path: [str, List[str]], model_path: [st
         out_var= out[1].detach().numpy()[0, 0, :, :]
         spike= out[0].detach().numpy()[0, 0, :, :]
         plt.scatter(np.arange(out_var.shape[0]),spike)
-        plt.plot((out_var-np.min(out_var))/(np.max(out_var)-np.min(out_var))*(np.max(y_soma_batch)-np.min(y_soma_batch))+np.min(y_soma_batch), label=model_id)
+        # plt.plot((out_var-np.min(out_var))/(np.max(out_var)-np.min(out_var))*(np.max(y_soma_batch)-np.min(y_soma_batch))+np.min(y_soma_batch), label=model_id)
+        plt.plot(out_var, label=model_id)
     plt.legend()
     plt.show()
 
@@ -57,7 +58,6 @@ def plot_network_and_actual_results(file_path: [str, List[str]], model_path: [st
 
 
 plot_network_and_actual_results(
-    r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\data\exBas_0_750_inhBasDiff_-550_200__exApic_0_800_inhApicDiff_-550_200__saved_InputSpikes_DVTs__811_outSpikes__128_simulationRuns__6_secDuration__randomSeed_100512.p"
-    ,
-    r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDANMDA_Tree_TCN__2021-08-31__15_45__samples_11400__ID_2372.pkl",
-    2, 0, 1800)
+    r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\data\exBas_0_750_inhBasDiff_-550_200__exApic_0_800_inhApicDiff_-550_200__saved_InputSpikes_DVTs__811_outSpikes__128_simulationRuns__6_secDuration__randomSeed_100512.p",
+    r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\first_train_NMDA_Tree_TCN__2021-10-07__12_15__ID_15390\first_train_NMDA_Tree_TCN__2021-10-07__12_15__ID_15390.pkl",
+    8, 3, 400)

@@ -56,15 +56,15 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                    **kargs):
     ##default values can be overridden by kargs
     config = AttrDict(input_window_size=400, num_segments=2 * 639, num_syn_types=1,
-                      epoch_size=15, num_epochs=15000, batch_size_train=15, batch_size_validation=15,
+                      epoch_size=15, num_epochs=15000, batch_size_train=10, batch_size_validation=4,
                       train_file_load=0.5, valid_file_load=0.5,
                       optimizer_type="AdamW", optimizer_params={},
                       batch_counter=0, epoch_counter=0,  # default counter
                       torch_seed=42, numpy_seed=21, random_seed=12,init_weights_sd=0.05,
                       dynamic_learning_params=True,
-                      constant_loss_weights=[1., 1. / 2., 0.], constant_sigma=0.1, constant_learning_rate=0.001,
+                      constant_loss_weights=[1., 1. / 2., 0.,1.], constant_sigma=0.1, constant_learning_rate=0.001,
                       dynamic_learning_params_function="learning_parameters_iter",
-                      config_path="", model_tag="first_train", model_path=None)
+                      config_path="", model_tag="gaussian_train", model_path=None)
 
     architecture_dict = AttrDict(segment_tree_path="tree.pkl",
                                  architecture_type="BASIC_CONV",
@@ -77,7 +77,7 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                                  inner_scope_channel_number=13,
                                  channel_output_number=9,
                                  activation_function_name="LeakyReLU",
-                                 activation_function_kargs=dict(negative_slope=0.25),
+                                 activation_function_kargs=dict(negative_slope=0.5),
                                  include_dendritic_voltage_tracing=False)
 
     config.update(architecture_dict)
@@ -149,7 +149,7 @@ if __name__ == '__main__':
     config_static = config_factory(dynamic_learning_params=False)
     configs_static = generate_config_files_multiple_seeds(config_static, 6)
     configs_to_read = configs_dynamic + configs_static
-    with open(os.path.join(MODELS_DIR,"configs_to_run.json"), 'w') as file:
+    with open(os.path.join(MODELS_DIR,"configs_to_run_gaussian.json"), 'w') as file:
         file.write(json.dumps(configs_to_read))  # use `json.loads` to do the reverse
 
 
