@@ -78,5 +78,5 @@ parser.add_argument(dest="time_idx", help="time_idx", type=int)
 parser.add_argument(dest="window_size", help="window_size", type=int)
 args = parser.parse_args()
 
-plot_network_and_actual_results(**dict(args))
+plot_network_and_actual_results(**vars(args))
 print("a")
