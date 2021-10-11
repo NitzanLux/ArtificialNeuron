@@ -62,7 +62,7 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                       batch_counter=0, epoch_counter=0,  # default counter
                       torch_seed=42, numpy_seed=21, random_seed=12,init_weights_sd=0.05,
                       dynamic_learning_params=True,
-                      constant_loss_weights=[1., 1. / 2., 0.,1.], constant_sigma=0.1, constant_learning_rate=0.001,
+                      constant_loss_weights=[1., 1. / 2., 0.,1.], constant_sigma=2.5, constant_learning_rate=0.001,
                       dynamic_learning_params_function="learning_parameters_iter",
                       config_path="", model_tag="gaussian_train", model_path=None)
 
@@ -145,11 +145,11 @@ def generate_config_files_multiple_seeds(config_path: [str, Dict], number_of_con
 
 if __name__ == '__main__':
     config_dynamic = config_factory()
-    configs_dynamic = generate_config_files_multiple_seeds(config_dynamic, 6)
+    configs_dynamic = generate_config_files_multiple_seeds(config_dynamic, 1)
     config_static = config_factory(dynamic_learning_params=False)
-    configs_static = generate_config_files_multiple_seeds(config_static, 6)
+    configs_static = generate_config_files_multiple_seeds(config_static, 1)
     configs_to_read = configs_dynamic + configs_static
-    with open(os.path.join(MODELS_DIR,"configs_to_run_gaussian.json"), 'w') as file:
+    with open(os.path.join(MODELS_DIR,"configs_to_run_gaussian_two_models.json"), 'w') as file:
         file.write(json.dumps(configs_to_read))  # use `json.loads` to do the reverse
 
 
