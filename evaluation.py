@@ -58,14 +58,14 @@ def plot_network_and_actual_results(file_path: [str, List[str]], model_path: [st
     plt.show()
 
 
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Add configuration file')
+    parser.add_argument(dest="file_path", help="data path for evaluation", type=str)
+    parser.add_argument(dest="model_path", type=str,
+                            help='model path or direcotry')
+    parser.add_argument(dest="sample_idx", help="sample_idx", type=int)
+    parser.add_argument(dest="time_idx", help="time_idx", type=int)
+    parser.add_argument(dest="window_size", help="window_size", type=int)
+    args = parser.parse_args()
 
-parser = argparse.ArgumentParser(description='Add configuration file')
-parser.add_argument(dest="file_path", help="data path for evaluation", type=str)
-parser.add_argument(dest="model_path", type=str,
-                        help='model path or direcotry')
-parser.add_argument(dest="sample_idx", help="sample_idx", type=int)
-parser.add_argument(dest="time_idx", help="time_idx", type=int)
-parser.add_argument(dest="window_size", help="window_size", type=int)
-args = parser.parse_args()
-
-plot_network_and_actual_results(**dict(args))
+    plot_network_and_actual_results(**dict(args))
