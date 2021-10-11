@@ -7,6 +7,7 @@ import numpy as np
 import torch
 from typing import List
 import re
+import argparse
 
 
 def plot_network_and_actual_results(file_path: [str, List[str]], model_path: [str, List[str]] = '',
@@ -39,10 +40,12 @@ def plot_network_and_actual_results(file_path: [str, List[str]], model_path: [st
             model_path = [join(model_path, f) for f in listdir(model_path) if isfile(join(model_path, f))]
         else:
             model_path = [model_path]
+    r_match= re.search('(?<=TCN__)[0-9]{4}-[0-9]{2}-[0-9]{2}__[0-9]{2}_[0-9]{2}__ID_[0-9]+(?=\.pkl)',model_path[0])
+    first_path_name = r_match.group(0)
     for p in model_path:
         network = neuronal_model.NeuronConvNet.load(p)
         network.cpu()
-        regex_match = re.search('(?<=ID_)[0-9]+(?=\.pkl)', p)
+        regex_match = re.search('(?<=TCN__)[0-9]{4}-[0-9]{2}-[0-9]{2}__[0-9]{2}_[0-9]{2}__ID_[0-9]+(?=\.pkl)', p)
         model_id = regex_match.group(0)
         out = network(X_batch)
         out_var= out[1].detach().numpy()[0, 0, :, :]
@@ -50,14 +53,19 @@ def plot_network_and_actual_results(file_path: [str, List[str]], model_path: [st
         plt.scatter(np.arange(out_var.shape[0]),spike)
         # plt.plot((out_var-np.min(out_var))/(np.max(out_var)-np.min(out_var))*(np.max(y_soma_batch)-np.min(y_soma_batch))+np.min(y_soma_batch), label=model_id)
         plt.plot(out_var, label=model_id)
+    plt.savefig(join("evaluation_plots","%s_%d_%d_%d.png")%(first_path_name,sample_idx,time_idx,window_size))
     plt.legend()
     plt.show()
 
 
 
+parser = argparse.ArgumentParser(description='Add configuration file')
+parser.add_argument(dest="file_path", help="data path for evaluation", type=str)
+parser.add_argument(dest="model_path", type=str,
+                        help='model path or direcotry')
+parser.add_argument(dest="sample_idx", help="sample_idx", type=int)
+parser.add_argument(dest="time_idx", help="time_idx", type=int)
+parser.add_argument(dest="window_size", help="window_size", type=int)
+args = parser.parse_args()
 
-
-plot_network_and_actual_results(
-    r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\data\exBas_0_750_inhBasDiff_-550_200__exApic_0_800_inhApicDiff_-550_200__saved_InputSpikes_DVTs__811_outSpikes__128_simulationRuns__6_secDuration__randomSeed_100512.p",
-    r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\first_train_NMDA_Tree_TCN__2021-10-07__12_15__ID_15390\first_train_NMDA_Tree_TCN__2021-10-07__12_15__ID_15390.pkl",
-    8, 3, 400)
+plot_network_and_actual_results(**dict(args))
