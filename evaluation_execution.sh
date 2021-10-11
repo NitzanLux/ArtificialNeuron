@@ -19,4 +19,4 @@ fi
 path=$(dirname $SCRIPT_PATH)
 
 # put your script here - example script is sitting with this bash script
-python3 $path/evaluation.py
+python3 $path/slurm_debugging.py
