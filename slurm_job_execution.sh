@@ -21,4 +21,4 @@ fi
 path=$(dirname $SCRIPT_PATH)
 
 # put your script here - example script is sitting with this bash script
-python3 $path/slurm_job.py
+python3 $path/slurm_job.py "configs_to_run_gaussian_two_models"
