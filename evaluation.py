@@ -1,4 +1,5 @@
 from os import listdir
+import logging
 from os.path import isfile, join,isdir
 import matplotlib.pyplot as plt
 import simulation_data_generator as sdg
@@ -8,6 +9,8 @@ import torch
 from typing import List
 import re
 import argparse
+logging.error("Aaaaa")
+
 
 
 def plot_network_and_actual_results(file_path: [str, List[str]], model_path: [str, List[str]] = '',
@@ -56,16 +59,16 @@ def plot_network_and_actual_results(file_path: [str, List[str]], model_path: [st
     plt.savefig(join("evaluation_plots","%s_%d_%d_%d.png")%(first_path_name,sample_idx,time_idx,window_size))
     plt.legend()
     plt.show()
+logging.error("Aaaaa")
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Add configuration file')
-    parser.add_argument(dest="file_path", help="data path for evaluation", type=str)
-    parser.add_argument(dest="model_path", type=str,
-                            help='model path or direcotry')
-    parser.add_argument(dest="sample_idx", help="sample_idx", type=int)
-    parser.add_argument(dest="time_idx", help="time_idx", type=int)
-    parser.add_argument(dest="window_size", help="window_size", type=int)
-    args = parser.parse_args()
+parser = argparse.ArgumentParser(description='Add configuration file')
+parser.add_argument(dest="file_path", help="data path for evaluation", type=str)
+parser.add_argument(dest="model_path", type=str,
+                        help='model path or direcotry')
+parser.add_argument(dest="sample_idx", help="sample_idx", type=int)
+parser.add_argument(dest="time_idx", help="time_idx", type=int)
+parser.add_argument(dest="window_size", help="window_size", type=int)
+args = parser.parse_args()
 
-    plot_network_and_actual_results(**dict(args))
+plot_network_and_actual_results(**dict(args))
