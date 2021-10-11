@@ -1,16 +1,22 @@
+print("a")
+
 from os import listdir
 import logging
+print("a")
+
+logging.error("first import")
 from os.path import isfile, join,isdir
 import matplotlib.pyplot as plt
 import simulation_data_generator as sdg
+logging.error("second import")
 from neuron_network import neuronal_model
 import numpy as np
 import torch
 from typing import List
 import re
 import argparse
-logging.error("Aaaaa")
-
+logging.error("third import")
+print("a")
 
 
 def plot_network_and_actual_results(file_path: [str, List[str]], model_path: [str, List[str]] = '',
@@ -61,6 +67,7 @@ def plot_network_and_actual_results(file_path: [str, List[str]], model_path: [st
     plt.show()
 logging.error("Aaaaa")
 
+print("a")
 
 parser = argparse.ArgumentParser(description='Add configuration file')
 parser.add_argument(dest="file_path", help="data path for evaluation", type=str)
@@ -72,3 +79,4 @@ parser.add_argument(dest="window_size", help="window_size", type=int)
 args = parser.parse_args()
 
 plot_network_and_actual_results(**dict(args))
+print("a")
