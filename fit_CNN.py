@@ -14,6 +14,7 @@ import argparse
 import dynamic_learning_parameters_factory as dlpf
 from general_aid_function import *
 from gaussian_smoothing import GaussianSmoothing
+
 BUFFER_SIZE_IN_FILES_VALID = 1
 
 BUFFER_SIZE_IN_FILES_TRAINING = 6
@@ -47,10 +48,10 @@ def batch_train(network, optimizer, custom_loss, inputs, labels):
     optimizer.zero_grad()
     # forward + backward + optimize
     outputs = network(inputs)
-    general_loss, loss_bcel, loss_mse, loss_dvt,loss_gausian_mse = custom_loss(outputs, labels)
+    general_loss, loss_bcel, loss_mse, loss_dvt, loss_gausian_mse = custom_loss(outputs, labels)
     general_loss.backward()
     optimizer.step()
-    out = general_loss, loss_bcel, loss_mse, loss_dvt,loss_gausian_mse
+    out = general_loss, loss_bcel, loss_mse, loss_dvt, loss_gausian_mse
 
     return out
 
@@ -61,9 +62,9 @@ def save_model(network, saving_counter, config):
         saving_counter, config.model_filename.split('/')[-1]))
     print('-----------------------------------------------------------------------------------------')
 
-    if os.path.exists(os.path.join(MODELS_DIR,*config.model_path)):  # overwrite
-        os.remove(os.path.join(MODELS_DIR,*config.model_path))
-    network.save(os.path.join(MODELS_DIR,*config.model_path))
+    if os.path.exists(os.path.join(MODELS_DIR, *config.model_path)):  # overwrite
+        os.remove(os.path.join(MODELS_DIR, *config.model_path))
+    network.save(os.path.join(MODELS_DIR, *config.model_path))
     configuration_factory.overwrite_config(AttrDict(config))
 
 
@@ -163,7 +164,7 @@ def create_custom_loss(loss_weights, window_size, sigma):
         general_loss = 0
         loss_bcel = loss_weights[0] * binary_cross_entropy_loss(output[0],
                                                                 target[0])  # removing channel dimention
-        if len(loss_weights)>3:
+        if len(loss_weights) > 3:
             g_blur = GaussianSmoothing(1, window_size, sigma, 1).to('cuda', torch.double)
             loss_blur = loss_weights[3] * mse_loss(g_blur(output[0].squeeze(3)), g_blur(target[0].squeeze(3)))
         loss_mse = loss_weights[1] * mse_loss(output[1].squeeze(1), target[1].squeeze(1))
@@ -172,12 +173,12 @@ def create_custom_loss(loss_weights, window_size, sigma):
             loss_dvt = loss_weights[2] * mse_loss(output[2], target[2])
             general_loss = loss_bcel + loss_mse + loss_dvt
             return general_loss, loss_bcel.item(), loss_mse.item(), loss_dvt.item()
-        loss_blur_val=0
-        if len(loss_weights)>3:
-            general_loss+=loss_blur
-            loss_blur_val=loss_blur.item()
+        loss_blur_val = 0
+        if len(loss_weights) > 3:
+            general_loss += loss_blur
+            loss_blur_val = loss_blur.item()
         general_loss = loss_bcel + loss_mse
-        return general_loss, loss_bcel.item(), loss_mse.item(), loss_dvt,loss_blur_val
+        return general_loss, loss_bcel.item(), loss_mse.item(), loss_dvt, loss_blur_val
         # return general_loss, 0, 0, loss_dvt
 
     return custom_loss
@@ -195,7 +196,7 @@ def model_pipline(hyperparameters, document_on_wandb=True):
 
 
 def train_log(loss, step, epoch, learning_rate=None, sigma=None, weights=None, additional_str=''):
-    general_loss, loss_bcel, loss_mse, loss_dvt,blur_loss = loss
+    general_loss, loss_bcel, loss_mse, loss_dvt, blur_loss = loss
     wandb.log({"epoch": epoch, "general loss %s" % additional_str: general_loss.item()}, step=step)
     wandb.log({"epoch": epoch, "mse loss %s" % additional_str: loss_mse}, step=step)
     wandb.log({"epoch": epoch, "bcel loss %s" % additional_str: loss_bcel}, step=step)
