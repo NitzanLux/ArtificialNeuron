@@ -166,7 +166,6 @@ def create_custom_loss(loss_weights, window_size, sigma):
         if len(loss_weights)>3:
             g_blur = GaussianSmoothing(1, window_size, sigma, 1).to('cuda', torch.double)
             loss_blur = loss_weights[3] * mse_loss(g_blur(output[0].squeeze(3)), g_blur(target[0].squeeze(3)))
-
         loss_mse = loss_weights[1] * mse_loss(output[1].squeeze(1), target[1].squeeze(1))
         loss_dvt = 0
         if has_dvt:

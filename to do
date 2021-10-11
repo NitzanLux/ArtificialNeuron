@@ -1,3 +1,3 @@
 -change the tree to tree path(or maybe inside of the constructor)
--add seed when creating a model
 -docomentation (ofcourse)
+-add accuracy and add 1d TCN architecture
