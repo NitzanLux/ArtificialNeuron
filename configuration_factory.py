@@ -64,7 +64,7 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                       dynamic_learning_params=True,
                       constant_loss_weights=[1., 1. / 2., 0.,1.], constant_sigma=2.5, constant_learning_rate=0.001,
                       dynamic_learning_params_function="learning_parameters_iter",
-                      config_path="", model_tag="gaussian_train", model_path=None)
+                      config_path="", model_tag="gaussian_train", model_path=None,loss_function="bcel_mse_dvt_blur_loss")
 
     architecture_dict = AttrDict(segment_tree_path="tree.pkl",
                                  architecture_type="BASIC_CONV",

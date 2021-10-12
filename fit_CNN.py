@@ -13,8 +13,8 @@ import wandb
 import argparse
 import dynamic_learning_parameters_factory as dlpf
 from general_aid_function import *
-from gaussian_smoothing import GaussianSmoothing
 
+from loss_function_factory import *
 BUFFER_SIZE_IN_FILES_VALID = 1
 
 BUFFER_SIZE_IN_FILES_TRAINING = 6
@@ -97,7 +97,10 @@ def train_network(config, document_on_wandb=True):
         loss_weights = config.constant_loss_weights
         sigma = config.constant_sigma
         learning_rate = None
-        custom_loss = create_custom_loss(loss_weights, config.input_window_size, sigma)
+        if "loss_function" in config:
+            custom_loss = getattr(loss_function, config.loss_function)(loss_weights, config.input_window_size, sigma)
+        else:
+            custom_loss = bcel_mse_dvt_blur_loss(loss_weights, config.input_window_size, sigma)
         if not "lr" in config.optimizer_params:
             config.optimizer_params["lr"] = config.constant_learning_rate
         else:
@@ -121,7 +124,10 @@ def train_network(config, document_on_wandb=True):
         epoch_batch_counter = 0
         if config.dynamic_learning_params:
             learning_rate, loss_weights, sigma = next(dynamic_parameter_loss_genrator)
-            custom_loss = create_custom_loss(loss_weights, config.input_window_size, sigma)
+            if "loss_function" in config:
+                custom_loss = getattr(loss_function,config.loss_function)(loss_weights, config.input_window_size, sigma)
+            else:
+                custom_loss = bcel_mse_dvt_blur_loss(loss_weights, config.input_window_size, sigma)
             config.optimizer_params["lr"] = learning_rate
             optimizer = getattr(optim, config.optimizer_type)(model.parameters(),
                                                               **config.optimizer_params)
@@ -135,11 +141,13 @@ def train_network(config, document_on_wandb=True):
             batch_counter += 1
 
             train_loss = batch_train(model, optimizer, custom_loss, *train_data)
-            if document_on_wandb:
-                train_log(train_loss, batch_counter, epoch, learning_rate, sigma, loss_weights, additional_str="train")
             with torch.no_grad():
+                if document_on_wandb:
+                    train_log(train_loss, batch_counter, epoch, learning_rate, sigma, loss_weights, additional_str="train")
+                    display_accuracy(model(train_data[0])[0],train_data[1][0],epoch,batch_counter,additional_str="train")
                 validation_loss = custom_loss(model(valid_input), valid_labels)
                 if document_on_wandb:
+                    display_accuracy(model(valid_input)[0],valid_labels[0],epoch,batch_counter,additional_str="validation")
                     train_log(validation_loss, batch_counter, epoch,
                               additional_str="validation")  # without train logging.
             epoch_batch_counter += 1
@@ -150,38 +158,6 @@ def train_network(config, document_on_wandb=True):
     save_model(model, saving_counter, config)
 
 
-def create_custom_loss(loss_weights, window_size, sigma):
-    # inner_loss_weights = torch.arange(window_size)
-    # inner_loss_weights = 1-torch.exp(-(inner_loss_weights)/sigma)
-    # sqrt_inner_loss_weights = torch.sqrt(inner_loss_weights).unsqueeze(0).unsqueeze(inner_loss_weights)
-    def custom_loss(output, target, has_dvt=False):
-
-        if output[0].device != target[0].device:
-            for i in range(len(target) - 1 + has_dvt):  # same processor for comperison
-                target[i] = target[i].to(output[i].device)
-        binary_cross_entropy_loss = nn.BCELoss()
-        mse_loss = nn.MSELoss()
-        general_loss = 0
-        loss_bcel = loss_weights[0] * binary_cross_entropy_loss(output[0],
-                                                                target[0])  # removing channel dimention
-        if len(loss_weights) > 3:
-            g_blur = GaussianSmoothing(1, window_size, sigma, 1).to('cuda', torch.double)
-            loss_blur = loss_weights[3] * mse_loss(g_blur(output[0].squeeze(3)), g_blur(target[0].squeeze(3)))
-        loss_mse = loss_weights[1] * mse_loss(output[1].squeeze(1), target[1].squeeze(1))
-        loss_dvt = 0
-        if has_dvt:
-            loss_dvt = loss_weights[2] * mse_loss(output[2], target[2])
-            general_loss = loss_bcel + loss_mse + loss_dvt
-            return general_loss, loss_bcel.item(), loss_mse.item(), loss_dvt.item()
-        loss_blur_val = 0
-        if len(loss_weights) > 3:
-            general_loss += loss_blur
-            loss_blur_val = loss_blur.item()
-        general_loss = loss_bcel + loss_mse
-        return general_loss, loss_bcel.item(), loss_mse.item(), loss_dvt, loss_blur_val
-        # return general_loss, 0, 0, loss_dvt
-
-    return custom_loss
 
 
 def model_pipline(hyperparameters, document_on_wandb=True):
@@ -219,6 +195,16 @@ def train_log(loss, step, epoch, learning_rate=None, sigma=None, weights=None, a
     print("bcel loss ", loss_bcel)
     print("dvt loss ", loss_dvt)
 
+def display_accuracy(target,output,epoch,step,additional_str='',log_frequency=100):
+    if step%log_frequency!=0:
+        return
+    target_np = target.detach().numpy().squeeze()
+    output_np = output.detach().numpy().squeeze()
+    accuracy = 1 - np.sum(np.abs(target_np-output_np))/target_np.shape[1]  #todo keep going
+    accuracy = np.average(accuracy,axis=0)
+    wandb.log({"epoch": epoch, "accuracy (%s) %s" % ("%",additional_str): accuracy}, step=step)
+    print("accuracy (%s) %s : %0.4f" %("%",additional_str,accuracy))
+    #todo add fp tp
 
 def run_fit_cnn():
     global e
@@ -240,7 +226,7 @@ def run_fit_cnn():
     # send_mail("nitzan.luxembourg@mail.huji.ac.il","somthing went wrong",e)
     # raise e
 
-
-run_fit_cnn()
+if __name__ == "__main":
+    run_fit_cnn()
 
 # send_mail("nitzan.luxembourg@mail.huji.ac.il","finished run","finished run")

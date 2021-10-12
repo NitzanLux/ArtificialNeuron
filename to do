@@ -1,3 +1,5 @@
 -change the tree to tree path(or maybe inside of the constructor)
 -docomentation (ofcourse)
 -add accuracy and add 1d TCN architecture
+-blur add in case of std 0
+-add evaluation in every save
