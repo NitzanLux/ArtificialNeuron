@@ -4,7 +4,7 @@ import numpy as np
 include_DVT=False
 def learning_parameters_iter(config) -> Generator[Tuple[int, float, Tuple[float, float, float]], None, None]:
     sigma = config.input_window_size
-    DVT_loss_mult_factor = 1
+    DVT_loss_mult_factor = 0
     # epoch_in_each_step = config.num_epochs // 5 + (config.num_epochs % 5 != 0)
     while(True):
         learning_rate_per_epoch = 1. / ((np.sqrt(config.epoch_counter) + 1) * 10000)
