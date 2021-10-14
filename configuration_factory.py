@@ -149,7 +149,7 @@ if __name__ == '__main__':
     config_static = config_factory(dynamic_learning_params=False)
     configs_static = generate_config_files_multiple_seeds(config_static, 1)
     configs_to_read = configs_dynamic + configs_static
-    with open(os.path.join(MODELS_DIR,"configs_to_run_gaussian_two_models.json"), 'w') as file:
+    with open(os.path.join(MODELS_DIR,"configs_to_run_two_models.json"), 'w') as file:
         file.write(json.dumps(configs_to_read))  # use `json.loads` to do the reverse
 
 
