@@ -48,7 +48,7 @@ class SimulationDataGenerator():
         for i in range(self.epoch_size):
             selected_sim_inds = np.random.choice(range(self.X.shape[0]), size=self.batch_size,
                                                  replace=True)  # number of simulations per file
-            selected_time_inds = np.random.choice(range(self.sampling_start_time, self.X.shape[1]),
+            selected_time_inds = np.random.choice(range(self.sampling_start_time, self.X.shape[1]-1),
                                                   size=self.batch_size, replace=False)  # simulation duration
             yield self[selected_sim_inds, selected_time_inds]
 
