@@ -128,9 +128,9 @@ class RootBlock(nn.Module):
         super(RootBlock, self).__init__()
 
         self.spike_prediction = nn.Conv2d(channel_output_number
-                                          , 1, kernel_size=(1,1))
+                                          , 1, kernel_size=(1, input_shape[1]))
         self.voltage_prediction = nn.Conv2d(channel_output_number
-                                            , 1, kernel_size=(1,1))
+                                            , 1, kernel_size=(1, input_shape[1]))
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
