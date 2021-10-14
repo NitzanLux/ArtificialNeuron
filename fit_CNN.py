@@ -98,7 +98,7 @@ def train_network(config, document_on_wandb=True):
         sigma = config.constant_sigma
         learning_rate = None
         if "loss_function" in config:
-            custom_loss = getattr(loss_function, config.loss_function)(loss_weights, config.input_window_size, sigma)
+            custom_loss = getattr(loss_function_factory, config["loss_function"])(loss_weights, config.input_window_size, sigma)
         else:
             custom_loss = bcel_mse_dvt_blur_loss(loss_weights, config.input_window_size, sigma)
         if not "lr" in config.optimizer_params:
