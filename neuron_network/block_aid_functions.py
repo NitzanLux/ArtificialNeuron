@@ -8,22 +8,31 @@ import torch.nn as nn
 from torch.nn.utils import weight_norm
 
 
-def keep_dimensions_by_padding_claculator(input_shape, kernel_size, stride, dilation) -> Tuple[int, int]:
+def keep_dimensions_by_padding_claculator(input_shape, kernel_size, stride, dilation,along_dim:[None,int]=None) -> Tuple[int, int]:
+
+
     if isinstance(stride, int):
         stride = (stride, stride)
     stride = np.array(stride)
     if isinstance(dilation, int):
         dilation = (dilation, dilation)
     dilation = np.array(dilation)
-    if isinstance(kernel_size, int):
+    if along_dim:
+        if isinstance(kernel_size,int):
+            kernel_size = [kernel_size]
+        kernel_size = list(kernel_size)
+        kernel_size.insert(along_dim,1)
+    elif isinstance(kernel_size, int):
         kernel_size = (kernel_size, kernel_size)
+
     kernel_size = np.array(kernel_size)
     if isinstance(input_shape, int):
         input_shape = (input_shape, input_shape)
     input_shape = np.array(input_shape)
     p = stride * (input_shape - 1) - input_shape + kernel_size + (kernel_size - 1) * (dilation - 1)
     p = p / 2
-
+    if along_dim:
+        return p[(along_dim+1)%len(p)]
     p = p.astype(int)
     return tuple(p)
 
