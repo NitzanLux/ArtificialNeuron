@@ -55,21 +55,21 @@ def load_config_file(path: str) -> AttrDict:
 def config_factory(save_model_to_config_dir=True, config_new_path=None, generate_random_seeds=False, is_new_name=False,
                    **kargs):
     ##default values can be overridden by kargs
-    config = AttrDict(input_window_size=400, num_segments=2 * 639, num_syn_types=1,
+    config = AttrDict(input_window_size=200, num_segments=2 * 639, num_syn_types=1,
                       epoch_size=15, num_epochs=15000, batch_size_train=10, batch_size_validation=4,
                       train_file_load=0.5, valid_file_load=0.5,
                       optimizer_type="AdamW", optimizer_params={},
                       batch_counter=0, epoch_counter=0,  # default counter
                       torch_seed=42, numpy_seed=21, random_seed=12,init_weights_sd=0.05,
                       dynamic_learning_params=True,
-                      constant_loss_weights=[1., 1. / 2., 0.,1.], constant_sigma=2.5, constant_learning_rate=0.001,
+                      constant_loss_weights=[1., 1. / 2., 0.,0], constant_sigma=2.5, constant_learning_rate=0.0001,
                       dynamic_learning_params_function="learning_parameters_iter",
                       config_path="", model_tag="gaussian_train", model_path=None,loss_function="bcel_mse_dvt_blur_loss")
 
     architecture_dict = AttrDict(segment_tree_path="tree.pkl",
                                  architecture_type="BASIC_CONV",
                                  time_domain_shape=config.input_window_size,
-                                 kernel_size_2d=25,
+                                 kernel_size_2d=13,
                                  kernel_size_1d=69,
                                  stride=1,
                                  dilation=1,
