@@ -14,7 +14,7 @@ import argparse
 import dynamic_learning_parameters_factory as dlpf
 from general_aid_function import *
 
-from loss_function_factory import *
+import loss_function_factory
 BUFFER_SIZE_IN_FILES_VALID = 1
 
 BUFFER_SIZE_IN_FILES_TRAINING = 6
