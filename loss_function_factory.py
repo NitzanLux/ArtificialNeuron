@@ -7,7 +7,7 @@ def bcel_mse_dvt_blur_loss(loss_weights, window_size, sigma):
     def custom_loss(output, target):
 
         if output[0].device != target[0].device:
-            for i in range(len(target) - 1 + has_dvt):  # same processor for comperison
+            for i in range(len(target)):  # same processor for comperison
                 target[i] = target[i].to(output[i].device)
         binary_cross_entropy_loss = nn.BCELoss()
         mse_loss = nn.MSELoss()
