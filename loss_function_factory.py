@@ -19,6 +19,8 @@ def bcel_mse_dvt_blur_loss(loss_weights, window_size, sigma):
         loss_blur_item = 0
 
         if loss_weights[0] > 0:
+            print("output",output[0].shape)
+            print(target[1].shape)
             loss_bcel = loss_weights[0] * binary_cross_entropy_loss(output[0],
                                                                     target[0])  # removing channel dimention
             loss_bcel_item = loss_bcel.item()
