@@ -223,7 +223,7 @@ def parse_sim_experiment_file(sim_experiment_file):
     print('-----------------------------------------------------------------')
     print("loading file: '" + sim_experiment_file.split("\\")[-1] + "'")
     loading_start_time = time.time()
-    experiment_dict = pickle.load(open(sim_experiment_file.decode().encode('utf-8'), "rb"))
+    experiment_dict = pickle.load(open(str(sim_experiment_file).decode().encode('utf-8'), "rb"))
 
     # gather params
     num_simulations = len(experiment_dict['Results']['listOfSingleSimulationDicts'])
