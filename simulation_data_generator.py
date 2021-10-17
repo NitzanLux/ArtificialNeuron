@@ -68,6 +68,8 @@ class SimulationDataGenerator():
         X_batch = self.X[sim_ind, win_ind, ...][:, np.newaxis, ...]  # newaxis for channel dimensions
         y_spike_batch = self.y_spike[sim_ind, np.max(win_time)+1, ...][:, np.newaxis, ...]
         y_soma_batch = self.y_soma[sim_ind, np.max(win_time)+1, ...][:, np.newaxis, ...]
+        print(y_soma_batch.shape)
+        print(y_spike_batch.shape)
         if self.include_DVT:
             y_DVT_batch = self.y_DVT[sim_ind, np.max(win_time)+1, ...][:, np.newaxis, ...]
             # return the actual batch
