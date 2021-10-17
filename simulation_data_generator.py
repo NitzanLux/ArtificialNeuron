@@ -70,8 +70,8 @@ class SimulationDataGenerator():
         print(sim_ind.shape)
         y_spike_batch = self.y_spike[sim_ind,pred_index,:]
         y_soma_batch = self.y_soma[sim_ind, pred_index,:]
-        y_soma_batch = y_soma_batch[:, np.newaxis, ...]
-        y_spike_batch = y_spike_batch[:, np.newaxis, ...]
+        y_soma_batch = y_soma_batch[:, np.newaxis,np.newaxis, ...]
+        y_spike_batch = y_spike_batch[:, np.newaxis,np.newaxis, ...]
         if self.include_DVT:
             y_DVT_batch = self.y_DVT[sim_ind, np.max(win_time)+1, ...][:, np.newaxis, ...]
             # return the actual batch
