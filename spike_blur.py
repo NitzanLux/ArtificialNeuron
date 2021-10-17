@@ -33,10 +33,9 @@ class SpikeSmoothing(nn.Module):
                 for size in kernel_size
             ]
         )
-        meshgrids = torch.abs(meshgrids)
         for size, std, mgrid in zip(kernel_size, sigma, meshgrids):
             mean = (size - 1) / 2
-            kernel *= torch.exp(-(mgrid - mean) /torch.sqrt(std))
+            kernel *= torch.exp(-torch.abs(mgrid - mean) /torch.sqrt(std))
 
 
 
