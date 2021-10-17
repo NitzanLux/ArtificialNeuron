@@ -113,7 +113,7 @@ class SimulationDataGenerator():
                 self.y_DVT.append(y_DVT)
 
             else:
-                X, y_spike, y_soma = parse_sim_experiment_file(f)
+                X, y_spike, y_soma ,_= parse_sim_experiment_file_with_DVT(f, DVT_PCA_model=self.DVT_PCA_model)
             # reshape to what is needed
             X = np.transpose(X, axes=[2, 1, 0])
             y_spike = y_spike.T[:, :, np.newaxis]
