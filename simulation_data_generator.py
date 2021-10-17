@@ -63,9 +63,9 @@ class SimulationDataGenerator():
         :return:items (X, y_spike,y_soma ,y_DVT [if exists])
         """
         sim_ind, win_time = item
-        win_ind, sim_ind = np.meshgrid(np.arange(self.window_size_ms - 1, -1, -1), sim_ind)
+        win_ind, sim_ind_mat = np.meshgrid(np.arange(self.window_size_ms - 1, -1, -1), sim_ind)
         win_ind = win_time[:, np.newaxis] - win_ind
-        X_batch = self.X[sim_ind, win_ind, ...][:, np.newaxis, ...]  # newaxis for channel dimensions
+        X_batch = self.X[sim_ind_mat, win_ind, ...][:, np.newaxis, ...]  # newaxis for channel dimensions
         pred_index= np.max(win_time)+1
         print(sim_ind.shape)
         y_spike_batch = self.y_spike[sim_ind,pred_index,:]
