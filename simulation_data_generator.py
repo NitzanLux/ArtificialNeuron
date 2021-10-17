@@ -66,8 +66,10 @@ class SimulationDataGenerator():
         win_ind, sim_ind = np.meshgrid(np.arange(self.window_size_ms - 1, -1, -1), sim_ind)
         win_ind = win_time[:, np.newaxis] - win_ind
         X_batch = self.X[sim_ind, win_ind, ...][:, np.newaxis, ...]  # newaxis for channel dimensions
-        y_spike_batch = self.y_spike[sim_ind, np.max(win_time)+1][:, np.newaxis, ...]
-        y_soma_batch = self.y_soma[sim_ind, np.max(win_time)+1][:, np.newaxis, ...]
+        y_spike_batch = self.y_spike[sim_ind, np.max(win_time)+1]
+        y_soma_batch = self.y_soma[sim_ind, np.max(win_time)+1]
+        y_soma_batch = y_soma_batch[:, np.newaxis, ...]
+        y_spike_batch = y_spike_batch[:, np.newaxis, ...]
         if self.include_DVT:
             y_DVT_batch = self.y_DVT[sim_ind, np.max(win_time)+1, ...][:, np.newaxis, ...]
             # return the actual batch
