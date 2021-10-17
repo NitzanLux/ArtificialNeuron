@@ -66,10 +66,10 @@ class SimulationDataGenerator():
         win_ind, sim_ind = np.meshgrid(np.arange(self.window_size_ms - 1, -1, -1), sim_ind)
         win_ind = win_time[:, np.newaxis] - win_ind
         X_batch = self.X[sim_ind, win_ind, ...][:, np.newaxis, ...]  # newaxis for channel dimensions
-        y_spike_batch = self.y_spike[sim_ind, win_time, ...][:, np.newaxis, ...]
-        y_soma_batch = self.y_soma[sim_ind, win_time, ...][:, np.newaxis, ...]
+        y_spike_batch = self.y_spike[sim_ind, win_time+1, ...][:, np.newaxis, ...]
+        y_soma_batch = self.y_soma[sim_ind, win_time+1, ...][:, np.newaxis, ...]
         if self.include_DVT:
-            y_DVT_batch = self.y_DVT[sim_ind, win_time, ...][:, np.newaxis, ...]
+            y_DVT_batch = self.y_DVT[sim_ind, win_time+1, ...][:, np.newaxis, ...]
             # return the actual batch
             return (torch.from_numpy(X_batch).requires_grad(),
                     [torch.from_numpy(y_spike_batch), torch.from_numpy(y_soma_batch), torch.from_numpy(y_DVT_batch)])
@@ -138,84 +138,84 @@ class SimulationDataGenerator():
             if self.batch_counter / self.X.shape[0] >= self.sample_ratio_to_shuffle:
                 self.reload_files()
 
-    def __getitem__(self, item):
-        """
-        get items
-        :param: item :   batches: indexes of samples , win_time: last time point index
-        :return:items (X, y_spike,y_soma ,y_DVT [if exists])
-        """
-        sim_ind, win_time = item
-        win_ind, sim_ind = np.meshgrid(np.arange(self.window_size_ms - 1, -1, -1), sim_ind)
-        win_ind = win_time[:, np.newaxis] - win_ind
-        X_batch = self.X[sim_ind, win_ind, ...][:, np.newaxis, ...]  # newaxis for channel dimensions
-        y_spike_batch = self.y_spike[sim_ind, win_ind, ...][:, np.newaxis, ...]
-        y_soma_batch = self.y_soma[sim_ind, win_ind, ...][:, np.newaxis, ...]
-        if self.include_DVT:
-            y_DVT_batch = self.y_DVT[sim_ind, win_ind, ...][:, np.newaxis, ...]
-            # return the actual batch
-            return (torch.from_numpy(X_batch),
-                    [torch.from_numpy(y_spike_batch), torch.from_numpy(y_soma_batch), torch.from_numpy(y_DVT_batch)])
+    # def __getitem__(self, item):
+    #     """
+    #     get items
+    #     :param: item :   batches: indexes of samples , win_time: last time point index
+    #     :return:items (X, y_spike,y_soma ,y_DVT [if exists])
+    #     """
+    #     sim_ind, win_time = item
+    #     win_ind, sim_ind = np.meshgrid(np.arange(self.window_size_ms - 1, -1, -1), sim_ind)
+    #     win_ind = win_time[:, np.newaxis] - win_ind
+    #     X_batch = self.X[sim_ind, win_ind, ...][:, np.newaxis, ...]  # newaxis for channel dimensions
+    #     y_spike_batch = self.y_spike[sim_ind, win_time+1, ...][:, np.newaxis, ...]
+    #     y_soma_batch = self.y_soma[sim_ind, win_time+1, ...][:, np.newaxis, ...]
+    #     if self.include_DVT:
+    #         y_DVT_batch = self.y_DVT[sim_ind, win_ind, ...][:, np.newaxis, ...]
+    #         # return the actual batch
+    #         return (torch.from_numpy(X_batch),
+    #                 [torch.from_numpy(y_spike_batch), torch.from_numpy(y_soma_batch), torch.from_numpy(y_DVT_batch)])
+    #
+    #     return (torch.from_numpy(X_batch), [torch.from_numpy(y_spike_batch), torch.from_numpy(y_soma_batch)])
 
-        return (torch.from_numpy(X_batch), [torch.from_numpy(y_spike_batch), torch.from_numpy(y_soma_batch)])
-
-    def reload_files(self):
-        'selects new subset of files to draw samples from'
-        self.batch_counter = 0
-        if len(self.sim_experiment_files) < self.buffer_size_in_files:
-            self.curr_files_to_use = self.sim_experiment_files
-        else:
-            if self.shuffle_files:
-                self.curr_files_to_use = np.random.choice(self.sim_experiment_files, size=self.buffer_size_in_files,
-                                                          replace=False)
-            else:
-
-                self.curr_files_to_use = self.sim_experiment_files[
-                                         (self.files_counter * self.buffer_size_in_files) % len(
-                                             self.sim_experiment_files):
-                                         ((self.files_counter + 1) * self.buffer_size_in_files) % len(
-                                             self.sim_experiment_files)]  # cyclic reloading
-                self.files_counter += 1
-        self.load_files_to_buffer()
-        self.sampling_start_time = max(self.ignore_time_from_start, self.window_size_ms)
-
-    def load_files_to_buffer(self):
-        'load new file to draw batches from'
-        # update the current file in use
-
-        self.X = []
-        self.y_spike = []
-        self.y_soma = []
-        self.y_DVT = []
-
-        # load the file
-        for f in self.curr_files_to_use:
-            if self.include_DVT:
-                X, y_spike, y_soma, y_DVT = parse_sim_experiment_file_with_DVT(f, DVT_PCA_model=self.DVT_PCA_model)
-                y_DVT = np.transpose(y_DVT, axes=[2, 1, 0])
-                self.y_DVT.append(y_DVT)
-
-            else:
-                X, y_spike, y_soma = parse_sim_experiment_file(f)
-            # reshape to what is needed
-            X = np.transpose(X, axes=[2, 1, 0])
-            y_spike = y_spike.T[:, :, np.newaxis]
-            y_soma = y_soma.T[:, :, np.newaxis]
-
-            y_soma = y_soma - self.y_train_soma_bias
-            self.X.append(X)
-            self.y_spike.append(y_spike)
-            self.y_soma.append(y_soma)
-
-        self.X = np.vstack(self.X)
-        self.y_spike = np.vstack(self.y_spike)
-        self.y_soma = np.vstack(self.y_soma)
-        if self.include_DVT:
-            self.y_DVT = np.vstack(self.y_DVT)
-        # threshold the signals
-        self.y_soma[self.y_soma > self.y_soma_threshold] = self.y_soma_threshold
-        if self.include_DVT:
-            self.y_DVT[self.y_DVT > self.y_DTV_threshold] = self.y_DTV_threshold
-            self.y_DVT[self.y_DVT < -self.y_DTV_threshold] = -self.y_DTV_threshold
+    # def reload_files(self):
+    #     'selects new subset of files to draw samples from'
+    #     self.batch_counter = 0
+    #     if len(self.sim_experiment_files) < self.buffer_size_in_files:
+    #         self.curr_files_to_use = self.sim_experiment_files
+    #     else:
+    #         if self.shuffle_files:
+    #             self.curr_files_to_use = np.random.choice(self.sim_experiment_files, size=self.buffer_size_in_files,
+    #                                                       replace=False)
+    #         else:
+    #
+    #             self.curr_files_to_use = self.sim_experiment_files[
+    #                                      (self.files_counter * self.buffer_size_in_files) % len(
+    #                                          self.sim_experiment_files):
+    #                                      ((self.files_counter + 1) * self.buffer_size_in_files) % len(
+    #                                          self.sim_experiment_files)]  # cyclic reloading
+    #             self.files_counter += 1
+    #     self.load_files_to_buffer()
+    #     self.sampling_start_time = max(self.ignore_time_from_start, self.window_size_ms)
+    #
+    # def load_files_to_buffer(self):
+    #     'load new file to draw batches from'
+    #     # update the current file in use
+    #
+    #     self.X = []
+    #     self.y_spike = []
+    #     self.y_soma = []
+    #     self.y_DVT = []
+    #
+    #     # load the file
+    #     for f in self.curr_files_to_use:
+    #         if self.include_DVT:
+    #             X, y_spike, y_soma, y_DVT = parse_sim_experiment_file_with_DVT(f, DVT_PCA_model=self.DVT_PCA_model)
+    #             y_DVT = np.transpose(y_DVT, axes=[2, 1, 0])
+    #             self.y_DVT.append(y_DVT)
+    #
+    #         else:
+    #             X, y_spike, y_soma = parse_sim_experiment_file(f)
+    #         # reshape to what is needed
+    #         X = np.transpose(X, axes=[2, 1, 0])
+    #         y_spike = y_spike.T[:, :, np.newaxis]
+    #         y_soma = y_soma.T[:, :, np.newaxis]
+    #
+    #         y_soma = y_soma - self.y_train_soma_bias
+    #         self.X.append(X)
+    #         self.y_spike.append(y_spike)
+    #         self.y_soma.append(y_soma)
+    #
+    #     self.X = np.vstack(self.X)
+    #     self.y_spike = np.vstack(self.y_spike)
+    #     self.y_soma = np.vstack(self.y_soma)
+    #     if self.include_DVT:
+    #         self.y_DVT = np.vstack(self.y_DVT)
+    #     # threshold the signals
+    #     self.y_soma[self.y_soma > self.y_soma_threshold] = self.y_soma_threshold
+    #     if self.include_DVT:
+    #         self.y_DVT[self.y_DVT > self.y_DTV_threshold] = self.y_DTV_threshold
+    #         self.y_DVT[self.y_DVT < -self.y_DTV_threshold] = -self.y_DTV_threshold
 
 
 def parse_sim_experiment_file_with_DVT(sim_experiment_file, DVT_PCA_model=None, print_logs=False):
