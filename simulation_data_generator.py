@@ -71,7 +71,7 @@ class SimulationDataGenerator():
         if self.include_DVT:
             y_DVT_batch = self.y_DVT[sim_ind, np.max(win_time)+1, ...][:, np.newaxis, ...]
             # return the actual batch
-            return (torch.from_numpy(X_batch).requires_grad(),
+            return (torch.from_numpy(X_batch),
                     [torch.from_numpy(y_spike_batch), torch.from_numpy(y_soma_batch), torch.from_numpy(y_DVT_batch)])
 
         return (torch.from_numpy(X_batch), [torch.from_numpy(y_spike_batch), torch.from_numpy(y_soma_batch)])
