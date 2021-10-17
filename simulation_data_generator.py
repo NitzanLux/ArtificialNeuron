@@ -67,6 +67,7 @@ class SimulationDataGenerator():
         win_ind = win_time[:, np.newaxis] - win_ind
         X_batch = self.X[sim_ind, win_ind, ...][:, np.newaxis, ...]  # newaxis for channel dimensions
         pred_index= np.max(win_time)+1
+        print(sim_ind.shape)
         y_spike_batch = self.y_spike[sim_ind,pred_index,:]
         y_soma_batch = self.y_soma[sim_ind, pred_index,:]
         y_soma_batch = y_soma_batch[:, np.newaxis, ...]
