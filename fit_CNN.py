@@ -1,20 +1,19 @@
-import logging
+import argparse
+import glob
 import os
 import random
-import configuration_factory
-import glob
-from typing import Generator, Tuple
-from project_path import *
-import torch.nn as nn
-import torch.optim as optim
-from simulation_data_generator import *
-from neuron_network import neuronal_model
-import wandb
-import argparse
-import dynamic_learning_parameters_factory as dlpf
-from general_aid_function import *
 
+import torch.optim as optim
+import wandb
+
+import configuration_factory
+import dynamic_learning_parameters_factory as dlpf
 import loss_function_factory
+from general_aid_function import *
+from neuron_network import neuronal_model
+from project_path import *
+from simulation_data_generator import *
+
 BUFFER_SIZE_IN_FILES_VALID = 1
 
 BUFFER_SIZE_IN_FILES_TRAINING = 3
@@ -98,7 +97,8 @@ def train_network(config, document_on_wandb=True):
         sigma = config.constant_sigma
         learning_rate = None
         if "loss_function" in config:
-            custom_loss = getattr(loss_function_factory, config["loss_function"])(loss_weights, config.input_window_size, sigma)
+            custom_loss = getattr(loss_function_factory, config["loss_function"])(loss_weights,
+                                                                                  config.input_window_size, sigma)
         else:
             custom_loss = bcel_mse_dvt_blur_loss(loss_weights, config.input_window_size, sigma)
         if not "lr" in config.optimizer_params:
@@ -125,7 +125,8 @@ def train_network(config, document_on_wandb=True):
         if config.dynamic_learning_params:
             learning_rate, loss_weights, sigma = next(dynamic_parameter_loss_genrator)
             if "loss_function" in config:
-                custom_loss = getattr(loss_function_factory,config.loss_function)(loss_weights, config.input_window_size, sigma)
+                custom_loss = getattr(loss_function_factory, config.loss_function)(loss_weights,
+                                                                                   config.input_window_size, sigma)
             else:
                 custom_loss = bcel_mse_dvt_blur_loss(loss_weights, config.input_window_size, sigma)
             config.optimizer_params["lr"] = learning_rate
@@ -143,11 +144,14 @@ def train_network(config, document_on_wandb=True):
             train_loss = batch_train(model, optimizer, custom_loss, *train_data)
             with torch.no_grad():
                 if document_on_wandb:
-                    train_log(train_loss, batch_counter, epoch, learning_rate, sigma, loss_weights, additional_str="train")
-                    display_accuracy(model(train_data[0])[0],train_data[1][0],epoch,batch_counter,additional_str="train")
+                    train_log(train_loss, batch_counter, epoch, learning_rate, sigma, loss_weights,
+                              additional_str="train")
+                    display_accuracy(model(train_data[0])[0], train_data[1][0], epoch, batch_counter,
+                                     additional_str="train")
                 validation_loss = custom_loss(model(valid_input), valid_labels)
                 if document_on_wandb:
-                    display_accuracy(model(valid_input)[0],valid_labels[0],epoch,batch_counter,additional_str="validation")
+                    display_accuracy(model(valid_input)[0], valid_labels[0], epoch, batch_counter,
+                                     additional_str="validation")
                     train_log(validation_loss, batch_counter, epoch,
                               additional_str="validation")  # without train logging.
             epoch_batch_counter += 1
@@ -156,8 +160,6 @@ def train_network(config, document_on_wandb=True):
         if saving_counter % 10 == 0:
             save_model(model, saving_counter, config)
     save_model(model, saving_counter, config)
-
-
 
 
 def model_pipline(hyperparameters, document_on_wandb=True):
@@ -173,7 +175,7 @@ def model_pipline(hyperparameters, document_on_wandb=True):
 
 def train_log(loss, step, epoch, learning_rate=None, sigma=None, weights=None, additional_str=''):
     general_loss, loss_bcel, loss_mse, loss_dvt, blur_loss = loss
-    wandb.log({"epoch": epoch, "general loss %s" % additional_str: general_loss.item()}, step=step)
+    wandb.log({"epoch": epoch, "general loss %s" % additional_str: general_loss.item().cpu()}, step=step)
     wandb.log({"epoch": epoch, "mse loss %s" % additional_str: loss_mse}, step=step)
     wandb.log({"epoch": epoch, "bcel loss %s" % additional_str: loss_bcel}, step=step)
     wandb.log({"epoch": epoch, "dvt loss %s" % additional_str: loss_dvt}, step=step)
@@ -182,9 +184,13 @@ def train_log(loss, step, epoch, learning_rate=None, sigma=None, weights=None, a
         wandb.log({"epoch": epoch, "learning rate %s" % additional_str: learning_rate},
                   step=step)  # add training parameters per step
     if weights is not None:
-        wandb.log({"epoch": epoch, "dvt weight (normalize to bcel) %s" % additional_str: weights[2] / weights[0]},
+        wandb.log({"epoch": epoch, "bcel weight  %s" % additional_str: weights[0]},
                   step=step)  # add training parameters per step
-        wandb.log({"epoch": epoch, "mse weight (normalize to bcel) %s" % additional_str: weights[1] / weights[0]},
+        wandb.log({"epoch": epoch, "dvt weight  %s" % additional_str: weights[2]},
+                  step=step)  # add training parameters per step
+        wandb.log({"epoch": epoch, "mse weight  %s" % additional_str: weights[1]},
+                  step=step)  # add training parameters per step
+        wandb.log({"epoch": epoch, "blur weight  %s" % additional_str: weights[3]},
                   step=step)  # add training parameters per step
     if sigma is not None:
         wandb.log({"epoch": epoch, "sigma %s" % additional_str: sigma}, step=step)  # add training parameters per step
@@ -195,16 +201,18 @@ def train_log(loss, step, epoch, learning_rate=None, sigma=None, weights=None, a
     print("bcel loss ", loss_bcel)
     print("dvt loss ", loss_dvt)
 
-def display_accuracy(target,output,epoch,step,additional_str='',log_frequency=100):
-    if step%log_frequency!=0:
+
+def display_accuracy(target, output, epoch, step, additional_str='', log_frequency=100):
+    if step % log_frequency != 0:
         return
     # target_np = target.detach().cpu().numpy().squeeze()
     # output_np = output.detach().numpy().squeeze()
-    accuracy = 1 - torch.abs(target-output) #todo keep going
-    accuracy = torch.mean(accuracy,dim=0)
-    wandb.log({"epoch": epoch, "accuracy (%s) %s" % ("%",additional_str): accuracy}, step=step)
-    print("accuracy (%s) %s : %0.4f" %("%",additional_str,float(accuracy[0])))
-    #todo add fp tp
+    accuracy = 1 - torch.abs(target - output)  # todo keep going
+    accuracy = torch.mean(accuracy, dim=0)
+    wandb.log({"epoch": epoch, "accuracy (%s) %s" % ("%", additional_str): accuracy}, step=step)
+    print("accuracy (%s) %s : %0.4f" % ("%", additional_str, float(accuracy[0])))
+    # todo add fp tp
+
 
 def run_fit_cnn():
     global e
@@ -225,6 +233,7 @@ def run_fit_cnn():
     # except Exception as e:
     # send_mail("nitzan.luxembourg@mail.huji.ac.il","somthing went wrong",e)
     # raise e
+
 
 run_fit_cnn()
 
