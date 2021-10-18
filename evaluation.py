@@ -58,7 +58,7 @@ def plot_network_and_actual_results(file_path: [str, List[str]], model_path: [st
         try:
             model_id = regex_match.group(0)
         except AttributeError as e:
-            print(p)
+            logging.error(p)
             raise e
         out = network(X_batch)
         out_var= out[1].detach().numpy()[0, 0, :, :]
