@@ -175,7 +175,7 @@ def model_pipline(hyperparameters, document_on_wandb=True):
 
 def train_log(loss, step, epoch, learning_rate=None, sigma=None, weights=None, additional_str=''):
     general_loss, loss_bcel, loss_mse, loss_dvt, blur_loss = loss
-    wandb.log({"epoch": epoch, "general loss %s" % additional_str: general_loss.item().cpu()}, step=step)
+    wandb.log({"epoch": epoch, "general loss %s" % additional_str: general_loss.item()}, step=step)
     wandb.log({"epoch": epoch, "mse loss %s" % additional_str: loss_mse}, step=step)
     wandb.log({"epoch": epoch, "bcel loss %s" % additional_str: loss_bcel}, step=step)
     wandb.log({"epoch": epoch, "dvt loss %s" % additional_str: loss_dvt}, step=step)
