@@ -50,7 +50,7 @@ def batch_train(network, optimizer, custom_loss, inputs, labels):
     general_loss, loss_bcel, loss_mse, loss_dvt, loss_gausian_mse = custom_loss(outputs, labels)
     general_loss.backward()
     optimizer.step()
-    out = general_loss.cpu(), loss_bcel, loss_mse, loss_dvt, loss_gausian_mse
+    out = general_loss, loss_bcel, loss_mse, loss_dvt, loss_gausian_mse
 
     return out
 
@@ -150,7 +150,7 @@ def train_network(config, document_on_wandb=True):
                                      additional_str="train")
                 validation_loss = custom_loss(model(valid_input), valid_labels)
                 validation_loss = list(validation_loss)
-                validation_loss[0] = validation_loss[0].cpu()
+                validation_loss[0] = validation_loss[0]
                 validation_loss = tuple(validation_loss)
                 if document_on_wandb:
                     display_accuracy(model(valid_input)[0], valid_labels[0], epoch, batch_counter,
@@ -179,7 +179,7 @@ def model_pipline(hyperparameters, document_on_wandb=True):
 
 def train_log(loss, step, epoch, learning_rate=None, sigma=None, weights=None, additional_str=''):
     general_loss, loss_bcel, loss_mse, loss_dvt, blur_loss = loss
-    wandb.log({"epoch": epoch, "general loss %s" % additional_str: general_loss.item()}, step=step)
+    wandb.log({"epoch": epoch, "general loss %s" % additional_str: general_loss.cpu().item()}, step=step)
     wandb.log({"epoch": epoch, "mse loss %s" % additional_str: loss_mse}, step=step)
     wandb.log({"epoch": epoch, "bcel loss %s" % additional_str: loss_bcel}, step=step)
     wandb.log({"epoch": epoch, "dvt loss %s" % additional_str: loss_dvt}, step=step)
@@ -200,7 +200,7 @@ def train_log(loss, step, epoch, learning_rate=None, sigma=None, weights=None, a
         wandb.log({"epoch": epoch, "sigma %s" % additional_str: sigma}, step=step)  # add training parameters per step
 
     print("step %d, epoch %d %s" % (step, epoch, additional_str))
-    print("general loss ", general_loss.item())
+    print("general loss ", general_loss.cpu().item())
     print("mse loss ", loss_mse)
     print("bcel loss ", loss_bcel)
     print("dvt loss ", loss_dvt)
