@@ -55,7 +55,11 @@ def plot_network_and_actual_results(file_path: [str, List[str]], model_path: [st
         network = neuronal_model.NeuronConvNet.load(p)
         # network.cpu()
         regex_match = re.search('(?:.*)(?<=TCN__)[0-9]{4}-[0-9]{2}-[0-9]{2}__[0-9]{2}_[0-9]{2}__ID_[0-9]+(?=\.pkl)?', p)
-        model_id = regex_match.group(0)
+        try:
+            model_id = regex_match.group(0)
+        except AttributeError as e:
+            print(p)
+            raise e
         out = network(X_batch)
         out_var= out[1].detach().numpy()[0, 0, :, :]
         spike= out[0].detach().numpy()[0, 0, :, :]
