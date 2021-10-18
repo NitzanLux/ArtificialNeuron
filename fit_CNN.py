@@ -198,10 +198,10 @@ def train_log(loss, step, epoch, learning_rate=None, sigma=None, weights=None, a
 def display_accuracy(target,output,epoch,step,additional_str='',log_frequency=100):
     if step%log_frequency!=0:
         return
-    target_np = target.detach().numpy().squeeze()
-    output_np = output.detach().numpy().squeeze()
-    accuracy = 1 - np.sum(np.abs(target_np-output_np))/target_np.shape[1]  #todo keep going
-    accuracy = np.average(accuracy,axis=0)
+    # target_np = target.detach().cpu().numpy().squeeze()
+    # output_np = output.detach().numpy().squeeze()
+    accuracy = 1 - torch.sum(torch.abs(target-output))/target.shape[1]  #todo keep going
+    accuracy = torch.average(accuracy,axis=0)
     wandb.log({"epoch": epoch, "accuracy (%s) %s" % ("%",additional_str): accuracy}, step=step)
     print("accuracy (%s) %s : %0.4f" %("%",additional_str,accuracy))
     #todo add fp tp
