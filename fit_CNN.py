@@ -149,7 +149,7 @@ def train_network(config, document_on_wandb=True):
                     display_accuracy(model(train_data[0])[0], train_data[1][0], epoch, batch_counter,
                                      additional_str="train")
                 validation_loss = custom_loss(model(valid_input), valid_labels)
-                validation_loss[0].cpu()
+                validation_loss[0] = validation_loss[0].cpu()
                 if document_on_wandb:
                     display_accuracy(model(valid_input)[0], valid_labels[0], epoch, batch_counter,
                                      additional_str="validation")
