@@ -180,7 +180,14 @@ def model_pipline(hyperparameters, document_on_wandb=True):
 def train_log(loss, step, epoch, learning_rate=None, sigma=None, weights=None, additional_str=''):
     general_loss, loss_bcel, loss_mse, loss_dvt, blur_loss = loss
     general_loss = float(general_loss.item())
-    wandb.log({"epoch": epoch, "general loss %s" % additional_str: general_loss}, step=step)
+    try:
+        wandb.log({"epoch": epoch, "general loss %s" % additional_str: general_loss}, step=step)
+    except Exception as e:
+        print("epoch",type(epoch))
+        print("additional_str",type(additional_str))
+        print("general lossa",type(general_loss))
+        print("step",type(step))
+        raise  e
     wandb.log({"epoch": epoch, "mse loss %s" % additional_str: loss_mse}, step=step)
     wandb.log({"epoch": epoch, "bcel loss %s" % additional_str: loss_bcel}, step=step)
     wandb.log({"epoch": epoch, "dvt loss %s" % additional_str: loss_dvt}, step=step)
