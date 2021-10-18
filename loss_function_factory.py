@@ -35,6 +35,7 @@ def bcel_mse_dvt_blur_loss(loss_weights, window_size, sigma):
             general_loss = general_loss + loss_dvt if general_loss else loss_dvt
 
         if len(loss_weights) > 3 and loss_weights[3] != 0:
+            pass
             g_blur = SpikeSmoothing(1, window_size, sigma, 1).to('cuda', torch.double)
             blur_output = (output[0] >= 0.5).double()
             loss_blur = loss_weights[3] * mse_loss(g_blur(blur_output.squeeze(3)), g_blur(target[0].squeeze(3)))
