@@ -200,8 +200,8 @@ def display_accuracy(target,output,epoch,step,additional_str='',log_frequency=10
         return
     # target_np = target.detach().cpu().numpy().squeeze()
     # output_np = output.detach().numpy().squeeze()
-    accuracy = 1 - torch.sum(torch.abs(target-output))/target.shape[1]  #todo keep going
-    accuracy = torch.average(accuracy,axis=0)
+    accuracy = 1 - torch.abs(target-output) #todo keep going
+    accuracy = torch.mean(accuracy,dim=0)
     wandb.log({"epoch": epoch, "accuracy (%s) %s" % ("%",additional_str): accuracy}, step=step)
     print("accuracy (%s) %s : %0.4f" %("%",additional_str,accuracy))
     #todo add fp tp
