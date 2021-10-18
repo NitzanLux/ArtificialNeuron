@@ -221,7 +221,7 @@ def display_accuracy(target, output, epoch, step, additional_str='', log_frequen
     # output_np = output.detach().numpy().squeeze()
     accuracy = 1 - torch.abs(target - output)  # todo keep going
     accuracy = torch.mean(accuracy, dim=0)
-    wandb.log({"epoch": epoch, "accuracy (%s) %s" % ("%", additional_str): accuracy}, step=step)
+    wandb.log({"epoch": epoch, "accuracy (%s) %s" % ("%", additional_str): float(accuracy[0])}, step=step)
     print("accuracy (%s) %s : %0.4f" % ("%", additional_str, float(accuracy[0])))
     # todo add fp tp
 
