@@ -50,7 +50,7 @@ def batch_train(network, optimizer, custom_loss, inputs, labels):
     general_loss, loss_bcel, loss_mse, loss_dvt, loss_gausian_mse = custom_loss(outputs, labels)
     general_loss.backward()
     optimizer.step()
-    out = general_loss.cpu(), loss_bcel, loss_mse, loss_dvt, loss_gausian_mse
+    out = general_loss.cpu(), loss_bcel.cpu(), loss_mse.cpu(), loss_dvt, loss_gausian_mse
 
     return out
 
