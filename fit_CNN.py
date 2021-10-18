@@ -50,7 +50,7 @@ def batch_train(network, optimizer, custom_loss, inputs, labels):
     general_loss, loss_bcel, loss_mse, loss_dvt, loss_gausian_mse = custom_loss(outputs, labels)
     general_loss.backward()
     optimizer.step()
-    out = general_loss.cpu(), loss_bcel.cpu(), loss_mse.cpu(), loss_dvt, loss_gausian_mse
+    out = general_loss.cpu(), loss_bcel, loss_mse, loss_dvt, loss_gausian_mse
 
     return out
 
@@ -150,8 +150,7 @@ def train_network(config, document_on_wandb=True):
                                      additional_str="train")
                 validation_loss = custom_loss(model(valid_input), valid_labels)
                 validation_loss = list(validation_loss)
-                for ii in range(len(validation_loss)):
-                    validation_loss[ii] = validation_loss[ii].cpu()
+                validation_loss[0] = validation_loss[0].cpu()
                 validation_loss = tuple(validation_loss)
                 if document_on_wandb:
                     display_accuracy(model(valid_input)[0], valid_labels[0], epoch, batch_counter,
