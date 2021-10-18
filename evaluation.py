@@ -57,7 +57,7 @@ def plot_network_and_actual_results(file_path: [str, List[str]], model_path: [st
         regex_match = re.search('(?:.*)(?<=TCN__)[0-9]{4}-[0-9]{2}-[0-9]{2}__[0-9]{2}_[0-9]{2}__ID_[0-9]+(?=\.pkl)?', p)
         try:
             model_id = regex_match.group(0)
-        except AttributeError as e:
+        except Exception as e:
             logging.error(p)
             raise e
         out = network(X_batch)
