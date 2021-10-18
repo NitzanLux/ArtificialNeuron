@@ -49,12 +49,12 @@ def plot_network_and_actual_results(file_path: [str, List[str]], model_path: [st
             model_path = [join(model_path, f) for f in listdir(model_path) if isfile(join(model_path, f))]
         else:
             model_path = [model_path]
+    r_match= re.search('(?<=TCN__)[0-9]{4}-[0-9]{2}-[0-9]{2}__[0-9]{2}_[0-9]{2}__ID_[0-9]+(?=\.pkl)',model_path[0])
     try:
-        r_match= re.search('(?<=TCN__)[0-9]{4}-[0-9]{2}-[0-9]{2}__[0-9]{2}_[0-9]{2}__ID_[0-9]+(?=\.pkl)',model_path[0])
+        first_path_name = r_match.group(0)
     except Exception as e:
-        logging.error(p)
+        logging.error(model_path[0])
         raise e
-    first_path_name = r_match.group(0)
     for p in model_path:
         network = neuronal_model.NeuronConvNet.load(p)
         # network.cpu()
