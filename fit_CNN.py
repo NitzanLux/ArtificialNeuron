@@ -201,7 +201,7 @@ def train_log(loss, step, epoch, learning_rate=None, sigma=None, weights=None, a
         wandb.log({"epoch": epoch, "sigma %s" % additional_str: sigma}, step=step)  # add training parameters per step
 
     print("step %d, epoch %d %s" % (step, epoch, additional_str))
-    print("general loss ", general_loss.cpu().item())
+    print("general loss ", general_loss)
     print("mse loss ", loss_mse)
     print("bcel loss ", loss_bcel)
     print("dvt loss ", loss_dvt)
