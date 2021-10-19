@@ -64,6 +64,7 @@ def plot_network_and_actual_results(file_path: [str, List[str]], model_path: [st
         try:
             model_id = regex_match.group(0)
             first_path_name=model_id
+            logging.error(first_path_name)
         except Exception as e:
             logging.error(p)
             raise e
