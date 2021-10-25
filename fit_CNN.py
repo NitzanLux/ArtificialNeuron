@@ -6,13 +6,14 @@ import random
 import torch.optim as optim
 import wandb
 
+from parameters_factories import dynamic_learning_parameters_factory as dlpf, loss_function_factory
 import configuration_factory
-import dynamic_learning_parameters_factory as dlpf
-import loss_function_factory
 from general_aid_function import *
 from neuron_network import neuronal_model
 from project_path import *
 from simulation_data_generator import *
+
+WANDB_PROJECT_NAME = "ArtificialNeuron1"
 
 BUFFER_SIZE_IN_FILES_VALID = 1
 
@@ -89,6 +90,10 @@ def train_network(config, document_on_wandb=True):
                                                         window_size_ms=config.input_window_size,
                                                         file_load=config.train_file_load,
                                                         DVT_PCA_model=DVT_PCA_model)
+    if "spike_probability" in config and config.spike_probability is not None:
+        train_data_generator.change_spike_probability(config.spike_probability)
+        validation_data_generator.change_spike_probability(config.spike_probability)
+
     batch_counter = 0
     saving_counter = 0
     if not config.dynamic_learning_params:
@@ -169,7 +174,7 @@ def train_network(config, document_on_wandb=True):
 def model_pipline(hyperparameters, document_on_wandb=True):
     if document_on_wandb:
         wandb.login()
-        with wandb.init(project="ArtificialNeuron", config=hyperparameters, entity='nilu', allow_val_change=True):
+        with wandb.init(project=(WANDB_PROJECT_NAME), config=hyperparameters, entity='nilu', allow_val_change=True):
             config = wandb.config
             train_network(config)
     else:
@@ -201,8 +206,6 @@ def train_log(loss, step, epoch, learning_rate=None, sigma=None, weights=None, a
         wandb.log({"epoch": epoch, "dvt weight  %s" % additional_str: weights[2]},
                   step=step)  # add training parameters per step
         wandb.log({"epoch": epoch, "mse weight  %s" % additional_str: weights[1]},
-                  step=step)  # add training parameters per step
-        wandb.log({"epoch": epoch, "blur weight  %s" % additional_str: weights[3]},
                   step=step)  # add training parameters per step
     if sigma is not None:
         wandb.log({"epoch": epoch, "sigma %s" % additional_str: sigma}, step=step)  # add training parameters per step

@@ -72,29 +72,37 @@ def kernel_2D_in_parts(channel_input_number
     return nn.Sequential(*kernels_arr)
 
 
-class Conv1d(nn.Module):
-    def __init__(self, in_channels, out_channels, number_of_parameters_along_axis, kernel_size, stride=1, padding=0,
-                 dilation=1, groups=1, bias=True, padding_mode='zeros', dim=3):
-        super(Conv1d, self).__init__()
+class Conv1dOnNdData(nn.Module):
+    def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0,
+                 dilation=1, groups=1, bias=True, padding_mode='zeros', dim=1):
+        """
+
+        :param in_channels: input channels
+        :param out_channels: output channels
+        :param kernel_size:
+        :param stride:
+        :param padding:
+        :param dilation:
+        :param groups:
+        :param bias:
+        :param padding_mode:
+        :param dim: the dimention which the conv 1d is not on
+        """
+        super(Conv1dOnNdData, self).__init__()
         self.moduls_list = nn.ModuleList()
         if isinstance(kernel_size,int):
             kernel_size=[kernel_size]
-        kernel_size = list(kernel_size)
-        kernel_size.append(number_of_parameters_along_axis)
-        kernel_size = tuple(kernel_size)
         self.dim = dim
         self.out_channels = out_channels
-        for i in range(number_of_parameters_along_axis):
+        for i in range(kernel_size[self.dim]):
             self.moduls_list.append(
                 nn.Conv2d(in_channels, out_channels, kernel_size, stride, padding, dilation, groups, bias,
                           padding_mode))
 
     def forward(self, x):
-        x = torch.transpose(x,-1,self.dim)
-        output_shape = list(x.shape)
-        output_shape[self.dim], output_shape[1] = output_shape[1], output_shape[self.dim]
+        x = torch.transpose(x,-1,self.dim+2) #two for channels and batch
         outputs = []
         for i, m in enumerate(self.moduls_list):
-            outputs.append(m(x).squeeze(3))
-        output= torch.stack(outputs,self.dim)
+            outputs.append(m(x).squeeze(-1))
+        output= torch.stack(outputs,self.dim+2)
         return output

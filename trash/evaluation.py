@@ -2,6 +2,7 @@ print("a")
 
 from os import listdir
 import logging
+
 print("a")
 
 logging.error("first import")
@@ -74,7 +75,7 @@ def plot_network_and_actual_results(file_path: [str, List[str]], model_path: [st
         plt.scatter(np.arange(out_var.shape[0]),spike)
         # plt.plot((out_var-np.min(out_var))/(np.max(out_var)-np.min(out_var))*(np.max(y_soma_batch)-np.min(y_soma_batch))+np.min(y_soma_batch), label=model_id)
         plt.plot(out_var, label=model_id)
-    plt.savefig(join("evaluation_plots","%s_%d_%d_%d.png")%(first_path_name,sample_idx,time_idx,window_size))
+    plt.savefig(join("../evaluation_plots", "%s_%d_%d_%d.png") % (first_path_name, sample_idx, time_idx, window_size))
     plt.legend()
     plt.show()
 logging.error("Aaaaa")

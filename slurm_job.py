@@ -16,7 +16,8 @@ DEFAULT_MEM = 30000
 # RAM_argument_str = "--mem 20000"
 
 # TODO: some time add ss-gpu.q also
-GPU_partition_argument_str = "-p ss-gpu.q,gpu.q"
+# GPU_partition_argument_str = "-p ss-gpu.q,gpu.q"
+GPU_partition_argument_str = "-p ss-gpu.q"
 # GPU_partition_argument_str = "-p gpu.q"
 
 CPU_partition_argument_str = "-p ss.q,elsc.q"
@@ -174,4 +175,4 @@ job_factory = SlurmJobFactory("cluster_logs")
 with open(os.path.join(MODELS_DIR,"%s.json"%configs_file) ,'r') as file:
     configs = json.load(file)
 for i,conf in enumerate(configs):
-    job_factory.send_job("job%i"%i,'python3 $(dirname "$path")/fit_CNN.py "%s" $SLURM_JOB_ID'%str(os.path.join(MODELS_DIR,*conf)),True)
+    job_factory.send_job("%i_%s_job"%(i,configs_file),'python3 $(dirname "$path")/fit_CNN.py "%s" $SLURM_JOB_ID'%str(os.path.join(MODELS_DIR,*conf)),True)

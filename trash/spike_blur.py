@@ -3,8 +3,8 @@ import numbers
 import torch
 from torch import nn
 from torch.nn import functional as F
-
-class GaussianSmoothing(nn.Module):
+import numpy as np
+class SpikeSmoothing(nn.Module):
     """
     Apply gaussian smoothing on a
     1d, 2d or 3d tensor. Filtering is performed seperately for each channel
@@ -18,7 +18,7 @@ class GaussianSmoothing(nn.Module):
             Default value is 2 (spatial).
     """
     def __init__(self, channels, kernel_size, sigma, dim=2):
-        super(GaussianSmoothing, self).__init__()
+        super(SpikeSmoothing, self).__init__()
         if isinstance(kernel_size, numbers.Number):
             kernel_size = [kernel_size] * dim
         if isinstance(sigma, numbers.Number):
@@ -35,11 +35,9 @@ class GaussianSmoothing(nn.Module):
         )
         for size, std, mgrid in zip(kernel_size, sigma, meshgrids):
             mean = (size - 1) / 2
-            kernel *= 1 / (std * math.sqrt(2 * math.pi)) * \
-                      torch.exp(-((mgrid - mean) / (2 * std)) ** 2)
+            kernel *= torch.exp(-torch.abs(mgrid - mean) / np.sqrt(std))
 
-        # Make sure sum of values in gaussian kernel equals 1.
-        kernel = kernel / torch.sum(kernel)
+
 
         # Reshape to depthwise convolutional weight
         kernel = kernel.view(1, 1, *kernel.size())

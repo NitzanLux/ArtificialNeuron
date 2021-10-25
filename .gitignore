@@ -1,12 +1,12 @@
 /data/
 /neuron_as_deep_net-master/
 /runs/
-/Data_test.zip
+/trash/Data_test.zip
 
 /project_path.py
-/L5PC_NEURON_simulation/
+/NEURON_models_maker/L5PC_NEURON_simulation/
 /first_run.py
 /test_slurm.py
-/email_by_demand.py
+/trash/email_by_demand.py
 /venv/
 /wandb/
