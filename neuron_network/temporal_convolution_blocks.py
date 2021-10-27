@@ -66,7 +66,7 @@ class Base1DConvolutionBlock(nn.Module):
             if self.skip_connections and not (
                     (i == 0 and self.channel_input_number == self.inner_scope_channel_number) or
                     (i == len(
-                        self.layers_list) - 1 and self.channel_output_number_number == self.inner_scope_channel_number)):
+                        self.layers_list) - 1 and self.channel_output_number == self.inner_scope_channel_number)):
                 cur_out = cur_out + model(cur_out)
             else:
                 cur_out = model(cur_out)
