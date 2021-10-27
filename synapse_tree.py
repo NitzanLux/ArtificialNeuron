@@ -433,5 +433,10 @@ def create_from_histogram_mapping(segment_histogram: List[neuron.nrn.Segment]):
 #                                                                     [1, 0, 0, 0, 0, 1],
 #                                                                     [0, 1, 0, 0, 1, 0],
 #                                                                     [0, 0, 0, 1, 0, 0],
+#
 #                                                                     [0, 0, 1, 0, 0, 0]]))
-# tree = build_graph(L5PC, allSegments)
+# import pickle
+#
+# tree = build_graph(L5PC)
+# with open("tree.pkl", 'wb') as f:
+#     pickle.dump(tree,f,pickle.HIGHEST_PROTOCOL)
