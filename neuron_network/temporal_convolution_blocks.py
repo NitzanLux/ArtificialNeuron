@@ -24,11 +24,11 @@ class Base1DConvolutionBlock(nn.Module):
                  channel_input_number
                  , inner_scope_channel_number
                  , channel_output_number, kernel_size, stride=1,
-                 dilation=1,skip_connections=True):
+                 dilation=1, skip_connections=True):
         super(Base1DConvolutionBlock, self).__init__()
         padding = keep_dimensions_by_padding_claculator(input_shape, kernel_size, stride, dilation, time_domain_dim)
         self.layers_list = nn.ModuleList()
-        self.skip_connections=skip_connections
+        self.skip_connections = skip_connections
         if isinstance(kernel_size, int):
             kernel_size = [kernel_size]
         kernel_size = list(kernel_size)
@@ -50,25 +50,26 @@ class Base1DConvolutionBlock(nn.Module):
                 out_channels = channel_output_number
 
             if i < number_of_layers - 1:
-                conv_1d=Conv1dOnNdData(in_channels, out_channels, kernel_size, stride, padding, dilation)
-                model=nn.Sequential(conv_1d,activation_function())
+                conv_1d = Conv1dOnNdData(in_channels, out_channels, kernel_size, stride, padding, dilation)
+                model = nn.Sequential(conv_1d, activation_function())
                 self.layers_list.append(model)
             else:
-                self.layers_list.append(Conv1dOnNdData(in_channels, out_channels, kernel_size, stride, padding, dilation))
+                self.layers_list.append(
+                    Conv1dOnNdData(in_channels, out_channels, kernel_size, stride, padding, dilation))
 
     def forward(self, x):
-        cur_out=x
+        cur_out = x
         for model in self.layers_list:
             if self.skip_connections:
-                cur_out =cur_out + model(cur_out)
+                cur_out = cur_out + model(cur_out)
             else:
-                cur_out=model(cur_out)
+                cur_out = model(cur_out)
 
         return out
 
 
 class BranchLeafBlock(nn.Module):
-    def __init__(self,input_shape: Tuple[int, int], number_of_layers: int, activation_function,
+    def __init__(self, input_shape: Tuple[int, int], number_of_layers: int, activation_function,
                  channel_input_number
                  , inner_scope_channel_number
                  , channel_output_number, kernel_size, stride=1,
@@ -94,13 +95,13 @@ class BranchLeafBlock(nn.Module):
 
     def forward(self, x):
         out = self.net(x)
-        out_t=self.base_conv_1d(x)
-        out_t_t=self.conv2d_BranchLeafBlock(out_t)
+        out_t = self.base_conv_1d(x)
+        out_t_t = self.conv2d_BranchLeafBlock(out_t)
         return out
 
 
 class BranchBlock(nn.Module):  # FIXME fix the channels and its movment in the branch block
-    def __init__(self,input_shape: Tuple[int, int], number_of_layers: int,  activation_function,
+    def __init__(self, input_shape: Tuple[int, int], number_of_layers: int, activation_function,
                  channel_input_number
                  , inner_scope_channel_number
                  , channel_output_number, kernel_size, stride=1,
@@ -116,7 +117,7 @@ class BranchBlock(nn.Module):  # FIXME fix the channels and its movment in the b
 
         self.base_conv_1d = Base1DConvolutionBlock(number_of_layers,
                                                    SYNAPSE_DIMENTION_POSITION - PYTORCH_CHANNEL_AND_BATCH_DIM,
-                                                   (input_shape[0],input_shape[1]-1), activation_function,
+                                                   (input_shape[0], input_shape[1] - 1), activation_function,
                                                    channel_input_number, inner_scope_channel_number,
                                                    channel_output_number, kernel_size, stride, dilation)
 
@@ -124,7 +125,7 @@ class BranchBlock(nn.Module):  # FIXME fix the channels and its movment in the b
         padding_factor = keep_dimensions_by_padding_claculator((input_shape[0], 1), (kernel_size, 1), stride,
                                                                dilation)
         self.conv1d_BranchBlock = nn.Conv2d(channel_output_number, channel_output_number,
-                                            (kernel_size, input_shape[1]), #plus one for the previus output
+                                            (kernel_size, input_shape[1]),  # plus one for the previus output
                                             stride=stride, padding=padding_factor,
                                             dilation=dilation)
         self.net = nn.Sequential(self.conv1d_BranchBlock, activation_function())
@@ -137,7 +138,7 @@ class BranchBlock(nn.Module):  # FIXME fix the channels and its movment in the b
 
 
 class IntersectionBlock(nn.Module):
-    def __init__(self,input_shape: Tuple[int, int], number_of_layers: int, activation_function,
+    def __init__(self, input_shape: Tuple[int, int], number_of_layers: int, activation_function,
                  channel_input_number
                  , inner_scope_channel_number
                  , channel_output_number, kernel_size, stride=1,
@@ -167,7 +168,7 @@ class IntersectionBlock(nn.Module):
 
 
 class RootBlock(nn.Module):
-    def __init__(self, input_shape: Tuple[int, int] ,number_of_layers: int, activation_function,
+    def __init__(self, input_shape: Tuple[int, int], number_of_layers: int, activation_function,
                  channel_input_number
                  , inner_scope_channel_number
                  , channel_output_number, kernel_size, stride=1,
@@ -175,8 +176,9 @@ class RootBlock(nn.Module):
         super(RootBlock, self).__init__()
         padding = keep_dimensions_by_padding_claculator(input_shape, kernel_size, stride, dilation,
                                                         SYNAPSE_DIMENTION_POSITION - PYTORCH_CHANNEL_AND_BATCH_DIM)
-        kernel_1d=[kernel_size,kernel_size]
-        kernel_1d[SYNAPSE_DIMENTION_POSITION-PYTORCH_CHANNEL_AND_BATCH_DIM]=input_shape[SYNAPSE_DIMENTION_POSITION-PYTORCH_CHANNEL_AND_BATCH_DIM]
+        kernel_1d = [kernel_size, kernel_size]
+        kernel_1d[SYNAPSE_DIMENTION_POSITION - PYTORCH_CHANNEL_AND_BATCH_DIM] = input_shape[
+            SYNAPSE_DIMENTION_POSITION - PYTORCH_CHANNEL_AND_BATCH_DIM]
         self.conv1d_root = Conv1dOnNdData(channel_output_number, inner_scope_channel_number,
                                           kernel_1d, stride, padding, dilation)
 
