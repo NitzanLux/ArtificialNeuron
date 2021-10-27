@@ -29,6 +29,9 @@ class Base1DConvolutionBlock(nn.Module):
         padding = keep_dimensions_by_padding_claculator(input_shape, kernel_size, stride, dilation, time_domain_dim)
         self.layers_list = nn.ModuleList()
         self.skip_connections = skip_connections
+        self.inner_scope_channel_number = inner_scope_channel_number
+        self.channel_output_number = channel_output_number
+        self.channel_input_number = channel_input_number
         if isinstance(kernel_size, int):
             kernel_size = [kernel_size]
         kernel_size = list(kernel_size)
@@ -59,8 +62,11 @@ class Base1DConvolutionBlock(nn.Module):
 
     def forward(self, x):
         cur_out = x
-        for model in self.layers_list:
-            if self.skip_connections:
+        for i, model in enumerate(self.layers_list):
+            if self.skip_connections and not (
+                    (i == 0 and self.channel_input_number == self.inner_scope_channel_number) or
+                    (i == len(
+                        self.layers_list) - 1 and self.channel_output_number_number == self.inner_scope_channel_number)):
                 cur_out = cur_out + model(cur_out)
             else:
                 cur_out = model(cur_out)

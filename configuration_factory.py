@@ -146,14 +146,14 @@ def generate_config_files_multiple_seeds(config_path: [str, Dict], number_of_con
 
 
 if __name__ == '__main__':
-    config_dynamic = config_factory()
-    configs_dynamic = generate_config_files_multiple_seeds(config_dynamic, 2)
-    config_static = config_factory(dynamic_learning_params=False)
-    configs_static = generate_config_files_multiple_seeds(config_static, 1)
-    configs_to_read = configs_dynamic+[config_factory(loss_function="loss_zero_mse_on_spikes")]
-
-    with open(os.path.join(MODELS_DIR,"model_for_evaluation_mask_mse.json"), 'w') as file:
-        file.write(json.dumps(configs_to_read) )# use `json.loads` to do the reverse
+    config_dynamic = config_factory(model_tag="simplest",kernel_size=5,num_epochs=30,epoch_size=5,batch_size=4)
+    # configs_dynamic = generate_config_files_multiple_seeds(config_dynamic, 2)
+    # config_static = config_factory(dynamic_learning_params=False)
+    # configs_static = generate_config_files_multiple_seeds(config_static, 1)
+    # configs_to_read = configs_dynamic+[config_factory(loss_function="loss_zero_mse_on_spikes")]
+    #
+    # with open(os.path.join(MODELS_DIR,"model_for_evaluation_mask_mse.json"), 'w') as file:
+    #     file.write(json.dumps(configs_to_read) )# use `json.loads` to do the reverse
 
 
     # config = load_config_file("models/NMDA/simplest_model_dynamic_NMDA_Tree_TCN__2021-09-30__16_51__ID_78714/simplest_model_dynamic_NMDA_Tree_TCN__2021-09-30__16_51__ID_78714.config")
