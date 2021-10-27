@@ -4,12 +4,12 @@ import numpy as np
 from scipy import signal
 import pickle as pickle  # todo: changed
 import time
-import nrn
 import neuron
+import nrn
 from neuron import h
 from neuron import gui
 from enum import Enum
-
+from segments import *
 
 class NeuronSectionType(Enum):
     SOMA = "soma"
@@ -38,10 +38,11 @@ class NeuronSection(nrn.Section):
             self.g_pas = 1 / g_pas
         self.connections = []
         self.segments = []
+
     def update_segments(self):
         self.segments = []
 
-        for seg in self.hoc_object:
+        for seg in self:
             self.segments.append(NeuronSegment(seg))
 
 
@@ -78,8 +79,9 @@ class NeuronSection(nrn.Section):
         return self(location)
 
     def __iter__(self):
-        for s in self:
+        for s in super():
             yield s
+
 
     # def __getitem__(self, key):
     #     assert 1>=key/self.nseg>=0,"value should be greater than 0 and at maximum in size of %d"%(self.nseg)
@@ -120,3 +122,5 @@ class Dendrite(NeuronSection):
 
     def __init__(self, length, diam, axial_resistance, g_pas=0):
         super().__init__(NeuronSectionType.DENDRIT, length, diam, axial_resistance, g_pas)
+
+
