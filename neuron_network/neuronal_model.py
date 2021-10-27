@@ -1,6 +1,6 @@
 import os
 # import pickle as pickle #python 3.7 compatibility
-import pickle  # python 3.8+ compatibility
+import _pickle as pickle  # python 3.8+ compatibility
 from typing import Tuple
 # from torchviz import make_dot
 import torch
@@ -149,7 +149,7 @@ class NeuronConvNet(nn.Module):
         data_dict.update(self.network_kwargs)
         state_dict = self.state_dict()
         with open('%s.pkl' % path, 'wb') as outp:
-            pickle.dump((data_dict, state_dict), outp, pickle.HIGHEST_PROTOCOL)
+            pickle.dump((data_dict, state_dict), outp)
 
     @staticmethod
     def load(path):
