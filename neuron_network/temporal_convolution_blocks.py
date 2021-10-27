@@ -65,7 +65,7 @@ class Base1DConvolutionBlock(nn.Module):
             else:
                 cur_out = model(cur_out)
 
-        return out
+        return cur_out
 
 
 class BranchLeafBlock(nn.Module):
