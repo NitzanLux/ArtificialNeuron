@@ -1,6 +1,6 @@
 import os
 # import pickle as pickle #python 3.7 compatibility
-import _pickle as pickle  # python 3.8+ compatibility
+import pickle  # python 3.8+ compatibility
 from typing import Tuple
 # from torchviz import make_dot
 import torch
