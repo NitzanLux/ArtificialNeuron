@@ -110,7 +110,7 @@ class SimulationDataGenerator():
         win_ind, sim_ind_mat = np.meshgrid(np.arange(self.window_size_ms - 1, -1, -1), sim_ind)
         win_ind = win_time[:, np.newaxis] - win_ind
         X_batch = self.X[sim_ind_mat, win_ind, ...][:, np.newaxis, ...]  # newaxis for channel dimensions
-        pred_index = np.max(win_time,axis=1)
+        pred_index = win_time+1
         y_spike_batch = self.y_spike[sim_ind, pred_index, :]
         y_soma_batch = self.y_soma[sim_ind, pred_index, :]
         y_soma_batch = y_soma_batch[:, np.newaxis, np.newaxis, ...]
@@ -165,7 +165,7 @@ class SimulationDataGenerator():
             y_spike = y_spike.T[:, :, np.newaxis]
             y_soma = y_soma.T[:, :, np.newaxis]
 
-            y_soma = y_soma - self.y_train_soma_bias
+            # y_soma = y_soma - self.y_train_soma_bias
             self.X.append(X)
             self.y_spike.append(y_spike)
             self.y_soma.append(y_soma)

@@ -30,10 +30,10 @@ def keep_dimensions_by_padding_claculator(input_shape, kernel_size, stride, dila
         input_shape = (input_shape, input_shape)
     input_shape = np.array(input_shape)
     p = stride * (input_shape - 1) - input_shape + kernel_size + (kernel_size - 1) * (dilation - 1)
-    p = p / 2
-    if along_dim:
-        return p[(along_dim+1)%len(p)]
+    p = p // 2
     p = p.astype(int)
+    # if along_dim:
+    #     return p[(along_dim+1)%len(p)]
     return tuple(p)
 
 
@@ -92,6 +92,7 @@ class Conv1dOnNdData(nn.Module):
         self.moduls_list = nn.ModuleList()
         if isinstance(kernel_size,int):
             kernel_size=[kernel_size]
+
         self.dim = dim
         self.out_channels = out_channels
         for i in range(kernel_size[self.dim]):
@@ -104,5 +105,5 @@ class Conv1dOnNdData(nn.Module):
         outputs = []
         for i, m in enumerate(self.moduls_list):
             outputs.append(m(x).squeeze(-1))
-        output= torch.stack(outputs,self.dim+2)
+        output= torch.stack(outputs,self.dim+2).squeeze(-2)
         return output

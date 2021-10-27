@@ -67,10 +67,12 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                       config_path="", model_tag="evaluation", model_path=None,loss_function="bcel_mse_dvt_loss")
 
     architecture_dict = AttrDict(segment_tree_path="tree.pkl",
-                                 architecture_type="BASIC_CONV",
+                                 architecture_type="LAYERED_TEMPORAL_CONV",
                                  time_domain_shape=config.input_window_size,
-                                 kernel_size_2d=3,
-                                 kernel_size_1d=9,
+                                 # kernel_size_2d=3,
+                                 # kernel_size_1d=9,
+                                 kernel_size=9,
+                                 number_of_layers=3,
                                  stride=1,
                                  dilation=1,
                                  channel_input_number=1,  # synapse number
@@ -151,7 +153,7 @@ if __name__ == '__main__':
     # configs_to_read = configs_dynamic+[config_factory(loss_function="loss_zero_mse_on_spikes")]
     #
     # with open(os.path.join(MODELS_DIR,"model_for_evaluation_mask_mse.json"), 'w') as file:
-        # file.write(json.dumps(configs_to_read)  )# use `json.loads` to do the reverse
+    #     file.write(json.dumps(configs_to_read)  )# use `json.loads` to do the reverse
 
 
     # config = load_config_file("models/NMDA/simplest_model_dynamic_NMDA_Tree_TCN__2021-09-30__16_51__ID_78714/simplest_model_dynamic_NMDA_Tree_TCN__2021-09-30__16_51__ID_78714.config")
