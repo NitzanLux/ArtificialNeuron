@@ -24,10 +24,11 @@ class Base1DConvolutionBlock(nn.Module):
                  channel_input_number
                  , inner_scope_channel_number
                  , channel_output_number, kernel_size, stride=1,
-                 dilation=1):
+                 dilation=1,skip_connections=True):
         super(Base1DConvolutionBlock, self).__init__()
         padding = keep_dimensions_by_padding_claculator(input_shape, kernel_size, stride, dilation, time_domain_dim)
-        layers_list = []
+        self.layers_list = nn.ModuleList()
+        self.skip_connections=skip_connections
         if isinstance(kernel_size, int):
             kernel_size = [kernel_size]
         kernel_size = list(kernel_size)
@@ -48,13 +49,21 @@ class Base1DConvolutionBlock(nn.Module):
             if i == number_of_layers - 1:
                 out_channels = channel_output_number
 
-            layers_list.append(Conv1dOnNdData(in_channels, out_channels, kernel_size, stride, padding, dilation))
             if i < number_of_layers - 1:
-                layers_list.append(activation_function())
-        self.model = nn.Sequential(*layers_list)
+                conv_1d=Conv1dOnNdData(in_channels, out_channels, kernel_size, stride, padding, dilation)
+                model=nn.Sequential(conv_1d,activation_function())
+                self.layers_list.append(model)
+            else:
+                self.layers_list.append(Conv1dOnNdData(in_channels, out_channels, kernel_size, stride, padding, dilation))
 
     def forward(self, x):
-        out = self.model(x)
+        cur_out=x
+        for model in self.layers_list:
+            if self.skip_connections:
+                cur_out =cur_out + model(cur_out)
+            else:
+                cur_out=model(cur_out)
+
         return out
 
 
