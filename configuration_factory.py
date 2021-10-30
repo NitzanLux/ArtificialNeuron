@@ -63,8 +63,8 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                       torch_seed=42, numpy_seed=21, random_seed=12,init_weights_sd=0.05,
                       dynamic_learning_params=True,
                       constant_loss_weights=[1., 1. / 2., 0.,0], constant_sigma=2.5, constant_learning_rate=0.0001,
-                      dynamic_learning_params_function="learning_parameters_iter_slow_10",
-                      config_path="", model_tag="evaluation", model_path=None,loss_function="learning_parameters_iter_slow_10_with_constant_weights")
+                      dynamic_learning_params_function="learning_parameters_iter_slow_10_with_constant_weights",
+                      config_path="", model_tag="evaluation", model_path=None,loss_function="loss_zero_mse_on_spikes")
 
     architecture_dict = AttrDict(segment_tree_path="tree.pkl",
                                  architecture_type="LAYERED_TEMPORAL_CONV",
