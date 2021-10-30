@@ -190,7 +190,7 @@ def train_log(loss, step, epoch, learning_rate=None, sigma=None, weights=None, a
     except Exception as e:
         print("epoch",type(epoch))
         print("additional_str",type(additional_str))
-        print("general lossa",type(general_loss))
+        print("general loss",type(general_loss))
         print("step",type(step))
         raise  e
     wandb.log({"epoch": epoch, "mse loss %s" % additional_str: loss_mse}, step=step)
@@ -222,7 +222,7 @@ def display_accuracy(target, output, epoch, step, additional_str='', log_frequen
         return
     # target_np = target.detach().cpu().numpy().squeeze()
     # output_np = output.detach().numpy().squeeze()
-    accuracy = 1 - torch.abs(target - output)/target.shape[0]  # todo keep going
+    accuracy = 1 - torch.abs(target - output)
     accuracy = torch.mean(accuracy, dim=0)
     wandb.log({"epoch": epoch, "accuracy (%s) %s" % ("%", additional_str): float(accuracy[0])}, step=step)
     print("accuracy (%s) %s : %0.4f" % ("%", additional_str, float(accuracy[0])))

@@ -36,7 +36,8 @@ def plot_network_and_actual_results(file_path: [str, List[str]], model_path: [st
     y_soma_batch = y_soma[sample_idx, time_idx:time_idx + window_size, ...][:, ...]
     if include_DVT:
         y_DVT_batch = y_DVT[sample_idx, time_idx:time_idx + window_size, ...][:, ...]
-    plt.plot(y_soma_batch, label='original')
+    fig, axs = plt.subplots(2)
+
     if isinstance(model_path, str):
         model_path = [model_path]
     first_path_name=""
@@ -61,11 +62,13 @@ def plot_network_and_actual_results(file_path: [str, List[str]], model_path: [st
         out_var = np.array(out_var).squeeze()
         # plt.scatter(np.arange(out_var.shape[0]),spike)
         # plt.plot((out_var-np.min(out_var))/(np.max(out_var)-np.min(out_var))*(np.max(y_soma_batch)-np.min(y_soma_batch))+np.min(y_soma_batch), label=model_id)
-        plt.plot(np.arange(network.time_domain_shape,y_soma_batch.shape[0]),out_var, label=model_id)
+        axs[0].plot(np.arange(network.time_domain_shape,y_soma_batch.shape[0]),out_var, label=model_id)
+        axs[1].plot(np.arange(network.time_domain_shape,y_soma_batch.shape[0]),spike, label=model_id)
+    axs[0].plot(y_soma_batch, label='original')
     plt.savefig(join("evaluation_plots","%s_%d_%d_%d.png")%(first_path_name,sample_idx,time_idx,window_size))
     plt.legend()
     plt.show()
 
 plot_network_and_actual_results( r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\data\L5PC_NMDA_validation\sim__saved_InputSpikes_DVTs__763_outSpikes__128_simulationRuns__6_secDuration__randomSeed_100524.p" \
-,r"models\NMDA\gaussian_train_NMDA_Tree_TCN__2021-10-14__20_38__ID_19550\gaussian_train_NMDA_Tree_TCN__2021-10-14__20_38__ID_19550.pkl"\
- ,0 ,1500, 1000)
+,r"models/NMDA/evaluation_NMDA_Tree_TCN__2021-10-27__19_46__ID_87705/evaluation_NMDA_Tree_TCN__2021-10-27__19_46__ID_87705.pkl"\
+ ,0 ,1450, 250)

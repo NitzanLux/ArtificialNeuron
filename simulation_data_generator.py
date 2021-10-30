@@ -176,7 +176,7 @@ class SimulationDataGenerator():
         if self.include_DVT:
             self.y_DVT = np.vstack(self.y_DVT)
         # threshold the signals
-        self.y_soma[self.y_soma > self.y_soma_threshold] = self.y_soma_threshold
+        # self.y_soma[self.y_soma > self.y_soma_threshold] = self.y_soma_threshold
         if self.include_DVT:
             self.y_DVT[self.y_DVT > self.y_DTV_threshold] = self.y_DTV_threshold
             self.y_DVT[self.y_DVT < -self.y_DTV_threshold] = -self.y_DTV_threshold
