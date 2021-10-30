@@ -56,7 +56,7 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                    **kargs):
     ##default values can be overridden by kargs
     config = AttrDict(input_window_size=200, num_segments=2 * 639, num_syn_types=1,
-                      num_epochs=15000, epoch_size=30, batch_size_train=15, batch_size_validation=5,
+                      num_epochs=15000, epoch_size=100, batch_size_train=15, batch_size_validation=15,
                       train_file_load=0.5, valid_file_load=0.5,spike_probability= 0.3,
                       optimizer_type="AdamW", optimizer_params={},
                       batch_counter=0, epoch_counter=0,  # default counter
@@ -64,7 +64,7 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                       dynamic_learning_params=True,
                       constant_loss_weights=[1., 1. / 2., 0.,0], constant_sigma=2.5, constant_learning_rate=0.0001,
                       dynamic_learning_params_function="learning_parameters_iter_slow_10",
-                      config_path="", model_tag="evaluation", model_path=None,loss_function="bcel_mse_dvt_loss")
+                      config_path="", model_tag="evaluation", model_path=None,loss_function="learning_parameters_iter_slow_10_with_constant_weights")
 
     architecture_dict = AttrDict(segment_tree_path="tree.pkl",
                                  architecture_type="LAYERED_TEMPORAL_CONV",
@@ -72,7 +72,7 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                                  # kernel_size_2d=3,
                                  # kernel_size_1d=9,
                                  kernel_size=51,
-                                 number_of_layers=3,
+                                 number_of_layers=4,
                                  stride=1,
                                  dilation=1,
                                  channel_input_number=1,  # synapse number
@@ -146,14 +146,14 @@ def generate_config_files_multiple_seeds(config_path: [str, Dict], number_of_con
 
 
 if __name__ == '__main__':
-    config_dynamic = config_factory(model_tag="simplest",kernel_size=5,num_epochs=30,epoch_size=5,batch_size=4)
+    config_dynamic = config_factory(model_tag="new_evaluation_const_weights")
     # configs_dynamic = generate_config_files_multiple_seeds(config_dynamic, 2)
     # config_static = config_factory(dynamic_learning_params=False)
     # configs_static = generate_config_files_multiple_seeds(config_static, 1)
     # configs_to_read = configs_dynamic+[config_factory(loss_function="loss_zero_mse_on_spikes")]
     #
-    # with open(os.path.join(MODELS_DIR,"model_for_evaluation_mask_mse.json"), 'w') as file:
-    #     file.write(json.dumps(configs_to_read) )# use `json.loads` to do the reverse
+    with open(os.path.join(MODELS_DIR,"new_model_for_evaluation_mask_mse_const_weights.json"), 'w') as file:
+        file.write(json.dumps(config_dynamic) )# use `json.loads` to do the reverse
 
 
     # config = load_config_file("models/NMDA/simplest_model_dynamic_NMDA_Tree_TCN__2021-09-30__16_51__ID_78714/simplest_model_dynamic_NMDA_Tree_TCN__2021-09-30__16_51__ID_78714.config")
