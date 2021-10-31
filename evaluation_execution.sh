@@ -21,7 +21,4 @@ fi
 path=$(dirname $SCRIPT_PATH)
 
 # put your script here - example script is sitting with this bash script
-python3 $path/evaluation.py "/ems/elsc-labs/segev-i/david.beniaguev/Reseach/Single_Neuron_InOut/ExperimentalData/L5PC_NMDA_valid_mixed/exBas_0_1000_inhBasDiff_-800_200__exApic_0_1000_inhApicDiff_-800_200_SpTemp__saved_InputSpikes_DVTs__1566_outSpikes__128_simulationRuns__6_secDuration__randomSeed_200278.p" \
-"models/NMDA/gaussian_train_NMDA_Tree_TCN__2021-10-14__20_38__ID_28034/gaussian_train_NMDA_Tree_TCN__2021-10-14__20_38__ID_28034.pkl"\
- 0 90 400
-
+python3 $path/evaluation_per_ms.py

@@ -70,5 +70,5 @@ def plot_network_and_actual_results(file_path: [str, List[str]], model_path: [st
     plt.show()
 
 plot_network_and_actual_results( r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\data\L5PC_NMDA_validation\sim__saved_InputSpikes_DVTs__763_outSpikes__128_simulationRuns__6_secDuration__randomSeed_100524.p" \
-,r"models/NMDA/evaluation_NMDA_Tree_TCN__2021-10-27__19_46__ID_87705/evaluation_NMDA_Tree_TCN__2021-10-27__19_46__ID_87705.pkl"\
- ,0 ,1450, 250)
+,r"models/NMDA/evaluation_NMDA_Tree_TCN__2021-10-27__19_46__ID_88828/evaluation_NMDA_Tree_TCN__2021-10-27__19_46__ID_88828.pkl"\
+ ,0 ,1450, 1500)
