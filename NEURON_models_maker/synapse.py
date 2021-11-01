@@ -9,6 +9,7 @@ import nrn
 from neuron import h
 from neuron import gui
 from enum import Enum
+from typing import List,Dict
 
 
 class SynapseType(Enum):

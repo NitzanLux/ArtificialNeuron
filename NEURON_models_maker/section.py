@@ -11,6 +11,7 @@ from neuron import gui
 from enum import Enum
 from NEURON_models_maker.synapse import *
 
+from typing import List,Dict
 
 class NeuronSectionType(Enum):
     SOMA = "soma"

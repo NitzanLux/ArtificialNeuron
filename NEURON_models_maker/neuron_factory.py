@@ -2,6 +2,7 @@ from neuron import h
 # from NEURON_models_maker.section import Dendrite,Soma,NeuronSection,NeuronSectionType
 import NEURON_models_maker.section as section
 import numpy as np
+from typing import List
 
 
 class NeuronEnviroment():
