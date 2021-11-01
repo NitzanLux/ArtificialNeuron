@@ -5,7 +5,7 @@ import random
 
 import torch.optim as optim
 import wandb
-from typing import List
+from typing import List,Tuple
 from parameters_factories import dynamic_learning_parameters_factory as dlpf, loss_function_factory
 import configuration_factory
 from general_aid_function import *
