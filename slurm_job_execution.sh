@@ -21,4 +21,4 @@ fi
 path=$(dirname $SCRIPT_PATH)
 
 # put your script here - example script is sitting with this bash script
-python3 $path/slurm_job.py "new_model_for_evaluation_mask_mse_const_weights"
+python3 $path/slurm_job.py "evaluation_file_filter"
