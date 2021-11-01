@@ -1,6 +1,6 @@
 # import pickle as pickle #python 3.7 compatibility
 # from torchviz import make_dot
-from NEURON_models_maker.synapse_tree import NUMBER_OF_PREVIUSE_SEGMENTS_IN_BRANCH
+from synapse_tree import NUMBER_OF_PREVIUSE_SEGMENTS_IN_BRANCH
 from neuron_network.block_aid_functions import *
 
 PYTORCH_CHANNEL_AND_BATCH_DIM = 2

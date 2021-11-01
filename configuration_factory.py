@@ -3,7 +3,7 @@ from general_aid_function import *
 import pandas as pd
 from typing import Dict
 from simulation_data_generator import *
-from NEURON_models_maker.synapse_tree import SectionNode
+from synapse_tree import SectionNode
 import json
 import os.path
 from neuron_network import neuronal_model

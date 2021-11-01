@@ -4,7 +4,7 @@ import pickle  # python 3.8+ compatibility
 import torch
 from general_aid_function import *
 from project_path import MODELS_DIR
-from NEURON_models_maker.synapse_tree import SectionNode, SectionType
+from synapse_tree import SectionNode, SectionType
 import os
 from enum import Enum
 import neuron_network.basic_convolution_blocks as basic_convolution_blocks

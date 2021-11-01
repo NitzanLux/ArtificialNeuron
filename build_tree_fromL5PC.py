@@ -21,7 +21,7 @@ cvode = h.CVode()
 if USE_C_VODE:
     cvode.active(1)
 
-from NEURON_models_maker.synapse_tree import build_graph
+from synapse_tree import build_graph
 import pickle
 
 tree = build_graph(L5PC)

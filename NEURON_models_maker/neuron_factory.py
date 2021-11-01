@@ -1,17 +1,6 @@
-import os
-import sys
-import numpy as np
-from scipy import signal
-import pickle as pickle  # todo: changed
-import time
-import neuron
 from neuron import h
-from neuron import gui
-from enum import Enum
 # from NEURON_models_maker.section import Dendrite,Soma,NeuronSection,NeuronSectionType
 import NEURON_models_maker.section as section
-import NEURON_models_maker.synapse_tree as syntre
-from os.path import join
 import numpy as np
 
 
