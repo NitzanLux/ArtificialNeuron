@@ -1,21 +1,15 @@
-import os
 # import pickle as pickle #python 3.7 compatibility
 import pickle  # python 3.8+ compatibility
-from typing import Tuple
 # from torchviz import make_dot
 import torch
-import torch.nn as nn
 from general_aid_function import *
-from torch.nn.utils import weight_norm
-from project_path import TRAIN_DATA_DIR, MODELS_DIR
-from synapse_tree import SectionNode, SectionType, NUMBER_OF_PREVIUSE_SEGMENTS_IN_BRANCH
+from project_path import MODELS_DIR
+from NEURON_models_maker.synapse_tree import SectionNode, SectionType
 import os
-import numpy as np
 from enum import Enum
 import neuron_network.basic_convolution_blocks as basic_convolution_blocks
 import neuron_network.temporal_convolution_blocks as temporal_convolution_blocks
 import torch.nn as nn
-import torch.nn.functional as F
 
 
 class ArchitectureType(Enum):
@@ -76,17 +70,17 @@ class NeuronConvNet(nn.Module):
             input_shape = (self.time_domain_shape, param_number)
             if segment.type == SectionType.BRANCH:
                 self.modules_dict[self.segemnt_ids[segment]] = branch_class(input_shape,
-                                                                            **sub_network_kargs)  # todo: add parameters
+                                                                            **sub_network_kargs)
             elif segment.type == SectionType.BRANCH_INTERSECTION:
                 self.modules_dict[self.segemnt_ids[segment]] = intersection_class(input_shape,
-                                                                                  **sub_network_kargs)  # todo: add parameters
+                                                                                  **sub_network_kargs)
             elif segment.type == SectionType.BRANCH_LEAF:
                 self.modules_dict[self.segemnt_ids[segment]] = branch_leaf_class(input_shape,
-                                                                                 **sub_network_kargs)  # todo: add parameters
+                                                                                 **sub_network_kargs)
 
             elif segment.type == SectionType.SOMA:
                 self.last_layer = root_class(input_shape,
-                                             **sub_network_kargs)  # todo: add parameters
+                                             **sub_network_kargs)
             else:
                 assert False, "Type not found"
         self.double()

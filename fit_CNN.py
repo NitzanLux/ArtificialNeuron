@@ -12,12 +12,12 @@ from general_aid_function import *
 from neuron_network import neuronal_model
 from project_path import *
 from simulation_data_generator import *
-
+import re
 WANDB_PROJECT_NAME = "ArtificialNeuron1"
 
-BUFFER_SIZE_IN_FILES_VALID = 1
+BUFFER_SIZE_IN_FILES_VALID = 4
 
-BUFFER_SIZE_IN_FILES_TRAINING = 3
+BUFFER_SIZE_IN_FILES_TRAINING = 8
 WANDB_API_KEY = "2725e59f8f4484605300fdf4da4c270ff0fe44a3"
 # for dibugging
 # logging.error("Aaaaa")
@@ -35,11 +35,29 @@ include_DVT = False
 
 # num_DVT_components = 20 if synapse_type == 'NMDA' else 30
 
+def filter_file_names(files:List[str],filter:str)->List[str]:
+    compile_filter = re.compile(filter)
+    new_files=[]
+    for i,f_name in enumerate(files):
+        if compile_filter.match(f_name):
+            new_files.append(f_name)
+    return new_files
 
-def load_files_names():
+
+
+
+def load_files_names(files_filter_regex:str=".*")->Tuple[List[str],List[str],List[str]]:
     train_files = glob.glob(TRAIN_DATA_DIR + '*_128_simulationRuns*_6_secDuration_*')
+    train_files = filter_file_names(train_files,files_filter_regex)
+    print("train_files size %d"%(len(train_files)))
     valid_files = glob.glob(VALID_DATA_DIR + '*_128_simulationRuns*_6_secDuration_*')
+    valid_files = filter_file_names(valid_files,files_filter_regex)
+    print("valid_files size %d"%(len(valid_files)))
+
     test_files = glob.glob(TEST_DATA_DIR + '*_128_simulationRuns*_6_secDuration_*')
+    test_files = filter_file_names(test_files,files_filter_regex)
+    print("test_files size %d"%(len(test_files)))
+
     return train_files, valid_files, test_files
 
 

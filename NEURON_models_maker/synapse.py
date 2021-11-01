@@ -5,6 +5,7 @@ from scipy import signal
 import pickle as pickle  # todo: changed
 import time
 import neuron
+import nrn
 from neuron import h
 from neuron import gui
 from enum import Enum
@@ -18,34 +19,13 @@ class SynapseType(Enum):
     GABA_AB = 'GABA_AB'
 
 
-class NeuronSegment():
-    def __init__(self):
-        # super().__init__(hoc_object)
-        self.synapses = []
+class Synapse():
+    def __init__(self, segment: nrn.Segment):
+        super().__init__(h.ProbUDFsyn2(segment))
+        self.synapse,self.synapse_connection=None,None
 
-    def add_synapse(self):
-        self.synapses.append(synapse(self))
-
-    def __iter__(self):
-        for s in self.synapses:
-            yield s
-
-    def __getitem__(self, key):
-        return self.synapses[key]
-
-    def __setitem__(self, key, value):
-        self.synapses[key] = value
-        return self.synapses[key]
-    # def add_event(self,time):
-
-
-class synapse():
-    def __init__(self, segment: NeuronSegment):
-        # super().__init__(h.ProbUDFsyn2(segment.hoc_object))
-        pass
-
-    def connect_synapse(self, weight=1):
-        netConnection = h.NetCon(None, synapse)
+    def connect_synapse(self, weight=1,delay=0):
+        netConnection = h.NetCon(None, Synapse)
         netConnection.delay = 0
         netConnection.weight[0] = weight
         self.synapse_connection = netConnection
@@ -62,12 +42,10 @@ class synapse():
             self.synapse = synapse_function()
 
     def add_event(self, event_time):
-        self.hoc_object.event(event_time)
+        self.event(event_time)
 
     # AMPA synapse
     def __define_synapse_AMPA(self, gMax=0.0004):
-        synapse = h.ProbUDFsyn2(self.hoc_object)
-
         synapse.tau_r = 0.3
         synapse.tau_d = 3.0
         synapse.gmax = gMax
@@ -82,7 +60,6 @@ class synapse():
     def __define_synapse_NMDA(self, gMax=0.0004):
 
         synapse = h.ProbAMPANMDA2(self.hoc_object)
-
         synapse.tau_r_AMPA = 0.3
         synapse.tau_d_AMPA = 3.0
         synapse.tau_r_NMDA = 2.0
@@ -93,7 +70,6 @@ class synapse():
         synapse.u0 = 0
         synapse.Dep = 0
         synapse.Fac = 0
-
         return synapse
 
     # GABA A synapse

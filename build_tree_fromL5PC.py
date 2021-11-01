@@ -1,7 +1,5 @@
-from os.path import join
 import neuron
 from neuron import h
-from neuron import gui
 
 USE_C_VODE = True #todo cheack what it is?
 
@@ -23,7 +21,7 @@ cvode = h.CVode()
 if USE_C_VODE:
     cvode.active(1)
 
-from synapse_tree import build_graph
+from NEURON_models_maker.synapse_tree import build_graph
 import pickle
 
 tree = build_graph(L5PC)
