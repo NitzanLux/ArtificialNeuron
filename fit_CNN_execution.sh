@@ -23,4 +23,4 @@ fi
 path=$(dirname $SCRIPT_PATH)
 
 # put your script here - example script is sitting with this bash script
-python $path/slurm_job.py $1
+python $path/slurm_job.py
