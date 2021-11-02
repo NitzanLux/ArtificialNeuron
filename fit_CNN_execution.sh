@@ -13,6 +13,8 @@
 if [ -n $SLURM_JOB_ID ]; then
 # check the original location through scontrol and $SLURM_JOB_ID
 SCRIPT_PATH=$(scontrol show job $SLURM_JOBID | awk -F= '/Command=/{print $2}')
+
+
 else
 # otherwise: started with bash. Get the real location.
 SCRIPT_PATH=$(realpath $0)
@@ -21,4 +23,4 @@ fi
 path=$(dirname $SCRIPT_PATH)
 
 # put your script here - example script is sitting with this bash script
-python $path/slurm_job.py
+python $path/slurm_job.py $1
