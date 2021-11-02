@@ -266,7 +266,7 @@ def run_fit_cnn():
     # except Exception as e:
     # send_mail("nitzan.luxembourg@mail.huji.ac.il","somthing went wrong",e)
     # raise e
-
-run_fit_cnn()
+if __name__ == '__main__':
+    run_fit_cnn()
 
 # send_mail("nitzan.luxembourg@mail.huji.ac.il","finished run","finished run")
