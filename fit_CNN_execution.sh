@@ -6,7 +6,7 @@
 #SBATCH -c 1
 #SBATCH -t 1-0
 #SBATCH -p ss-gpu.q
-#SBATCH --gres=gpu:1cd
+#SBATCH --gres=gpu:1
 # check if script is started via SLURM or bash
 # if with SLURM: there variable '$SLURM_JOB_ID' will exist
 # `if [ -n $SLURM_JOB_ID ]` checks if $SLURM_JOB_ID is not an empty string
