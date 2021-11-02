@@ -110,8 +110,8 @@ class NeuronSection(nrn.Section):
                         delay: [float, int] = 0.):
         self.get_synapse(location, synapse_type).connect_synapse(weight, delay)
 
-    def connect_all_synapses(self, synapse_types:[List[SynapseType], SynapseType], weights: [float, int,List[int,float]] = 1.,
-                        delays:  [float, int,List[int,float]] = 0.):
+    def connect_all_synapses(self, synapse_types:[List[SynapseType], SynapseType], weights: [float, int,List[float]] = 1.,
+                        delays:  [float, int,List[float]] = 0.):
         if not isinstance(weights,list):
             weights=[weights]*self.nseg
         if not isinstance(delays,list):
@@ -127,6 +127,16 @@ class NeuronSection(nrn.Section):
     def add_synapse_event(self, location: [int, float], synapse_type: SynapseType, event_time: [float, int]):
         self.get_synapse(location, synapse_type).add_event(event_time)
 
+    def get_all_synapses_by_segments_hist(self):
+        synapse_keys = set(self.synpase_dict.values().keys())
+        synapses_dict_mapping = {s_type:[] for s_type in synapse_keys}
+        for segment in self:
+            for synapse_type in synapse_keys:
+                if segment in self.synpase_dict and synapse_type in self.synpase_dict[segment]:
+                    synapses_dict_mapping[synapse_type]=self.synpase_dict[segment][synapse_type]
+                else:
+                    synapses_dict_mapping[synapse_type] = None
+        return synapses_dict_mapping
 
 class Soma(NeuronSection):
     def __init__(self, length, diam, axial_resistance, g_pas=0):

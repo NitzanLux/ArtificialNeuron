@@ -18,20 +18,19 @@ def bcel_mse_dvt_loss(loss_weights, window_size, sigma):
         loss_blur_item = 0
 
         if loss_weights[0] > 0:
-            loss_bcel = loss_weights[0] * binary_cross_entropy_loss(output[0],
-                                                                    target[0])  # removing channel dimention
+            loss_bcel =  binary_cross_entropy_loss(output[0],target[0])  # removing channel dimention
             loss_bcel_item = loss_bcel.item()
-            general_loss = loss_bcel
+            general_loss = loss_weights[0] *loss_bcel
 
         if loss_weights[1] > 0:
-            loss_mse = loss_weights[1] * mse_loss(output[1].squeeze(1), target[1].squeeze(1))
+            loss_mse =  mse_loss(output[1].squeeze(1), target[1].squeeze(1))
             loss_mse_item = loss_mse.item()
-            general_loss = general_loss + loss_mse if general_loss else loss_mse
+            general_loss = general_loss + loss_weights[1] *loss_mse if general_loss else loss_weights[1] *loss_mse
 
         if loss_weights[2] > 0:
-            loss_dvt = loss_weights[2] * mse_loss(output[2], target[2])
+            loss_dvt =  mse_loss(output[2], target[2])
             loss_dvt_item = loss_dvt.item()
-            general_loss = general_loss + loss_dvt if general_loss else loss_dvt
+            general_loss = general_loss + loss_weights[2] *loss_dvt if general_loss else loss_weights[2] *loss_dvt
 
         # if len(loss_weights) > 3 and loss_weights[3] != 0 and False: #cannot be done on a single point
         #     pass

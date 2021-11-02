@@ -9,7 +9,7 @@ import nrn
 from neuron import h
 from neuron import gui
 from enum import Enum
-from typing import List,Dict
+from typing import List, Dict
 
 
 class SynapseType(Enum):
@@ -23,9 +23,9 @@ class SynapseType(Enum):
 class Synapse():
     def __init__(self, segment: nrn.Segment):
         super().__init__(h.ProbUDFsyn2(segment))
-        self.synapse,self.synapse_connection=None,None
+        self.synapse, self.synapse_connection = None, None
 
-    def connect_synapse(self, weight=1,delay=0):
+    def connect_synapse(self, weight=1, delay=0):
         netConnection = h.NetCon(None, Synapse)
         netConnection.delay = 0
         netConnection.weight[0] = weight
@@ -42,8 +42,12 @@ class Synapse():
         else:
             self.synapse = synapse_function()
 
-    def add_event(self, event_time):
+    def add_event(self, event_time: float):
         self.event(event_time)
+
+    def add_events(self, event_times: List[float]):
+        for e_time in event_times:
+            self.add_event(e_time)
 
     # AMPA synapse
     def __define_synapse_AMPA(self, gMax=0.0004):

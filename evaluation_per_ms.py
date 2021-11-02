@@ -64,7 +64,6 @@ def plot_network_and_actual_results(file_path: [str, List[str]], model_path: [st
         # plt.plot((out_var-np.min(out_var))/(np.max(out_var)-np.min(out_var))*(np.max(y_soma_batch)-np.min(y_soma_batch))+np.min(y_soma_batch), label=model_id)
         axs[0].plot(np.arange(network.time_domain_shape,y_soma_batch.shape[0]),out_var, label=model_id)
         axs[1].plot(np.arange(network.time_domain_shape,y_soma_batch.shape[0]),spike, label=model_id)
-        window_size=network.time_domain_shape
     axs[1].set_xlim([0,y_soma_batch.shape[0]])
     axs[0].plot(y_soma_batch, label='original')
     plt.savefig(join("evaluation_plots","%s_%d_%d_%d.png")%(first_path_name,sample_idx,time_idx,window_size))
