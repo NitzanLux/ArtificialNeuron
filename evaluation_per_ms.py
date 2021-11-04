@@ -10,7 +10,7 @@ from typing import List
 import re
 import argparse
 from tqdm import tqdm
-
+import pickle
 
 def plot_network_and_actual_results(file_path: [str, List[str]], model_path: [str, List[str]] = '',
                                     sample_idx: [None, int] = None, time_idx: [None, int] = None,
@@ -69,8 +69,11 @@ def plot_network_and_actual_results(file_path: [str, List[str]], model_path: [st
         print(s)
         axs[1].axvline(s,0,1,color='red')
     axs[1].set_xlim([0,y_soma_batch.shape[0]])
-    axs[0].set_ylim([-76,-54])
+    axs[0].set_ylim([-80,-54])
+
     axs[0].plot(y_soma_batch, label='original')
+
+    pickle.dump(fig, open(join("evaluation_plots","%s_%d_%d_%d.figpkl")%(first_path_name,sample_idx,time_idx,window_size), 'wb'))
     plt.savefig(join("evaluation_plots","%s_%d_%d_%d.png")%(first_path_name,sample_idx,time_idx,window_size))
     plt.legend()
     plt.show()
