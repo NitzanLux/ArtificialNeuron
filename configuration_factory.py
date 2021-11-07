@@ -70,7 +70,7 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                                  time_domain_shape=config.input_window_size,
                                  # kernel_size_2d=3,
                                  # kernel_size_1d=9,
-                                 kernel_size=51,
+                                 kernel_size=81,
                                  number_of_layers=3,
                                  stride=1,
                                  dilation=1,
@@ -145,13 +145,13 @@ def generate_config_files_multiple_seeds(config_path: [str, Dict], number_of_con
 
 
 if __name__ == '__main__':
-    config_dynamic = config_factory(model_tag="evaluation_file_filter")
+    config_dynamic = config_factory(model_tag="evaluation_mse_only_const_lr",loss_function="only_mse",dynamic_learning_params=False)
     configs_dynamic = generate_config_files_multiple_seeds(config_dynamic, 2)
     # config_static = config_factory(dynamic_learning_params=False)
     # configs_static = generate_config_files_multiple_seeds(config_static, 1)
     # configs_to_read = configs_dynamic+[config_factory(loss_function="loss_zero_mse_on_spikes")]
     #
-    with open(os.path.join(MODELS_DIR,"evaluation_file_filter.json"), 'w') as file:
+    with open(os.path.join(MODELS_DIR,"constant_lr_evaluation.json"), 'w') as file:
         file.write(json.dumps(configs_dynamic) )# use `json.loads` to do the reverse
 
 

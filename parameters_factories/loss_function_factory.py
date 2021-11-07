@@ -69,7 +69,7 @@ def loss_zero_mse_on_spikes(loss_weights, window_size, sigma):
             mse_target = target[1]
             mse_out[target[0]==1]=0
             mse_target[target[0]==1]=0
-            loss_mse = loss_weights[1] * mse_loss(output[1].squeeze(1), target[1].squeeze(1))
+            loss_mse = loss_weights[1] * mse_loss(mse_out.squeeze(1), mse_target.squeeze(1))
             loss_mse_item = loss_mse.item()
             general_loss = general_loss + loss_mse if general_loss else loss_mse
 
@@ -81,4 +81,12 @@ def loss_zero_mse_on_spikes(loss_weights, window_size, sigma):
         return general_loss, loss_bcel_item, loss_mse_item,loss_dvt_item, loss_blur_item
         # return general_loss, 0, 0, loss_dvt
 
+    return custom_loss
+
+def only_mse(loss_weights, window_size, sigma):
+    def custom_loss(output, target):
+        loss_mse = mse_loss(output[1].squeeze(1), target[1].squeeze(1))
+        loss_mse_item = loss_mse.item()
+        general_loss = loss_mse
+        return general_loss,0,loss_mse_item,0
     return custom_loss

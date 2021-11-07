@@ -3,3 +3,5 @@
 -add accuracy and add 1d TCN architecture
 -blur add in case of std 0
 -add evaluation in every save
+-map reduce in neuronal models
+-universal blocks

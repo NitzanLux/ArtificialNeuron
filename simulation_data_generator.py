@@ -352,11 +352,11 @@ def sample_windows_from_sims(sim_experiment_files, batch_size=16, window_size_ms
         y_DVT = np.transpose(y_DVT, axes=[2, 1, 0])
 
         # threshold the signals
-        y_soma[y_soma > y_soma_threshold] = y_soma_threshold
-        y_DVT[y_DVT > y_DTV_threshold] = y_DTV_threshold
-        y_DVT[y_DVT < -y_DTV_threshold] = -y_DTV_threshold
+        # y_soma[y_soma > y_soma_threshold] = y_soma_threshold
+        # y_DVT[y_DVT > y_DTV_threshold] = y_DTV_threshold
+        # y_DVT[y_DVT < -y_DTV_threshold] = -y_DTV_threshold
 
-        y_soma = y_soma - y_train_soma_bias
+        # y_soma = y_soma - y_train_soma_bias
 
         # gatherUSE_CVODE = True information regarding the loaded file
         num_simulations, sim_duration_ms, num_segments = X.shape
