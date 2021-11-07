@@ -1,7 +1,9 @@
 from project_path import *
 from general_aid_function import *
-import pandas as pd
 from typing import Dict
+
+import pandas as pd
+
 from simulation_data_generator import *
 from synapse_tree import SectionNode
 import json
