@@ -1,7 +1,6 @@
 import sys
 
 print(sys.executable)
-import pandas as pd
 import os
 import json
 from project_path import *
