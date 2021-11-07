@@ -21,4 +21,4 @@ if __name__ == '__main__':
         currnt_conf = confactory.config_factory(save_model_to_config_dir=True,is_new_name=True,**currnt_conf)
         new_configs.append(currnt_conf)
     with open(os.path.join(MODELS_DIR,"%s.json"%args.new_json_paths), 'w') as file:
-        file.write(json.dumps(new_configs) )# use `json.loads` to do the reverse
+        file.write(json.dumps(new_configs))# use `json.loads` to do the reverse
