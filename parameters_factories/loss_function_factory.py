@@ -85,6 +85,10 @@ def loss_zero_mse_on_spikes(loss_weights, window_size, sigma):
 
 def only_mse(loss_weights, window_size, sigma):
     def custom_loss(output, target):
+        if output[0].device != target[0].device:
+            min_len = min(len(target),len(output))
+            for i in range(min_len):  # same processor for comperison
+                target[i] = target[i].to(output[i].device)
         mse_loss = nn.MSELoss()
         loss_mse = mse_loss(output[1].squeeze(1), target[1].squeeze(1))
         loss_mse_item = loss_mse.item()
