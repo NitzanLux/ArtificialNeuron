@@ -39,7 +39,7 @@ def filter_file_names(files:List[str],filter:str)->List[str]:
     compile_filter = re.compile(filter)
     new_files=[]
     for i,f_name in enumerate(files):
-        if compile_filter.match(f_name):
+        if compile_filter.match(f_name) is not None:
             new_files.append(f_name)
     return new_files
 
