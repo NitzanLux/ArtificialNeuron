@@ -1,3 +1,6 @@
+import sys
+
+print(sys.executable)
 import os
 import json
 import configuration_factory as confactory
