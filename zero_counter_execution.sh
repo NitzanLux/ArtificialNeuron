@@ -23,5 +23,5 @@ path=$(dirname $SCRIPT_PATH)
 # put your script here - example script is sitting with this bash script
 python_script_path=zero_counter_duplicate.py
 
-python3 "$python_script_path" models_for_evaluation_mask_mse models_for_evaluation_mask_mse_ffilter
+python3 "$python_script_path" model_for_evaluation_mask_mse model_for_evaluation_mask_mse_ffilter
 
