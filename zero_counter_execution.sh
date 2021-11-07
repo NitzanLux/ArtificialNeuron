@@ -23,5 +23,5 @@ path=$(dirname $SCRIPT_PATH)
 # put your script here - example script is sitting with this bash script
 python_script_path=zero_counter_duplicate.py
 
-python3 "$path/$python_script_path"
+python3 "/ems/elsc-labs/segev-i/nitzan.luxembourg/projects/dendritic_tree/ArtificialNeuron/$python_script_path"
 
