@@ -4,7 +4,7 @@ print(sys.executable)
 import os
 import json
 import pandas as pd
-
+from project_path import *
 import configuration_factory as confactory
 import argparse
 import slurm_job
