@@ -167,16 +167,33 @@ class SlurmJobFactory:
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Add configuration file')
+    parser.add_argument(dest="script_name",type=str,help="the script you wish to execute",default="fit_CNN")
+
     parser.add_argument(dest="configs_paths", type=str,
-                        help='configurations json file of paths')
+                        help='configurations json file of paths',default=None)
+
     args = parser.parse_args()
     print(args)
-    configs_file = args.configs_paths
 
-    job_factory = SlurmJobFactory("cluster_logs")
-    with open(os.path.join(MODELS_DIR, "%s.json" % configs_file), 'r') as file:
-        configs = json.load(file)
-    for i, conf in enumerate(configs):
-        job_factory.send_job("%i_%s_job" % (i, configs_file),
-                             'python3 $(dirname "$path")/fit_CNN.py %s $SLURM_JOB_ID' % str(
-                                 os.path.join(MODELS_DIR, *conf)), True)
+    if args.script_name=="fit_CNN":
+        configs_file = args.configs_paths
+
+        job_factory = SlurmJobFactory("cluster_logs")
+        with open(os.path.join(MODELS_DIR, "%s.json" % configs_file), 'r') as file:
+            configs = json.load(file)
+        for i, conf in enumerate(configs):
+            job_factory.send_job("%i_%s_job" % (i, configs_file),
+                                 'python3 $(dirname "$path")/fit_CNN.py %s $SLURM_JOB_ID' % str(
+                                     os.path.join(MODELS_DIR, *conf)), True)
+    elif args.script_name=="evaluation_per_ms": #todo fix
+        pass
+        model_path = args.configs_paths
+
+        job_factory = SlurmJobFactory("cluster_logs")
+        with open(os.path.join(MODELS_DIR, "%s.json" % model_path), 'r') as file:
+            configs = json.load(file)
+        for i, conf in enumerate(configs):
+            job_factory.send_job("%i_%s_job" % (i, model_path),
+                                 'python3 $(dirname "$path")/fit_CNN.py %s $SLURM_JOB_ID' % str(
+                                     os.path.join(MODELS_DIR, *conf)), True)
+
