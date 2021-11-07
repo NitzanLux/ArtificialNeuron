@@ -1,9 +1,9 @@
 import sys
 
 print(sys.executable)
+import pandas as pd
 import os
 import json
-import pandas as pd
 from project_path import *
 import configuration_factory as confactory
 import argparse
