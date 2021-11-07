@@ -85,6 +85,7 @@ def loss_zero_mse_on_spikes(loss_weights, window_size, sigma):
 
 def only_mse(loss_weights, window_size, sigma):
     def custom_loss(output, target):
+        mse_loss = nn.MSELoss()
         loss_mse = mse_loss(output[1].squeeze(1), target[1].squeeze(1))
         loss_mse_item = loss_mse.item()
         general_loss = loss_mse

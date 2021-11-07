@@ -13,23 +13,42 @@ class NeuronEnviroment():
         if celsius is not None:
             h.celsius = celsius
 
-    def set_simulation_parameters(self, num_of_samples_per_ms=8):
-        pass
-
-    def simulate(self, stimuli_array: np.ndarray):
-        experimentStartTime = time.time()
-        print('-------------------------------------\\')
-        print('temperature is %.2f degrees celsius' % (h.celsius))
-        print('dt is %.4f ms' % (h.dt))
-        print('-------------------------------------/')
-        # add voltage and time recordings
-
+    def create_cell_recorder(self, collect_and_save_DVTs=True):
         # record time
         recTime = h.Vector()
         recTime.record(h._ref_t)
+
         # record soma voltage
         recVoltageSoma = h.Vector()
-        recVoltageSoma.record(self.soma(0.5)._ref_v)
+        recVoltageSoma.record(L5PC.soma[0](0.5)._ref_v)
+        segment_map= self.create_section_map()
+        # record all segments voltage
+        if collect_and_save_DVTs:
+            recVoltage_allSegments = []
+            for segInd, segment in enumerate(segment_map):
+                voltageRecSegment = h.Vector()
+                voltageRecSegment.record(segment._ref_v)
+                recVoltage_allSegments.append(voltageRecSegment)
+        recVoltageSoma.record(L5PC.soma[0](0.5)._ref_v)
+
+
+        recVoltage_allSegments = None
+        # record all segments voltage
+        if collect_and_save_DVTs:
+            recVoltage_allSegments = []
+            for segInd, segment in enumerate(segment_map):
+                voltageRecSegment = h.Vector()
+                voltageRecSegment.record(segment._ref_v)
+                recVoltage_allSegments.append(voltageRecSegment)
+
+        preparationDurationInSeconds = time.time() - preparationStartTime
+        print("preparing for single simulation took %.4f seconds" % (preparationDurationInSeconds))
+        return recVoltageSoma,recVoltage_allSegments
+
+    def simulate(self,totalSimDurationInSec,numSamplesPerMS_HighRes = 8):
+
+        totalSimDurationInMS = 1000 * totalSimDurationInSec
+
         simulationStartTime = time.time()
         # make sure the following line will be run after h.finitialize()
         fih = h.FInitializeHandler('nrnpython("AddAllSynapticEvents()")')
@@ -43,15 +62,21 @@ class NeuronEnviroment():
         collectionStartTime = time.time()
 
         origRecordingTime = np.array(recTime.to_python())
-        origSomaVoltage   = np.array(recVoltageSoma.to_python())
+        origSomaVoltage = np.array(recVoltageSoma.to_python())
 
         # high res - origNumSamplesPerMS per ms
         recordingTimeHighRes = np.arange(0, totalSimDurationInMS, 1.0 / numSamplesPerMS_HighRes)
-        somaVoltageHighRes   = np.interp(recordingTimeHighRes, origRecordingTime, origSomaVoltage)
+        somaVoltageHighRes = np.interp(recordingTimeHighRes, origRecordingTime, origSomaVoltage)
 
         # low res - 1 sample per ms
-        recordingTimeLowRes = np.arange(0,totalSimDurationInMS)
-        somaVoltageLowRes   = np.interp(recordingTimeLowRes, origRecordingTime, origSomaVoltage)
+        recordingTimeLowRes = np.arange(0, totalSimDurationInMS)
+        somaVoltageLowRes = np.interp(recordingTimeLowRes, origRecordingTime, origSomaVoltage)
+
+        if collectAndSaveDVTs:
+            dendriticVoltages = np.zeros((len(recVoltage_allSegments), recordingTimeLowRes.shape[0]))
+            for segInd, recVoltageSeg in enumerate(recVoltage_allSegments):
+                dendriticVoltages[segInd, :] = np.interp(recordingTimeLowRes, origRecordingTime,
+                                                         np.array(recVoltageSeg.to_python()))
 
         # detect soma spike times
         risingBefore = np.hstack((0, somaVoltageHighRes[1:] - somaVoltageHighRes[:-1])) > 0
@@ -63,12 +88,8 @@ class NeuronEnviroment():
         spikeInds = np.nonzero(binarySpikeVector)
         outputSpikeTimes = recordingTimeHighRes[spikeInds]
 
-        numOutputSpikes = len(outputSpikeTimes)
-        numOutputSpikesPerSim.append(numOutputSpikes)
-        listOfISIs += list(np.diff(outputSpikeTimes))
-
         listOfSingleSimulationDicts.append(currSimulationResultsDict)
-
+        return outputSpikeTimes,somaVoltageHighRes,somaVoltageLowRes,dendriticVoltages
 
     def create_soma(self, length, diam, axial_resistance, g_pas=0):
         soma = section.Soma(length, diam, axial_resistance, g_pas)
