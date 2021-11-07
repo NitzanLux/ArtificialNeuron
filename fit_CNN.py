@@ -88,7 +88,7 @@ def save_model(network, saving_counter, config):
 
 def train_network(config, document_on_wandb=True):
     global dynamic_parameter_loss_genrator, custom_loss
-    train_files, valid_files, test_files = load_files_names()
+    train_files, valid_files, test_files = load_files_names(config.files_filter_regex)
     DVT_PCA_model = None
     print("loading model...", flush=True)
     model = neuronal_model.NeuronConvNet.build_model_from_config(config)
