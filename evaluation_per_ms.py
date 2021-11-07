@@ -83,5 +83,5 @@ def plot_network_and_actual_results(file_path: [str, List[str]], model_path: [st
 #  ,0 ,1300, 3000)
 
 plot_network_and_actual_results( r"/ems/elsc-labs/segev-i/david.beniaguev/Reseach/Single_Neuron_InOut/ExperimentalData/L5PC_NMDA_valid_mixed/exBas_0_1100_inhBasDiff_-1100_600__exApic_0_1100_inhApicDiff_-1100_600_SpTemp__saved_InputSpikes_DVTs__1062_outSpikes__128_simulationRuns__6_secDuration__randomSeed_402117.p" \
-,r"models/NMDA/evaluation_file_filter_NMDA_Tree_TCN__2021-11-01__18_31__ID_20650/evaluation_file_filter_NMDA_Tree_TCN__2021-11-01__18_31__ID_20650.pkl"\
+,r"models/NMDA/evaluation_file_filter_NMDA_Tree_TCN__2021-11-07__16_59__ID_24331/evaluation_file_filter_NMDA_Tree_TCN__2021-11-07__16_59__ID_24331.pkl"\
  ,0 ,1000, 500)
