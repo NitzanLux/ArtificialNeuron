@@ -93,5 +93,5 @@ def only_mse(loss_weights, window_size, sigma):
         loss_mse = mse_loss(output[1].squeeze(1), target[1].squeeze(1))
         loss_mse_item = loss_mse.item()
         general_loss = loss_mse
-        return general_loss,0,loss_mse_item,0
+        return general_loss,0,loss_mse_item,0,0
     return custom_loss
