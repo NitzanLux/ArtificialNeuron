@@ -154,7 +154,7 @@ if __name__ == '__main__':
     # configs_to_read = configs_dynamic+[config_factory(loss_function="loss_zero_mse_on_spikes")]
     #
     with open(os.path.join(MODELS_DIR,"complex_constant_model.json"), 'w') as file:
-        file.write(json.dumps(configs_dynamic) )# use `json.loads` to do the reverse
+        file.write(json.dumps(config_dynamic) )# use `json.loads` to do the reverse
 
 
     # config = load_config_file("models/NMDA/simplest_model_dynamic_NMDA_Tree_TCN__2021-09-30__16_51__ID_78714/simplest_model_dynamic_NMDA_Tree_TCN__2021-09-30__16_51__ID_78714.config")
