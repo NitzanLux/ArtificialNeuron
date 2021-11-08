@@ -63,9 +63,9 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                       batch_counter=0, epoch_counter=0,  # default counter
                       torch_seed=42, numpy_seed=21, random_seed=12,init_weights_sd=0.05,
                       dynamic_learning_params=True,
-                      constant_loss_weights=[1., 1. / 2., 0.,0], constant_sigma=2.5, constant_learning_rate=0.0001,
+                      constant_loss_weights=[10., 1., 0.,0], constant_sigma=2.5, constant_learning_rate=0.0001,
                       dynamic_learning_params_function="learning_parameters_iter_slow_10_with_constant_weights",
-                      config_path="", model_tag="evaluation_file_filter", model_path=None,loss_function="loss_zero_mse_on_spikes")
+                      config_path="", model_tag="evaluation_file_filter", model_path=None,loss_function="bcel_mse_dvt_loss")
 
     architecture_dict = AttrDict(segment_tree_path="tree.pkl",
                                  architecture_type="LAYERED_TEMPORAL_CONV",
@@ -147,7 +147,7 @@ def generate_config_files_multiple_seeds(config_path: [str, Dict], number_of_con
 
 
 if __name__ == '__main__':
-    config_dynamic = config_factory(model_tag="evaluation_mse_only_const_lr",loss_function="only_mse",dynamic_learning_params=False)
+    config_dynamic = config_factory(model_tag="evaluation_const_lr",dynamic_learning_params=False)
     configs_dynamic = generate_config_files_multiple_seeds(config_dynamic, 2)
     # config_static = config_factory(dynamic_learning_params=False)
     # configs_static = generate_config_files_multiple_seeds(config_static, 1)
