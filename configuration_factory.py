@@ -153,7 +153,7 @@ if __name__ == '__main__':
     # configs_static = generate_config_files_multiple_seeds(config_static, 1)
     # configs_to_read = configs_dynamic+[config_factory(loss_function="loss_zero_mse_on_spikes")]
     #
-    with open(os.path.join(MODELS_DIR,"constant_lr_evaluation.json"), 'w') as file:
+    with open(os.path.join(MODELS_DIR,"complex_constant_model.json"), 'w') as file:
         file.write(json.dumps(configs_dynamic) )# use `json.loads` to do the reverse
 
 
