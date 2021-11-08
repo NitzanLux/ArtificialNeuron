@@ -55,9 +55,9 @@ def load_config_file(path: str) -> AttrDict:
 def config_factory(save_model_to_config_dir=True, config_new_path=None, generate_random_seeds=False, is_new_name=False,
                    **kargs):
     ##default values can be overridden by kargs
-    config = AttrDict(input_window_size=300, num_segments=2 * 639, num_syn_types=1,
-                      num_epochs=15000, epoch_size=100, batch_size_train=20, batch_size_validation=5,
-                      train_file_load=0.5, valid_file_load=0.5,spike_probability= 0.2,
+    config = AttrDict(input_window_size=500, num_segments=2 * 639, num_syn_types=1,
+                      num_epochs=15000, epoch_size=30, batch_size_train=20, batch_size_validation=5,
+                      train_file_load=0.5, valid_file_load=0.5,spike_probability= 0.3,
                       files_filter_regex=".*exBas_0_1100_inhBasDiff_-1100_600__exApic_0_1100_inhApicDiff_-1100_600_SpTemp[^\\/\.]*\.p",
                       optimizer_type="AdamW", optimizer_params={},
                       batch_counter=0, epoch_counter=0,  # default counter
@@ -65,7 +65,7 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                       dynamic_learning_params=True,
                       constant_loss_weights=[10., 1., 0.,0], constant_sigma=2.5, constant_learning_rate=0.0001,
                       dynamic_learning_params_function="learning_parameters_iter_slow_10_with_constant_weights",
-                      config_path="", model_tag="evaluation_file_filter", model_path=None,loss_function="bcel_mse_dvt_loss")
+                      config_path="", model_tag="complex_constant_model", model_path=None,loss_function="bcel_mse_dvt_loss")
 
     architecture_dict = AttrDict(segment_tree_path="tree.pkl",
                                  architecture_type="LAYERED_TEMPORAL_CONV",
@@ -77,8 +77,8 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                                  stride=1,
                                  dilation=1,
                                  channel_input_number=1,  # synapse number
-                                 inner_scope_channel_number=9,
-                                 channel_output_number=7,
+                                 inner_scope_channel_number=15,
+                                 channel_output_number=15,
                                  activation_function_name="LeakyReLU",
                                  activation_function_kargs=dict(negative_slope=0.25),
                                  include_dendritic_voltage_tracing=False)
@@ -147,8 +147,8 @@ def generate_config_files_multiple_seeds(config_path: [str, Dict], number_of_con
 
 
 if __name__ == '__main__':
-    config_dynamic = config_factory(model_tag="evaluation_const_lr",dynamic_learning_params=False)
-    configs_dynamic = generate_config_files_multiple_seeds(config_dynamic, 2)
+    config_dynamic = [config_factory(dynamic_learning_params=False)]
+    # configs_dynamic = generate_config_files_multiple_seeds(config_dynamic, 2)
     # config_static = config_factory(dynamic_learning_params=False)
     # configs_static = generate_config_files_multiple_seeds(config_static, 1)
     # configs_to_read = configs_dynamic+[config_factory(loss_function="loss_zero_mse_on_spikes")]
