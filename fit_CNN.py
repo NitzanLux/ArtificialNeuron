@@ -17,7 +17,7 @@ WANDB_PROJECT_NAME = "ArtificialNeuron1"
 
 BUFFER_SIZE_IN_FILES_VALID = 4
 
-BUFFER_SIZE_IN_FILES_TRAINING = 8
+BUFFER_SIZE_IN_FILES_TRAINING = 15
 WANDB_API_KEY = "2725e59f8f4484605300fdf4da4c270ff0fe44a3"
 # for dibugging
 # logging.error("Aaaaa")
@@ -158,7 +158,7 @@ def train_network(config, document_on_wandb=True):
 
         for i, data_train_valid in enumerate(zip(train_data_generator, validation_data_generator)):
             # config.batch_counter+=1
-            config.update(dict(batch_counter=config.batch_counter + 1), allow_val_change=True)
+            config.update(dict(batch_counter=config.sample_counter + 1), allow_val_change=True)
             # get the inputs; data is a list of [inputs, labels]
             train_data, valid_data = data_train_valid
             valid_input, valid_labels = valid_data
