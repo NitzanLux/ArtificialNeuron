@@ -123,7 +123,7 @@ def train_network(config, document_on_wandb=True):
             custom_loss = getattr(loss_function_factory, config["loss_function"])(loss_weights,
                                                                                   config.input_window_size, sigma)
         else:
-            custom_loss = bcel_mse_dvt_blur_loss(loss_weights, config.input_window_size, sigma)
+            custom_loss = loss_function_factory.bcel_mse_dvt_loss(loss_weights, config.input_window_size, sigma)
         if not "lr" in config.optimizer_params:
             config.optimizer_params["lr"] = config.constant_learning_rate
         else:
@@ -151,7 +151,7 @@ def train_network(config, document_on_wandb=True):
                 custom_loss = getattr(loss_function_factory, config.loss_function)(loss_weights,
                                                                                    config.input_window_size, sigma)
             else:
-                custom_loss = bcel_mse_dvt_blur_loss(loss_weights, config.input_window_size, sigma)
+                custom_loss = loss_function_factory.bcel_mse_dvt_loss(loss_weights, config.input_window_size, sigma)
             config.optimizer_params["lr"] = learning_rate
             optimizer = getattr(optim, config.optimizer_type)(model.parameters(),
                                                               **config.optimizer_params)
