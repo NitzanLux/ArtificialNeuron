@@ -23,7 +23,7 @@ parser.add_argument(dest="window_size", type=int,
 args = parser.parse_args()
 print(args)
 
-configs_file = args.configs_paths
+
 
 job_factory.send_job("%i_%s_job" % (i, model_path),
                      'python3 $(dirname "$path")/evaluation_per_ms.py %s %s %d %d %d $SLURM_JOB_ID' % (

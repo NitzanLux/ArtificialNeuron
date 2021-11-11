@@ -1,7 +1,7 @@
 from neuron import h
 # from NEURON_models_maker.section import Dendrite,Soma,NeuronSection,NeuronSectionType
 
-import NEURON_models_maker.section as section
+# import NEURON_models_maker.section as section
 from NEURON_models_maker.synapse import SynapseType
 import numpy as np
 from typing import List,Dict
@@ -13,20 +13,27 @@ import argparse
 class NeuronEnvironment():
     def __init__(self, environment_name, dt=None, celsius=None):
         self.environment_name = environment_name
-        self.environment_path = os.path.join()
+        self.environment_path = os.path.join(SIMULATIONS_ENVIRONMENT_PATH,environment_name)
         self.soma = None
         if dt is not None:
             h.dt = dt
         if celsius is not None:
             h.celsius = celsius
 
-    def create_soma(self, length, diam, axial_resistance, g_pas=0):
-        soma = section.Soma(length, diam, axial_resistance, g_pas)
+    def create_soma(self, length, diam, axial_resistance, g_pas=0.):
+        soma = Soma(length, diam, axial_resistance, g_pas)
         self.soma = soma
+        return soma
+
+
+    def create_connect_dendrite(self,parent, length, diam, axial_resistance, g_pas=0.):
+        dendrite = Dendrite(length,diam,axial_resistance, g_pas)
+        dendrite = h.ref(dendrite)
+        dendrite.connect_synapse(parent)
 
     def add_segments(self, by_formula=True, numeric_parameter=None, functional_parameter=lambda section: section.L):
         if by_formula:
-            h.h("forall { nseg = int((L/(0.1*lambda_f(100))+0.9)/2)*2 + 1 }")
+            h("forall { nseg = int((L/(0.1*lambda_f(100))+0.9)/2)*2 + 1 }")
         elif numeric_parameter is not None:
             section_map = self.create_section_map()
             for section in section_map:
@@ -34,53 +41,10 @@ class NeuronEnvironment():
         else:
             section_map = self.create_section_map()
             for section in section_map:
-                section.nseg = functional_parameter(section)
-
-    def create_section_map(self):
-        section_histogram = []
-        childrens: List[NeuronSection] = [self.soma]
-        while len(childrens) > 0:
-            cur_section = childrens.pop(0)
-            section_histogram.append(cur_section)
-            childrens.extend(cur_section.children)
-        return section_histogram
-
-    def create_segment_map(self):
-        segment_histogram = []
-        section_histogram = self.create_section_map()
-        for section in section_histogram:
-            segment_histogram.extend(section)
-        return segment_histogram
-
-    def create_synapse_map(self):
-        section_histogram = self.create_section_map()
-        synapse_dict_hist: Dict[SynapseType, List[Synapse]] = {}
-        segment_counter = 0
-        for section in section_histogram:
-            section_mapping = self.get_all_synapses_by_segments_hist()
-            for k, v in section_mapping.items():
-                if k not in synapse_dict_hist:
-                    synapse_dict_hist[k].extend([None] * segment_counter)
-                synapse_dict_hist[k].extend(v)
-            segment_counter += section.nseg
-        return synapse_dict_hist
-
-    def insert_spike_events(self, spikes_events: Dict[SynapseType, np.ndarray]):
-        synapse_map = self.create_synapse_map()
-        for synapse_type, spikes_times in spikes_events.items():
-            spikes_idx, spikes_times = np.nonzero(spikes_times)
-            for i, synapse in enumerate(synapse_map[synapse_type]):
-                if synapse is None:
-                    continue
-                synapse.add_events(spikes_times[spikes_idx == i])
+                section.nseg = int(functional_parameter(section))
 
     @staticmethod
-    def get_distance_between_sections(sourceSection, destSection):
-        h.distance(sec=sourceSection)
-        return h.distance(0, sec=destSection)
-
-    @staticmethod
-    def set_CVode():
+    def set_CVode(useCvode=True):
         cvode = h.CVode()
         if useCvode:
             cvode.active(1)
@@ -182,23 +146,52 @@ class NeuronEnvironment():
         simulation_name = self.generate_simulation_name(collect_and_save_DVTs)
         simulation_data["cell_environment"] = self
         with open(os.path.join(SIMULATIONS_PATH, simulation_name), 'wb') as sfile:
-            pickle.dump(sfile, simulation_data, protocol=pickle.HIGHEST_PROTOCOL)
+            pickle.dump(imulation_data,sfile, protocol=pickle.HIGHEST_PROTOCOL)
 
     @staticmethod
     def load_results(simulation_name):
         with open(os.path.join(SIMULATIONS_PATH, simulation_name), 'rb') as sfile:
-            simulation_data = pickle.load(sfile, protocol=pickle.HIGHEST_PROTOCOL)
+            simulation_data = pickle.load(sfile)
         return simulation_data
 
     def save_environment(self):
-        with open(os.path.join(ENVIRONMENTS_PATH, self.environment_name), 'wb') as efile:
-            pickle.dump(efile, self, protocol=pickle.HIGHEST_PROTOCOL)
+        with open(os.path.join(SIMULATIONS_ENVIRONMENT_PATH, self.environment_name), 'wb') as efile:
+            pickle.dump(self,efile, protocol=pickle.HIGHEST_PROTOCOL)
 
     @staticmethod
     def load_environment(environment_name):
-        with open(os.path.join(ENVIRONMENTS_PATH, environment_name), 'rb') as efile:
-            environment = pickle.load(efile, protocol=pickle.HIGHEST_PROTOCOL)
+        with open(os.path.join(SIMULATIONS_ENVIRONMENT_PATH, environment_name), 'rb') as efile:
+            environment = pickle.load(efile)
         return environment
+
+def build_toy_model_and_save(depth=4):
+    environment = NeuronEnvironment("toy_model_whole_binary_tree_depth_%i"%depth)
+    stack = [environment.create_soma(10,10,100,1e-4)]
+    counter = 0
+    for i in range(depth+1):
+        new_stack = []
+        while len(stack)>0:
+            counter+=1
+            current_section = stack.pop(0)
+            right_side = Dendrite(50,10,100,1e-4)
+            left_side = Dendrite(50,10,100,1e-4)
+            print(counter)
+            left_side.connect_section(current_section)
+            right_side.connect_section(current_section)
+            new_stack.append(left_side)
+            new_stack.append(right_side)
+        stack=new_stack
+    section_map = environment.create_section_map()
+    print(len(section_map))
+    environment.set_CVode()
+    environment.add_segments()
+
+    for sec in section_map:
+        if isinstance(sec,Soma):
+            continue
+        sec.set_SKE2(1)
+        sec.add_synapses_for_all_segments([GABA_A,NMDA],every_n_segment=2)
+    environment.save_environment()
 
 
 if __name__ == '__main__':
