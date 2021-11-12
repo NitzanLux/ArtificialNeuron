@@ -103,7 +103,7 @@ class SimulationDataGenerator():
                     self.reload_files()
             else:
                 # in case we are deterministically sampling from different probability space then the data.
-                if self.sample_counter / min(non_spikes.shape[0], spikes[0]) >= self.sample_ratio_to_shuffle:
+                if self.sample_counter / min(non_spikes[0].shape[0], spikes[0].shape[0]) >= self.sample_ratio_to_shuffle:
                     self.reload_files()
 
     def __getitem__(self, item):
