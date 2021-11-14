@@ -102,7 +102,7 @@ parser.add_argument(dest="window_size", type=int,
 args = parser.parse_args()
 print(args)
 
-configs_file = args.configs_paths
+# configs_file = args.configs_paths
 
 plot_network_and_actual_results(
     r"/ems/elsc-labs/segev-i/david.beniaguev/Reseach/Single_Neuron_InOut/ExperimentalData/L5PC_NMDA_valid_mixed"
