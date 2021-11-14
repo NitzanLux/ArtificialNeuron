@@ -10,7 +10,7 @@ import json
 import os.path
 from neuron_network import neuronal_model
 import os
-
+import logging
 synapse_type = 'NMDA'
 include_DVT = False
 num_DVT_components = 20 if synapse_type == 'NMDA' else 30
