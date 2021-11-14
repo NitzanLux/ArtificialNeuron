@@ -9,6 +9,7 @@ from synapse_tree import SectionNode
 import json
 import os.path
 from neuron_network import neuronal_model
+from neuron_network import davids_network
 import os
 import logging
 synapse_type = 'NMDA'
@@ -110,11 +111,18 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
         config_new_path = [config.model_filename]
     if save_model_to_config_dir:
         if config.model_path is None:
-            model = neuronal_model.NeuronConvNet.build_model_from_config(config)
+            if config.architecture_type == "DavidsNeuronNetwork":
+                model = davids_network.DavidsNeuronNetwork(config)
+            else:
+                model = neuronal_model.NeuronConvNet.build_model_from_config(config)
             config.model_path = config_new_path+[config.model_filename]
             model.save(os.path.join(MODELS_DIR,*config.model_path))
         else:
-            model= neuronal_model.NeuronConvNet.load(os.path.join(MODELS_DIR,*config.model_path))
+            if config.architecture_type == "DavidsNeuronNetwork":
+                model = davids_network.DavidsNeuronNetwork.load(os.path.join(MODELS_DIR, *config.model_path))
+            else:
+                model = neuronal_model.NeuronConvNet.load(os.path.join(MODELS_DIR, *config.model_path))
+
             config.model_path = config_new_path+[config.model_filename]
             model.save(os.path.join(MODELS_DIR,*config.model_path))
     config.config_path = config_new_path+[ '%s.config' % config.model_filename]
