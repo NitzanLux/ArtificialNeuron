@@ -83,10 +83,10 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                                  activation_function_name="LeakyReLU",
                                  activation_function_kargs=dict(negative_slope=0.25),
                                  include_dendritic_voltage_tracing=False)
-
     config.architecture_dict = architecture_dict
     config.update(architecture_dict)
     config.update(kargs)  # override by kargs
+    logging.error("arch type *************  "+config.architecture_type)
     if is_new_name or not ("model_filename" in config):
         config.model_filename = generate_model_name(config.model_tag)
     print(config.model_filename)
@@ -103,8 +103,8 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
         except FileExistsError as e:
             print("Folder with name %s already exists trying again"%config.model_filename)
             return config_factory(save_model_to_config_dir, config_new_path, generate_random_seeds,
-                           is_new_name,
-                           **kargs)
+                                  is_new_name,
+                                  **kargs)
 
         config_new_path = [config.model_filename]
     if save_model_to_config_dir:
