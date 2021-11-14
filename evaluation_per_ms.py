@@ -11,7 +11,7 @@ import re
 import argparse
 from tqdm import tqdm
 import pickle
-
+from project_path import *
 
 def plot_network_and_actual_results(file_path: [str, List[str]], model_path: [str, List[str]] = '',
                                     sample_idx: [None, int] = None, time_idx: [None, int] = None,
@@ -90,7 +90,7 @@ parser = argparse.ArgumentParser(description='evaluation arguments')
 parser.add_argument(dest="validation_path", type=str,
                     help='validation file to be evaluate by', default=None)
 
-parser.add_argument(dest="model_path", type=str,
+parser.add_argument(dest="model_name", type=str,
                     help=',model path')
 
 parser.add_argument(dest="sample_idx", type=int,
@@ -99,15 +99,16 @@ parser.add_argument(dest="time_point", type=int,
                     help='simulation time point', default=1300)
 parser.add_argument(dest="window_size", type=int,
                     help='window size for evaluation', default=400)
+parser.add_argument(dest="job_id", help="the job id", type=str)
 args = parser.parse_args()
 print(args)
 
-configs_file = args.configs_paths
+# configs_file = args.configs_paths
 
 plot_network_and_actual_results(
     r"/ems/elsc-labs/segev-i/david.beniaguev/Reseach/Single_Neuron_InOut/ExperimentalData/L5PC_NMDA_valid_mixed"
     r"/exBas_0_1100_inhBasDiff_-1100_600__exApic_0_1100_inhApicDiff_-1100_600_SpTemp__saved_InputSpikes_DVTs__1062"
     r"_outSpikes__128_simulationRuns__6_secDuration__randomSeed_402117.p"
     if args.validation_path is None else args.validation_path \
-    , os.path.join(MODELS_DIR, args.model_path, args.model_path) \
+    , join(MODELS_DIR, args.model_name, args.model_name) \
     , args.sample_idx, args.time_point, args.window_size)
