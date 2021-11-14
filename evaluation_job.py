@@ -1,6 +1,8 @@
 import time
 import os
 import logging
+
+import slurm_job
 from project_path import *
 import argparse
 import json
@@ -25,6 +27,7 @@ print(args)
 
 
 
-job_factory.send_job("%i_%s_job" % (i, model_path),
+job = slurm_job.SlurmJob("%i_%s_job" % (0, "evaluation"),"cluster_logs",
                      'python3 $(dirname "$path")/evaluation_per_ms.py %s %s %d %d %d $SLURM_JOB_ID' % (
                      args.validation_path, args.model_path, args.sample_idx, args.time_point, args.window_size), True)
+job.send()
