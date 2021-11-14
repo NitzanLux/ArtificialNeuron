@@ -11,7 +11,7 @@ import re
 import argparse
 from tqdm import tqdm
 import pickle
-
+from project_path import *
 
 def plot_network_and_actual_results(file_path: [str, List[str]], model_path: [str, List[str]] = '',
                                     sample_idx: [None, int] = None, time_idx: [None, int] = None,
@@ -55,16 +55,16 @@ def plot_network_and_actual_results(file_path: [str, List[str]], model_path: [st
             raise e
         out_var = []
         spike = []
-        for i in tqdm(range(network.time_domain_shape, y_soma_batch.shape[0])):
-            out = network(X_batch[..., i - network.time_domain_shape:i, :])
+        for i in tqdm(range(network.input_window_size, y_soma_batch.shape[0])):
+            out = network(X_batch[..., i - network.input_window_size:i, :])
             out_var.append(out[1].detach().numpy()[0, 0, :, :])
             spike.append(out[0].detach().numpy()[0, 0, :, :])
         spike = np.array(spike).squeeze()
         out_var = np.array(out_var).squeeze()
         # plt.scatter(np.arange(out_var.shape[0]),spike)
         # plt.plot((out_var-np.min(out_var))/(np.max(out_var)-np.min(out_var))*(np.max(y_soma_batch)-np.min(y_soma_batch))+np.min(y_soma_batch), label=model_id)
-        axs[0].plot(np.arange(network.time_domain_shape, y_soma_batch.shape[0]), out_var, label=model_id)
-        axs[1].plot(np.arange(network.time_domain_shape, y_soma_batch.shape[0]), spike, label=model_id)
+        axs[0].plot(np.arange(network.input_window_size, y_soma_batch.shape[0]), out_var, label=model_id)
+        axs[1].plot(np.arange(network.input_window_size, y_soma_batch.shape[0]), spike, label=model_id)
 
     for s in np.where(y_spike_batch == 1)[0]:
         print(s)
@@ -90,7 +90,7 @@ parser = argparse.ArgumentParser(description='evaluation arguments')
 parser.add_argument(dest="validation_path", type=str,
                     help='validation file to be evaluate by', default=None)
 
-parser.add_argument(dest="model_path", type=str,
+parser.add_argument(dest="model_name", type=str,
                     help=',model path')
 
 parser.add_argument(dest="sample_idx", type=int,
@@ -109,5 +109,5 @@ plot_network_and_actual_results(
     r"/exBas_0_1100_inhBasDiff_-1100_600__exApic_0_1100_inhApicDiff_-1100_600_SpTemp__saved_InputSpikes_DVTs__1062"
     r"_outSpikes__128_simulationRuns__6_secDuration__randomSeed_402117.p"
     if args.validation_path is None else args.validation_path \
-    , os.path.join(MODELS_DIR, args.model_path, args.model_path) \
+    , join(MODELS_DIR, args.model_name, args.model_name) \
     , args.sample_idx, args.time_point, args.window_size)

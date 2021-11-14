@@ -10,7 +10,7 @@ from enum import Enum
 import neuron_network.basic_convolution_blocks as basic_convolution_blocks
 import neuron_network.temporal_convolution_blocks as temporal_convolution_blocks
 import torch.nn as nn
-
+import copy
 
 class ArchitectureType(Enum):
     BASIC_CONV = "BASIC_CONV"
@@ -25,14 +25,14 @@ SYNAPSE_DIMENTION_POSITION = 3
 # ======================
 
 class NeuronConvNet(nn.Module):
-    def __init__(self, segment_tree, time_domain_shape, architecture_type,
+    def __init__(self, segment_tree, input_window_size, architecture_type,
                  is_cuda=False, include_dendritic_voltage_tracing=False, segemnt_ids=None, **network_kwargs):
         super(NeuronConvNet, self).__init__()
         self.architecture_type = architecture_type
         self.include_dendritic_voltage_tracing = include_dendritic_voltage_tracing
         self.segment_tree = segment_tree
         self.segemnt_ids = segemnt_ids if segemnt_ids is not None else dict()
-        self.time_domain_shape = time_domain_shape
+        self.input_window_size = input_window_size
         self.modules_dict = nn.ModuleDict()
         self.is_cuda = is_cuda
         self.network_kwargs = network_kwargs
@@ -67,7 +67,7 @@ class NeuronConvNet(nn.Module):
         for segment in self.segment_tree:
             self.segemnt_ids[segment] = segment.id
             param_number = segment.get_number_of_parameters_for_nn()
-            input_shape = (self.time_domain_shape, param_number)
+            input_shape = (self.input_window_size, param_number)
             if segment.type == SectionType.BRANCH:
                 self.modules_dict[self.segemnt_ids[segment]] = branch_class(input_shape,
                                                                             **sub_network_kargs)
@@ -138,7 +138,7 @@ class NeuronConvNet(nn.Module):
         data_dict = dict(include_dendritic_voltage_tracing=self.include_dendritic_voltage_tracing,
                          segment_tree=self.segment_tree, architecture_type=self.architecture_type,
                          segemnt_ids=self.segemnt_ids,
-                         time_domain_shape=self.time_domain_shape,
+                         input_window_size=self.input_window_size,
                          is_cuda=False)
         data_dict.update(self.network_kwargs)
         state_dict = self.state_dict()
@@ -157,22 +157,25 @@ class NeuronConvNet(nn.Module):
     @staticmethod
     def build_model_from_config(config: AttrDict):
         if config.model_path is None:
-            architecture_dict = dict(
-                architecture_type=config.architecture_type,
-                activation_function_name=config.activation_function_name,
-                activation_function_kargs=config.activation_function_kargs,
-                segment_tree=load_tree_from_path(config.segment_tree_path),
-                include_dendritic_voltage_tracing=config.include_dendritic_voltage_tracing,
-                time_domain_shape=config.input_window_size, stride=config.stride, dilation=config.dilation,
-                channel_input_number=config.channel_input_number,
-                inner_scope_channel_number=config.inner_scope_channel_number,
-                channel_output_number=config.channel_output_number
-            )
-            if config.architecture_type== ArchitectureType.BASIC_CONV.value: # todo make it more generic !!!!!!!!!!!!!!!
-                architecture_dict.update(dict(kernel_size_2d=config.kernel_size_2d,kernel_size_1d=config.kernel_size_1d))
-            elif  config.architecture_type == ArchitectureType.LAYERED_TEMPORAL_CONV.value:
-                architecture_dict.update(
-                    dict(kernel_size=config.kernel_size, number_of_layers=config.number_of_layers))
+            architecture_dict = copy.deepcopy(config.architecture_dict)
+            architecture_dict[segment_tree]=load_tree_from_path(architecture_dict.segment_tree_path)
+            del architecture_dict[segment_tree_path]
+            # architecture_dict = dict(
+            #     architecture_type=config.architecture_type,
+            #     activation_function_name=config.activation_function_name,
+            #     activation_function_kargs=config.activation_function_kargs,
+            #     segment_tree=load_tree_from_path(config.segment_tree_path),
+            #     include_dendritic_voltage_tracing=config.include_dendritic_voltage_tracing,
+            #     time_domain_shape=config.input_window_size, stride=config.stride, dilation=config.dilation,
+            #     channel_input_number=config.channel_input_number,
+            #     inner_scope_channel_number=config.inner_scope_channel_number,
+            #     channel_output_number=config.channel_output_number
+            # )
+            # if config.architecture_type== ArchitectureType.BASIC_CONV.value: # todo make it more generic !!!!!!!!!!!!!!!
+            #     architecture_dict.update(dict(kernel_size_2d=config.kernel_size_2d,kernel_size_1d=config.kernel_size_1d))
+            # elif  config.architecture_type == ArchitectureType.LAYERED_TEMPORAL_CONV.value:
+            #     architecture_dict.update(
+            #         dict(kernel_size=config.kernel_size, number_of_layers=config.number_of_layers))
             network = NeuronConvNet(**(architecture_dict))
         else:
             network = NeuronConvNet.load(os.path.join(MODELS_DIR, *config.model_path))

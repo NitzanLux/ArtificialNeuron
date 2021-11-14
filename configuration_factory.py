@@ -55,7 +55,7 @@ def load_config_file(path: str) -> AttrDict:
 def config_factory(save_model_to_config_dir=True, config_new_path=None, generate_random_seeds=False, is_new_name=False,
                    **kargs):
     ##default values can be overridden by kargs
-    config = AttrDict(input_window_size=500, num_segments=2 * 639, num_syn_types=1,
+    config = AttrDict(input_window_size=300, num_segments=2 * 639, num_syn_types=1,
                       num_epochs=15000, epoch_size=30, batch_size_train=20, batch_size_validation=5,
                       train_file_load=0.5, valid_file_load=0.5,spike_probability= 0.3,
                       files_filter_regex=".*exBas_0_1100_inhBasDiff_-1100_600__exApic_0_1100_inhApicDiff_-1100_600_SpTemp[^\\/\.]*\.p",
@@ -72,17 +72,19 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                                  time_domain_shape=config.input_window_size,
                                  # kernel_size_2d=3,
                                  # kernel_size_1d=9,
-                                 kernel_size=81,
-                                 number_of_layers=3,
+                                 skip_conections=False,
+                                 kernel_size=200,
+                                 number_of_layers=2,
                                  stride=1,
                                  dilation=1,
                                  channel_input_number=1,  # synapse number
-                                 inner_scope_channel_number=15,
-                                 channel_output_number=15,
+                                 inner_scope_channel_number=10,
+                                 channel_output_number=5,
                                  activation_function_name="LeakyReLU",
                                  activation_function_kargs=dict(negative_slope=0.25),
                                  include_dendritic_voltage_tracing=False)
 
+    config.architecture_dict = architecture_dict
     config.update(architecture_dict)
     config.update(kargs)  # override by kargs
     if is_new_name or not ("model_filename" in config):
