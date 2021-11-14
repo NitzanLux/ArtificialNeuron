@@ -149,13 +149,14 @@ def generate_config_files_multiple_seeds(config_path: [str, Dict], number_of_con
 
 
 if __name__ == '__main__':
-    config_dynamic = [config_factory(dynamic_learning_params=False)]
+    config_dynamic = [config_factory(dynamic_learning_params=False,network_architecture="DavidsNeuronNetwork",kernel_size=81,
+                                 number_of_layers=2,model_tag="davids_network_evaluation")]
     # configs_dynamic = generate_config_files_multiple_seeds(config_dynamic, 2)
     # config_static = config_factory(dynamic_learning_params=False)
     # configs_static = generate_config_files_multiple_seeds(config_static, 1)
     # configs_to_read = configs_dynamic+[config_factory(loss_function="loss_zero_mse_on_spikes")]
     #
-    with open(os.path.join(MODELS_DIR,"complex_constant_model.json"), 'w') as file:
+    with open(os.path.join(MODELS_DIR,"davids_model.json"), 'w') as file:
         file.write(json.dumps(config_dynamic) )# use `json.loads` to do the reverse
 
 

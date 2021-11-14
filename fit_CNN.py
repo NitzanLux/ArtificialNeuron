@@ -5,14 +5,16 @@ import random
 
 import torch.optim as optim
 import wandb
-from typing import List,Tuple
+from typing import List, Tuple
 from parameters_factories import dynamic_learning_parameters_factory as dlpf, loss_function_factory
 import configuration_factory
 from general_aid_function import *
 from neuron_network import neuronal_model
+from neuron_network import davids_network
 from project_path import *
 from simulation_data_generator import *
 import re
+
 WANDB_PROJECT_NAME = "ArtificialNeuron1"
 
 BUFFER_SIZE_IN_FILES_VALID = 4
@@ -35,28 +37,26 @@ include_DVT = False
 
 # num_DVT_components = 20 if synapse_type == 'NMDA' else 30
 
-def filter_file_names(files:List[str],filter:str)->List[str]:
+def filter_file_names(files: List[str], filter: str) -> List[str]:
     compile_filter = re.compile(filter)
-    new_files=[]
-    for i,f_name in enumerate(files):
+    new_files = []
+    for i, f_name in enumerate(files):
         if compile_filter.match(f_name) is not None:
             new_files.append(f_name)
     return new_files
 
 
-
-
-def load_files_names(files_filter_regex:str=".*")->Tuple[List[str],List[str],List[str]]:
+def load_files_names(files_filter_regex: str = ".*") -> Tuple[List[str], List[str], List[str]]:
     train_files = glob.glob(TRAIN_DATA_DIR + '*_128_simulationRuns*_6_secDuration_*')
-    train_files = filter_file_names(train_files,files_filter_regex)
-    print("train_files size %d"%(len(train_files)))
+    train_files = filter_file_names(train_files, files_filter_regex)
+    print("train_files size %d" % (len(train_files)))
     valid_files = glob.glob(VALID_DATA_DIR + '*_128_simulationRuns*_6_secDuration_*')
-    valid_files = filter_file_names(valid_files,files_filter_regex)
-    print("valid_files size %d"%(len(valid_files)))
+    valid_files = filter_file_names(valid_files, files_filter_regex)
+    print("valid_files size %d" % (len(valid_files)))
 
     test_files = glob.glob(TEST_DATA_DIR + '*_128_simulationRuns*_6_secDuration_*')
-    test_files = filter_file_names(test_files,files_filter_regex)
-    print("test_files size %d"%(len(test_files)))
+    test_files = filter_file_names(test_files, files_filter_regex)
+    print("test_files size %d" % (len(test_files)))
 
     return train_files, valid_files, test_files
 
@@ -88,48 +88,22 @@ def save_model(network, saving_counter, config):
 
 def train_network(config, document_on_wandb=True):
     global dynamic_parameter_loss_genrator, custom_loss
-    train_files, valid_files, test_files = load_files_names(config.files_filter_regex)
     DVT_PCA_model = None
     print("loading model...", flush=True)
-    model = neuronal_model.NeuronConvNet.build_model_from_config(config)
+    if config.architecture_type == "DavidsNeuronNetwork":
+        model = davids_network.DavidsNeuronNetwork(config)
+    else:
+        model = neuronal_model.NeuronConvNet.build_model_from_config(config)
     if config.epoch_counter == 0:
         model.init_weights(config.init_weights_sd)
     model.cuda()
     print("model parmeters: %d" % model.count_parameters())
-    print("loading data...", flush=True)
-    train_data_generator = SimulationDataGenerator(train_files, buffer_size_in_files=BUFFER_SIZE_IN_FILES_TRAINING,
-                                                   batch_size=config.batch_size_train, epoch_size=config.epoch_size,
-                                                   window_size_ms=config.time_domain_shape,
-                                                   file_load=config.train_file_load,
-                                                   DVT_PCA_model=DVT_PCA_model)
-    validation_data_generator = SimulationDataGenerator(valid_files, buffer_size_in_files=BUFFER_SIZE_IN_FILES_VALID,
-                                                        batch_size=config.batch_size_validation,
-                                                        epoch_size=config.epoch_size,
-                                                        window_size_ms=config.time_domain_shape,
-                                                        file_load=config.train_file_load,
-                                                        DVT_PCA_model=DVT_PCA_model)
-    if "spike_probability" in config and config.spike_probability is not None:
-        train_data_generator.change_spike_probability(config.spike_probability)
-        validation_data_generator.change_spike_probability(config.spike_probability)
+    train_data_generator, validation_data_generator = get_data_generators(DVT_PCA_model, config)
 
     batch_counter = 0
     saving_counter = 0
     if not config.dynamic_learning_params:
-
-        loss_weights = config.constant_loss_weights
-        sigma = config.constant_sigma
-        learning_rate = None
-        if "loss_function" in config:
-            custom_loss = getattr(loss_function_factory, config["loss_function"])(loss_weights,
-                                                                                  config.time_domain_shape, sigma)
-        else:
-            custom_loss = loss_function_factory.bcel_mse_dvt_loss(loss_weights, config.time_domain_shape, sigma)
-        if not "lr" in config.optimizer_params:
-            config.optimizer_params["lr"] = config.constant_learning_rate
-        else:
-            config.constant_learning_rate = config.optimizer_params.lr
-        optimizer = getattr(optim, config.optimizer_type)(model.parameters(),
-                                                          **config.optimizer_params)
+        learning_rate, loss_weights, optimizer, sigma = generate_constant_learning_parameters(config, model)
     else:
         learning_rate, loss_weights, sigma = 0.001, [1] * 3, 0.1  # default values
         dynamic_parameter_loss_genrator = getattr(dlpf, config.dynamic_learning_params_function)(config)
@@ -157,7 +131,6 @@ def train_network(config, document_on_wandb=True):
                                                               **config.optimizer_params)
 
         for i, data_train_valid in enumerate(zip(train_data_generator, validation_data_generator)):
-            # config.batch_counter+=1
             config.update(dict(batch_counter=config.batch_counter + 1), allow_val_change=True)
             # get the inputs; data is a list of [inputs, labels]
             train_data, valid_data = data_train_valid
@@ -171,22 +144,72 @@ def train_network(config, document_on_wandb=True):
                               additional_str="train")
                     display_accuracy(model(train_data[0])[0], train_data[1][0], epoch, batch_counter,
                                      additional_str="train")
-                validation_loss = custom_loss(model(valid_input), valid_labels)
-                validation_loss = list(validation_loss)
-                validation_loss[0] = validation_loss[0]
-                validation_loss = tuple(validation_loss)
-                if document_on_wandb:
-                    display_accuracy(model(valid_input)[0], valid_labels[0], epoch, batch_counter,
-                                     additional_str="validation")
-
-                    train_log(validation_loss, batch_counter, epoch,
-                              additional_str="validation")  # without train logging.
+                    cheack_on_validation(batch_counter, custom_loss, document_on_wandb, epoch, model, valid_input,
+                                         valid_labels)
             epoch_batch_counter += 1
 
         # save model every once a while
         if saving_counter % 10 == 0:
             save_model(model, saving_counter, config)
     save_model(model, saving_counter, config)
+
+
+def get_data_generators(DVT_PCA_model, config):
+    print("loading data...training", flush=True)
+
+    train_files, valid_files, test_files = load_files_names(config.files_filter_regex)
+    train_data_generator = SimulationDataGenerator(train_files, buffer_size_in_files=BUFFER_SIZE_IN_FILES_TRAINING,
+                                                   batch_size=config.batch_size_train, epoch_size=config.epoch_size,
+                                                   window_size_ms=config.time_domain_shape,
+                                                   file_load=config.train_file_load,
+                                                   DVT_PCA_model=DVT_PCA_model)
+    print("loading data...validation", flush=True)
+
+    validation_data_generator = SimulationDataGenerator(valid_files, buffer_size_in_files=BUFFER_SIZE_IN_FILES_VALID,
+                                                        batch_size=config.batch_size_validation,
+                                                        epoch_size=config.epoch_size,
+                                                        window_size_ms=config.time_domain_shape,
+                                                        file_load=config.train_file_load,
+                                                        DVT_PCA_model=DVT_PCA_model)
+    if "spike_probability" in config and config.spike_probability is not None:
+        train_data_generator.change_spike_probability(config.spike_probability)
+        validation_data_generator.change_spike_probability(config.spike_probability)
+    print("finished with the data!!!", flush=True)
+
+    return train_data_generator, validation_data_generator
+
+
+def cheack_on_validation(batch_counter, custom_loss, document_on_wandb, epoch, model, valid_input, valid_labels):
+    with torch.no_grad():
+        validation_loss = custom_loss(model(valid_input), valid_labels)
+        validation_loss = list(validation_loss)
+        validation_loss[0] = validation_loss[0]
+        validation_loss = tuple(validation_loss)
+        if document_on_wandb:
+            display_accuracy(model(valid_input)[0], valid_labels[0], epoch, batch_counter,
+                             additional_str="validation")
+
+            train_log(validation_loss, batch_counter, epoch,
+                      additional_str="validation")  # without train logging.
+
+
+def generate_constant_learning_parameters(config, model):
+    global custom_loss
+    loss_weights = config.constant_loss_weights
+    sigma = config.constant_sigma
+    learning_rate = None
+    if "loss_function" in config:
+        custom_loss = getattr(loss_function_factory, config["loss_function"])(loss_weights,
+                                                                              config.time_domain_shape, sigma)
+    else:
+        custom_loss = loss_function_factory.bcel_mse_dvt_loss(loss_weights, config.time_domain_shape, sigma)
+    if not "lr" in config.optimizer_params:
+        config.optimizer_params["lr"] = config.constant_learning_rate
+    else:
+        config.constant_learning_rate = config.optimizer_params.lr
+    optimizer = getattr(optim, config.optimizer_type)(model.parameters(),
+                                                      **config.optimizer_params)
+    return learning_rate, loss_weights, optimizer, sigma
 
 
 def model_pipline(hyperparameters, document_on_wandb=True):
@@ -206,11 +229,11 @@ def train_log(loss, step, epoch, learning_rate=None, sigma=None, weights=None, a
     try:
         wandb.log({"epoch": epoch, "general loss %s" % additional_str: general_loss}, step=step)
     except Exception as e:
-        print("epoch",type(epoch))
-        print("additional_str",type(additional_str))
-        print("general loss",type(general_loss))
-        print("step",type(step))
-        raise  e
+        print("epoch", type(epoch))
+        print("additional_str", type(additional_str))
+        print("general loss", type(general_loss))
+        print("step", type(step))
+        raise e
     wandb.log({"epoch": epoch, "mse loss %s" % additional_str: loss_mse}, step=step)
     wandb.log({"epoch": epoch, "bcel loss %s" % additional_str: loss_bcel}, step=step)
     wandb.log({"epoch": epoch, "dvt loss %s" % additional_str: loss_dvt}, step=step)
@@ -266,6 +289,7 @@ def run_fit_cnn():
     # except Exception as e:
     # send_mail("nitzan.luxembourg@mail.huji.ac.il","somthing went wrong",e)
     # raise e
+
 
 run_fit_cnn()
 

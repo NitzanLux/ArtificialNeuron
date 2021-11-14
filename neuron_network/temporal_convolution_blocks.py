@@ -1,5 +1,18 @@
 # import pickle as pickle #python 3.7 compatibility
 # from torchviz import make_dot
+# import pickle as pickle #python 3.7 compatibility
+import pickle  # python 3.8+ compatibility
+# from torchviz import make_dot
+import torch
+from general_aid_function import *
+from project_path import MODELS_DIR
+from synapse_tree import SectionNode, SectionType
+import os
+from enum import Enum
+import neuron_network.basic_convolution_blocks as basic_convolution_blocks
+import neuron_network.temporal_convolution_blocks as temporal_convolution_blocks
+import torch.nn as nn
+import copy
 from synapse_tree import NUMBER_OF_PREVIUSE_SEGMENTS_IN_BRANCH
 from neuron_network.block_aid_functions import *
 
