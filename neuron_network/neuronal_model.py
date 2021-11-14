@@ -32,7 +32,7 @@ class NeuronConvNet(nn.Module):
         self.include_dendritic_voltage_tracing = include_dendritic_voltage_tracing
         self.segment_tree = segment_tree
         self.segemnt_ids = segemnt_ids if segemnt_ids is not None else dict()
-        self.input_window_size = input_window_size
+        self.time_domain_shape = input_window_size
         self.modules_dict = nn.ModuleDict()
         self.is_cuda = is_cuda
         self.network_kwargs = network_kwargs
@@ -67,7 +67,7 @@ class NeuronConvNet(nn.Module):
         for segment in self.segment_tree:
             self.segemnt_ids[segment] = segment.id
             param_number = segment.get_number_of_parameters_for_nn()
-            input_shape = (self.input_window_size, param_number)
+            input_shape = (self.time_domain_shape, param_number)
             if segment.type == SectionType.BRANCH:
                 self.modules_dict[self.segemnt_ids[segment]] = branch_class(input_shape,
                                                                             **sub_network_kargs)
@@ -138,7 +138,7 @@ class NeuronConvNet(nn.Module):
         data_dict = dict(include_dendritic_voltage_tracing=self.include_dendritic_voltage_tracing,
                          segment_tree=self.segment_tree, architecture_type=self.architecture_type,
                          segemnt_ids=self.segemnt_ids,
-                         input_window_size=self.input_window_size,
+                         time_domain_shape=self.time_domain_shape,
                          is_cuda=False)
         data_dict.update(self.network_kwargs)
         state_dict = self.state_dict()
