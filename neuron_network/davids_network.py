@@ -7,11 +7,9 @@ from project_path import MODELS_DIR
 from synapse_tree import SectionNode, SectionType
 import os
 from enum import Enum
-import neuron_network.basic_convolution_blocks as basic_convolution_blocks
-import neuron_network.temporal_convolution_blocks as temporal_convolution_blocks
+from neuron_network.block_aid_functions import Conv1dOnNdData
 import torch.nn as nn
 import copy
-from block_aid_functions import Conv1dOnNdData
 
 
 class DavidsNeuronNetwork(nn.Module):
