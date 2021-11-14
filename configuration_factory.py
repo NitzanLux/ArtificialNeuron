@@ -77,6 +77,7 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                                  kernel_size=200,
                                  number_of_layers=2,
                                  stride=1,
+                                 padding = 0,
                                  dilation=1,
                                  channel_input_number=1,  # synapse number
                                  inner_scope_channel_number=10,
