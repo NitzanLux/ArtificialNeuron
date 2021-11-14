@@ -56,16 +56,16 @@ def plot_network_and_actual_results(file_path: [str, List[str]], model_path: [st
             # raise e
         out_var = []
         spike = []
-        for i in tqdm(range(network.input_window_size, y_soma_batch.shape[0])):
-            out = network(X_batch[..., i - network.input_window_size:i, :])
+        for i in tqdm(range(network.time_domain_shape, y_soma_batch.shape[0])):
+            out = network(X_batch[..., i - network.time_domain_shape:i, :])
             out_var.append(out[1].detach().numpy()[0, 0, :, :])
             spike.append(out[0].detach().numpy()[0, 0, :, :])
         spike = np.array(spike).squeeze()
         out_var = np.array(out_var).squeeze()
         # plt.scatter(np.arange(out_var.shape[0]),spike)
         # plt.plot((out_var-np.min(out_var))/(np.max(out_var)-np.min(out_var))*(np.max(y_soma_batch)-np.min(y_soma_batch))+np.min(y_soma_batch), label=model_id)
-        axs[0].plot(np.arange(network.input_window_size, y_soma_batch.shape[0]), out_var, label=model_id)
-        axs[1].plot(np.arange(network.input_window_size, y_soma_batch.shape[0]), spike, label=model_id)
+        axs[0].plot(np.arange(network.time_domain_shape, y_soma_batch.shape[0]), out_var, label=model_id)
+        axs[1].plot(np.arange(network.time_domain_shape, y_soma_batch.shape[0]), spike, label=model_id)
 
     for s in np.where(y_spike_batch == 1)[0]:
         print(s)

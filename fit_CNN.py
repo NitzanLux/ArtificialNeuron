@@ -99,13 +99,13 @@ def train_network(config, document_on_wandb=True):
     print("loading data...", flush=True)
     train_data_generator = SimulationDataGenerator(train_files, buffer_size_in_files=BUFFER_SIZE_IN_FILES_TRAINING,
                                                    batch_size=config.batch_size_train, epoch_size=config.epoch_size,
-                                                   window_size_ms=config.input_window_size,
+                                                   window_size_ms=config.time_domain_shape,
                                                    file_load=config.train_file_load,
                                                    DVT_PCA_model=DVT_PCA_model)
     validation_data_generator = SimulationDataGenerator(valid_files, buffer_size_in_files=BUFFER_SIZE_IN_FILES_VALID,
                                                         batch_size=config.batch_size_validation,
                                                         epoch_size=config.epoch_size,
-                                                        window_size_ms=config.input_window_size,
+                                                        window_size_ms=config.time_domain_shape,
                                                         file_load=config.train_file_load,
                                                         DVT_PCA_model=DVT_PCA_model)
     if "spike_probability" in config and config.spike_probability is not None:
@@ -121,9 +121,9 @@ def train_network(config, document_on_wandb=True):
         learning_rate = None
         if "loss_function" in config:
             custom_loss = getattr(loss_function_factory, config["loss_function"])(loss_weights,
-                                                                                  config.input_window_size, sigma)
+                                                                                  config.time_domain_shape, sigma)
         else:
-            custom_loss = loss_function_factory.bcel_mse_dvt_loss(loss_weights, config.input_window_size, sigma)
+            custom_loss = loss_function_factory.bcel_mse_dvt_loss(loss_weights, config.time_domain_shape, sigma)
         if not "lr" in config.optimizer_params:
             config.optimizer_params["lr"] = config.constant_learning_rate
         else:
@@ -149,9 +149,9 @@ def train_network(config, document_on_wandb=True):
             learning_rate, loss_weights, sigma = next(dynamic_parameter_loss_genrator)
             if "loss_function" in config:
                 custom_loss = getattr(loss_function_factory, config.loss_function)(loss_weights,
-                                                                                   config.input_window_size, sigma)
+                                                                                   config.time_domain_shape, sigma)
             else:
-                custom_loss = loss_function_factory.bcel_mse_dvt_loss(loss_weights, config.input_window_size, sigma)
+                custom_loss = loss_function_factory.bcel_mse_dvt_loss(loss_weights, config.time_domain_shape, sigma)
             config.optimizer_params["lr"] = learning_rate
             optimizer = getattr(optim, config.optimizer_type)(model.parameters(),
                                                               **config.optimizer_params)
