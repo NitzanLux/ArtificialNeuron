@@ -23,17 +23,16 @@ class DavidsNeuronNetwork(nn.Module):
         self.activation_function_name = config["activation_function_name"]
         self.activation_function_kargs = config["activation_function_kargs"]
         activation_function_base_function = getattr(nn, config["activation_function_name"])
-        self.in_channels, self.out_channels = config.in_channels, config.out_channels
         layers_list = []
         activation_function = lambda: (activation_function_base_function(
             **config["activation_function_kargs"]))  # unknown bug
         for i in range(self.number_of_layers - 1):
             layers_list.append(
-                Conv1dOnNdData(self.in_channels, self.out_channels, self.kernel_size, self.stride, self.padding,
+                Conv1dOnNdData(1, 1, self.kernel_size, self.stride, self.padding,
                                self.dilation))
             layers_list.append(activation_function())
         layers_list.append(
-            Conv1dOnNdData(self.in_channels, self.out_channels, self.kernel_size, self.stride, self.padding,
+            Conv1dOnNdData(1, 1, self.kernel_size, self.stride, self.padding,
                            self.dilation))
         self.model = nn.Sequential(*layers_list)
 
@@ -56,8 +55,8 @@ class DavidsNeuronNetwork(nn.Module):
         state_dict = self.state_dict()
         with open('%s.pkl' % path, 'wb') as outp:
             pickle.dump((dict(number_of_layers=self.number_of_layers, kernel_size=self.kernel_size, stride=self.stride,
-                              dilation=self.dilation, padding=self.padding, in_channels=self.in_channels,
-                              out_channels=self.out_channels, activation_function_name = self.activation_function_name,
+                              dilation=self.dilation, padding=self.padding
+                             , activation_function_name = self.activation_function_name,
                          activation_function_kargs=self.activation_function_kargs), state_dict), outp)
 
         @staticmethod
