@@ -149,7 +149,7 @@ def generate_config_files_multiple_seeds(config_path: [str, Dict], number_of_con
 
 
 if __name__ == '__main__':
-    config_dynamic = [config_factory(dynamic_learning_params=False,network_architecture="DavidsNeuronNetwork",kernel_size=81,
+    config_dynamic = [config_factory(dynamic_learning_params=False,architecture_type="DavidsNeuronNetwork",kernel_size=81,
                                  number_of_layers=2,model_tag="davids_network_evaluation")]
     # configs_dynamic = generate_config_files_multiple_seeds(config_dynamic, 2)
     # config_static = config_factory(dynamic_learning_params=False)
