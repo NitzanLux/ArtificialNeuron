@@ -17,7 +17,7 @@ class DavidsNeuronNetwork(nn.Module):
         super(DavidsNeuronNetwork, self).__init__()
         if config:
             pass
-        self.input_shape=config
+
         self.kernel_size, self.stride, self.dilation, self.padding = config.kernel_size, config.stride, config.dilation, config.padding
         self.number_of_layers = config.number_of_layers
         self.activation_function_name = config["activation_function_name"]
@@ -28,7 +28,7 @@ class DavidsNeuronNetwork(nn.Module):
             **config["activation_function_kargs"]))  # unknown bug
         for i in range(self.number_of_layers - 1):
             layers_list.append(
-                Conv1dOnNdData(1, 1, (self.input_shape[0],self.kernel_size), self.stride, self.padding,
+                Conv1dOnNdData(1, 1, self.kernel_size, self.stride, self.padding,
                                self.dilation))
             layers_list.append(activation_function())
         layers_list.append(
