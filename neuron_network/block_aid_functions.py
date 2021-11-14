@@ -92,7 +92,7 @@ class Conv1dOnNdData(nn.Module):
         self.moduls_list = nn.ModuleList()
         if isinstance(kernel_size,int):
             kernel_size=[kernel_size]
-            kernel_size.insert(self.dim,1)
+            kernel_size.insert(dim,1)
         self.dim = dim
         self.out_channels = out_channels
         for i in range(kernel_size[self.dim]):
