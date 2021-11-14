@@ -99,6 +99,8 @@ parser.add_argument(dest="time_point", type=int,
                     help='simulation time point', default=1300)
 parser.add_argument(dest="window_size", type=int,
                     help='window size for evaluation', default=400)
+parser.add_argument(dest="job_id", help="the job id", type=str)
+
 args = parser.parse_args()
 print(args)
 
