@@ -24,7 +24,7 @@ print(args)
 
 
 
-job = SlurmJob("%i_%s_job" % (20, model_path),
+job = SlurmJob("%i_%s_job" % (20, "ms_evaluation"),
                      'python3 $(dirname "$path")/evaluation_per_ms.py %s %s %d %d %d $SLURM_JOB_ID' % (
                      args.validation_path, args.model_name, args.sample_idx, args.time_point, args.window_size), True)
 job.send()
