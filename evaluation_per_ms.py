@@ -45,14 +45,15 @@ def plot_network_and_actual_results(file_path: [str, List[str]], model_path: [st
     for p in model_path:
         network = neuronal_model.NeuronConvNet.load(p)
         # network.cpu()
-        regex_match = re.search('(?<=TCN__)([0-9]{4}-[0-9]{2}-[0-9]{2}__[0-9]{2}_[0-9]{2}__ID_[0-9]+)(?=\.pkl)', p)
+        regex_match = re.search('(?<=TCN__)[0-9]{4}-[0-9]{2}-[0-9]{2}__[0-9]{2}_[0-9]{2}__ID_[0-9]+(?=\.pkl)?', p)
         try:
-            model_id = regex_match.group(1)
+            model_id = regex_match.group(0)
             first_path_name = model_id
             logging.error(first_path_name)
         except Exception as e:
             logging.error(p)
-            raise e
+            print()
+            # raise e
         out_var = []
         spike = []
         for i in tqdm(range(network.input_window_size, y_soma_batch.shape[0])):
