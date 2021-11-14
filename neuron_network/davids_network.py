@@ -26,7 +26,7 @@ class DavidsNeuronNetwork(nn.Module):
         layers_list = []
         activation_function = lambda: (activation_function_base_function(
             **config["activation_function_kargs"]))  # unknown bug
-        for i in range(number_of_layers - 1):
+        for i in range(self.number_of_layers - 1):
             layers_list.append(Conv1dOnNdData(in_channels, out_channels, kernel_size, stride, padding, dilation))
             layers_list.append(activation_function())
         layers_list.append(Conv1dOnNdData(in_channels, out_channels, kernel_size, stride, padding, dilation))
