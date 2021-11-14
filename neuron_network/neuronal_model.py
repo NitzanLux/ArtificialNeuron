@@ -25,14 +25,14 @@ SYNAPSE_DIMENTION_POSITION = 3
 # ======================
 
 class NeuronConvNet(nn.Module):
-    def __init__(self, segment_tree, input_window_size, architecture_type,
+    def __init__(self, segment_tree, time_domain_shape, architecture_type,
                  is_cuda=False, include_dendritic_voltage_tracing=False, segemnt_ids=None, **network_kwargs):
         super(NeuronConvNet, self).__init__()
         self.architecture_type = architecture_type
         self.include_dendritic_voltage_tracing = include_dendritic_voltage_tracing
         self.segment_tree = segment_tree
         self.segemnt_ids = segemnt_ids if segemnt_ids is not None else dict()
-        self.time_domain_shape = input_window_size
+        self.time_domain_shape = time_domain_shape
         self.modules_dict = nn.ModuleDict()
         self.is_cuda = is_cuda
         self.network_kwargs = network_kwargs
