@@ -18,18 +18,23 @@ class DavidsNeuronNetwork(nn.Module):
         if config:
             pass
 
-        self.kernel_size, self.stride, self.dilation = config.kernel_size, config.stride, config.dilation
+        self.kernel_size, self.stride, self.dilation, self.padding = config.kernel_size, config.stride, config.dilation, config.padding
         self.number_of_layers = config.number_of_layers
         self.activation_function_name = config["activation_function_name"]
         self.activation_function_kargs = config["activation_function_kargs"]
         activation_function_base_function = getattr(nn, config["activation_function_name"])
+        self.in_channels, self.out_channels = config.in_channels, config.out_channels
         layers_list = []
         activation_function = lambda: (activation_function_base_function(
             **config["activation_function_kargs"]))  # unknown bug
         for i in range(self.number_of_layers - 1):
-            layers_list.append(Conv1dOnNdData(in_channels, out_channels, kernel_size, stride, padding, dilation))
+            layers_list.append(
+                Conv1dOnNdData(self.in_channels, self.out_channels, self.kernel_size, self.stride, self.padding,
+                               self.dilation))
             layers_list.append(activation_function())
-        layers_list.append(Conv1dOnNdData(in_channels, out_channels, kernel_size, stride, padding, dilation))
+        layers_list.append(
+            Conv1dOnNdData(self.in_channels, self.out_channels, self.kernel_size, self.stride, self.padding,
+                           self.dilation))
         self.model = nn.Sequential(*layers_list)
 
     def forward(self, x):
@@ -51,15 +56,15 @@ class DavidsNeuronNetwork(nn.Module):
         state_dict = self.state_dict()
         with open('%s.pkl' % path, 'wb') as outp:
             pickle.dump((dict(number_of_layers=self.number_of_layers, kernel_size=self.kernel_size, stride=self.stride,
-                              dilation=self.dilation
-                              , activation_function_name=self.activation_function_name,
-                              activation_function_kargs=self.activation_function_kargs), state_dict), outp)
+                              dilation=self.dilation, padding=self.padding, in_channels=self.in_channels,
+                              out_channels=self.out_channels, activation_function_name = self.activation_function_name,
+                         activation_function_kargs=self.activation_function_kargs), state_dict), outp)
 
-    @staticmethod
-    def load(path):
-        neuronal_model = None
-        with open('%s.pkl' % path if path[-len(".pkl"):] != ".pkl" else path, 'rb') as outp:
-            neuronal_model_data = pickle.load(outp)
-        neuronal_model = NeuronConvNet(**neuronal_model_data[0])
-        neuronal_model.load_state_dict(neuronal_model_data[1])  # fixme this this should
-        return neuronal_model
+        @staticmethod
+        def load(path):
+            neuronal_model = None
+            with open('%s.pkl' % path if path[-len(".pkl"):] != ".pkl" else path, 'rb') as outp:
+                neuronal_model_data = pickle.load(outp)
+            neuronal_model = NeuronConvNet(**neuronal_model_data[0])
+            neuronal_model.load_state_dict(neuronal_model_data[1])  # fixme this this should
+            return neuronal_model
