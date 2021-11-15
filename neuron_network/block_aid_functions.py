@@ -8,9 +8,8 @@ import torch.nn as nn
 from torch.nn.utils import weight_norm
 
 
-def keep_dimensions_by_padding_claculator(input_shape, kernel_size, stride, dilation,along_dim:[None,int]=None) -> Tuple[int, int]:
-
-
+def keep_dimensions_by_padding_claculator(input_shape, kernel_size, stride, dilation, along_dim: [None, int] = None) -> \
+        Tuple[int, int]:
     if isinstance(stride, int):
         stride = (stride, stride)
     stride = np.array(stride)
@@ -18,10 +17,10 @@ def keep_dimensions_by_padding_claculator(input_shape, kernel_size, stride, dila
         dilation = (dilation, dilation)
     dilation = np.array(dilation)
     if along_dim:
-        if isinstance(kernel_size,int):
+        if isinstance(kernel_size, int):
             kernel_size = [kernel_size]
         kernel_size = list(kernel_size)
-        kernel_size.insert(along_dim,1)
+        kernel_size.insert(along_dim, 1)
     elif isinstance(kernel_size, int):
         kernel_size = (kernel_size, kernel_size)
 
@@ -73,7 +72,7 @@ def kernel_2D_in_parts(channel_input_number
 
 
 class Conv1dOnNdData(nn.Module):
-    def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0,
+    def __init__(self, in_channels, out_channels, kernel_size, dim_size, stride=1, padding=0,
                  dilation=1, groups=1, bias=True, padding_mode='zeros', dim=1):
         """
 
@@ -90,20 +89,24 @@ class Conv1dOnNdData(nn.Module):
         """
         super(Conv1dOnNdData, self).__init__()
         self.moduls_list = nn.ModuleList()
-        if isinstance(kernel_size,int):
-            kernel_size=[kernel_size]
-            kernel_size.insert(dim,1)
+        # if isinstance(kernel_size,int):
+        # kernel_size=[kernel_size]
         self.dim = dim
         self.out_channels = out_channels
-        for i in range(kernel_size[self.dim]):
-            self.moduls_list.append(
-                nn.Conv2d(in_channels, out_channels, kernel_size, stride, padding, dilation, groups, bias,
-                          padding_mode))
+        self.in_channels = in_channels
+        self.conv1d = nn.Conv2d(in_channels * dim_size, out_channels , kernel_size, stride, padding, dilation,
+                                groups,
+                                bias)
+
+    def count_parameters(self):
+        return sum(p.numel() for p in self.parameters() if p.requires_grad)
 
     def forward(self, x):
-        x = torch.transpose(x,-1,self.dim+2) #two for channels and batch
-        outputs = []
-        for i, m in enumerate(self.moduls_list):
-            outputs.append(m(x).squeeze(-1))
-        output= torch.stack(outputs,self.dim+2).squeeze(-2)
+        x = x.transpose(2, self.dim + 2)  # for combining channels
+        previuos_shape = x.shape
+        x = x.view((x.shape[0], x.shape[1] * x.shape[2], x.shape[3]))
+        # x = torch.reshape(x,-1,self.dim+2) #two for channels and batch
+        output = self.conv1d(x)
+        output = output.view(previuos_shape)
+        output = output.transpose(2, self.dim + 2)
         return output

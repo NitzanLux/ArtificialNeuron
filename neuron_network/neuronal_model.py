@@ -17,7 +17,7 @@ class ArchitectureType(Enum):
     LAYERED_TEMPORAL_CONV = "LAYERED_TEMPORAL_CONV"
 
 
-SYNAPSE_DIMENTION_POSITION = 3
+SYNAPSE_DIMENTION_POSITION = 1
 
 
 # ======================
@@ -40,7 +40,7 @@ class NeuronConvNet(nn.Module):
 
     def build_model(self, **network_kwargs):
         # assert kernel_size_1d % 2 == 1 and kernel_size_2d % 2 == 1, "cannot assert even kernel size"
-        if self.architecture_type == ArchitectureType.BASIC_CONV.value:
+        if self.architecture_type == ArchitectureType.BASIC_CONV.value: #probability wont work becuse synapse became channels
             branch_class = basic_convolution_blocks.BranchBlock
             branch_leaf_class = basic_convolution_blocks.BranchLeafBlock
             intersection_class = basic_convolution_blocks.IntersectionBlock
@@ -91,6 +91,7 @@ class NeuronConvNet(nn.Module):
 
     def cuda(self, **kwargs):
         super(NeuronConvNet, self).cuda(**kwargs)
+        torch.cuda.synchronize()
         self.is_cuda = True
 
     def cpu(self, **kwargs):
@@ -103,35 +104,38 @@ class NeuronConvNet(nn.Module):
             pass
         representative_dict = {}
         out = None
-        for node in self.segment_tree:
-            if node.type == SectionType.BRANCH_LEAF:
-                input = x[..., list(node.synapse_nodes_dict.keys())]  # todo make it in order
-                representative_dict[node.representative] = self.modules_dict[self.segemnt_ids[node]](input)
+        for segments_level_list in self.segment_tree.iterate_by_levels():
+            for node in segments_level_list:
+                if node.type == SectionType.BRANCH_LEAF:
+                    input = x[..., list(node.synapse_nodes_dict.keys())]  # todo make it in order
+                    representative_dict[node.representative] = self.modules_dict[self.segemnt_ids[node]](input)
 
-                assert representative_dict[node.representative].shape[3] == 1
+                    assert representative_dict[node.representative].shape[3] == 1
 
-            elif node.type == SectionType.BRANCH_INTERSECTION:
-                indexs = [child.representative for child in node.prev_nodes]
-                input = [representative_dict[i] for i in indexs]
-                input = torch.cat(input, dim=SYNAPSE_DIMENTION_POSITION)
-                representative_dict[node.representative] = self.modules_dict[self.segemnt_ids[node]](input)
+                elif node.type == SectionType.BRANCH_INTERSECTION:
+                    indexs = [child.representative for child in node.prev_nodes]
+                    input = [representative_dict[i] for i in indexs]
+                    input = torch.cat(input, dim=SYNAPSE_DIMENTION_POSITION)
+                    representative_dict[node.representative] = self.modules_dict[self.segemnt_ids[node]](input)
 
-                assert representative_dict[node.representative].shape[3] == 1
+                    assert representative_dict[node.representative].shape[3] == 1
 
-            elif node.type == SectionType.BRANCH:
-                input = x[..., list(node.synapse_nodes_dict.keys())]
-                representative_dict[node.representative] = self.modules_dict[self.segemnt_ids[node]](
-                    representative_dict[node.prev_nodes[0].representative], input)
-                assert representative_dict[node.representative].shape[3] == 1
+                elif node.type == SectionType.BRANCH:
+                    input = x[..., list(node.synapse_nodes_dict.keys())]
+                    representative_dict[node.representative] = self.modules_dict[self.segemnt_ids[node]](
+                        representative_dict[node.prev_nodes[0].representative], input)
+                    assert representative_dict[node.representative].shape[3] == 1
 
-            elif node.type == SectionType.SOMA:
-                indexs = [child.representative for child in node.prev_nodes]
-                input = [representative_dict[i] for i in indexs]
-                input = torch.cat(input, dim=SYNAPSE_DIMENTION_POSITION)
-                out = self.last_layer(input)
-                break
-            else:
-                assert False, "Type not found"
+                elif node.type == SectionType.SOMA:
+                    indexs = [child.representative for child in node.prev_nodes]
+                    input = [representative_dict[i] for i in indexs]
+                    input = torch.cat(input, dim=SYNAPSE_DIMENTION_POSITION)
+                    out = self.last_layer(input)
+                    break
+                else:
+                    assert False, "Type not found"
+            if self.is_cuda:
+                torch.cuda.synchronize()
         return out
 
     def save(self, path):  # todo fix

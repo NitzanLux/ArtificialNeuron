@@ -18,8 +18,10 @@ import re
 WANDB_PROJECT_NAME = "ArtificialNeuron1"
 
 BUFFER_SIZE_IN_FILES_VALID = 4
+BUFFER_SIZE_IN_FILES_VALID = 1
 
 BUFFER_SIZE_IN_FILES_TRAINING = 10
+BUFFER_SIZE_IN_FILES_TRAINING = 1
 WANDB_API_KEY = "2725e59f8f4484605300fdf4da4c270ff0fe44a3"
 # for dibugging
 # logging.error("Aaaaa")
@@ -96,8 +98,8 @@ def train_network(config, document_on_wandb=True):
         model = neuronal_model.NeuronConvNet.build_model_from_config(config)
     if config.epoch_counter == 0:
         model.init_weights(config.init_weights_sd)
-    model.cuda()
     print("model parmeters: %d" % model.count_parameters())
+    model.cuda()
     train_data_generator, validation_data_generator = get_data_generators(DVT_PCA_model, config)
 
     batch_counter = 0

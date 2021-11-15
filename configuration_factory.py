@@ -73,14 +73,15 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                                  time_domain_shape=config.input_window_size,
                                  # kernel_size_2d=3,
                                  # kernel_size_1d=9,
+                                 david_layers = [54,12,12,12,12,12,12],
                                  skip_conections=False,
-                                 kernel_size=200,
-                                 number_of_layers=2,
+                                 kernel_size=81,
+                                 number_of_layers=7,
                                  stride=1,
                                  padding = 0,
                                  dilation=1,
-                                 channel_input_number=1,  # synapse number
-                                 inner_scope_channel_number=10,
+                                 channel_input_number=1278,  # synapse number
+                                 inner_scope_channel_number=128,
                                  channel_output_number=5,
                                  activation_function_name="LeakyReLU",
                                  activation_function_kargs=dict(negative_slope=0.25),
@@ -160,7 +161,7 @@ def generate_config_files_multiple_seeds(config_path: [str, Dict], number_of_con
 
 if __name__ == '__main__':
     config_dynamic = [config_factory(dynamic_learning_params=False,architecture_type="DavidsNeuronNetwork",kernel_size=81,
-                                 number_of_layers=2,model_tag="davids_network_evaluation")]
+                                 number_of_layers=7,model_tag="davids_network_evaluation",files_filter_regex=".*")]
     # configs_dynamic = generate_config_files_multiple_seeds(config_dynamic, 2)
     # config_static = config_factory(dynamic_learning_params=False)
     # configs_static = generate_config_files_multiple_seeds(config_static, 1)

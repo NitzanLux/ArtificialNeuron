@@ -264,10 +264,25 @@ class SectionNode:
                 leafs_arr.append(current_node)
                 representative_set.add(current_node.representative)
             else:
-                for child in current_node.prev_nodes:
-                    stack.append(child)
+                stack.extend(list(current_node.prev_nodes))
+                # for child in current_node.prev_nodes:
+                #     stack.append(child)
         for child in reversed(order_stack):
             yield child
+    def iterate_by_levels(self):
+        root=self.find_soma()
+        levels=[[root]]
+        cur_level=[]
+        while len(cur_level)>0 or len(levels)==1: # if theres childrens or its the root
+           cur_level=[]
+           for node in levels[-1]:
+                cur_level.extend(list(node.prev_nodes))
+           if len(cur_level)==0:
+               break
+           levels.append(cur_level)
+        for level in reversed(levels):
+            yield iter(level)
+
 
     def squeeze_tree(self):
         pass  # todo: add program that compute minimal tree where we remove branches without synapses.

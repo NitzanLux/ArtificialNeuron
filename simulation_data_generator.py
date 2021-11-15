@@ -63,7 +63,7 @@ class SimulationDataGenerator():
             number_of_non_spikes = self.batch_size - number_of_spikes
 
             # get spikes location
-            spike_mask = self.y_spike == 1
+            spike_mask = self.y_spike.squeeze() == 1
             spikes = list(np.where(spike_mask))
             spikes_in_bound = spikes[1] > self.sampling_start_time + self.window_size_ms + 1
             spikes[0] = spikes[0][spikes_in_bound]
@@ -79,7 +79,7 @@ class SimulationDataGenerator():
             if self.__return_spike_factor == 0:
                 selected_sim_inds = np.random.choice(range(self.X.shape[0]), size=self.batch_size,
                                                      replace=True)  # number of simulations per file
-                selected_time_inds = np.random.choice(range(self.sampling_start_time, self.X.shape[1] - 1),
+                selected_time_inds = np.random.choice(range(self.sampling_start_time, self.X.shape[2] - 1),
                                                       size=self.batch_size, replace=False)  # simulation duration
             else:
 
@@ -99,11 +99,12 @@ class SimulationDataGenerator():
 
             self.sample_counter += self.batch_size
             if self.__return_spike_factor == 0:
-                if self.sample_counter / (self.X.shape[0]*self.X.shape[1]) >= self.sample_ratio_to_shuffle:
+                if self.sample_counter / (self.X.shape[0] * self.X.shape[2]) >= self.sample_ratio_to_shuffle:
                     self.reload_files()
             else:
                 # in case we are deterministically sampling from different probability space then the data.
-                if self.sample_counter / min(non_spikes[0].shape[0], spikes[0].shape[0]) >= self.sample_ratio_to_shuffle:
+                if self.sample_counter / min(non_spikes[0].shape[0],
+                                             spikes[0].shape[0]) >= self.sample_ratio_to_shuffle:
                     self.reload_files()
 
     def __getitem__(self, item):
@@ -113,16 +114,17 @@ class SimulationDataGenerator():
         :return:items (X, y_spike,y_soma ,y_DVT [if exists])
         """
         sim_ind, win_time = item
-        win_ind, sim_ind_mat = np.meshgrid(np.arange(self.window_size_ms, 0, -1), sim_ind)
-        win_ind = win_time[:, np.newaxis] - win_ind
-        X_batch = self.X[sim_ind_mat, win_ind, ...][:, np.newaxis, ...]  # newaxis for channel dimensions
+        sim_ind_mat, chn_ind, win_ind = np.meshgrid( sim_ind,
+                                                    np.arange(self.X.shape[1]),np.arange(self.window_size_ms, 0, -1), indexing='ij')
+        win_ind = win_time[:, np.newaxis, np.newaxis] - win_ind
+        X_batch = self.X[sim_ind_mat, chn_ind, win_ind]
         pred_index = win_time
-        y_spike_batch = self.y_spike[sim_ind, pred_index, :]
-        y_soma_batch = self.y_soma[sim_ind, pred_index, :]
-        y_soma_batch = y_soma_batch[:, np.newaxis, np.newaxis, ...]
-        y_spike_batch = y_spike_batch[:, np.newaxis, np.newaxis, ...]
-        if self.include_DVT:
-            y_DVT_batch = self.y_DVT[sim_ind, np.max(win_time) + 1, ...][:, np.newaxis, ...]
+        y_spike_batch = self.y_spike[sim_ind,:, pred_index]
+        y_soma_batch = self.y_soma[sim_ind,:, pred_index]
+        y_soma_batch = y_soma_batch[:, np.newaxis, ...]
+        y_spike_batch = y_spike_batch[:, np.newaxis, ...]
+        if self.include_DVT: #positions are wrong and probability wont work :(
+            y_DVT_batch = self.y_DVT[sim_ind, :, np.max(win_time) + 1, ...]
             # return the actual batch
             return (torch.from_numpy(X_batch),
                     [torch.from_numpy(y_spike_batch), torch.from_numpy(y_soma_batch), torch.from_numpy(y_DVT_batch)])
@@ -161,15 +163,15 @@ class SimulationDataGenerator():
         for f in self.curr_files_to_use:
             if self.include_DVT:
                 X, y_spike, y_soma, y_DVT = parse_sim_experiment_file_with_DVT(f, DVT_PCA_model=self.DVT_PCA_model)
-                y_DVT = np.transpose(y_DVT, axes=[2, 1, 0])
+                y_DVT = np.transpose(y_DVT, axes=[2, 0, 1])
                 self.y_DVT.append(y_DVT)
 
             else:
                 X, y_spike, y_soma, _ = parse_sim_experiment_file_with_DVT(f, DVT_PCA_model=self.DVT_PCA_model)
             # reshape to what is needed
-            X = np.transpose(X, axes=[2, 1, 0])
-            y_spike = y_spike.T[:, :, np.newaxis]
-            y_soma = y_soma.T[:, :, np.newaxis]
+            X = np.transpose(X, axes=[2, 0, 1])
+            y_spike = y_spike.T[:, np.newaxis, :]
+            y_soma = y_soma.T[:, np.newaxis, :]
 
             # y_soma = y_soma - self.y_train_soma_bias
             self.X.append(X)
@@ -181,7 +183,7 @@ class SimulationDataGenerator():
         self.y_soma = np.vstack(self.y_soma)
         # threshold the signals
 
-        self.y_soma[self.y_soma>self.y_soma_threshold]=self.y_soma_threshold
+        self.y_soma[self.y_soma > self.y_soma_threshold] = self.y_soma_threshold
         if self.include_DVT:
             self.y_DVT = np.vstack(self.y_DVT)
         # self.y_soma[self.y_soma > self.y_soma_threshold] = self.y_soma_threshold

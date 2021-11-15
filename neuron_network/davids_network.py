@@ -17,27 +17,41 @@ class DavidsNeuronNetwork(nn.Module):
         super(DavidsNeuronNetwork, self).__init__()
         if config:
             pass
-
-        self.kernel_size, self.stride, self.dilation, self.padding = config.kernel_size, config.stride, config.dilation, config.padding
+        self.num_segments = config.num_segments
+        self.kernel_sizes, self.stride, self.dilation, self.padding = config.david_layers, config.stride, config.dilation, config.padding
         self.number_of_layers = config.number_of_layers
         self.activation_function_name = config["activation_function_name"]
         self.activation_function_kargs = config["activation_function_kargs"]
+        self.inner_scope_channel_number = config.inner_scope_channel_number
+        self.channel_input_number = config.channel_input_number
+
         activation_function_base_function = getattr(nn, config["activation_function_name"])
         layers_list = []
         activation_function = lambda: (activation_function_base_function(
             **config["activation_function_kargs"]))  # unknown bug
-        for i in range(self.number_of_layers - 1):
+        first_channels_flag = True
+        for i in range(self.number_of_layers):
             layers_list.append(
-                Conv1dOnNdData(1, 1, self.kernel_size, self.stride, self.padding,
-                               self.dilation))
+                nn.Conv1d(config.channel_input_number if first_channels_flag else config.inner_scope_channel_number,
+                          config.inner_scope_channel_number, self.kernel_sizes[i],self.stride, self.padding,
+                          self.dilation))
+
+            first_channels_flag = False
+            layers_list.append(nn.BatchNorm2d(self.kernel_sizes[i]))
             layers_list.append(activation_function())
-        layers_list.append(
-            Conv1dOnNdData(1, 1, self.kernel_size, self.stride, self.padding,
-                           self.dilation))
         self.model = nn.Sequential(*layers_list)
+        self.v_fc = nn.Linear(config.inner_scope_channel_number, 1)
+        self.s_fc = nn.Linear(config.inner_scope_channel_number, 1)
+
+        self.double()
 
     def forward(self, x):
-        return self.model(x)
+        x = x.type(torch.cuda.DoubleTensor) if self.is_cuda else x.type(torch.DoubleTensor)
+        out = self.model(x)
+        out = out.squeeze(3)
+        out_v = self.v_fc(out)
+        out_s = self.s_fc(out)
+        return out_s, out_v
 
     def init_weights(self, sd=0.05):
         def init_params(m):
@@ -54,16 +68,27 @@ class DavidsNeuronNetwork(nn.Module):
     def save(self, path):  # todo fix
         state_dict = self.state_dict()
         with open('%s.pkl' % path, 'wb') as outp:
-            pickle.dump((dict(number_of_layers=self.number_of_layers, kernel_size=self.kernel_size, stride=self.stride,
+            pickle.dump((dict(number_of_layers=self.number_of_layers, kernel_size=self.kernel_sizes,
+                              inner_scope_channel_number=self.inner_scope_channel_number,
+                              channel_input_number=self.channel_input_number, stride=self.stride,
                               dilation=self.dilation, padding=self.padding
-                             , activation_function_name = self.activation_function_name,
-                         activation_function_kargs=self.activation_function_kargs), state_dict), outp)
+                              , activation_function_name=self.activation_function_name,
+                              activation_function_kargs=self.activation_function_kargs, num_segments=self.num_segments),
+                         state_dict), outp)
+    def cuda(self, **kwargs):
+        super(DavidsNeuronNetwork, self).cuda(**kwargs)
+        torch.cuda.synchronize()
+        self.is_cuda = True
 
-        @staticmethod
-        def load(path):
-            neuronal_model = None
-            with open('%s.pkl' % path if path[-len(".pkl"):] != ".pkl" else path, 'rb') as outp:
-                neuronal_model_data = pickle.load(outp)
-            neuronal_model = NeuronConvNet(**neuronal_model_data[0])
-            neuronal_model.load_state_dict(neuronal_model_data[1])  # fixme this this should
-            return neuronal_model
+    def cpu(self, **kwargs):
+        super(DavidsNeuronNetwork, self).cpu(**kwargs)
+        self.is_cuda = False
+
+    @staticmethod
+    def load(path):
+        neuronal_model = None
+        with open('%s.pkl' % path if path[-len(".pkl"):] != ".pkl" else path, 'rb') as outp:
+            neuronal_model_data = pickle.load(outp)
+        neuronal_model = NeuronConvNet(**neuronal_model_data[0])
+        neuronal_model.load_state_dict(neuronal_model_data[1])  # fixme this this should
+        return neuronal_model
