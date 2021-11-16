@@ -39,6 +39,10 @@ class DavidsNeuronNetwork(nn.Module):
             first_channels_flag = False
             layers_list.append(nn.BatchNorm1d(config.inner_scope_channel_number))
             layers_list.append(activation_function())
+            layers_list.append(
+                nn.Conv1d(config.channel_input_number,1, self.kernel_sizes[i],self.stride, self.padding,
+                          self.dilation))
+            layers_list.append(activation_function())
         self.model = nn.Sequential(*layers_list)
         self.v_fc = nn.Linear(config.inner_scope_channel_number, 1)
         self.s_fc = nn.Linear(config.inner_scope_channel_number, 1)
