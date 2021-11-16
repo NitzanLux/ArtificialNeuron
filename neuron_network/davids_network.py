@@ -37,7 +37,7 @@ class DavidsNeuronNetwork(nn.Module):
                           self.dilation))
 
             first_channels_flag = False
-            layers_list.append(nn.BatchNorm1d(self.kernel_sizes[i]))
+            layers_list.append(nn.BatchNorm1d(config.inner_scope_channel_number))
             layers_list.append(activation_function())
         self.model = nn.Sequential(*layers_list)
         self.v_fc = nn.Linear(config.inner_scope_channel_number, 1)
