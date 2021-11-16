@@ -1,7 +1,7 @@
 -change the tree to tree path(or maybe inside of the constructor)
 -docomentation (ofcourse)
--add accuracy and add 1d TCN architecture
--blur add in case of std 0
--add evaluation in every save
+-add focal loss
+-fix evaluation in every save
 -map reduce in neuronal models
 -universal blocks
+-update dimensions in neuronal models

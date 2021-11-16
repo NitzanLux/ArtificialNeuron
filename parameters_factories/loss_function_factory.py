@@ -23,7 +23,7 @@ def bcel_mse_dvt_loss(loss_weights, window_size, sigma):
             general_loss = loss_weights[0] *loss_bcel
 
         if loss_weights[1] > 0:
-            loss_mse =  mse_loss(output[1].squeeze(1), target[1].squeeze(1))
+            loss_mse =  mse_loss(output[1], target[1])
             loss_mse_item = loss_mse.item()
             general_loss = general_loss + loss_weights[1] *loss_mse if general_loss else loss_weights[1] *loss_mse
 
