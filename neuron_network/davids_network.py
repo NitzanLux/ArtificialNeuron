@@ -7,7 +7,7 @@ from project_path import MODELS_DIR
 from synapse_tree import SectionNode, SectionType
 import os
 from enum import Enum
-from neuron_network.block_aid_functions import Conv1dOnNdData
+from neuron_network.block_aid_functions import Conv1dOnNdData,keep_dimensions_by_padding_claculator
 import torch.nn as nn
 import copy
 
@@ -18,7 +18,7 @@ class DavidsNeuronNetwork(nn.Module):
         if config:
             pass
         self.num_segments = config.num_segments
-        self.kernel_sizes, self.stride, self.dilation, self.padding = config.david_layers, config.stride, config.dilation, config.padding
+        self.kernel_sizes, self.stride, self.dilation = config.david_layers, config.stride, config.dilation
         self.number_of_layers = config.number_of_layers
         self.activation_function_name = config["activation_function_name"]
         self.activation_function_kargs = config["activation_function_kargs"]
@@ -31,20 +31,24 @@ class DavidsNeuronNetwork(nn.Module):
             **config["activation_function_kargs"]))  # unknown bug
         first_channels_flag = True
         for i in range(self.number_of_layers):
+            padding_factor = keep_dimensions_by_padding_claculator(config.input_window_size,self.kernel_sizes[i],self.stride,self.dilation)[0]
+            print(padding_factor)
             layers_list.append(
                 nn.Conv1d(config.channel_input_number if first_channels_flag else config.inner_scope_channel_number,
-                          config.inner_scope_channel_number, self.kernel_sizes[i], self.stride, self.padding,
+                          config.inner_scope_channel_number, self.kernel_sizes[i], self.stride, padding_factor,
                           self.dilation))
 
             first_channels_flag = False
             layers_list.append(nn.BatchNorm1d(config.inner_scope_channel_number))
             layers_list.append(activation_function())
+        padding_factor = keep_dimensions_by_padding_claculator(config.input_window_size, self.kernel_sizes[-1],
+                                                               self.stride, self.dilation)[0]
         self.last_layer = nn.Conv1d(config.inner_scope_channel_number, 1, self.kernel_sizes[-1], self.stride,
-                                    self.padding, self.dilation)
+                                    padding_factor, self.dilation)
         layers_list.append(activation_function())
         self.model = nn.Sequential(*layers_list)
-        self.v_fc = nn.Linear(config.inner_scope_channel_number, 1)
-        self.s_fc = nn.Linear(config.inner_scope_channel_number, 1)
+        self.v_fc = nn.Conv1d(1,1,config.input_window_size)
+        self.s_fc = nn.Conv1d(1,1,config.input_window_size)
         self.sigmoid = nn.Sigmoid()
         self.double()
 
@@ -74,8 +78,7 @@ class DavidsNeuronNetwork(nn.Module):
             pickle.dump((dict(number_of_layers=self.number_of_layers, kernel_size=self.kernel_sizes,
                               inner_scope_channel_number=self.inner_scope_channel_number,
                               channel_input_number=self.channel_input_number, stride=self.stride,
-                              dilation=self.dilation, padding=self.padding
-                              , activation_function_name=self.activation_function_name,
+                              dilation=self.dilation, activation_function_name=self.activation_function_name,
                               activation_function_kargs=self.activation_function_kargs, num_segments=self.num_segments),
                          state_dict), outp)
 

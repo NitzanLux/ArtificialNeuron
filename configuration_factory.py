@@ -73,7 +73,7 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                                  time_domain_shape=config.input_window_size,
                                  # kernel_size_2d=3,
                                  # kernel_size_1d=9,
-                                 david_layers = [54,12,12,12,12,12,12],
+                                 david_layers = [55,13,13,13,13,13,13],
                                  skip_conections=False,
                                  kernel_size=81,
                                  number_of_layers=7,
