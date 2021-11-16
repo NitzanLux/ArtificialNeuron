@@ -51,6 +51,7 @@ class DavidsNeuronNetwork(nn.Module):
     def forward(self, x):
         x = x.type(torch.cuda.DoubleTensor) if self.is_cuda else x.type(torch.DoubleTensor)
         out = self.model(x)
+        out = self.last_layer(out)
         out_v = self.v_fc(out)
         out_s = self.s_fc(out)
         return out_s, out_v
