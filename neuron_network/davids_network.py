@@ -45,7 +45,7 @@ class DavidsNeuronNetwork(nn.Module):
         self.model = nn.Sequential(*layers_list)
         self.v_fc = nn.Linear(config.inner_scope_channel_number, 1)
         self.s_fc = nn.Linear(config.inner_scope_channel_number, 1)
-
+        self.sigmoid = nn.Sigmoid()
         self.double()
 
     def forward(self, x):
@@ -53,7 +53,7 @@ class DavidsNeuronNetwork(nn.Module):
         out = self.model(x)
         out = self.last_layer(out)
         out_v = self.v_fc(out)
-        out_s = self.s_fc(out)
+        out_s = self.sigmoid(self.s_fc(out))
         return out_s, out_v
 
     def init_weights(self, sd=0.05):
