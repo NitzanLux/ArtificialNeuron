@@ -33,16 +33,15 @@ class DavidsNeuronNetwork(nn.Module):
         for i in range(self.number_of_layers):
             layers_list.append(
                 nn.Conv1d(config.channel_input_number if first_channels_flag else config.inner_scope_channel_number,
-                          config.inner_scope_channel_number, self.kernel_sizes[i],self.stride, self.padding,
+                          config.inner_scope_channel_number, self.kernel_sizes[i], self.stride, self.padding,
                           self.dilation))
 
             first_channels_flag = False
             layers_list.append(nn.BatchNorm1d(config.inner_scope_channel_number))
             layers_list.append(activation_function())
-            layers_list.append(
-                nn.Conv1d(config.inner_scope_channel_number,1, self.kernel_sizes[i],self.stride, self.padding,
-                          self.dilation))
-            layers_list.append(activation_function())
+        self.last_layer = nn.Conv1d(config.inner_scope_channel_number, 1, self.kernel_sizes[-1], self.stride,
+                                    self.padding, self.dilation)
+        layers_list.append(activation_function())
         self.model = nn.Sequential(*layers_list)
         self.v_fc = nn.Linear(config.inner_scope_channel_number, 1)
         self.s_fc = nn.Linear(config.inner_scope_channel_number, 1)
@@ -78,6 +77,7 @@ class DavidsNeuronNetwork(nn.Module):
                               , activation_function_name=self.activation_function_name,
                               activation_function_kargs=self.activation_function_kargs, num_segments=self.num_segments),
                          state_dict), outp)
+
     def cuda(self, **kwargs):
         super(DavidsNeuronNetwork, self).cuda(**kwargs)
         torch.cuda.synchronize()
