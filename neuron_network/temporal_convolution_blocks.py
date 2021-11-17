@@ -131,7 +131,7 @@ class RootBlock(nn.Module):
                  , kernel_size, stride=1,
                  dilation=1, **kwargs):
         super(RootBlock, self).__init__()
-        self.conv1d_root = Base1DConvolutionBlock(number_of_layers_root, input_shape, activation_function,
+        self.conv1d_root = Base1DConvolutionBlock(number_of_layers_root, (input_shape[0]*inner_scope_channel_number,input_shape[1]), activation_function,
                                                   inner_scope_channel_number, inner_scope_channel_number, kernel_size,
                                                   stride, dilation)
         self.model = nn.Sequential(self.conv1d_root, activation_function())
