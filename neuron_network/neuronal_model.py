@@ -181,7 +181,6 @@ class NeuronConvNet(nn.Module):
                 # elif  config.architecture_type == ArchitectureType.LAYERED_TEMPORAL_CONV.value:
                 #     architecture_dict.update(
                 #         dict(kernel_size=config.kernel_size, number_of_layers=config.number_of_layers))
-                network = NeuronConvNet(**(architecture_dict))
             else:
                 architecture_dict = dict(
                     architecture_type=config.architecture_type,
@@ -199,6 +198,7 @@ class NeuronConvNet(nn.Module):
                 elif  config.architecture_type == ArchitectureType.LAYERED_TEMPORAL_CONV.value:
                     architecture_dict.update(
                         dict(kernel_size=config.kernel_size, number_of_layers=config.number_of_layers,skip_conections=True))
+            network = NeuronConvNet(**(architecture_dict))
 
         else:
             network = NeuronConvNet.load(os.path.join(MODELS_DIR, *config.model_path))

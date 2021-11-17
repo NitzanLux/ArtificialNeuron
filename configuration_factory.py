@@ -92,7 +92,7 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                                  activation_function_kargs=dict(negative_slope=0.25),
                                  include_dendritic_voltage_tracing=False)
 
-    # config.architecture_dict = architecture_dict
+    config.architecture_dict = architecture_dict
     config.update(architecture_dict)
     config.update(kargs)  # override by kargs
     logging.error("arch type *************  " + config.architecture_type)
