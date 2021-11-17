@@ -84,7 +84,7 @@ class IntersectionBlock(nn.Module):
         super(IntersectionBlock, self).__init__()
 
         self.base_conv_1d = Base1DConvolutionBlock(number_of_layers_intersection,
-                                                   input_shape,
+                                                   (input_shape[0]*channel_output_number,input_shape[1]),
                                                    activation_function,
                                                    inner_scope_channel_number,
                                                    channel_output_number, kernel_size, stride, dilation)
