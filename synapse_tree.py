@@ -217,7 +217,7 @@ class SectionNode:
         if self.type == SectionType.BRANCH_LEAF:
             return len(self.synapse_nodes_dict)
         elif self.type == SectionType.BRANCH:
-            return len(self.synapse_nodes_dict) + NUMBER_OF_PREVIUSE_SEGMENTS_IN_BRANCH
+            return len(self.synapse_nodes_dict)
         elif self.type == SectionType.BRANCH_INTERSECTION:
             return len(self.prev_nodes)
         elif self.type == SectionType.SOMA:
