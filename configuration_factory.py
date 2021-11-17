@@ -166,9 +166,8 @@ def generate_config_files_multiple_seeds(config_path: [str, Dict], number_of_con
 
 
 if __name__ == '__main__':
-    config_dynamic = [
-        config_factory(dynamic_learning_params=False, architecture_type="LAYERED_TEMPORAL_CONV", kernel_size=81,
-                        model_tag="morpho_model")]
+    config_dynamic =config_factory(dynamic_learning_params=False, architecture_type="LAYERED_TEMPORAL_CONV", kernel_size=81,
+                        model_tag="morpho_model")
     configs_dynamic = generate_config_files_multiple_seeds(config_dynamic, 2)
     # config_static = config_factory(dynamic_learning_params=False)
     # configs_static = generate_config_files_multiple_seeds(config_static, 1)
