@@ -117,7 +117,7 @@ def focalbcel_mse_loss(loss_weights, window_size, sigma):
             min_len = min(len(target),len(output))
             for i in range(min_len):  # same processor for comperison
                 target[i] = target[i].to(output[i].device)
-        binary_focal_cross_entropy_loss = FocalLossWithLogitsLoss(gamma=sigma)
+        binary_focal_cross_entropy_loss = FocalLossWithLogitsLoss(gamma=sigma).to(output[0].device)
         mse_loss = nn.MSELoss()
         general_loss = None
         loss_bcel_item = 0
