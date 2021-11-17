@@ -144,6 +144,7 @@ class RootBlock(nn.Module):
 
     def forward(self, x):
         out = self.model(x)
+        print(x.shape,flush=True)
         v = self.voltage_prediction(out)
         s = self.spike_prediction(out)
         s = self.sigmoid(s)
