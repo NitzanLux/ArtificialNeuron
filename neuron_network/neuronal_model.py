@@ -110,7 +110,6 @@ class NeuronConvNet(nn.Module):
                     input = x[:, list(node.synapse_nodes_dict.keys()),...]  # todo make it in order
                     representative_dict[node.representative] = self.modules_dict[self.segemnt_ids[node]](input)
 
-                    assert representative_dict[node.representative].shape[3] == 1
 
                 elif node.type == SectionType.BRANCH_INTERSECTION:
                     indexs = [child.representative for child in node.prev_nodes]
@@ -118,13 +117,11 @@ class NeuronConvNet(nn.Module):
                     input = torch.cat(input, dim=SYNAPSE_DIMENTION_POSITION)
                     representative_dict[node.representative] = self.modules_dict[self.segemnt_ids[node]](input)
 
-                    assert representative_dict[node.representative].shape[3] == 1
 
                 elif node.type == SectionType.BRANCH:
                     input = x[:, list(node.synapse_nodes_dict.keys()),...]
                     representative_dict[node.representative] = self.modules_dict[self.segemnt_ids[node]](
                         representative_dict[node.prev_nodes[0].representative], input)
-                    assert representative_dict[node.representative].shape[3] == 1
 
                 elif node.type == SectionType.SOMA:
                     indexs = [child.representative for child in node.prev_nodes]
