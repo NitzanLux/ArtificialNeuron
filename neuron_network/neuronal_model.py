@@ -67,7 +67,7 @@ class NeuronConvNet(nn.Module):
         for segment in self.segment_tree:
             self.segemnt_ids[segment] = segment.id
             param_number = segment.get_number_of_parameters_for_nn()
-            input_shape = (self.time_domain_shape, param_number)
+            input_shape = (param_number,self.time_domain_shape)
             if segment.type == SectionType.BRANCH:
                 self.modules_dict[self.segemnt_ids[segment]] = branch_class(input_shape,
                                                                             **sub_network_kargs)
@@ -107,7 +107,7 @@ class NeuronConvNet(nn.Module):
         for segments_level_list in self.segment_tree.iterate_by_levels():
             for node in segments_level_list:
                 if node.type == SectionType.BRANCH_LEAF:
-                    input = x[..., list(node.synapse_nodes_dict.keys())]  # todo make it in order
+                    input = x[:, list(node.synapse_nodes_dict.keys()),...]  # todo make it in order
                     representative_dict[node.representative] = self.modules_dict[self.segemnt_ids[node]](input)
 
                     assert representative_dict[node.representative].shape[3] == 1
@@ -121,7 +121,7 @@ class NeuronConvNet(nn.Module):
                     assert representative_dict[node.representative].shape[3] == 1
 
                 elif node.type == SectionType.BRANCH:
-                    input = x[..., list(node.synapse_nodes_dict.keys())]
+                    input = x[:, list(node.synapse_nodes_dict.keys()),...]
                     representative_dict[node.representative] = self.modules_dict[self.segemnt_ids[node]](
                         representative_dict[node.prev_nodes[0].representative], input)
                     assert representative_dict[node.representative].shape[3] == 1
