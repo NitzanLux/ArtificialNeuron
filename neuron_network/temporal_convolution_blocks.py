@@ -16,7 +16,7 @@ import copy
 from synapse_tree import NUMBER_OF_PREVIUSE_SEGMENTS_IN_BRANCH
 from neuron_network.block_aid_functions import *
 
-SYNAPSE_DIMENTION_POSITION = 0
+SYNAPSE_DIMENTION_POSITION = 1
 
 
 class Base1DConvolutionBlock(nn.Module):
