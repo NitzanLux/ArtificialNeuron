@@ -161,7 +161,7 @@ class NeuronConvNet(nn.Module):
     @staticmethod
     def build_model_from_config(config: AttrDict):
         if config.model_path is None:
-            if "architecture_dict" in config and False:
+            if "architecture_dict" in config:
                 architecture_dict = copy.deepcopy(config.architecture_dict)
                 architecture_dict[segment_tree]=load_tree_from_path(architecture_dict.segment_tree_path)
                 del architecture_dict[segment_tree_path]
