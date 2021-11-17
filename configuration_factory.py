@@ -58,7 +58,7 @@ def load_config_file(path: str) -> AttrDict:
 def config_factory(save_model_to_config_dir=True, config_new_path=None, generate_random_seeds=False, is_new_name=False,
                    **kargs):
     ##default values can be overridden by kargs
-    config = AttrDict(input_window_size=300, num_segments=2 * 639, num_syn_types=1,
+    config = AttrDict(config_version=1.0,input_window_size=300, num_segments=2 * 639, num_syn_types=1,
                       num_epochs=15000, epoch_size=30, batch_size_train=20, batch_size_validation=5,
                       train_file_load=0.5, valid_file_load=0.5, spike_probability=0.,
                       files_filter_regex=".*exBas_0_1100_inhBasDiff_-1100_600__exApic_0_1100_inhApicDiff_-1100_600_SpTemp[^\\/\.]*\.p",
@@ -92,7 +92,7 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                                  activation_function_kargs=dict(negative_slope=0.25),
                                  include_dendritic_voltage_tracing=False)
 
-    config.architecture_dict = architecture_dict
+    # config.architecture_dict = architecture_dict
     config.update(architecture_dict)
     config.update(kargs)  # override by kargs
     logging.error("arch type *************  " + config.architecture_type)

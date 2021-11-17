@@ -161,10 +161,11 @@ class NeuronConvNet(nn.Module):
     @staticmethod
     def build_model_from_config(config: AttrDict):
         if config.model_path is None:
-            if "architecture_dict" in config:
-                architecture_dict = copy.deepcopy(config.architecture_dict)
-                architecture_dict[segment_tree]=load_tree_from_path(architecture_dict.segment_tree_path)
+            if "config_version" in config:
+                # architecture_dict = copy.deepcopy(config)
+                # architecture_dict[segment_tree]=load_tree_from_path(architecture_dict.segment_tree_path)
                 # del architecture_dict[segment_tree_path]
+                network = NeuronConvNet(**(config),segment_tree = load_tree_from_path(config.segment_tree_path))
 
             else:
                 architecture_dict = dict(
@@ -183,7 +184,7 @@ class NeuronConvNet(nn.Module):
                 elif  config.architecture_type == ArchitectureType.LAYERED_TEMPORAL_CONV.value:
                     architecture_dict.update(
                         dict(kernel_size=config.kernel_size, number_of_layers=config.number_of_layers,skip_conections=True))
-            network = NeuronConvNet(**(architecture_dict))
+                network = NeuronConvNet(**(architecture_dict))
 
         else:
             network = NeuronConvNet.load(os.path.join(MODELS_DIR, *config.model_path))
