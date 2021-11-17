@@ -106,7 +106,7 @@ class BranchBlock(nn.Module):
                                            , inner_scope_channel_number
                                            , inner_scope_channel_number, kernel_size, stride,
                                            dilation)
-        self.register_buffer("activation_function", activation_function())
+        self.activation_function = activation_function()
         self.synapse_model = nn.Sequential(self.branch_leaf, activation_function())
 
         self.intersection_block = IntersectionBlock((input_shape[0] + inner_scope_channel_number, input_shape[1]),
