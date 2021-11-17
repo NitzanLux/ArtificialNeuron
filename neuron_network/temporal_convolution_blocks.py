@@ -109,11 +109,13 @@ class BranchBlock(nn.Module):
         self.activation_function = activation_function()
         self.synapse_model = nn.Sequential(self.branch_leaf, activation_function())
 
-        self.intersection_block = IntersectionBlock((input_shape[0] + inner_scope_channel_number, input_shape[1]),
-                                                    number_of_layers_branch_intersection, activation_function
-                                                    , inner_scope_channel_number
-                                                    , channel_output_number, kernel_size, stride,
-                                                    dilation)
+        self.intersection_block =Base1DConvolutionBlock(number_of_layers_branch_intersection,
+                                                   (input_shape[0]*inner_scope_channel_number+channel_output_number,input_shape[1]),
+                                                   activation_function,
+                                                   inner_scope_channel_number,
+                                                   channel_output_number, kernel_size, stride, dilation)
+
+
 
     def forward(self, prev_segment, x):
         x = self.synapse_model(x)
