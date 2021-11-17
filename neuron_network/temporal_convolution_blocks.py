@@ -127,11 +127,11 @@ class BranchBlock(nn.Module):
 
 class RootBlock(nn.Module):
     def __init__(self, input_shape: Tuple[int, int], number_of_layers_root: int, activation_function
-                 , inner_scope_channel_number
+                 ,channel_output_number, inner_scope_channel_number
                  , kernel_size, stride=1,
                  dilation=1, **kwargs):
         super(RootBlock, self).__init__()
-        self.conv1d_root = Base1DConvolutionBlock(number_of_layers_root, (input_shape[0]*inner_scope_channel_number,input_shape[1]), activation_function,
+        self.conv1d_root = Base1DConvolutionBlock(number_of_layers_root, (input_shape[0]*channel_output_number,input_shape[1]), activation_function,
                                                   inner_scope_channel_number, inner_scope_channel_number, kernel_size,
                                                   stride, dilation)
         self.model = nn.Sequential(self.conv1d_root, activation_function())
