@@ -165,22 +165,7 @@ class NeuronConvNet(nn.Module):
                 architecture_dict = copy.deepcopy(config.architecture_dict)
                 architecture_dict[segment_tree]=load_tree_from_path(architecture_dict.segment_tree_path)
                 del architecture_dict[segment_tree_path]
-                # architecture_dict = dict(
-                #     architecture_type=config.architecture_type,
-                #     activation_function_name=config.activation_function_name,
-                #     activation_function_kargs=config.activation_function_kargs,
-                #     segment_tree=load_tree_from_path(config.segment_tree_path),
-                #     include_dendritic_voltage_tracing=config.include_dendritic_voltage_tracing,
-                #     time_domain_shape=config.input_window_size, stride=config.stride, dilation=config.dilation,
-                #     channel_input_number=config.channel_input_number,
-                #     inner_scope_channel_number=config.inner_scope_channel_number,
-                #     channel_output_number=config.channel_output_number
-                # )
-                # if config.architecture_type== ArchitectureType.BASIC_CONV.value: # todo make it more generic !!!!!!!!!!!!!!!
-                #     architecture_dict.update(dict(kernel_size_2d=config.kernel_size_2d,kernel_size_1d=config.kernel_size_1d))
-                # elif  config.architecture_type == ArchitectureType.LAYERED_TEMPORAL_CONV.value:
-                #     architecture_dict.update(
-                #         dict(kernel_size=config.kernel_size, number_of_layers=config.number_of_layers))
+
             else:
                 architecture_dict = dict(
                     architecture_type=config.architecture_type,
