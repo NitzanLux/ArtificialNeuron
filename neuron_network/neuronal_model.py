@@ -132,7 +132,8 @@ class NeuronConvNet(nn.Module):
                 else:
                     assert False, "Type not found"
             if self.is_cuda:
-                torch.cuda.synchronize()
+                pass
+                # torch.cuda.synchronize()
         return out
 
     def save(self, path):  # todo fix
