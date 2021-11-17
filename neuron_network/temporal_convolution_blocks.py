@@ -94,7 +94,7 @@ class IntersectionBlock(nn.Module):
         return out
 
 
-class BranchBlock(nn.Module):  # FIXME fix the channels and its movment in the branch block
+class BranchBlock(nn.Module):
     def __init__(self, input_shape: Tuple[int, int], number_of_layers_branch_intersection: int,
                  number_of_layers_leaf: int, activation_function
                  , inner_scope_channel_number
