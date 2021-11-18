@@ -228,28 +228,16 @@ def model_pipline(hyperparameters, document_on_wandb=True):
 def train_log(loss, step, epoch, learning_rate=None, sigma=None, weights=None, additional_str=''):
     general_loss, loss_bcel, loss_mse, loss_dvt, blur_loss = loss
     general_loss = float(general_loss.item())
-    try:
-        wandb.log({"epoch": epoch, "general loss %s" % additional_str: general_loss}, step=step)
-    except Exception as e:
-        print("epoch", type(epoch))
-        print("additional_str", type(additional_str))
-        print("general loss", type(general_loss))
-        print("step", type(step))
-        raise e
-    wandb.log({"epoch": epoch, "mse loss %s" % additional_str: loss_mse}, step=step)
-    wandb.log({"epoch": epoch, "bcel loss %s" % additional_str: loss_bcel}, step=step)
-    wandb.log({"epoch": epoch, "dvt loss %s" % additional_str: loss_dvt}, step=step)
-    wandb.log({"epoch": epoch, "blur loss %s" % additional_str: blur_loss}, step=step)
+    wandb.log({"epoch":epoch,"general loss %s" % additional_str: general_loss,
+               "mse loss %s" % additional_str: loss_mse,"bcel loss %s" % additional_str: loss_bcel,
+               "dvt loss %s" % additional_str: loss_dvt,"blur loss %s" % additional_str: blur_loss}, step=step)
     if learning_rate is not None:
-        wandb.log({"epoch": epoch, "learning rate %s" % additional_str: learning_rate},
+        wandb.log({ "learning rate %s" % additional_str: learning_rate},
                   step=step)  # add training parameters per step
     if weights is not None:
-        wandb.log({"epoch": epoch, "bcel weight  %s" % additional_str: weights[0]},
-                  step=step)  # add training parameters per step
-        wandb.log({"epoch": epoch, "dvt weight  %s" % additional_str: weights[2]},
-                  step=step)  # add training parameters per step
-        wandb.log({"epoch": epoch, "mse weight  %s" % additional_str: weights[1]},
-                  step=step)  # add training parameters per step
+        wandb.log({ "bcel weight  %s" % additional_str: weights[0],
+                    "dvt weight  %s" % additional_str: weights[2],
+                    "mse weight  %s" % additional_str: weights[1]}, step=step)  # add training parameters per step
     if sigma is not None:
         wandb.log({"epoch": epoch, "sigma %s" % additional_str: sigma}, step=step)  # add training parameters per step
 
