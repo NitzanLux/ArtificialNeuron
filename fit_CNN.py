@@ -260,7 +260,7 @@ def train_log(loss, step, epoch, learning_rate=None, sigma=None, weights=None, a
     print("dvt loss ", loss_dvt)
 
 
-def display_accuracy(target, output, epoch, step, additional_str='', log_frequency=500):
+def display_accuracy(target, output, epoch, step, additional_str='', log_frequency=100):
     if step % log_frequency != 0:
         return
     # target_np = target.detach().cpu().numpy().squeeze()
