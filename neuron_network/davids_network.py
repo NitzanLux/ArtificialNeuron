@@ -42,7 +42,7 @@ class DavidsNeuronNetwork(nn.Module):
             layers_list.append(nn.BatchNorm1d(config.inner_scope_channel_number))
             layers_list.append(activation_function())
         padding_factor = keep_dimensions_by_padding_claculator(config.input_window_size, self.kernel_sizes[-1],
-                                                               self.stride, self.dilation)[0]
+                                                               self.stride, self.dilation)
         self.last_layer = nn.Conv1d(config.inner_scope_channel_number, 1, self.kernel_sizes[-1], self.stride,
                                     padding_factor, self.dilation)
         layers_list.append(activation_function())
