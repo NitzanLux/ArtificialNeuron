@@ -31,7 +31,7 @@ class DavidsNeuronNetwork(nn.Module):
             **config["activation_function_kargs"]))  # unknown bug
         first_channels_flag = True
         for i in range(self.number_of_layers):
-            padding_factor = keep_dimensions_by_padding_claculator(config.input_window_size,self.kernel_sizes[i],self.stride,self.dilation)[0]
+            padding_factor = keep_dimensions_by_padding_claculator(config.input_window_size,self.kernel_sizes[i],self.stride,self.dilation)
             print(padding_factor)
             layers_list.append(
                 nn.Conv1d(config.channel_input_number if first_channels_flag else config.inner_scope_channel_number,
