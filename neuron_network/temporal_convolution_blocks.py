@@ -38,14 +38,9 @@ class Base1DConvolutionBlock(nn.Module):
                 in_channels = inner_scope_channel_number
             if i == number_of_layers - 1:
                 out_channels = channel_output_number
-
-            if i < number_of_layers - 1:
-                conv_1d = nn.Conv1d(in_channels, out_channels, kernel_size, stride, padding, dilation)
-                model = nn.Sequential(conv_1d, activation_function(), nn.BatchNorm1d(out_channels))
-                self.layers_list.append(model)
-            else:
-                self.layers_list.append(
-                    nn.Conv1d(in_channels, out_channels, kernel_size, stride, padding, dilation))
+            conv_1d = nn.Conv1d(in_channels, out_channels, kernel_size, stride, padding, dilation)
+            model = nn.Sequential(conv_1d, activation_function(), nn.BatchNorm1d(out_channels))
+            self.layers_list.append(model)
 
     def forward(self, x):
         cur_out = x
