@@ -18,9 +18,9 @@ import re
 WANDB_PROJECT_NAME = "ArtificialNeuron1"
 
 BUFFER_SIZE_IN_FILES_VALID = 2
-# BUFFER_SIZE_IN_FILES_VALID = 1
 
 BUFFER_SIZE_IN_FILES_TRAINING = 4
+# BUFFER_SIZE_IN_FILES_VALID = 1
 # BUFFER_SIZE_IN_FILES_TRAINING = 1
 WANDB_API_KEY = "2725e59f8f4484605300fdf4da4c270ff0fe44a3"
 # for dibugging
@@ -144,7 +144,7 @@ def train_network(config, document_on_wandb=True):
                 if document_on_wandb:
                     train_log(train_loss, batch_counter, epoch, learning_rate, sigma, loss_weights,
                               additional_str="train")
-                    display_accuracy(model(train_data[0])[0], train_data[1][0], batch_counter,
+                    display_accuracy( train_data[1][0],model(train_data[0])[0], batch_counter,
                                      additional_str="train")
                     cheack_on_validation(batch_counter, custom_loss, document_on_wandb, epoch, model, valid_input,
                                          valid_labels)
@@ -188,7 +188,7 @@ def cheack_on_validation(batch_counter, custom_loss, document_on_wandb, epoch, m
         validation_loss[0] = validation_loss[0]
         validation_loss = tuple(validation_loss)
         if document_on_wandb:
-            display_accuracy(model(valid_input)[0], valid_labels[0], batch_counter,
+            display_accuracy(valid_labels[0],model(valid_input)[0], batch_counter,
                              additional_str="validation")
 
             train_log(validation_loss, batch_counter, epoch,
@@ -251,9 +251,9 @@ def train_log(loss, step, epoch, learning_rate=None, sigma=None, weights=None, a
 def display_accuracy(target, output, step, additional_str='', log_frequency=50):
     if step % log_frequency != 0:
         return
-    target = target.cpu().detach().numpy().astype(bool)
-    output = output.cpu().detach().numpy()
-    wandb.log({"roc %s"%additional_str: wandb.plot.roc_curve(target, output,classes_to_plot =None)})
+    target = target.cpu().detach().numpy().astype(int).squeeze()
+    output = output.cpu().detach().numpy().squeeze()
+    wandb.log({"roc %s"%additional_str: wandb.plot.roc_curve(target, output)})
     # target_np = target.detach().cpu().numpy().squeeze()
     # output_np = output.detach().numpy().squeeze()
     # accuracy = 1 - torch.abs(target - output)
