@@ -35,7 +35,7 @@ print('-----------------------------------------------', flush=True)
 
 synapse_type = 'NMDA'
 include_DVT = False
-watch_model=False
+WATCH_MODEL=False
 
 # num_DVT_components = 20 if synapse_type == 'NMDA' else 30
 
@@ -110,7 +110,7 @@ def train_network(config, document_on_wandb=True):
         learning_rate, loss_weights, sigma = 0.001, [1] * 3, 0.1  # default values
         dynamic_parameter_loss_genrator = getattr(dlpf, config.dynamic_learning_params_function)(config)
 
-    if document_on_wandb and watch_model:
+    if document_on_wandb and WATCH_MODEL:
         wandb.watch(model, log='all', log_freq=1000,log_graph=True)
     print("start training...", flush=True)
 
@@ -248,15 +248,16 @@ def train_log(loss, step, epoch, learning_rate=None, sigma=None, weights=None, a
     print("dvt loss ", loss_dvt)
 
 
-def display_accuracy(target, output, epoch, step, additional_str='', log_frequency=50):
+def display_accuracy(target, output, step, additional_str='', log_frequency=50):
     if step % log_frequency != 0:
         return
+    wandb.log({"roc %s"%additional_str: wandb.plot.roc_curve(target, output,classes_to_plot =None)})
     # target_np = target.detach().cpu().numpy().squeeze()
     # output_np = output.detach().numpy().squeeze()
-    accuracy = 1 - torch.abs(target - output)
-    accuracy = torch.mean(accuracy, dim=0)
-    wandb.log({"epoch": epoch, "accuracy (%s) %s" % ("%", additional_str): float(accuracy[0])}, step=step)
-    print("accuracy (%s) %s : %0.4f" % ("%", additional_str, float(accuracy[0])))
+    # accuracy = 1 - torch.abs(target - output)
+    # accuracy = torch.mean(accuracy, dim=0)
+    # wandb.log({"epoch": epoch, "accuracy (%s) %s" % ("%", additional_str): float(accuracy[0])}, step=step)
+    # print("accuracy (%s) %s : %0.4f" % ("%", additional_str, float(accuracy[0])))
     # todo add fp tp
 
 
