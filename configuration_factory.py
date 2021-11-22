@@ -76,18 +76,18 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                                  time_domain_shape=config.input_window_size,
                                  # kernel_size_2d=3,
                                  # kernel_size_1d=9,
-                                 number_of_layers_root=4, number_of_layers_leaf=3, number_of_layers_intersection=3,
-                                 number_of_layers_branch_intersection=4,
+                                 number_of_layers_root=3, number_of_layers_leaf=2, number_of_layers_intersection=2,
+                                 number_of_layers_branch_intersection=2,
                                  david_layers = [55,13,13,13,13,13,13],
                                  skip_conections=False,
-                                 kernel_size=81,
+                                 kernel_size=23,
                                  number_of_layers=7,
                                  stride=1,
                                  padding=0,
                                  dilation=1,
                                  channel_input_number=1278,  # synapse number
-                                 inner_scope_channel_number=19,
-                                 channel_output_number=5,
+                                 inner_scope_channel_number=55,
+                                 channel_output_number=55,
                                  activation_function_name="LeakyReLU",
                                  activation_function_kargs=dict(negative_slope=0.25),
                                  include_dendritic_voltage_tracing=False)
@@ -175,7 +175,7 @@ if __name__ == '__main__':
     # configs_static = generate_config_files_multiple_seeds(config_static, 1)
     # configs_to_read = configs_dynamic+[config_factory(loss_function="loss_zero_mse_on_spikes")]
     #
-    with open(os.path.join(MODELS_DIR, "model_comperision_da_mo.json"), 'w') as file:
+    with open(os.path.join(MODELS_DIR, "model_comperision_large_channel_smale_layers.json"), 'w') as file:
         file.write(json.dumps([config_morpho,config_david]))  # use `json.loads` to do the reverse
 
     # config = load_config_file("models/NMDA/simplest_model_dynamic_NMDA_Tree_TCN__2021-09-30__16_51__ID_78714/simplest_model_dynamic_NMDA_Tree_TCN__2021-09-30__16_51__ID_78714.config")
