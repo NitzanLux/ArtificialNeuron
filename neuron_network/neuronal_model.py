@@ -11,7 +11,7 @@ import neuron_network.basic_convolution_blocks as basic_convolution_blocks
 import neuron_network.temporal_convolution_blocks as temporal_convolution_blocks
 import torch.nn as nn
 import copy
-
+import torch.multiprocessing as mp
 class ArchitectureType(Enum):
     BASIC_CONV = "BASIC_CONV"
     LAYERED_TEMPORAL_CONV = "LAYERED_TEMPORAL_CONV"
