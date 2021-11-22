@@ -251,7 +251,7 @@ def train_log(loss, step, epoch, learning_rate=None, sigma=None, weights=None, a
 def display_accuracy(target, output, step, additional_str='', log_frequency=50):
     if step % log_frequency != 0:
         return
-    target = target.cpu().detach().numpy().astype(int)
+    target = target.cpu().detach().numpy().astype(bool)
     output = output.cpu().detach().numpy()
     wandb.log({"roc %s"%additional_str: wandb.plot.roc_curve(target, output,classes_to_plot =None)})
     # target_np = target.detach().cpu().numpy().squeeze()
