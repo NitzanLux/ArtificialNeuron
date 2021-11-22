@@ -110,8 +110,8 @@ def train_network(config, document_on_wandb=True):
         learning_rate, loss_weights, sigma = 0.001, [1] * 3, 0.1  # default values
         dynamic_parameter_loss_genrator = getattr(dlpf, config.dynamic_learning_params_function)(config)
 
-    if document_on_wandb:
-        wandb.watch(model, log='all', log_freq=10,log_graph=True)
+    if document_on_wandb and watch_model:
+        wandb.watch(model, log='all', log_freq=1000,log_graph=True)
     print("start training...", flush=True)
 
     for epoch in range(config.num_epochs):
