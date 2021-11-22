@@ -35,7 +35,7 @@ print('-----------------------------------------------', flush=True)
 
 synapse_type = 'NMDA'
 include_DVT = False
-
+watch_model=False
 
 # num_DVT_components = 20 if synapse_type == 'NMDA' else 30
 
