@@ -144,7 +144,7 @@ def train_network(config, document_on_wandb=True):
                 if document_on_wandb:
                     train_log(train_loss, batch_counter, epoch, learning_rate, sigma, loss_weights,
                               additional_str="train")
-                    display_accuracy(model(train_data[0])[0], train_data[1][0], epoch, batch_counter,
+                    display_accuracy(model(train_data[0])[0], train_data[1][0], batch_counter,
                                      additional_str="train")
                     cheack_on_validation(batch_counter, custom_loss, document_on_wandb, epoch, model, valid_input,
                                          valid_labels)
@@ -188,7 +188,7 @@ def cheack_on_validation(batch_counter, custom_loss, document_on_wandb, epoch, m
         validation_loss[0] = validation_loss[0]
         validation_loss = tuple(validation_loss)
         if document_on_wandb:
-            display_accuracy(model(valid_input)[0], valid_labels[0], epoch, batch_counter,
+            display_accuracy(model(valid_input)[0], valid_labels[0], batch_counter,
                              additional_str="validation")
 
             train_log(validation_loss, batch_counter, epoch,
