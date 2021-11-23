@@ -15,13 +15,18 @@ from project_path import *
 from simulation_data_generator import *
 import re
 
+
+DOCUMENT_ON_WANDB = True
+AUC_UPDATE_FREQUENCY = 500
+BATCH_LOG_UPDATE_FREQ = 50
+
 WANDB_PROJECT_NAME = "ArtificialNeuron1"
 
 BUFFER_SIZE_IN_FILES_VALID = 2
 
 BUFFER_SIZE_IN_FILES_TRAINING = 4
-# BUFFER_SIZE_IN_FILES_VALID = 1
-# BUFFER_SIZE_IN_FILES_TRAINING = 1
+BUFFER_SIZE_IN_FILES_VALID = 1
+BUFFER_SIZE_IN_FILES_TRAINING = 1
 WANDB_API_KEY = "2725e59f8f4484605300fdf4da4c270ff0fe44a3"
 # for dibugging
 # logging.error("Aaaaa")
@@ -88,7 +93,7 @@ def save_model(network, saving_counter, config):
     configuration_factory.overwrite_config(AttrDict(config))
 
 
-def train_network(config, document_on_wandb=True):
+def train_network(config):
     global dynamic_parameter_loss_genrator, custom_loss
     DVT_PCA_model = None
     print("loading model...", flush=True)
@@ -110,7 +115,7 @@ def train_network(config, document_on_wandb=True):
         learning_rate, loss_weights, sigma = 0.001, [1] * 3, 0.1  # default values
         dynamic_parameter_loss_genrator = getattr(dlpf, config.dynamic_learning_params_function)(config)
 
-    if document_on_wandb and WATCH_MODEL:
+    if DOCUMENT_ON_WANDB and WATCH_MODEL:
         wandb.watch(model, log='all', log_freq=1000,log_graph=True)
     print("start training...", flush=True)
 
@@ -141,13 +146,13 @@ def train_network(config, document_on_wandb=True):
 
             train_loss = batch_train(model, optimizer, custom_loss, *train_data)
             with torch.no_grad():
-                if document_on_wandb:
+                if DOCUMENT_ON_WANDB:
                     train_log(train_loss, batch_counter, epoch, learning_rate, sigma, loss_weights,
                               additional_str="train")
                     display_accuracy( train_data[1][0],model(train_data[0])[0], batch_counter,
                                      additional_str="train")
-                    cheack_on_validation(batch_counter, custom_loss, document_on_wandb, epoch, model, valid_input,
-                                         valid_labels)
+                    cheack_on_validation(batch_counter, custom_loss, epoch, model, valid_input,
+                                         valid_labels, batch_counter % BATCH_LOG_UPDATE_FREQ == 0)
             epoch_batch_counter += 1
 
         # save model every once a while
@@ -181,18 +186,18 @@ def get_data_generators(DVT_PCA_model, config):
     return train_data_generator, validation_data_generator
 
 
-def cheack_on_validation(batch_counter, custom_loss, document_on_wandb, epoch, model, valid_input, valid_labels):
+def cheack_on_validation(batch_counter, custom_loss, epoch, model, valid_input, valid_labels,commit=False):
     with torch.no_grad():
         validation_loss = custom_loss(model(valid_input), valid_labels)
         validation_loss = list(validation_loss)
         validation_loss[0] = validation_loss[0]
         validation_loss = tuple(validation_loss)
-        if document_on_wandb:
+        if DOCUMENT_ON_WANDB:
             display_accuracy(valid_labels[0],model(valid_input)[0], batch_counter,
                              additional_str="validation")
 
             train_log(validation_loss, batch_counter, epoch,
-                      additional_str="validation")  # without train logging.
+                      additional_str="validation",commit=commit)  # without train logging.
 
 
 def generate_constant_learning_parameters(config, model):
@@ -214,8 +219,8 @@ def generate_constant_learning_parameters(config, model):
     return learning_rate, loss_weights, optimizer, sigma
 
 
-def model_pipline(hyperparameters, document_on_wandb=True):
-    if document_on_wandb:
+def model_pipline(hyperparameters):
+    if DOCUMENT_ON_WANDB:
         wandb.login()
         with wandb.init(project=(WANDB_PROJECT_NAME), config=hyperparameters, entity='nilu', allow_val_change=True):
             config = wandb.config
@@ -225,21 +230,21 @@ def model_pipline(hyperparameters, document_on_wandb=True):
         train_network(config)
 
 
-def train_log(loss, step, epoch, learning_rate=None, sigma=None, weights=None, additional_str=''):
+def train_log(loss, step, epoch, learning_rate=None, sigma=None, weights=None, additional_str='',commit=False):
     general_loss, loss_bcel, loss_mse, loss_dvt, blur_loss = loss
     general_loss = float(general_loss.item())
-    wandb.log({"epoch":epoch,"general loss %s" % additional_str: general_loss,
+    log_dict = {"epoch":epoch,"general loss %s" % additional_str: general_loss,
                "mse loss %s" % additional_str: loss_mse,"bcel loss %s" % additional_str: loss_bcel,
-               "dvt loss %s" % additional_str: loss_dvt,"blur loss %s" % additional_str: blur_loss}, step=step)
+               "dvt loss %s" % additional_str: loss_dvt,"blur loss %s" % additional_str: blur_loss}
     if learning_rate is not None:
-        wandb.log({ "learning rate %s" % additional_str: learning_rate},
-                  step=step)  # add training parameters per step
+        log_dict.update({ "learning rate %s" % additional_str: learning_rate}) # add training parameters per step
     if weights is not None:
-        wandb.log({ "bcel weight  %s" % additional_str: weights[0],
+        log_dict.update({ "bcel weight  %s" % additional_str: weights[0],
                     "dvt weight  %s" % additional_str: weights[2],
-                    "mse weight  %s" % additional_str: weights[1]}, step=step)  # add training parameters per step
+                    "mse weight  %s" % additional_str: weights[1]})  # add training parameters per step
     if sigma is not None:
-        wandb.log({"epoch": epoch, "sigma %s" % additional_str: sigma}, step=step)  # add training parameters per step
+        log_dict.update({"epoch": epoch, "sigma %s" % additional_str: sigma})  # add training parameters per step
+    wandb.log(log_dict, step=step,commit=commit)  # add training parameters per step
 
     print("step %d, epoch %d %s" % (step, epoch, additional_str))
     print("general loss ", general_loss)
@@ -248,12 +253,16 @@ def train_log(loss, step, epoch, learning_rate=None, sigma=None, weights=None, a
     print("dvt loss ", loss_dvt)
 
 
-def display_accuracy(target, output, step, additional_str='', log_frequency=50):
-    if step % log_frequency != 0:
+def display_accuracy(target, output, step, additional_str='',commit=False):
+    if step % AUC_UPDATE_FREQUENCY != 0:
         return
-    target = target.cpu().detach().numpy().astype(int).squeeze()
-    output = output.cpu().detach().numpy().squeeze()[np.newaxis,...]
-    wandb.log({"roc %s"%additional_str: wandb.plot.roc_curve(target, output)})
+    target = target.cpu().detach().numpy().astype(bool).squeeze()
+    output = output.cpu().detach().numpy().squeeze()
+    output = np.vstack([np.abs(1-output),output]).T
+    wandb.log({"pr %s"%additional_str: wandb.plot.pr_curve(target, output,
+                                         labels=None, classes_to_plot=None),
+               "roc %s"%additional_str: wandb.plot.roc_curve(target, output,labels=None, classes_to_plot=None)
+               },commit=commit)
     # target_np = target.detach().cpu().numpy().squeeze()
     # output_np = output.detach().numpy().squeeze()
     # accuracy = 1 - torch.abs(target - output)
