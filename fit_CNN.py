@@ -21,7 +21,7 @@ WANDB_PROJECT_NAME = "ArtificialNeuron1"
 
 DOCUMENT_ON_WANDB = True
 
-AUC_UPDATE_FREQUENCY = 500
+AUC_UPDATE_FREQUENCY = 1
 BATCH_LOG_UPDATE_FREQ = 20
 BUFFER_SIZE_IN_FILES_VALID = 2
 BUFFER_SIZE_IN_FILES_TRAINING = 4
@@ -199,7 +199,7 @@ def cheack_on_validation(batch_counter, custom_loss, epoch, model, valid_input, 
         validation_loss[0] = validation_loss[0]
         validation_loss = tuple(validation_loss)
         if DOCUMENT_ON_WANDB:
-            display_accuracy(valid_labels[0],model(valid_input)[0], batch_counter,
+            display_accuracy(valid_labels[0],model(valid_input)[0], epoch,
                              additional_str="validation")
 
             train_log(validation_loss, batch_counter, epoch,
