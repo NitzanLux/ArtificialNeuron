@@ -15,20 +15,26 @@ from project_path import *
 from simulation_data_generator import *
 import re
 
-
-DOCUMENT_ON_WANDB = True
-AUC_UPDATE_FREQUENCY = 500
-BATCH_LOG_UPDATE_FREQ = 20
+WANDB_API_KEY = "2725e59f8f4484605300fdf4da4c270ff0fe44a3"
 
 WANDB_PROJECT_NAME = "ArtificialNeuron1"
 
-BUFFER_SIZE_IN_FILES_VALID = 2
+DOCUMENT_ON_WANDB = True
 
+AUC_UPDATE_FREQUENCY = 500
+BATCH_LOG_UPDATE_FREQ = 20
+BUFFER_SIZE_IN_FILES_VALID = 2
 BUFFER_SIZE_IN_FILES_TRAINING = 4
+
+synapse_type = 'NMDA'
+include_DVT = False
+WATCH_MODEL=False
+
+# for dibugging
+# BATCH_LOG_UPDATE_FREQ = 1
+# AUC_UPDATE_FREQUENCY = 1
 # BUFFER_SIZE_IN_FILES_VALID = 1
 # BUFFER_SIZE_IN_FILES_TRAINING = 1
-WANDB_API_KEY = "2725e59f8f4484605300fdf4da4c270ff0fe44a3"
-# for dibugging
 # logging.error("Aaaaa")
 
 print('-----------------------------------------------')
@@ -38,9 +44,7 @@ print('-----------------------------------------------', flush=True)
 # basic configurations and directories
 # ------------------------------------------------------------------
 
-synapse_type = 'NMDA'
-include_DVT = False
-WATCH_MODEL=False
+
 
 # num_DVT_components = 20 if synapse_type == 'NMDA' else 30
 
@@ -260,8 +264,8 @@ def display_accuracy(target, output, step, additional_str='',commit=False):
     output = output.cpu().detach().numpy().squeeze()
     output = np.vstack([np.abs(1-output),output]).T
     wandb.log({"pr %s"%additional_str: wandb.plot.pr_curve(target, output,
-                                         labels=None, classes_to_plot=None),
-               "roc %s"%additional_str: wandb.plot.roc_curve(target, output,labels=None, classes_to_plot=None)
+                                         labels=None, classes_to_plot=[True]),
+               "roc %s"%additional_str: wandb.plot.roc_curve(target, output,labels=None, classes_to_plot=[True])
                },commit=commit)
     # target_np = target.detach().cpu().numpy().squeeze()
     # output_np = output.detach().numpy().squeeze()
