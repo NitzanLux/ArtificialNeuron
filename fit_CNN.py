@@ -140,7 +140,7 @@ def train_network(config):
             config.optimizer_params["lr"] = learning_rate
             optimizer = getattr(optim, config.optimizer_type)(model.parameters(),
                                                               **config.optimizer_params)
-
+        valid_input, valid_labels = None,None
         for i, data_train_valid in enumerate(zip(train_data_generator, validation_data_generator)):
             config.update(dict(batch_counter=config.batch_counter + 1), allow_val_change=True)
             # get the inputs; data is a list of [inputs, labels]
@@ -153,12 +153,14 @@ def train_network(config):
                 if DOCUMENT_ON_WANDB:
                     train_log(train_loss, batch_counter, epoch, learning_rate, sigma, loss_weights,
                               additional_str="train")
-                    display_accuracy( train_data[1][0],model(train_data[0])[0], batch_counter,
-                                     additional_str="train")
-                    cheack_on_validation(batch_counter, custom_loss, epoch, model, valid_input,
-                                         valid_labels, batch_counter % BATCH_LOG_UPDATE_FREQ == 0)
-            epoch_batch_counter += 1
+                    # display_accuracy( train_data[1][0],model(train_data[0])[0], batch_counter,
+                    #                  additional_str="train")
 
+            epoch_batch_counter += 1
+        with torch.no_grad():
+            if DOCUMENT_ON_WANDB:
+                cheack_on_validation(batch_counter, custom_loss, epoch, model, valid_input,
+                                     valid_labels, batch_counter % BATCH_LOG_UPDATE_FREQ == 0)
         # save model every once a while
         if saving_counter % 10 == 0:
             save_model(model, saving_counter, config)
