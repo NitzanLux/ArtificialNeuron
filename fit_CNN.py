@@ -252,7 +252,7 @@ def display_accuracy(target, output, step, additional_str='', log_frequency=50):
     if step % log_frequency != 0:
         return
     target = target.cpu().detach().numpy().astype(int).squeeze()
-    output = output.cpu().detach().numpy().squeeze()
+    output = output.cpu().detach().numpy().squeeze()[np.newaxis,...]
     wandb.log({"roc %s"%additional_str: wandb.plot.roc_curve(target, output)})
     # target_np = target.detach().cpu().numpy().squeeze()
     # output_np = output.detach().numpy().squeeze()
