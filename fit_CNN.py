@@ -266,7 +266,7 @@ def display_accuracy(target, output, step, additional_str='',commit=False):
     wandb.log({"pr %s"%additional_str: wandb.plot.pr_curve(target, output,
                                          labels=None, classes_to_plot=[True]),
                "roc %s"%additional_str: wandb.plot.roc_curve(target, output,labels=None, classes_to_plot=[True])
-               },commit=commit)
+               },commit=True)
     # target_np = target.detach().cpu().numpy().squeeze()
     # output_np = output.detach().numpy().squeeze()
     # accuracy = 1 - torch.abs(target - output)
