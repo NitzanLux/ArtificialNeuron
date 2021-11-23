@@ -266,8 +266,8 @@ def display_accuracy(target, output, step, additional_str='',commit=False):
     output = output.cpu().detach().numpy().squeeze()
     output = np.vstack([np.abs(1-output),output]).T
     wandb.log({"pr %s"%additional_str: wandb.plot.pr_curve(target, output,
-                                         labels=None, classes_to_plot=[True]),
-               "roc %s"%additional_str: wandb.plot.roc_curve(target, output,labels=None, classes_to_plot=[True])
+                                         labels=None, classes_to_plot=None),
+               "roc %s"%additional_str: wandb.plot.roc_curve(target, output,labels=None, classes_to_plot=None)
                },commit=True)
     # target_np = target.detach().cpu().numpy().squeeze()
     # output_np = output.detach().numpy().squeeze()
