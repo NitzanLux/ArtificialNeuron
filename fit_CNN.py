@@ -267,6 +267,7 @@ def display_accuracy(target, output, step, additional_str='', commit=False):
     target = target.cpu().detach().numpy().astype(bool).squeeze()
     output = output.cpu().detach().numpy().squeeze()
     output = np.vstack([np.abs(1 - output), output]).T
+    print("*#$* debugging batch size %d \n\t #$ step %d \n\t ## number of true values %d "%(target.shape[0],step,np.count_nonzero(target)),flush=True)
     wandb.log({"pr %s" % additional_str: wandb.plot.pr_curve(target, output,
                                                              labels=None, classes_to_plot=None),
                "roc %s" % additional_str: wandb.plot.roc_curve(target, output, labels=None, classes_to_plot=None)
