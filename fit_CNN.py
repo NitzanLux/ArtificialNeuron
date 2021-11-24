@@ -201,11 +201,13 @@ def cheack_on_validation(batch_counter, custom_loss, epoch, model, valid_input, 
         validation_loss[0] = validation_loss[0]
         validation_loss = tuple(validation_loss)
         if DOCUMENT_ON_WANDB:
+            train_log(validation_loss, batch_counter, epoch,
+                      additional_str="validation", commit=commit)
+
             display_accuracy(valid_labels[0], model(valid_input)[0], epoch,
                              additional_str="validation")
 
-            train_log(validation_loss, batch_counter, epoch,
-                      additional_str="validation", commit=commit)  # without train logging.
+ # without train logging.
 
 
 def generate_constant_learning_parameters(config, model):
@@ -261,7 +263,7 @@ def train_log(loss, step, epoch, learning_rate=None, sigma=None, weights=None, a
     print("dvt loss ", loss_dvt)
 
 
-def display_accuracy(target, output, step, additional_str='', commit=False):
+def display_accuracy(target, output, step, additional_str=''):
     if step % AUC_UPDATE_FREQUENCY != 0:
         return
     target = target.cpu().detach().numpy().astype(bool).squeeze()
