@@ -113,7 +113,7 @@ def train_network(config):
     print("model parmeters: %d" % model.count_parameters())
     model.cuda()
     train_data_generator, validation_data_generator = get_data_generators(DVT_PCA_model, config)
-
+    validation_data_iterator = iter(validation_data_generator)
     batch_counter = 0
     saving_counter = 0
     if not config.dynamic_learning_params:
@@ -125,7 +125,6 @@ def train_network(config):
     if DOCUMENT_ON_WANDB and WATCH_MODEL:
         wandb.watch(model, log='all', log_freq=1000, log_graph=True)
     print("start training...", flush=True)
-    validation_data_iterator = iter(validation_data_generator)
     for epoch in range(config.num_epochs):
         config.update(dict(epoch_counter=config.epoch_counter + 1), allow_val_change=True)
         saving_counter += 1
@@ -153,15 +152,21 @@ def train_network(config):
                 train_log(train_loss, batch_counter, epoch, learning_rate, sigma, loss_weights,
                           additional_str="train")
             if config.batch_counter % VALIDATION_EVALUATION_FREQUENCY == 0:
-                evaluate_validation(batch_counter, custom_loss, epoch, model, validation_data_iterator)
+                try:
+                    valid_input, valid_labels = next(validation_data_iterator)
+                except StopIteration:
+                    validation_data_iterator = iter(validation_data_generator)
+                # finally:
+
+                evaluate_validation(batch_counter, custom_loss, epoch, model,  valid_input, valid_labels)
         # save model every once a while
         if saving_counter % 10 == 0:
             save_model(model, saving_counter, config)
     save_model(model, saving_counter, config)
 
 
-def evaluate_validation(batch_counter, custom_loss, epoch, model, validation_data_iterator):
-    valid_input, valid_labels = next(validation_data_iterator)
+def evaluate_validation(batch_counter, custom_loss, epoch, model, valid_input, valid_labels):
+
     with torch.no_grad():
         validation_loss = custom_loss(model(valid_input), valid_labels)
         validation_loss = list(validation_loss)
