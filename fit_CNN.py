@@ -15,6 +15,8 @@ from project_path import *
 from simulation_data_generator import *
 import re
 
+VALIDATION_EVALUATION_FREQUENCY = 10
+
 WANDB_API_KEY = "2725e59f8f4484605300fdf4da4c270ff0fe44a3"
 
 WANDB_PROJECT_NAME = "ArtificialNeuron1"
@@ -151,8 +153,8 @@ def train_network(config):
             with torch.no_grad():
                 train_log(train_loss, batch_counter, epoch, learning_rate, sigma, loss_weights,
                           additional_str="train")
-
-        evaluate_validation(batch_counter, custom_loss, epoch, model, validation_data_generator)
+            if self.batch_counter% VALIDATION_EVALUATION_FREQUENCY==10:
+                evaluate_validation(batch_counter, custom_loss, epoch, model, validation_data_generator)
         # save model every once a while
         if saving_counter % 10 == 0:
             save_model(model, saving_counter, config)
@@ -163,8 +165,15 @@ def train_network(config):
 def evaluate_validation(batch_counter, custom_loss, epoch, model, validation_data_generator):
     valid_input, valid_labels = next(validation_data_generator)
     with torch.no_grad():
-            cheack_on_validation(batch_counter, custom_loss, epoch, model, valid_input,
-                                 valid_labels)#, batch_counter % BATCH_LOG_UPDATE_FREQ == 0)
+            validation_loss = custom_loss(model(valid_input), valid_labels)
+            validation_loss = list(validation_loss)
+            validation_loss[0] = validation_loss[0]
+            validation_loss = tuple(validation_loss)
+            train_log(validation_loss, batch_counter, epoch,
+                      additional_str="validation", commit=True)
+
+            display_accuracy(valid_labels[0], model(valid_input)[0], batch_counter,
+                             additional_str="validation")
 
 
 def get_data_generators(DVT_PCA_model, config):
@@ -192,17 +201,7 @@ def get_data_generators(DVT_PCA_model, config):
     return train_data_generator, validation_data_generator
 
 
-def cheack_on_validation(batch_counter, custom_loss, epoch, model, valid_input, valid_labels):
-    with torch.no_grad():
-        validation_loss = custom_loss(model(valid_input), valid_labels)
-        validation_loss = list(validation_loss)
-        validation_loss[0] = validation_loss[0]
-        validation_loss = tuple(validation_loss)
-        train_log(validation_loss, batch_counter, epoch,
-                  additional_str="validation", commit=True)
 
-        display_accuracy(valid_labels[0], model(valid_input)[0], epoch,
-                         additional_str="validation")
 
  # without train logging.
 
