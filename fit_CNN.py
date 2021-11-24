@@ -153,7 +153,7 @@ def train_network(config):
             with torch.no_grad():
                 train_log(train_loss, batch_counter, epoch, learning_rate, sigma, loss_weights,
                           additional_str="train")
-            if config.batch_counter% VALIDATION_EVALUATION_FREQUENCY==10:
+            if config.batch_counter% VALIDATION_EVALUATION_FREQUENCY==0:
                 evaluate_validation(batch_counter, custom_loss, epoch, model, validation_data_generator)
         # save model every once a while
         if saving_counter % 10 == 0:
