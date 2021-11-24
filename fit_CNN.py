@@ -156,6 +156,7 @@ def train_network(config):
                     valid_input, valid_labels = next(validation_data_iterator)
                 except StopIteration:
                     validation_data_iterator = iter(validation_data_generator)
+                    valid_input, valid_labels = next(validation_data_iterator)
                 # finally:
 
                 evaluate_validation(batch_counter, custom_loss, epoch, model,  valid_input, valid_labels)
