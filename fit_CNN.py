@@ -28,7 +28,7 @@ BUFFER_SIZE_IN_FILES_TRAINING = 4
 
 synapse_type = 'NMDA'
 include_DVT = False
-WATCH_MODEL=False
+WATCH_MODEL = False
 
 # for dibugging
 # BATCH_LOG_UPDATE_FREQ = 1
@@ -40,10 +40,11 @@ WATCH_MODEL=False
 print('-----------------------------------------------')
 print('finding data')
 print('-----------------------------------------------', flush=True)
+
+
 # ------------------------------------------------------------------
 # basic configurations and directories
 # ------------------------------------------------------------------
-
 
 
 # num_DVT_components = 20 if synapse_type == 'NMDA' else 30
@@ -120,16 +121,14 @@ def train_network(config):
         dynamic_parameter_loss_genrator = getattr(dlpf, config.dynamic_learning_params_function)(config)
 
     if DOCUMENT_ON_WANDB and WATCH_MODEL:
-        wandb.watch(model, log='all', log_freq=1000,log_graph=True)
+        wandb.watch(model, log='all', log_freq=1000, log_graph=True)
     print("start training...", flush=True)
 
     for epoch in range(config.num_epochs):
         config.update(dict(epoch_counter=config.epoch_counter + 1), allow_val_change=True)
-        validation_runing_loss = 0.
-        running_loss = 0.
         saving_counter += 1
         epoch_start_time = time.time()
-        epoch_batch_counter = 0
+
         if config.dynamic_learning_params:
             learning_rate, loss_weights, sigma = next(dynamic_parameter_loss_genrator)
             if "loss_function" in config:
@@ -140,12 +139,12 @@ def train_network(config):
             config.optimizer_params["lr"] = learning_rate
             optimizer = getattr(optim, config.optimizer_type)(model.parameters(),
                                                               **config.optimizer_params)
-        valid_input, valid_labels = None,None
-        for i, data_train_valid in enumerate(zip(train_data_generator, validation_data_generator)):
+        valid_input, valid_labels = None, None
+        for i, train_data in enumerate(train_data_generator):
             config.update(dict(batch_counter=config.batch_counter + 1), allow_val_change=True)
             # get the inputs; data is a list of [inputs, labels]
-            train_data, valid_data = data_train_valid
-            valid_input, valid_labels = valid_data
+            # train_data, valid_data = train_data
+            # valid_input, valid_labels = valid_data
             batch_counter += 1
 
             train_loss = batch_train(model, optimizer, custom_loss, *train_data)
@@ -153,18 +152,21 @@ def train_network(config):
                 if DOCUMENT_ON_WANDB:
                     train_log(train_loss, batch_counter, epoch, learning_rate, sigma, loss_weights,
                               additional_str="train")
-                    # display_accuracy( train_data[1][0],model(train_data[0])[0], batch_counter,
-                    #                  additional_str="train")
 
-            epoch_batch_counter += 1
-        with torch.no_grad():
-            if DOCUMENT_ON_WANDB:
-                cheack_on_validation(batch_counter, custom_loss, epoch, model, valid_input,
-                                     valid_labels, batch_counter % BATCH_LOG_UPDATE_FREQ == 0)
+        evaluate_validation(batch_counter, custom_loss, epoch, model, validation_data_generator)
         # save model every once a while
         if saving_counter % 10 == 0:
             save_model(model, saving_counter, config)
     save_model(model, saving_counter, config)
+
+
+
+def evaluate_validation(batch_counter, custom_loss, epoch, model, validation_data_generator):
+    valid_input, valid_labels = next(validation_data_generator)
+    with torch.no_grad():
+        if DOCUMENT_ON_WANDB:
+            cheack_on_validation(batch_counter, custom_loss, epoch, model, valid_input,
+                                 valid_labels, batch_counter % BATCH_LOG_UPDATE_FREQ == 0)
 
 
 def get_data_generators(DVT_PCA_model, config):
@@ -192,18 +194,18 @@ def get_data_generators(DVT_PCA_model, config):
     return train_data_generator, validation_data_generator
 
 
-def cheack_on_validation(batch_counter, custom_loss, epoch, model, valid_input, valid_labels,commit=False):
+def cheack_on_validation(batch_counter, custom_loss, epoch, model, valid_input, valid_labels, commit=False):
     with torch.no_grad():
         validation_loss = custom_loss(model(valid_input), valid_labels)
         validation_loss = list(validation_loss)
         validation_loss[0] = validation_loss[0]
         validation_loss = tuple(validation_loss)
         if DOCUMENT_ON_WANDB:
-            display_accuracy(valid_labels[0],model(valid_input)[0], epoch,
+            display_accuracy(valid_labels[0], model(valid_input)[0], epoch,
                              additional_str="validation")
 
             train_log(validation_loss, batch_counter, epoch,
-                      additional_str="validation",commit=commit)  # without train logging.
+                      additional_str="validation", commit=commit)  # without train logging.
 
 
 def generate_constant_learning_parameters(config, model):
@@ -236,21 +238,21 @@ def model_pipline(hyperparameters):
         train_network(config)
 
 
-def train_log(loss, step, epoch, learning_rate=None, sigma=None, weights=None, additional_str='',commit=False):
+def train_log(loss, step, epoch, learning_rate=None, sigma=None, weights=None, additional_str='', commit=False):
     general_loss, loss_bcel, loss_mse, loss_dvt, blur_loss = loss
     general_loss = float(general_loss.item())
-    log_dict = {"epoch":epoch,"general loss %s" % additional_str: general_loss,
-               "mse loss %s" % additional_str: loss_mse,"bcel loss %s" % additional_str: loss_bcel,
-               "dvt loss %s" % additional_str: loss_dvt,"blur loss %s" % additional_str: blur_loss}
+    log_dict = {"epoch": epoch, "general loss %s" % additional_str: general_loss,
+                "mse loss %s" % additional_str: loss_mse, "bcel loss %s" % additional_str: loss_bcel,
+                "dvt loss %s" % additional_str: loss_dvt, "blur loss %s" % additional_str: blur_loss}
     if learning_rate is not None:
-        log_dict.update({ "learning rate %s" % additional_str: learning_rate}) # add training parameters per step
+        log_dict.update({"learning rate %s" % additional_str: learning_rate})  # add training parameters per step
     if weights is not None:
-        log_dict.update({ "bcel weight  %s" % additional_str: weights[0],
-                    "dvt weight  %s" % additional_str: weights[2],
-                    "mse weight  %s" % additional_str: weights[1]})  # add training parameters per step
+        log_dict.update({"bcel weight  %s" % additional_str: weights[0],
+                         "dvt weight  %s" % additional_str: weights[2],
+                         "mse weight  %s" % additional_str: weights[1]})  # add training parameters per step
     if sigma is not None:
         log_dict.update({"epoch": epoch, "sigma %s" % additional_str: sigma})  # add training parameters per step
-    wandb.log(log_dict, step=step,commit=commit)  # add training parameters per step
+    wandb.log(log_dict, step=step, commit=commit)  # add training parameters per step
 
     print("step %d, epoch %d %s" % (step, epoch, additional_str))
     print("general loss ", general_loss)
@@ -259,16 +261,16 @@ def train_log(loss, step, epoch, learning_rate=None, sigma=None, weights=None, a
     print("dvt loss ", loss_dvt)
 
 
-def display_accuracy(target, output, step, additional_str='',commit=False):
+def display_accuracy(target, output, step, additional_str='', commit=False):
     if step % AUC_UPDATE_FREQUENCY != 0:
         return
     target = target.cpu().detach().numpy().astype(bool).squeeze()
     output = output.cpu().detach().numpy().squeeze()
-    output = np.vstack([np.abs(1-output),output]).T
-    wandb.log({"pr %s"%additional_str: wandb.plot.pr_curve(target, output,
-                                         labels=None, classes_to_plot=None),
-               "roc %s"%additional_str: wandb.plot.roc_curve(target, output,labels=None, classes_to_plot=None)
-               },commit=True)
+    output = np.vstack([np.abs(1 - output), output]).T
+    wandb.log({"pr %s" % additional_str: wandb.plot.pr_curve(target, output,
+                                                             labels=None, classes_to_plot=None),
+               "roc %s" % additional_str: wandb.plot.roc_curve(target, output, labels=None, classes_to_plot=None)
+               }, commit=True)
     # target_np = target.detach().cpu().numpy().squeeze()
     # output_np = output.detach().numpy().squeeze()
     # accuracy = 1 - torch.abs(target - output)
