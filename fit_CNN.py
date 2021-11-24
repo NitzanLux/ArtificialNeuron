@@ -125,7 +125,7 @@ def train_network(config):
     if DOCUMENT_ON_WANDB and WATCH_MODEL:
         wandb.watch(model, log='all', log_freq=1000, log_graph=True)
     print("start training...", flush=True)
-
+    validation_data_iterator = iter(validation_data_generator)
     for epoch in range(config.num_epochs):
         config.update(dict(epoch_counter=config.epoch_counter + 1), allow_val_change=True)
         saving_counter += 1
@@ -141,7 +141,6 @@ def train_network(config):
             config.optimizer_params["lr"] = learning_rate
             optimizer = getattr(optim, config.optimizer_type)(model.parameters(),
                                                               **config.optimizer_params)
-        valid_input, valid_labels = None, None
         for i, train_data in enumerate(train_data_generator):
             config.update(dict(batch_counter=config.batch_counter + 1), allow_val_change=True)
             # get the inputs; data is a list of [inputs, labels]
@@ -153,27 +152,26 @@ def train_network(config):
             with torch.no_grad():
                 train_log(train_loss, batch_counter, epoch, learning_rate, sigma, loss_weights,
                           additional_str="train")
-            if config.batch_counter% VALIDATION_EVALUATION_FREQUENCY==0:
-                evaluate_validation(batch_counter, custom_loss, epoch, model, validation_data_generator)
+            if config.batch_counter % VALIDATION_EVALUATION_FREQUENCY == 0:
+                evaluate_validation(batch_counter, custom_loss, epoch, model, validation_data_iterator)
         # save model every once a while
         if saving_counter % 10 == 0:
             save_model(model, saving_counter, config)
     save_model(model, saving_counter, config)
 
 
-
-def evaluate_validation(batch_counter, custom_loss, epoch, model, validation_data_generator):
-    valid_input, valid_labels = next(validation_data_generator)
+def evaluate_validation(batch_counter, custom_loss, epoch, model, validation_data_iterator):
+    valid_input, valid_labels = next(validation_data_iterator)
     with torch.no_grad():
-            validation_loss = custom_loss(model(valid_input), valid_labels)
-            validation_loss = list(validation_loss)
-            validation_loss[0] = validation_loss[0]
-            validation_loss = tuple(validation_loss)
-            train_log(validation_loss, batch_counter, epoch,
-                      additional_str="validation", commit=True)
+        validation_loss = custom_loss(model(valid_input), valid_labels)
+        validation_loss = list(validation_loss)
+        validation_loss[0] = validation_loss[0]
+        validation_loss = tuple(validation_loss)
+        train_log(validation_loss, batch_counter, epoch,
+                  additional_str="validation", commit=True)
 
-            display_accuracy(valid_labels[0], model(valid_input)[0], batch_counter,
-                             additional_str="validation")
+        display_accuracy(valid_labels[0], model(valid_input)[0], batch_counter,
+                         additional_str="validation")
 
 
 def get_data_generators(DVT_PCA_model, config):
@@ -201,9 +199,7 @@ def get_data_generators(DVT_PCA_model, config):
     return train_data_generator, validation_data_generator
 
 
-
-
- # without train logging.
+# without train logging.
 
 
 def generate_constant_learning_parameters(config, model):
@@ -266,7 +262,8 @@ def display_accuracy(target, output, step, additional_str=''):
     target = target.cpu().detach().numpy().astype(bool).squeeze()
     output = output.cpu().detach().numpy().squeeze()
     output = np.vstack([np.abs(1 - output), output]).T
-    print("*#$* debugging batch size %d \n\t #$ step %d \n\t ## number of true values %d "%(target.shape[0],step,np.count_nonzero(target)),flush=True)
+    print("*#$* debugging batch size %d \n\t #$ step %d \n\t ## number of true values %d " % (
+    target.shape[0], step, np.count_nonzero(target)), flush=True)
     wandb.log({"pr %s" % additional_str: wandb.plot.pr_curve(target, output,
                                                              labels=None, classes_to_plot=None),
                "roc %s" % additional_str: wandb.plot.roc_curve(target, output, labels=None, classes_to_plot=None)
