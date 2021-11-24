@@ -8,7 +8,8 @@ import time
 NULL_SPIKE_FACTOR_VALUE = 0
 
 USE_CVODE = True
-SIM_INDEX=0
+SIM_INDEX = 0
+
 
 class SimulationDataGenerator():
     'Characterizes a dataset for PyTorch'
@@ -123,7 +124,8 @@ class SimulationDataGenerator():
                 spikes_sim_idxs = spikes[SIM_INDEX][spike_idxs]
                 spikes_sim_time = spikes[1][spike_idxs]
 
-                non_spike_idxs = np.random.choice(np.arange(non_spikes[SIM_INDEX].shape[0]), size=number_of_non_spikes_in_batch,
+                non_spike_idxs = np.random.choice(np.arange(non_spikes[SIM_INDEX].shape[0]),
+                                                  size=number_of_non_spikes_in_batch,
                                                   replace=True)  # number of simulations per file
                 non_spikes_sim_idxs = non_spikes[SIM_INDEX][non_spike_idxs]
                 non_spikes_sim_time = non_spikes[1][non_spike_idxs]
@@ -131,7 +133,6 @@ class SimulationDataGenerator():
                 selected_sim_idxs = np.hstack([spikes_sim_idxs, non_spikes_sim_idxs])
                 selected_time_idxs = np.hstack([spikes_sim_time, non_spikes_sim_time])
             yield self[selected_sim_idxs, selected_time_idxs]
-
 
     def files_shuffle_checker(self, number_of_non_spikes=0, number_of_spikes=0):
         self.sample_counter += self.batch_size
