@@ -19,7 +19,7 @@ class DavidsNeuronNetwork(nn.Module):
             pass
         self.num_segments = config.num_segments
         self.kernel_sizes, self.stride, self.dilation = config.david_layers, config.stride, config.dilation
-        self.number_of_layers = config.number_of_layers
+        self.number_of_layers = len(config.david_layers)
         self.activation_function_name = config["activation_function_name"]
         self.activation_function_kargs = config["activation_function_kargs"]
         self.inner_scope_channel_number = config.inner_scope_channel_number

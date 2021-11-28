@@ -78,18 +78,18 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                                  time_domain_shape=config.input_window_size,
                                  # kernel_size_2d=3,
                                  # kernel_size_1d=9,
-                                 number_of_layers_root= 4, number_of_layers_leaf=3, number_of_layers_intersection=3,
+                                 number_of_layers_root= 3, number_of_layers_leaf=3, number_of_layers_intersection=3,
                                  number_of_layers_branch_intersection=3,
                                  david_layers = [55,13,13,13,13,13,13],
                                  skip_conections=False,
-                                 kernel_size=31,
-                                 number_of_layers=7,
+                                 kernel_size=21,
+                                 number_of_layers=2,
                                  stride=1,
                                  padding=0,
                                  dilation=1,
                                  channel_input_number=1278,  # synapse number
-                                 inner_scope_channel_number=31,
-                                 channel_output_number=31,
+                                 inner_scope_channel_number=15,
+                                 channel_output_number=15,
                                  activation_function_name="LeakyReLU",
                                  activation_function_kargs=dict(negative_slope=0.25),
                                  include_dendritic_voltage_tracing=False)
@@ -100,7 +100,6 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
     logging.error("arch type *************  " + config.architecture_type)
     if is_new_name or not ("model_filename" in config):
         config.model_filename = generate_model_name(config.model_tag)
-    print(config.model_filename)
     if generate_random_seeds:
         max_seed_number = sum([2 ** i for i in range(32)]) - 1  # maximal seed
         np.random.seed()
@@ -139,7 +138,7 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
 
             config.model_path = config_new_path + [config.model_filename]
             model.save(os.path.join(MODELS_DIR, *config.model_path))
-            print(model.count_parameters())
+        print(model.count_parameters() ,config.model_filename)
     config.config_path = config_new_path + ['%s.config' % config.model_filename]
     save_config(config)
     return config.config_path
@@ -176,7 +175,7 @@ def generate_config_files_multiple_seeds(config_path: [str, Dict], number_of_con
 if __name__ == '__main__':
     config_morpho =config_factory(dynamic_learning_params=False, architecture_type="LAYERED_TEMPORAL_CONV", kernel_size=81,
                         model_tag="cr_morpho_model")
-    config_david =config_factory(dynamic_learning_params=False, architecture_type="DavidsNeuronNetwork", kernel_size=81,
+    config_david =config_factory(dynamic_learning_params=False, architecture_type="DavidsNeuronNetwork", inner_scope_channel_number=128,
                         model_tag="cr_david_model")
     # configs_dynamic = generate_config_files_multiple_seeds(config_dynamic, 2)
     # config_static = config_factory(dynamic_learning_params=False)

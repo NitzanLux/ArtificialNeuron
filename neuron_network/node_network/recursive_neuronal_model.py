@@ -19,6 +19,8 @@ from neuron import h
 from neuron import gui
 from typing import List, Dict
 from copy import deepcopy
+
+
 class ArchitectureType(Enum):
     BASIC_CONV = "BASIC_CONV"
     LAYERED_TEMPORAL_CONV = "LAYERED_TEMPORAL_CONV"
@@ -44,9 +46,9 @@ class RecursiveNeuronModel(nn.Module):
 
         self.get_model_block(**network_kwargs)
 
-
-    def get_model_block(self,**config):
-        if config["architecture_type"] == ArchitectureType.BASIC_CONV.value:  # probability wont work becuse synapse became channels
+    def get_model_block(self, **config):
+        if config[
+            "architecture_type"] == ArchitectureType.BASIC_CONV.value:  # probability wont work becuse synapse became channels
             branch_class = basic_convolution_blocks.BranchBlock
             branch_leaf_class = basic_convolution_blocks.BranchLeafBlock
             intersection_class = basic_convolution_blocks.IntersectionBlock
@@ -72,38 +74,39 @@ class RecursiveNeuronModel(nn.Module):
             assert False, "Type not found"
 
     @staticmethod
-    def build_model(config, neuron_biophysics_model,segment_synapse_map:Dict[nrn.Segment,int]):  # todo implement
+    def build_model(config, neuron_biophysics_model, segment_synapse_map: Dict[nrn.Segment, int]):  # todo implement
 
         soma = SomaNetwork(**config)
         childrens = neuron_biophysics_model.soma[0].children()
-        branches=[]
+        branches = []
         for child in childrens:
             if "axon" in child.name():
                 continue
-            else : branches.append(RecursiveNeuronModel.__build_sub_model(config,child,segment_synapse_map))
-        soma.set_inputs_to_model(branches,**config)
+            else:
+                branches.append(RecursiveNeuronModel.__build_sub_model(config, child, segment_synapse_map))
+        soma.set_inputs_to_model(*branches, **config)
         return soma
 
-
     @staticmethod
-    def __build_sub_model(config, neuron_section: nrn.Section,segment_synapse_map:Dict[nrn.Segment,int], starting_position=1):
+    def __build_sub_model(config, neuron_section: nrn.Section, segment_synapse_map: Dict[nrn.Segment, int],
+                          starting_position=1):
         parent = neuron_section.parentseg()
-        assert "soma" in parent.sec.name() or 1 == parent.x, "position not match 1 the building of the model is incomplete parent name - %s"%parent
+        assert "soma" in parent.sec.name() or 1 == parent.x, "position not match 1 the building of the model is incomplete parent name - %s" % parent
         indexes = []
         for seg in neuron_section:
             indexes.append(segment_synapse_map[seg])
         childrens = neuron_section.children()
-        if len(childrens)==0:
+        if len(childrens) == 0:
             leaf = LeafNetwork(**config, input_indexes=indexes)
             leaf.set_inputs_to_model(**config)
             return leaf
         else:
             intersection = IntersectionNetwork(**config)
-            upper_stream_a  = RecursiveNeuronModel.__build_sub_model(config, childrens[0], segment_synapse_map)
-            upper_stream_b  = RecursiveNeuronModel.__build_sub_model(config, childrens[1], segment_synapse_map)
-            intersection.set_inputs_to_model(upper_stream_a,upper_stream_b,**config)
-            branch_interesection = BranchNetwork(**config,input_indexes=indexes)
-            branch_interesection.set_inputs_to_model(intersection,**config)
+            upper_stream_a = RecursiveNeuronModel.__build_sub_model(config, childrens[0], segment_synapse_map)
+            upper_stream_b = RecursiveNeuronModel.__build_sub_model(config, childrens[1], segment_synapse_map)
+            intersection.set_inputs_to_model(upper_stream_a, upper_stream_b, **config)
+            branch_interesection = BranchNetwork(**config, input_indexes=indexes)
+            branch_interesection.set_inputs_to_model(intersection, **config)
             return branch_interesection
 
     @staticmethod
@@ -126,8 +129,9 @@ class RecursiveNeuronModel(nn.Module):
         for k, section in enumerate(allSections):
             for currSegment in section:
                 segment_synapse_map.append(currSegment)
-        segment_synapse_map = {seg:i for i, seg in enumerate(segment_synapse_map)}
-        return RecursiveNeuronModel.build_model(config,L5PC,segment_synapse_map)
+        segment_synapse_map = {seg: i for i, seg in enumerate(segment_synapse_map)}
+        return RecursiveNeuronModel.build_model(config, L5PC, segment_synapse_map)
+
     @abc.abstractmethod
     def set_inputs_to_model(self, *args):
         pass
@@ -140,14 +144,23 @@ class RecursiveNeuronModel(nn.Module):
         state_dict = self.state_dict()
         with open('%s.pkl' % path, 'wb') as outp:
             pickle.dump(state_dict, outp)
-    def load(self,path):
+
+    def load(self, path):
         with open('%s.pkl' % path if path[-len(".pkl"):] != ".pkl" else path, 'rb') as outp:
             neuronal_model_data = pickle.load(outp)
         self.load_state_dict(neuronal_model_data)  # fixme this this should
         return self
 
+    @abc.abstractmethod
+    def __iter__(self) -> 'RecursiveNeuronModel':
+        pass
+
     def count_parameters(self):
-        return sum(p.numel() for p in self.parameters() if p.requires_grad)
+        param_sum= sum(p.numel() for p in self.model.parameters() if p.requires_grad)
+        if self.model_type!=SectionType.BRANCH_LEAF:
+            for mod in self:
+                param_sum += mod.count_parameters()
+        return param_sum
 
     def cuda(self, **kwargs):
         super(NeuronConvNet, self).cuda(**kwargs)
@@ -180,38 +193,46 @@ class RecursiveNeuronModel(nn.Module):
 class LeafNetwork(RecursiveNeuronModel):
     def __init__(self, input_indexes, is_cuda=False, include_dendritic_voltage_tracing=False
                  , **network_kwargs):
-        super().__init__( SectionType.BRANCH_LEAF, is_cuda,
+        super().__init__(SectionType.BRANCH_LEAF, is_cuda,
                          include_dendritic_voltage_tracing,
                          **network_kwargs)
         self.input_indexes = input_indexes
-        self.channel_output_number = min(len(self.input_indexes),  network_kwargs["channel_output_number"])
+        self.channel_output_number = min(len(self.input_indexes), network_kwargs["channel_output_number"])
+
+    def __iter__(self):
+        return None
 
     def forward(self, x):
         return self.model(x[:, self.input_indexes, ...])
 
-    def set_inputs_to_model(self,**network_kwargs):
+    def set_inputs_to_model(self, **network_kwargs):
         network_kwargs = deepcopy(network_kwargs)
-        network_kwargs["channel_output_number"] = min(len(self.input_indexes),  network_kwargs["channel_output_number"])
+        network_kwargs["channel_output_number"] = min(len(self.input_indexes), network_kwargs["channel_output_number"])
 
-        self.model = self.model((len(self.input_indexes),network_kwargs["input_window_size"]), **network_kwargs,activation_function=self.activation_function)
+        self.model = self.model((len(self.input_indexes), network_kwargs["input_window_size"]), **network_kwargs,
+                                activation_function=self.activation_function)
 
 
 class IntersectionNetwork(RecursiveNeuronModel):
-    def __init__(self,  is_cuda=False,
+    def __init__(self, is_cuda=False,
                  include_dendritic_voltage_tracing=False, **network_kwargs):
-        super().__init__( SectionType.BRANCH_INTERSECTION, is_cuda,
+        super().__init__(SectionType.BRANCH_INTERSECTION, is_cuda,
                          include_dendritic_voltage_tracing, **network_kwargs)
-        self.intersection_a:[LeafNetwork, 'BranchNetwork', None] = None
-        self.intersection_b:[LeafNetwork, 'BranchNetwork', None] = None
-        self.channel_output_number=None
+        self.intersection_a: [LeafNetwork, 'BranchNetwork', None] = None
+        self.intersection_b: [LeafNetwork, 'BranchNetwork', None] = None
+        self.channel_output_number = None
+
     def set_inputs_to_model(self, intersection_a: [LeafNetwork, 'BranchNetwork'],
-                            intersection_b: [LeafNetwork, 'BranchNetwork'],**network_kwargs):
+                            intersection_b: [LeafNetwork, 'BranchNetwork'], **network_kwargs):
         self.intersection_a = intersection_a
         self.intersection_b = intersection_b
         network_kwargs = deepcopy(network_kwargs)
-        network_kwargs["channel_output_number"] = min(self.intersection_a.channel_output_number+self.intersection_b.channel_output_number, network_kwargs["channel_output_number"])
+        network_kwargs["channel_output_number"] = min(
+            self.intersection_a.channel_output_number + self.intersection_b.channel_output_number,
+            network_kwargs["channel_output_number"])
         self.channel_output_number = network_kwargs["channel_output_number"]
-        self.model = self.model((2,network_kwargs["input_window_size"]), **network_kwargs,activation_function=self.activation_function)
+        self.model = self.model((2, network_kwargs["input_window_size"]), **network_kwargs,
+                                activation_function=self.activation_function)
 
     def forward(self, x):
         input_a = self.intersection_a(x)
@@ -219,9 +240,13 @@ class IntersectionNetwork(RecursiveNeuronModel):
         input = torch.cat([input_a, input_b], dim=SYNAPSE_DIMENTION_POSITION)
         return self.model(input)
 
+    def __iter__(self):
+        yield self.intersection_a
+        yield self.intersection_b
+
 
 class BranchNetwork(RecursiveNeuronModel):
-    def __init__(self, input_indexes,is_cuda=False,
+    def __init__(self, input_indexes, is_cuda=False,
                  include_dendritic_voltage_tracing=False, **network_kwargs):
         super().__init__(SectionType.BRANCH, is_cuda,
                          include_dendritic_voltage_tracing, **network_kwargs)
@@ -229,30 +254,40 @@ class BranchNetwork(RecursiveNeuronModel):
         self.upstream_model: [IntersectionNetwork, None] = None
         self.get_model_block(**network_kwargs)
 
-    def set_inputs_to_model(self, upstream_model: [IntersectionNetwork],**network_kwargs):
-
+    def set_inputs_to_model(self, upstream_model: [IntersectionNetwork], **network_kwargs):
         self.upstream_model = upstream_model
         network_kwargs = deepcopy(network_kwargs)
-        network_kwargs["channel_output_number"] = min(self.upstream_model.channel_output_number + len(self.input_indexes), network_kwargs["channel_output_number"])
+        network_kwargs["channel_output_number"] = min(
+            self.upstream_model.channel_output_number + len(self.input_indexes),
+            network_kwargs["channel_output_number"])
         self.channel_output_number = network_kwargs["channel_output_number"]
-        self.model = self.model((len(self.input_indexes)+1,network_kwargs["input_window_size"]), **network_kwargs,activation_function=self.activation_function)
+        self.model = self.model((len(self.input_indexes) + 1, network_kwargs["input_window_size"]), **network_kwargs,
+                                activation_function=self.activation_function)
 
     def forward(self, x):
         upstream_data = self.upstream_model(x)
         return self.model(upstream_data, x[:, self.input_indexes, ...])
 
+    def __iter__(self):
+        yield self.upstream_model
+
 
 class SomaNetwork(RecursiveNeuronModel):
     def __init__(self, is_cuda=False, include_dendritic_voltage_tracing=False,
                  **network_kwargs):
-        super().__init__( SectionType.SOMA, is_cuda,
+        super().__init__(SectionType.SOMA, is_cuda,
                          include_dendritic_voltage_tracing, **network_kwargs)
         self.branches = []
         self.get_model_block(**network_kwargs)
 
-    def set_inputs_to_model(self, *branches: [IntersectionNetwork, BranchNetwork],**network_kwargs):
-        self.branches = branches
-        self.model = self.model((len(branches),network_kwargs["input_window_size"]), **network_kwargs, activation_function=self.activation_function)
+    def set_inputs_to_model(self, *branches: [IntersectionNetwork, BranchNetwork], **network_kwargs):
+        self.branches.extend(branches)
+        self.model = self.model((len(branches), network_kwargs["input_window_size"]), **network_kwargs,
+                                activation_function=self.activation_function)
+
+    def __iter__(self):
+        for mod in self.branches:
+            yield mod
 
     def forward(self, x):
         outputs = []
