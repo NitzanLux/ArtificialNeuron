@@ -97,7 +97,6 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
     # config.architecture_dict = architecture_dict
     config.update(architecture_dict)
     config.update(kargs)  # override by kargs
-    logging.error("arch type *************  " + config.architecture_type)
     if is_new_name or not ("model_filename" in config):
         config.model_filename = generate_model_name(config.model_tag)
     if generate_random_seeds:

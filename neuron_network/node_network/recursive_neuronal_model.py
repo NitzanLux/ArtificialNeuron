@@ -156,6 +156,7 @@ class RecursiveNeuronModel(nn.Module):
         pass
 
     def count_parameters(self):
+
         param_sum= sum(p.numel() for p in self.model.parameters() if p.requires_grad)
         if self.model_type!=SectionType.BRANCH_LEAF:
             for mod in self:
@@ -164,12 +165,17 @@ class RecursiveNeuronModel(nn.Module):
 
     def cuda(self, **kwargs):
         super(NeuronConvNet, self).cuda(**kwargs)
-        torch.cuda.synchronize()
+        # torch.cuda.synchronize()
         self.is_cuda = True
-
+        if self.model_type!=SectionType.BRANCH_LEAF:
+            for mod in self:
+                mod.cuda()
     def cpu(self, **kwargs):
         super(NeuronConvNet, self).cpu(**kwargs)
         self.is_cuda = False
+        if self.model_type!=SectionType.BRANCH_LEAF:
+            for mod in self:
+                mod.cpu()
 
     def init_weights(self, sd=0.05):
         def init_params(m):
@@ -179,6 +185,9 @@ class RecursiveNeuronModel(nn.Module):
                 m.bias.data.normal_(0, sd)
 
         self.apply(init_params)
+        if self.model_type!=SectionType.BRANCH_LEAF:
+            for mod in self:
+                mod.init_weights(sd)
 
     @staticmethod
     def load(path):
@@ -277,7 +286,7 @@ class SomaNetwork(RecursiveNeuronModel):
                  **network_kwargs):
         super().__init__(SectionType.SOMA, is_cuda,
                          include_dendritic_voltage_tracing, **network_kwargs)
-        self.branches = []
+        self.branches = nn.ModuleList()
         self.get_model_block(**network_kwargs)
 
     def set_inputs_to_model(self, *branches: [IntersectionNetwork, BranchNetwork], **network_kwargs):
