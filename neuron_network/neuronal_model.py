@@ -75,7 +75,8 @@ class NeuronConvNet(nn.Module):
                 self.modules_dict[self.segemnt_ids[segment]] = intersection_class(input_shape,
                                                                                   **sub_network_kargs)
             elif segment.type == SectionType.BRANCH_LEAF:
-                self.modules_dict[self.segemnt_ids[segment]] = branch_leaf_class(input_shape,
+                channel_output_number = min(sub_network_kargs["channel_output_number"], len(input_indexes))
+                self.modules_dict[self.segemnt_ids[segment]] = branch_leaf_class(input_shape,channel_output_number=channel_output_number
                                                                                  **sub_network_kargs)
 
             elif segment.type == SectionType.SOMA:
@@ -86,17 +87,7 @@ class NeuronConvNet(nn.Module):
         self.double()
         return self
 
-    def count_parameters(self):
-        return sum(p.numel() for p in self.parameters() if p.requires_grad)
 
-    def cuda(self, **kwargs):
-        super(NeuronConvNet, self).cuda(**kwargs)
-        torch.cuda.synchronize()
-        self.is_cuda = True
-
-    def cpu(self, **kwargs):
-        super(NeuronConvNet, self).cpu(**kwargs)
-        self.is_cuda = False
 
     def forward(self, x):
         x = x.type(torch.cuda.DoubleTensor) if self.is_cuda else x.type(torch.DoubleTensor)
@@ -135,6 +126,18 @@ class NeuronConvNet(nn.Module):
                 pass
                 # torch.cuda.synchronize()
         return out
+
+    def count_parameters(self):
+        return sum(p.numel() for p in self.parameters() if p.requires_grad)
+
+    def cuda(self, **kwargs):
+        super(NeuronConvNet, self).cuda(**kwargs)
+        torch.cuda.synchronize()
+        self.is_cuda = True
+
+    def cpu(self, **kwargs):
+        super(NeuronConvNet, self).cpu(**kwargs)
+        self.is_cuda = False
 
     def save(self, path):  # todo fix
         data_dict = dict(include_dendritic_voltage_tracing=self.include_dendritic_voltage_tracing,

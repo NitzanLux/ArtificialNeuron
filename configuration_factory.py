@@ -9,6 +9,7 @@ from synapse_tree import SectionNode
 import json
 import os.path
 from neuron_network import neuronal_model
+from neuron_network.node_network import recursive_neuronal_model
 from neuron_network import davids_network
 import os
 import logging
@@ -72,12 +73,13 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                       loss_function="bcel_mse_dvt_loss")
 
     architecture_dict = AttrDict(segment_tree_path="tree.pkl",
+                                 network_architecture_structure="recursive",
                                  architecture_type="LAYERED_TEMPORAL_CONV",
                                  time_domain_shape=config.input_window_size,
                                  # kernel_size_2d=3,
                                  # kernel_size_1d=9,
-                                 number_of_layers_root= 2, number_of_layers_leaf=2, number_of_layers_intersection=2,
-                                 number_of_layers_branch_intersection=2,
+                                 number_of_layers_root= 4, number_of_layers_leaf=3, number_of_layers_intersection=3,
+                                 number_of_layers_branch_intersection=3,
                                  david_layers = [55,13,13,13,13,13,13],
                                  skip_conections=False,
                                  kernel_size=31,
@@ -86,8 +88,8 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                                  padding=0,
                                  dilation=1,
                                  channel_input_number=1278,  # synapse number
-                                 inner_scope_channel_number=19,
-                                 channel_output_number=19,
+                                 inner_scope_channel_number=31,
+                                 channel_output_number=31,
                                  activation_function_name="LeakyReLU",
                                  activation_function_kargs=dict(negative_slope=0.25),
                                  include_dendritic_voltage_tracing=False)
@@ -120,6 +122,8 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
         if config.model_path is None:
             if config.architecture_type == "DavidsNeuronNetwork":
                 model = davids_network.DavidsNeuronNetwork(config)
+            elif config.network_architecture_structure == "recursive":
+                model = recursive_neuronal_model.RecursiveNeuronModel.build_david_data_model(config)
             else:
                 model = neuronal_model.NeuronConvNet.build_model_from_config(config)
             config.model_path = config_new_path + [config.model_filename]
@@ -127,11 +131,15 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
         else:
             if config.architecture_type == "DavidsNeuronNetwork":
                 model = davids_network.DavidsNeuronNetwork.load(os.path.join(MODELS_DIR, *config.model_path))
+            elif  config.network_architecture_structure=="recursive":
+                model =recursive_neuronal_model.RecursiveNeuronModel.build_david_data_model(config)
+                model.load(os.path.join(MODELS_DIR, *config.model_path))
             else:
                 model = neuronal_model.NeuronConvNet.load(os.path.join(MODELS_DIR, *config.model_path))
 
             config.model_path = config_new_path + [config.model_filename]
             model.save(os.path.join(MODELS_DIR, *config.model_path))
+            print(model.count_parameters())
     config.config_path = config_new_path + ['%s.config' % config.model_filename]
     save_config(config)
     return config.config_path
@@ -167,15 +175,15 @@ def generate_config_files_multiple_seeds(config_path: [str, Dict], number_of_con
 
 if __name__ == '__main__':
     config_morpho =config_factory(dynamic_learning_params=False, architecture_type="LAYERED_TEMPORAL_CONV", kernel_size=81,
-                        model_tag="c_morpho_model")
+                        model_tag="cr_morpho_model")
     config_david =config_factory(dynamic_learning_params=False, architecture_type="DavidsNeuronNetwork", kernel_size=81,
-                        model_tag="c_david_model")
+                        model_tag="cr_david_model")
     # configs_dynamic = generate_config_files_multiple_seeds(config_dynamic, 2)
     # config_static = config_factory(dynamic_learning_params=False)
     # configs_static = generate_config_files_multiple_seeds(config_static, 1)
     # configs_to_read = configs_dynamic+[config_factory(loss_function="loss_zero_mse_on_spikes")]
     #
-    with open(os.path.join(MODELS_DIR, "model_comperision_large_channel_smale_layers.json"), 'w') as file:
+    with open(os.path.join(MODELS_DIR, "model_comparison_recursive.json"), 'w') as file:
         file.write(json.dumps([config_morpho,config_david]))  # use `json.loads` to do the reverse
 
     # config = load_config_file("models/NMDA/simplest_model_dynamic_NMDA_Tree_TCN__2021-09-30__16_51__ID_78714/simplest_model_dynamic_NMDA_Tree_TCN__2021-09-30__16_51__ID_78714.config")

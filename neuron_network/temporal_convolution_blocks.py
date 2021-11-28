@@ -61,7 +61,6 @@ class BranchLeafBlock(nn.Module):
                  , channel_output_number, kernel_size, stride=1,
                  dilation=1, **kwargs):
         super(BranchLeafBlock, self).__init__()
-
         self.base_conv_1d = Base1DConvolutionBlock(number_of_layers_leaf, input_shape, activation_function,
                                                    inner_scope_channel_number, channel_output_number, kernel_size,
                                                    stride, dilation)
@@ -77,7 +76,6 @@ class IntersectionBlock(nn.Module):
                  , channel_output_number, kernel_size, stride=1,
                  dilation=1, **kwargs):
         super(IntersectionBlock, self).__init__()
-
         self.base_conv_1d = Base1DConvolutionBlock(number_of_layers_intersection,
                                                    (input_shape[0]*channel_output_number,input_shape[1]),
                                                    activation_function,
@@ -96,7 +94,6 @@ class BranchBlock(nn.Module):
                  , channel_output_number, kernel_size, stride=1,
                  dilation=1, **kwargs):
         super(BranchBlock, self).__init__()
-
         self.branch_leaf = BranchLeafBlock(input_shape, number_of_layers_leaf, activation_function
                                            , inner_scope_channel_number
                                            , inner_scope_channel_number, kernel_size, stride,
