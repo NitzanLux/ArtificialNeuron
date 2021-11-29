@@ -142,17 +142,18 @@ class RecursiveNeuronModel(nn.Module):
         pass
 
     def save(self, path):  # todo fix
-        # state_dict = self.state_dict()
+        state_dict = self.state_dict()
         with open('%s.pkl' % path, 'wb') as outp:
-            # pickle.dump(state_dict, outp)
-            pickle.dump(self, outp,pickle.HIGHEST_PROTOCOL)
+            pickle.dump(state_dict, outp)
+            # pickle.dump(self, outp,pickle.HIGHEST_PROTOCOL)
+
     @staticmethod
-    def load( path):
+    def load(config, path):
         with open('%s.pkl' % path if path[-len(".pkl"):] != ".pkl" else path, 'rb') as outp:
-            # neuronal_model_data = pickle.load(outp)
             neuronal_model_data = pickle.load(outp)
-        # self.load_state_dict(neuronal_model_data)  # fixme this this should
-        return neuronal_model_data
+        model = RecursiveNeuronModel.build_david_data_model(config)
+        model.load_state_dict(neuronal_model_data)  # fixme this this should
+        return model
 
     @abc.abstractmethod
     def __iter__(self) -> 'RecursiveNeuronModel':
