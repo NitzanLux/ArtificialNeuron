@@ -148,11 +148,12 @@ class RecursiveNeuronModel(nn.Module):
             # pickle.dump(self, outp,pickle.HIGHEST_PROTOCOL)
 
     @staticmethod
-    def load(config, path):
+    def load(config):
+        path  = os.path.join(MODELS_DIR, *config.model_path)
         with open('%s.pkl' % path if path[-len(".pkl"):] != ".pkl" else path, 'rb') as outp:
             neuronal_model_data = pickle.load(outp)
         model = RecursiveNeuronModel.build_david_data_model(config)
-        model.load_state_dict(neuronal_model_data)  # fixme this this should
+        model.load_state_dict(neuronal_model_data)
         return model
 
     @abc.abstractmethod

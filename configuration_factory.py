@@ -128,7 +128,7 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
             model.save(os.path.join(MODELS_DIR, *config.model_path))
         else:
             if config.architecture_type == "DavidsNeuronNetwork":
-                model = davids_network.DavidsNeuronNetwork.load(os.path.join(MODELS_DIR, *config.model_path))
+                model = davids_network.DavidsNeuronNetwork.load(config)
             elif  config.network_architecture_structure=="recursive":
                 model =recursive_neuronal_model.RecursiveNeuronModel.build_david_data_model(config)
                 model.load(os.path.join(MODELS_DIR, *config.model_path))

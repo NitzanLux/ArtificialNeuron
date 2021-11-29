@@ -110,7 +110,7 @@ def train_network(config):
     if config.architecture_type == "DavidsNeuronNetwork":
         model = davids_network.DavidsNeuronNetwork(config)
     elif "network_architecture_structure" in config and config.network_architecture_structure=="recursive":
-        model = recursive_neuronal_model.RecursiveNeuronModel.build_david_data_model(config)
+        model = recursive_neuronal_model.RecursiveNeuronModel.load(config)
     else:
         model = neuronal_model.NeuronConvNet.build_model_from_config(config)
     if config.epoch_counter == 0:
