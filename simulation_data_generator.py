@@ -87,7 +87,7 @@ class SimulationDataGenerator():
                                                 number_of_spikes_in_batch)
         self.files_shuffle_checker(non_spikes[SIM_INDEX].shape[0], spikes[SIM_INDEX].shape[0])
     def shuffel_data(self):
-        indexes = np.random.shuffel(self.arange(self.X.shape[0]))
+        indexes = np.random.shuffle(self.arange(self.X.shape[0]))
         self.X=self.X[indexes,:,:]
         self.y_soma=self.y_soma[indexes,:]
         self.y_spike=self.y_spike[indexes,:]
