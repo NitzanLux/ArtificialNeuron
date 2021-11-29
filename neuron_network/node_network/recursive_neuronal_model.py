@@ -144,7 +144,8 @@ class RecursiveNeuronModel(nn.Module):
         path  = os.path.join(MODELS_DIR, *config.model_path)
         with open('%s.pkl' % path if path[-len(".pkl"):] != ".pkl" else path, 'rb') as outp:
             neuronal_model_data = pickle.load(outp)
-        model = RecursiveNeuronModel.build_david_data_model(config)
+        L5PC=get_L5PC()
+        model = RecursiveNeuronModel.build_david_data_model(config,L5PC)
         model.load_state_dict(neuronal_model_data)
         return model
 
@@ -161,14 +162,14 @@ class RecursiveNeuronModel(nn.Module):
         return param_sum
 
     def cuda(self, **kwargs):
-        super(NeuronConvNet, self).cuda(**kwargs)
+        super(RecursiveNeuronModel, self).cuda(**kwargs)
         # torch.cuda.synchronize()
         self.is_cuda = True
         if self.model_type!=SectionType.BRANCH_LEAF:
             for mod in self:
                 mod.cuda()
     def cpu(self, **kwargs):
-        super(NeuronConvNet, self).cpu(**kwargs)
+        super(RecursiveNeuronModel, self).cpu(**kwargs)
         self.is_cuda = False
         if self.model_type!=SectionType.BRANCH_LEAF:
             for mod in self:
@@ -186,14 +187,6 @@ class RecursiveNeuronModel(nn.Module):
             for mod in self:
                 mod.init_weights(sd)
 
-    @staticmethod
-    def load(path):
-        neuronal_model = None
-        with open('%s.pkl' % path if path[-len(".pkl"):] != ".pkl" else path, 'rb') as outp:
-            neuronal_model_data = pickle.load(outp)
-        neuronal_model = NeuronConvNet(**neuronal_model_data[0])
-        neuronal_model.load_state_dict(neuronal_model_data[1])  # fixme this this should
-        return neuronal_model
 
 
 class LeafNetwork(RecursiveNeuronModel):

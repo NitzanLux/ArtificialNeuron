@@ -145,11 +145,6 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
     return config.config_path
 
 
-def get_L5PC():
-    import NEURON_models_maker
-    from NEURON_models_maker.neuron_factory import get_L5PC
-    L5PC = get_L5PC()
-    return L5PC
 
 
 def overwrite_config(config, **kargs):
