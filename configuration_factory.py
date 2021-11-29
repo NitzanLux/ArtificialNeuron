@@ -3,7 +3,8 @@ from general_aid_function import *
 from typing import Dict
 
 import pandas as pd
-
+from neuron import h
+from neuron import gui
 from simulation_data_generator import *
 from synapse_tree import SectionNode
 import json
@@ -121,7 +122,8 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
             if config.architecture_type == "DavidsNeuronNetwork":
                 model = davids_network.DavidsNeuronNetwork(config)
             elif config.network_architecture_structure == "recursive":
-                model = recursive_neuronal_model.RecursiveNeuronModel.build_david_data_model(config)
+                L5PC = get_L5PC()
+                model = recursive_neuronal_model.RecursiveNeuronModel.build_david_data_model(config,L5PC)
             else:
                 model = neuronal_model.NeuronConvNet.build_model_from_config(config)
             config.model_path = config_new_path + [config.model_filename]
@@ -130,7 +132,7 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
             if config.architecture_type == "DavidsNeuronNetwork":
                 model = davids_network.DavidsNeuronNetwork.load(config)
             elif  config.network_architecture_structure=="recursive":
-                model =recursive_neuronal_model.RecursiveNeuronModel.build_david_data_model(config)
+                model =recursive_neuronal_model.RecursiveNeuronModel.build_david_data_model(config,L5PC)
                 model.load(os.path.join(MODELS_DIR, *config.model_path))
             else:
                 model = neuronal_model.NeuronConvNet.load(os.path.join(MODELS_DIR, *config.model_path))
@@ -141,6 +143,20 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
     config.config_path = config_new_path + ['%s.config' % config.model_filename]
     save_config(config)
     return config.config_path
+
+
+def get_L5PC():
+    MORPHOLOGY_PATH_L5PC = r'NEURON_models_maker/L5PC_NEURON_simulation/morphologies/cell1.asc'
+    BIOPHYSICAL_MODEL_PATH = r'NEURON_models_maker/L5PC_NEURON_simulation/L5PCbiophys5b.hoc'
+    BIOPHYSICAL_MODEL_TAMPLATE_PATH = r'NEURON_models_maker/L5PC_NEURON_simulation/L5PCtemplate_2.hoc'
+
+    h.load_file('nrngui.hoc')
+    h.load_file("import3d.hoc")
+    h.load_file("NEURON_models_maker/L5PC_NEURON_simulation/init.hoc")
+    h.load_file(BIOPHYSICAL_MODEL_PATH)
+    h.load_file(BIOPHYSICAL_MODEL_TAMPLATE_PATH)
+    L5PC = h.L5PCtemplate(MORPHOLOGY_PATH_L5PC)
+    return L5PC
 
 
 def overwrite_config(config, **kargs):
