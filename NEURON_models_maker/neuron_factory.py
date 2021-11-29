@@ -8,8 +8,10 @@ from typing import List,Dict
 import pandas as pd
 from project_path import *
 import argparse
-
-
+def get_L5PC():
+    MORPHOLOGY_PATH_L5PC = r'L5PC_NEURON_simulation/morphologies/cell1.asc'
+    L5PC = h.L5PCtemplate(MORPHOLOGY_PATH_L5PC)
+    return L5PC
 class NeuronEnvironment():
     def __init__(self, environment_name, dt=None, celsius=None):
         self.environment_name = environment_name

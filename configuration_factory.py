@@ -146,16 +146,9 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
 
 
 def get_L5PC():
-    MORPHOLOGY_PATH_L5PC = r'NEURON_models_maker/L5PC_NEURON_simulation/morphologies/cell1.asc'
-    BIOPHYSICAL_MODEL_PATH = r'NEURON_models_maker/L5PC_NEURON_simulation/L5PCbiophys5b.hoc'
-    BIOPHYSICAL_MODEL_TAMPLATE_PATH = r'NEURON_models_maker/L5PC_NEURON_simulation/L5PCtemplate_2.hoc'
-
-    h.load_file('nrngui.hoc')
-    h.load_file("import3d.hoc")
-    h.load_file("NEURON_models_maker/L5PC_NEURON_simulation/init.hoc")
-    h.load_file(BIOPHYSICAL_MODEL_PATH)
-    h.load_file(BIOPHYSICAL_MODEL_TAMPLATE_PATH)
-    L5PC = h.L5PCtemplate(MORPHOLOGY_PATH_L5PC)
+    import NEURON_models_maker
+    from NEURON_models_maker.neuron_factory import get_L5PC
+    L5PC = get_L5PC()
     return L5PC
 
 
