@@ -37,8 +37,10 @@ class RecursiveNeuronModel(nn.Module):
         self.include_dendritic_voltage_tracing = include_dendritic_voltage_tracing
         self.is_cuda = is_cuda
         activation_function_base_function = getattr(nn, network_kwargs["activation_function_name"])
-        self.activation_function = lambda: (activation_function_base_function(
-            **network_kwargs["activation_function_kargs"]))  # unknown bug
+        def activation_function():
+            return activation_function_base_function(
+                **network_kwargs["activation_function_kargs"])
+        self.activation_function = activation_function # unknown bug
         # self.time_domain_shape = time_domain_shape
         # self.modules_dict = nn.ModuleDict()
         # self.network_kwargs = network_kwargs
@@ -141,15 +143,17 @@ class RecursiveNeuronModel(nn.Module):
         pass
 
     def save(self, path):  # todo fix
-        state_dict = self.state_dict()
+        # state_dict = self.state_dict()
         with open('%s.pkl' % path, 'wb') as outp:
-            pickle.dump(state_dict, outp)
-
-    def load(self, path):
+            # pickle.dump(state_dict, outp)
+            pickle.dump(self, outp,pickle.HIGHEST_PROTOCOL)
+    @staticmethod
+    def load( path):
         with open('%s.pkl' % path if path[-len(".pkl"):] != ".pkl" else path, 'rb') as outp:
+            # neuronal_model_data = pickle.load(outp)
             neuronal_model_data = pickle.load(outp)
-        self.load_state_dict(neuronal_model_data)  # fixme this this should
-        return self
+        # self.load_state_dict(neuronal_model_data)  # fixme this this should
+        return neuronal_model_data
 
     @abc.abstractmethod
     def __iter__(self) -> 'RecursiveNeuronModel':

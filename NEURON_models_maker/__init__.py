@@ -14,7 +14,7 @@ print(neuron.__version__)
 if not hasattr(h,"ProbUDFsyn2"):
     h.load_file('nrngui.hoc')
     h.load_file("import3d.hoc")
-    h.nrn_load_dll(DLL_FILE_PATH)
+    # h.nrn_load_dll(DLL_FILE_PATH)
     # h.nrn_load_dll("$(NEURONHOME)/demo/release/x86_64/.libs/libnrnmech.so")
     # neuron.load_mechanisms("$(NEURONHOME)/demo/release/x86_64/.libs/libnrnmech.so",False)
 
