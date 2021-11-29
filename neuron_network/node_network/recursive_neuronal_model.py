@@ -113,10 +113,9 @@ class RecursiveNeuronModel(nn.Module):
 
     @staticmethod
     def build_david_data_model(config):
-        MORPHOLOGY_PATH_L5PC = r'NEURON_models_maker/L5PC_NEURON_simulation/morphologies/cell1.asc'
-        BIOPHYSICAL_MODEL_PATH = r'NEURON_models_maker/L5PC_NEURON_simulation/L5PCbiophys5b.hoc'
-        BIOPHYSICAL_MODEL_TAMPLATE_PATH = r'NEURON_models_maker/L5PC_NEURON_simulation/L5PCtemplate_2.hoc'
-        DLL_FILE_PATH = r"NEURON_models_maker/L5PC_NEURON_simulation/nrnmech.dll"
+        MORPHOLOGY_PATH_L5PC = r'../../NEURON_models_maker/L5PC_NEURON_simulation/morphologies/cell1.asc'
+        BIOPHYSICAL_MODEL_PATH = r'../../NEURON_models_maker/L5PC_NEURON_simulation/L5PCbiophys5b.hoc'
+        BIOPHYSICAL_MODEL_TAMPLATE_PATH = r'../../NEURON_models_maker/L5PC_NEURON_simulation/L5PCtemplate_2.hoc'
         h.load_file('nrngui.hoc')
         h.load_file("import3d.hoc")
         h.nrn_load_dll(DLL_FILE_PATH)
