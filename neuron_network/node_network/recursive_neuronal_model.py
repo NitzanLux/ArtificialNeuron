@@ -38,19 +38,13 @@ class RecursiveNeuronModel(nn.Module):
         self.model_type = model_type
         self.include_dendritic_voltage_tracing = include_dendritic_voltage_tracing
         self.is_cuda = is_cuda
-        activation_function_base_function = getattr(nn, network_kwargs["activation_function_name"])
-
-        def activation_function():
-            return activation_function_base_function(
-                **network_kwargs["activation_function_kargs"])
-
-        self.activation_function = activation_function  # unknown bug
-        # self.time_domain_shape = time_domain_shape
-        # self.modules_dict = nn.ModuleDict()
-        # self.network_kwargs = network_kwargs
-        # self.build_model(**self.network_kwargs)  # todo implement again
-
+        self.activation_function_name=network_kwargs["activation_function_name"]
+        self.activation_function_kargs=network_kwargs["activation_function_kargs"]
         self.get_model_block(**network_kwargs)
+
+    def get_activation_function(self):
+        activation_function_base_function = getattr(nn, self.activation_function_name)
+        return lambda :activation_function_base_function(**self.activation_function_kargs)
 
     def get_model_block(self, **config):
         if config[
@@ -137,22 +131,32 @@ class RecursiveNeuronModel(nn.Module):
     def forward(self, x):
         pass
 
-    def save(self, path):  # todo fix
-        state_dict = self.state_dict()
-        with open('%s.pkl' % path, 'wb') as outp:
-            pickle.dump(state_dict, outp)
-            # pickle.dump(self, outp,pickle.HIGHEST_PROTOCOL)
+    # def save(self, path):  # todo fix
+    #     state_dict = self.state_dict()
+    #     with open('%s.pkl' % path, 'wb') as outp:
+    #         pickle.dump(state_dict, outp)
+    #         # pickle.dump(self, outp,pickle.HIGHEST_PROTOCOL)
+    #
+    # @staticmethod
+    # def load(config):
+    #     path = os.path.join(MODELS_DIR, *config.model_path)
+    #     with open('%s.pkl' % path if path[-len(".pkl"):] != ".pkl" else path, 'rb') as outp:
+    #         neuronal_model_data = pickle.load(outp)
+    #     L5PC = get_L5PC()
+    #     model = RecursiveNeuronModel.build_david_data_model(config, L5PC)
+    #     model.load_state_dict(neuronal_model_data)
+    #     return model
 
+    def save(self, path):  # todo replace
+        with open('%s.pkl' % path, 'wb') as outp:
+            # pickle.dump(self, outp)
+            pickle.dump(self, outp,pickle.HIGHEST_PROTOCOL)
     @staticmethod
     def load(config):
         path = os.path.join(MODELS_DIR, *config.model_path)
         with open('%s.pkl' % path if path[-len(".pkl"):] != ".pkl" else path, 'rb') as outp:
-            neuronal_model_data = pickle.load(outp)
-        L5PC = get_L5PC()
-        model = RecursiveNeuronModel.build_david_data_model(config, L5PC)
-        model.load_state_dict(neuronal_model_data)
-        return model
-
+                neuronal_model_data = pickle.load(outp)
+        return neuronal_model_data
     @abc.abstractmethod
     def __iter__(self) -> 'RecursiveNeuronModel':
         pass
@@ -168,7 +172,7 @@ class RecursiveNeuronModel(nn.Module):
     def double(self, **kwargs):
         super(RecursiveNeuronModel, self).double(**kwargs)
         # torch.cuda.synchronize()
-        self.model.double()
+        self.model.double(**kwargs)
         self.is_cuda = True
         if self.model_type != SectionType.BRANCH_LEAF:
             for mod in self:
@@ -223,7 +227,7 @@ class LeafNetwork(RecursiveNeuronModel):
         network_kwargs["channel_output_number"] = min(len(self.input_indexes), network_kwargs["channel_output_number"])
 
         self.model = self.model((len(self.input_indexes), network_kwargs["input_window_size"]), **network_kwargs,
-                                activation_function=self.activation_function)
+                                activation_function=self.get_activation_function())
 
 
 class IntersectionNetwork(RecursiveNeuronModel):
@@ -246,7 +250,7 @@ class IntersectionNetwork(RecursiveNeuronModel):
         self.channel_output_number = network_kwargs["channel_output_number"]
         self.model = self.model((self.intersection_a.channel_output_number + self.intersection_b.channel_output_number,
                                  network_kwargs["input_window_size"]), **network_kwargs,
-                                activation_function=self.activation_function)
+                                activation_function=self.get_activation_function())
 
     def forward(self, x):
         input_a = self.intersection_a(x)
@@ -275,7 +279,7 @@ class BranchNetwork(RecursiveNeuronModel):
         self.channel_output_number = network_kwargs["channel_output_number"]
         self.model = self.model(input_shape_leaf=(len(self.input_indexes),network_kwargs["input_window_size"]),
                                 input_shape_integration = (len(self.input_indexes) + self.upstream_model.channel_output_number, network_kwargs["input_window_size"]), **network_kwargs,
-                                activation_function=self.activation_function)
+                                activation_function=self.get_activation_function())
 
 
     def forward(self, x):
@@ -298,7 +302,7 @@ class SomaNetwork(RecursiveNeuronModel):
         self.branches.extend(branches)
         number_of_inputs=sum([branch.channel_output_number for branch in self.branches])
         self.model = self.model((number_of_inputs, network_kwargs["input_window_size"]), **network_kwargs,
-                                activation_function=self.activation_function)
+                                activation_function=self.get_activation_function())
 
     def __iter__(self):
         for mod in self.branches:
