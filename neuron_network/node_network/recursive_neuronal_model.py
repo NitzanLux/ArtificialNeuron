@@ -19,6 +19,8 @@ from neuron import h
 from neuron import gui
 from typing import List, Dict
 from copy import deepcopy
+import get_neuron_modle
+from get_neuron_modle import get_L5PC
 
 
 class ArchitectureType(Enum):
@@ -37,10 +39,12 @@ class RecursiveNeuronModel(nn.Module):
         self.include_dendritic_voltage_tracing = include_dendritic_voltage_tracing
         self.is_cuda = is_cuda
         activation_function_base_function = getattr(nn, network_kwargs["activation_function_name"])
+
         def activation_function():
             return activation_function_base_function(
                 **network_kwargs["activation_function_kargs"])
-        self.activation_function = activation_function # unknown bug
+
+        self.activation_function = activation_function  # unknown bug
         # self.time_domain_shape = time_domain_shape
         # self.modules_dict = nn.ModuleDict()
         # self.network_kwargs = network_kwargs
@@ -112,7 +116,7 @@ class RecursiveNeuronModel(nn.Module):
             return branch_interesection
 
     @staticmethod
-    def build_david_data_model(config,L5PC):
+    def build_david_data_model(config, L5PC):
 
         listOfBasalSections = [L5PC.dend[x] for x in range(len(L5PC.dend))]
         listOfApicalSections = [L5PC.apic[x] for x in range(len(L5PC.apic))]
@@ -123,7 +127,7 @@ class RecursiveNeuronModel(nn.Module):
             for currSegment in section:
                 segment_synapse_map.append(currSegment)
         segment_synapse_map = {seg: i for i, seg in enumerate(segment_synapse_map)}
-        return RecursiveNeuronModel.build_model(config, L5PC, segment_synapse_map)
+        return RecursiveNeuronModel.build_model(config, L5PC, segment_synapse_map).double()
 
     @abc.abstractmethod
     def set_inputs_to_model(self, *args):
@@ -141,11 +145,11 @@ class RecursiveNeuronModel(nn.Module):
 
     @staticmethod
     def load(config):
-        path  = os.path.join(MODELS_DIR, *config.model_path)
+        path = os.path.join(MODELS_DIR, *config.model_path)
         with open('%s.pkl' % path if path[-len(".pkl"):] != ".pkl" else path, 'rb') as outp:
             neuronal_model_data = pickle.load(outp)
-        L5PC=get_L5PC()
-        model = RecursiveNeuronModel.build_david_data_model(config,L5PC)
+        L5PC = get_L5PC()
+        model = RecursiveNeuronModel.build_david_data_model(config, L5PC)
         model.load_state_dict(neuronal_model_data)
         return model
 
@@ -155,23 +159,34 @@ class RecursiveNeuronModel(nn.Module):
 
     def count_parameters(self):
 
-        param_sum= sum(p.numel() for p in self.model.parameters() if p.requires_grad)
-        if self.model_type!=SectionType.BRANCH_LEAF:
+        param_sum = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
+        if self.model_type != SectionType.BRANCH_LEAF:
             for mod in self:
                 param_sum += mod.count_parameters()
         return param_sum
+
+    def double(self, **kwargs):
+        super(RecursiveNeuronModel, self).double(**kwargs)
+        # torch.cuda.synchronize()
+        self.model.double()
+        self.is_cuda = True
+        if self.model_type != SectionType.BRANCH_LEAF:
+            for mod in self:
+                mod.double(**kwargs)
+        return self
 
     def cuda(self, **kwargs):
         super(RecursiveNeuronModel, self).cuda(**kwargs)
         # torch.cuda.synchronize()
         self.is_cuda = True
-        if self.model_type!=SectionType.BRANCH_LEAF:
+        if self.model_type != SectionType.BRANCH_LEAF:
             for mod in self:
                 mod.cuda()
+
     def cpu(self, **kwargs):
         super(RecursiveNeuronModel, self).cpu(**kwargs)
         self.is_cuda = False
-        if self.model_type!=SectionType.BRANCH_LEAF:
+        if self.model_type != SectionType.BRANCH_LEAF:
             for mod in self:
                 mod.cpu()
 
@@ -183,10 +198,9 @@ class RecursiveNeuronModel(nn.Module):
                 m.bias.data.normal_(0, sd)
 
         self.apply(init_params)
-        if self.model_type!=SectionType.BRANCH_LEAF:
+        if self.model_type != SectionType.BRANCH_LEAF:
             for mod in self:
                 mod.init_weights(sd)
-
 
 
 class LeafNetwork(RecursiveNeuronModel):
@@ -230,7 +244,8 @@ class IntersectionNetwork(RecursiveNeuronModel):
             self.intersection_a.channel_output_number + self.intersection_b.channel_output_number,
             network_kwargs["channel_output_number"])
         self.channel_output_number = network_kwargs["channel_output_number"]
-        self.model = self.model((2, network_kwargs["input_window_size"]), **network_kwargs,
+        self.model = self.model((self.intersection_a.channel_output_number + self.intersection_b.channel_output_number,
+                                 network_kwargs["input_window_size"]), **network_kwargs,
                                 activation_function=self.activation_function)
 
     def forward(self, x):
@@ -256,16 +271,16 @@ class BranchNetwork(RecursiveNeuronModel):
     def set_inputs_to_model(self, upstream_model: [IntersectionNetwork], **network_kwargs):
         self.upstream_model = upstream_model
         network_kwargs = deepcopy(network_kwargs)
-        network_kwargs["channel_output_number"] = min(
-            self.upstream_model.channel_output_number + len(self.input_indexes),
-            network_kwargs["channel_output_number"])
+        network_kwargs["channel_output_number"] = min(self.upstream_model.channel_output_number + len(self.input_indexes), network_kwargs["channel_output_number"])
         self.channel_output_number = network_kwargs["channel_output_number"]
-        self.model = self.model((len(self.input_indexes) + 1, network_kwargs["input_window_size"]), **network_kwargs,
+        self.model = self.model(input_shape_leaf=(len(self.input_indexes),network_kwargs["input_window_size"]),
+                                input_shape_integration = (len(self.input_indexes) + self.upstream_model.channel_output_number, network_kwargs["input_window_size"]), **network_kwargs,
                                 activation_function=self.activation_function)
+
 
     def forward(self, x):
         upstream_data = self.upstream_model(x)
-        return self.model(upstream_data, x[:, self.input_indexes, ...])
+        return self.model(x[:, self.input_indexes, ...],upstream_data)
 
     def __iter__(self):
         yield self.upstream_model
@@ -281,7 +296,8 @@ class SomaNetwork(RecursiveNeuronModel):
 
     def set_inputs_to_model(self, *branches: [IntersectionNetwork, BranchNetwork], **network_kwargs):
         self.branches.extend(branches)
-        self.model = self.model((len(branches), network_kwargs["input_window_size"]), **network_kwargs,
+        number_of_inputs=sum([branch.channel_output_number for branch in self.branches])
+        self.model = self.model((number_of_inputs, network_kwargs["input_window_size"]), **network_kwargs,
                                 activation_function=self.activation_function)
 
     def __iter__(self):
@@ -289,8 +305,10 @@ class SomaNetwork(RecursiveNeuronModel):
             yield mod
 
     def forward(self, x):
+        x = x.type(torch.cuda.DoubleTensor) if self.is_cuda else x.type(torch.DoubleTensor)
         outputs = []
         for branch in self.branches:
             outputs.append(branch(x))
         outputs = torch.cat(outputs, dim=SYNAPSE_DIMENTION_POSITION)
-        return self.model(outputs)
+        s,v = self.model(outputs)
+        return s.squeeze(2),v.squeeze(2)

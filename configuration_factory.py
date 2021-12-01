@@ -14,6 +14,8 @@ from neuron_network.node_network import recursive_neuronal_model
 from neuron_network import davids_network
 import os
 import logging
+import get_neuron_modle
+from get_neuron_modle import get_L5PC
 
 synapse_type = 'NMDA'
 include_DVT = False
@@ -63,7 +65,8 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
     config = AttrDict(config_version=1.0,input_window_size=300, num_segments=2 * 639, num_syn_types=1,
                       num_epochs=15000, epoch_size=30, batch_size_train=20, batch_size_validation=100,
                       train_file_load=0.5, valid_file_load=0.5, spike_probability=0.5,
-                      files_filter_regex=".*exBas_0_1100_inhBasDiff_-1100_600__exApic_0_1100_inhApicDiff_-1100_600_SpTemp[^\\/\.]*\.p",
+                      # files_filter_regex=".*exBas_0_1100_inhBasDiff_-1100_600__exApic_0_1100_inhApicDiff_-1100_600_SpTemp[^\\/\.]*\.p",
+                      files_filter_regex=".*",
                       optimizer_type="AdamW", optimizer_params={},
                       batch_counter=0, epoch_counter=0,  # default counter
                       torch_seed=42, numpy_seed=21, random_seed=12, init_weights_sd=0.05,
@@ -178,15 +181,15 @@ def generate_config_files_multiple_seeds(config_path: [str, Dict], number_of_con
 if __name__ == '__main__':
     config_morpho =config_factory(dynamic_learning_params=False, architecture_type="LAYERED_TEMPORAL_CONV", kernel_size=81,
                         model_tag="cr_morpho_model")
-    config_david =config_factory(dynamic_learning_params=False, architecture_type="DavidsNeuronNetwork", inner_scope_channel_number=128,
-                        model_tag="cr_david_model")
+    # config_david =config_factory(dynamic_learning_params=False, architecture_type="DavidsNeuronNetwork", inner_scope_channel_number=128,
+    #                     model_tag="cr_david_model")
     # configs_dynamic = generate_config_files_multiple_seeds(config_dynamic, 2)
     # config_static = config_factory(dynamic_learning_params=False)
     # configs_static = generate_config_files_multiple_seeds(config_static, 1)
     # configs_to_read = configs_dynamic+[config_factory(loss_function="loss_zero_mse_on_spikes")]
     #
-    with open(os.path.join(MODELS_DIR, "model_comparison_recursive.json"), 'w') as file:
-        file.write(json.dumps([config_morpho,config_david]))  # use `json.loads` to do the reverse
+    # with open(os.path.join(MODELS_DIR, "model_comparison_recursive.json"), 'w') as file:
+    #     file.write(json.dumps([config_morpho,config_david]))  # use `json.loads` to do the reverse
 
     # config = load_config_file("models/NMDA/simplest_model_dynamic_NMDA_Tree_TCN__2021-09-30__16_51__ID_78714/simplest_model_dynamic_NMDA_Tree_TCN__2021-09-30__16_51__ID_78714.config")
     # m = overwrite_config(config)

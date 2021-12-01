@@ -87,9 +87,10 @@ class SimulationDataGenerator():
                                                 number_of_spikes_in_batch)
         self.files_shuffle_checker(non_spikes[SIM_INDEX].shape[0], spikes[SIM_INDEX].shape[0])
     def shuffel_data(self):
-        indexes = np.random.shuffle(np.arange(self.X.shape[0]))
-        self.X=self.X[indexes,:,:]
-        self.y_soma=self.y_soma[indexes,:]
+        indexes = np.arange(self.X.shape[0])
+        np.random.shuffle(indexes)
+        self.X=self.X[indexes,:,:].squeeze()
+        self.y_soma=self.y_soma[indexes,:].squeeze()
         self.y_spike=self.y_spike[indexes,:]
 
     def iterate_deterministic_no_repetition(self, non_spikes, number_of_non_spikes_in_batch, number_of_spikes_in_batch, spikes):
@@ -101,7 +102,7 @@ class SimulationDataGenerator():
                     SIM_INDEX], np.random.choice(range(self.sampling_start_time, self.X.shape[2] - 1),
                                                  size=self.batch_size, replace=False)]
             else:
-                number_of_iteration = self.sample_counter // self.batch_size
+                number_of_iteration = (self.sample_counter // self.batch_size)+1
                 spike_idxs = np.arange(int(number_of_iteration * number_of_spikes_in_batch),
                                        int(number_of_iteration * (number_of_spikes_in_batch + 1))) % self.X.shape[SIM_INDEX]
                 spikes_sim_idxs = spikes[SIM_INDEX][spike_idxs]
@@ -117,8 +118,11 @@ class SimulationDataGenerator():
                 selected_time_idxs = np.hstack([spikes_sim_time, non_spikes_sim_time])
                 yield self[selected_sim_idxs, selected_time_idxs]
 
+
     def iterate_and_shuffle(self, non_spikes, spikes, number_of_non_spikes_in_batch, number_of_spikes_in_batch):
-        for i in range(self.epoch_size):
+        counter = 0
+        while self.epoch_size is None or counter < self.epoch_size:
+            counter += 1
             if self.__return_spike_factor == NULL_SPIKE_FACTOR_VALUE:
                 selected_sim_idxs = np.random.choice(range(self.X.shape[0]), size=self.batch_size,
                                                      replace=True)  # number of simulations per file
@@ -163,10 +167,14 @@ class SimulationDataGenerator():
                                                     np.arange(self.X.shape[1]), np.arange(self.window_size_ms, 0, -1),
                                                     indexing='ij')
         win_ind = win_time[:, np.newaxis, np.newaxis] - win_ind
-        X_batch = self.X[sim_ind_mat, chn_ind, win_ind]
+        try:
+            X_batch = self.X[sim_ind_mat, chn_ind, win_ind]
+        except Exception as e:
+            print(e)
+            print("a")
         pred_index = win_time
-        y_spike_batch = self.y_spike[sim_ind, :, pred_index]
-        y_soma_batch = self.y_soma[sim_ind, :, pred_index]
+        y_spike_batch = self.y_spike[sim_ind,pred_index]
+        y_soma_batch = self.y_soma[sim_ind,pred_index]
         y_soma_batch = y_soma_batch[:, np.newaxis, ...]
         y_spike_batch = y_spike_batch[:, np.newaxis, ...]
         if self.include_DVT:  # positions are wrong and probability wont work :(
@@ -180,7 +188,7 @@ class SimulationDataGenerator():
     def reload_files(self):
         'selects new subset of files to draw samples from'
         self.sample_counter = 0
-        if len(self.sim_experiment_files) < self.buffer_size_in_files:
+        if len(self.sim_experiment_files) <= self.buffer_size_in_files:
             self.curr_files_to_use = self.sim_experiment_files
         else:
             if self.shuffle_files:
@@ -225,9 +233,10 @@ class SimulationDataGenerator():
             self.y_spike.append(y_spike)
             self.y_soma.append(y_soma)
 
+
         self.X = np.vstack(self.X)
-        self.y_spike = np.vstack(self.y_spike)
-        self.y_soma = np.vstack(self.y_soma)
+        self.y_spike = np.vstack(self.y_spike).squeeze(1)
+        self.y_soma = np.vstack(self.y_soma).squeeze(1)
         # threshold the signals
 
         self.y_soma[self.y_soma > self.y_soma_threshold] = self.y_soma_threshold

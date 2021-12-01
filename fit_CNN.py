@@ -13,7 +13,10 @@ from neuron_network import neuronal_model
 from neuron_network.node_network import recursive_neuronal_model
 from neuron_network import davids_network
 from project_path import *
+
 from simulation_data_generator import *
+import get_neuron_modle
+from get_neuron_modle import get_L5PC
 import re
 
 ACCURACY_EVALUATION_FREQUENCY = 500
@@ -36,10 +39,10 @@ include_DVT = False
 WATCH_MODEL = False
 
 # for dibugging
-# BATCH_LOG_UPDATE_FREQ = 1
-# AUC_UPDATE_FREQUENCY = 1
-# BUFFER_SIZE_IN_FILES_VALID = 1
-# BUFFER_SIZE_IN_FILES_TRAINING = 1
+BATCH_LOG_UPDATE_FREQ = 1
+AUC_UPDATE_FREQUENCY = 1
+BUFFER_SIZE_IN_FILES_VALID = 1
+BUFFER_SIZE_IN_FILES_TRAINING = 1
 # logging.error("Aaaaa")
 
 print('-----------------------------------------------')
@@ -156,15 +159,15 @@ def train_network(config):
             with torch.no_grad():
                 train_log(train_loss, batch_counter, epoch, learning_rate, sigma, loss_weights,
                           additional_str="train")
-            evaluate_validation(config, custom_loss, epoch, model,  valid_input, valid_labels)
+            evaluate_validation(config, custom_loss, epoch, model, validation_data_iterator)
         # save model every once a while
         if saving_counter % 10 == 0:
             save_model(model, saving_counter, config)
     save_model(model, saving_counter, config)
 
 
-def evaluate_validation(config, custom_loss, epoch, model, valid_input, valid_labels):
-
+def evaluate_validation(config, custom_loss, epoch, model,validation_data_iterator):
+    valid_input, valid_labels=next(validation_data_iterator)
     with torch.no_grad():
         validation_loss = custom_loss(model(valid_input), valid_labels)
         validation_loss = list(validation_loss)

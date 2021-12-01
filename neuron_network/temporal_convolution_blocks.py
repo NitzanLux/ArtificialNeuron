@@ -77,7 +77,7 @@ class IntersectionBlock(nn.Module):
                  dilation=1, **kwargs):
         super(IntersectionBlock, self).__init__()
         self.base_conv_1d = Base1DConvolutionBlock(number_of_layers_intersection,
-                                                   (input_shape[0]*channel_output_number,input_shape[1]),
+                                                   input_shape,
                                                    activation_function,
                                                    inner_scope_channel_number,
                                                    channel_output_number, kernel_size, stride, dilation)
@@ -88,28 +88,28 @@ class IntersectionBlock(nn.Module):
 
 
 class BranchBlock(nn.Module):
-    def __init__(self, input_shape: Tuple[int, int], number_of_layers_branch_intersection: int,
+    def __init__(self, input_shape_leaf : Tuple[int, int], input_shape_integration : Tuple[int, int], number_of_layers_branch_intersection: int,
                  number_of_layers_leaf: int, activation_function
                  , inner_scope_channel_number
                  , channel_output_number, kernel_size, stride=1,
                  dilation=1, **kwargs):
         super(BranchBlock, self).__init__()
-        self.branch_leaf = BranchLeafBlock(input_shape, number_of_layers_leaf, activation_function
-                                           , inner_scope_channel_number
-                                           , inner_scope_channel_number, kernel_size, stride,
+        self.branch_leaf = BranchLeafBlock(input_shape_leaf, number_of_layers_leaf, activation_function
+                                           , input_shape_leaf[0]
+                                           , input_shape_leaf[0], kernel_size, stride,
                                            dilation)
         self.activation_function = activation_function()
         self.synapse_model = nn.Sequential(self.branch_leaf, activation_function())
 
         self.intersection_block =Base1DConvolutionBlock(number_of_layers_branch_intersection,
-                                                   (input_shape[0]*inner_scope_channel_number+channel_output_number,input_shape[1]),
+                                                   input_shape_integration,
                                                    activation_function,
                                                    inner_scope_channel_number,
                                                    channel_output_number, kernel_size, stride, dilation)
 
 
 
-    def forward(self, prev_segment, x):
+    def forward(self, x,prev_segment):
         x = self.synapse_model(x)
         x = self.activation_function(x)
         out = torch.cat((x, prev_segment), dim=SYNAPSE_DIMENTION_POSITION)
@@ -123,7 +123,7 @@ class RootBlock(nn.Module):
                  , kernel_size, stride=1,
                  dilation=1, **kwargs):
         super(RootBlock, self).__init__()
-        self.conv1d_root = Base1DConvolutionBlock(number_of_layers_root, (input_shape[0]*channel_output_number,input_shape[1]), activation_function,
+        self.conv1d_root = Base1DConvolutionBlock(number_of_layers_root, input_shape, activation_function,
                                                   inner_scope_channel_number, inner_scope_channel_number, kernel_size,
                                                   stride, dilation)
         self.model = nn.Sequential(self.conv1d_root, activation_function())
