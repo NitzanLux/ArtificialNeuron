@@ -92,8 +92,8 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                                  padding=0,
                                  dilation=1,
                                  channel_input_number=1278,  # synapse number
-                                 inner_scope_channel_number=15,
-                                 channel_output_number=15,
+                                 inner_scope_channel_number=35,
+                                 channel_output_number=35,
                                  activation_function_name="LeakyReLU",
                                  activation_function_kargs=dict(negative_slope=0.25),
                                  include_dendritic_voltage_tracing=False)
@@ -179,17 +179,17 @@ def generate_config_files_multiple_seeds(config_path: [str, Dict], number_of_con
 
 
 if __name__ == '__main__':
-    config_morpho =config_factory(dynamic_learning_params=False, architecture_type="LAYERED_TEMPORAL_CONV", kernel_size=81,
+    config_morpho =config_factory(dynamic_learning_params=False, architecture_type="LAYERED_TEMPORAL_CONV", kernel_size=31,
                         model_tag="cr_morpho_model")
-    # config_david =config_factory(dynamic_learning_params=False, architecture_type="DavidsNeuronNetwork", inner_scope_channel_number=128,
-    #                     model_tag="cr_david_model")
+    config_david =config_factory(dynamic_learning_params=False, architecture_type="DavidsNeuronNetwork", inner_scope_channel_number=128,
+                        model_tag="cr_david_model")
     # configs_dynamic = generate_config_files_multiple_seeds(config_dynamic, 2)
     # config_static = config_factory(dynamic_learning_params=False)
     # configs_static = generate_config_files_multiple_seeds(config_static, 1)
     # configs_to_read = configs_dynamic+[config_factory(loss_function="loss_zero_mse_on_spikes")]
     #
-    # with open(os.path.join(MODELS_DIR, "model_comparison_recursive.json"), 'w') as file:
-    #     file.write(json.dumps([config_morpho,config_david]))  # use `json.loads` to do the reverse
+    with open(os.path.join(MODELS_DIR, "model_comparison_recursive.json"), 'w') as file:
+        file.write(json.dumps([config_morpho,config_david]))  # use `json.loads` to do the reverse
 
     # config = load_config_file("models/NMDA/simplest_model_dynamic_NMDA_Tree_TCN__2021-09-30__16_51__ID_78714/simplest_model_dynamic_NMDA_Tree_TCN__2021-09-30__16_51__ID_78714.config")
     # m = overwrite_config(config)

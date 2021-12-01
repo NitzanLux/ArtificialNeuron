@@ -29,7 +29,7 @@ WANDB_PROJECT_NAME = "ArtificialNeuron1"
 
 DOCUMENT_ON_WANDB = True
 
-AUC_UPDATE_FREQUENCY = 4
+AUC_UPDATE_FREQUENCY = 500
 BATCH_LOG_UPDATE_FREQ = 20
 BUFFER_SIZE_IN_FILES_VALID = 2
 BUFFER_SIZE_IN_FILES_TRAINING = 4
@@ -39,10 +39,10 @@ include_DVT = False
 WATCH_MODEL = False
 
 # for dibugging
-BATCH_LOG_UPDATE_FREQ = 1
-AUC_UPDATE_FREQUENCY = 1
-BUFFER_SIZE_IN_FILES_VALID = 1
-BUFFER_SIZE_IN_FILES_TRAINING = 1
+# BATCH_LOG_UPDATE_FREQ = 1
+# AUC_UPDATE_FREQUENCY = 1
+# BUFFER_SIZE_IN_FILES_VALID = 1
+# BUFFER_SIZE_IN_FILES_TRAINING = 1
 # logging.error("Aaaaa")
 
 print('-----------------------------------------------')
@@ -112,7 +112,7 @@ def train_network(config):
     print("loading model...", flush=True)
     if config.architecture_type == "DavidsNeuronNetwork":
         model = davids_network.DavidsNeuronNetwork(config)
-    elif "network_architecture_structure" in config and config.network_architecture_structure=="recursive":
+    elif "network_architecture_structure" in config and config.network_architecture_structure == "recursive":
         model = recursive_neuronal_model.RecursiveNeuronModel.load(config)
     else:
         model = neuronal_model.NeuronConvNet.build_model_from_config(config)
@@ -166,17 +166,17 @@ def train_network(config):
     save_model(model, saving_counter, config)
 
 
-def evaluate_validation(config, custom_loss, epoch, model,validation_data_iterator):
-    valid_input, valid_labels=next(validation_data_iterator)
+def evaluate_validation(config, custom_loss, epoch, model, validation_data_iterator):
+    valid_input, valid_labels = next(validation_data_iterator)
     with torch.no_grad():
         validation_loss = custom_loss(model(valid_input), valid_labels)
         validation_loss = list(validation_loss)
         validation_loss[0] = validation_loss[0]
         validation_loss = tuple(validation_loss)
-        if config.batch_counter % VALIDATION_EVALUATION_FREQUENCY == 0:
+        if config.batch_counter % VALIDATION_EVALUATION_FREQUENCY == 0 or config.batch_counter % ACCURACY_EVALUATION_FREQUENCY == 0:
             train_log(validation_loss, config.batch_counter, epoch,
                       additional_str="validation", commit=True)
-        if config.batch_counter% ACCURACY_EVALUATION_FREQUENCY ==0:
+        if config.batch_counter % ACCURACY_EVALUATION_FREQUENCY == 0:
             display_accuracy(valid_labels[0], model(valid_input)[0], batch_counter,
                              additional_str="validation")
 
@@ -269,18 +269,13 @@ def display_accuracy(target, output, step, additional_str=''):
     output = output.cpu().detach().numpy().squeeze()
     output = np.vstack([np.abs(1 - output), output]).T
     print("*#$* debugging batch size %d \n\t #$ step %d \n\t ## number of true values %d " % (
-    target.shape[0], step, np.count_nonzero(target)), flush=True)
-    fpr, tpr, thresholds = metrics.roc_curve(target, output, pos_label=2) #wandb has now possible to extruct it yet
+        target.shape[0], step, np.count_nonzero(target)), flush=True)
+    fpr, tpr, thresholds = metrics.roc_curve(target, output, pos_label=2)  # wandb has now possible to extruct it yet
     wandb.log({"pr %s" % additional_str: wandb.plot.pr_curve(target, output,
                                                              labels=None, classes_to_plot=None),
                "roc %s" % additional_str: wandb.plot.roc_curve(target, output, labels=None, classes_to_plot=None),
-               "AUC %s"%additional_str:sk.metrics.auc(fpr, tpr)}, commit=True)
-    # target_np = target.detach().cpu().numpy().squeeze()
-    # output_np = output.detach().numpy().squeeze()
-    # accuracy = 1 - torch.abs(target - output)
-    # accuracy = torch.mean(accuracy, dim=0)
-    # wandb.log({"epoch": epoch, "accuracy (%s) %s" % ("%", additional_str): float(accuracy[0])}, step=step)
-    # print("accuracy (%s) %s : %0.4f" % ("%", additional_str, float(accuracy[0])))
+               "AUC %s" % additional_str: sk.metrics.auc(fpr, tpr)}, commit=True)
+
     # todo add fp tp
 
 
