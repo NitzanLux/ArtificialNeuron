@@ -151,8 +151,6 @@ def train_network(config):
         for i, train_data in enumerate(train_data_generator):
             config.update(dict(batch_counter=config.batch_counter + 1), allow_val_change=True)
             # get the inputs; data is a list of [inputs, labels]
-            # train_data, valid_data = train_data
-            # valid_input, valid_labels = valid_data
             batch_counter += 1
 
             train_loss = batch_train(model, optimizer, custom_loss, *train_data)
@@ -177,7 +175,7 @@ def evaluate_validation(config, custom_loss, epoch, model, validation_data_itera
             train_log(validation_loss, config.batch_counter, epoch,
                       additional_str="validation", commit=True)
         if config.batch_counter % ACCURACY_EVALUATION_FREQUENCY == 0:
-            display_accuracy(valid_labels[0], model(valid_input)[0], batch_counter,
+            display_accuracy(valid_labels[0], model(valid_input)[0], config.batch_counter,
                              additional_str="validation")
 
 
@@ -238,13 +236,15 @@ def model_pipline(hyperparameters):
         train_network(config)
 
 
-def train_log(loss, step, epoch, learning_rate=None, sigma=None, weights=None, additional_str='', commit=False):
+def train_log(loss, step, epoch=None, learning_rate=None, sigma=None, weights=None, additional_str='', commit=False):
     general_loss, loss_bcel, loss_mse, loss_dvt, blur_loss = loss
     general_loss = float(general_loss.item())
     if DOCUMENT_ON_WANDB:
-        log_dict = {"epoch": epoch, "general loss %s" % additional_str: general_loss,
+        log_dict = { "general loss %s" % additional_str: general_loss,
                     "mse loss %s" % additional_str: loss_mse, "bcel loss %s" % additional_str: loss_bcel,
                     "dvt loss %s" % additional_str: loss_dvt, "blur loss %s" % additional_str: blur_loss}
+        if epoch is not None:
+            log_dict.update({"epoch": epoch})
         if learning_rate is not None:
             log_dict.update({"learning rate %s" % additional_str: learning_rate})  # add training parameters per step
         if weights is not None:
@@ -252,10 +252,10 @@ def train_log(loss, step, epoch, learning_rate=None, sigma=None, weights=None, a
                              "dvt weight  %s" % additional_str: weights[2],
                              "mse weight  %s" % additional_str: weights[1]})  # add training parameters per step
         if sigma is not None:
-            log_dict.update({"epoch": epoch, "sigma %s" % additional_str: sigma})  # add training parameters per step
+            log_dict.update({"sigma %s" % additional_str: sigma})  # add training parameters per step
         wandb.log(log_dict, step=step, commit=commit)  # add training parameters per step
 
-    print("step %d, epoch %d %s" % (step, epoch, additional_str))
+    print("step %d, epoch %d %s" % (step, epoch if epoch is not None else -1, additional_str))
     print("general loss ", general_loss)
     print("mse loss ", loss_mse)
     print("bcel loss ", loss_bcel)
