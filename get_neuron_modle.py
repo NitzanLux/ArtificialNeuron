@@ -15,7 +15,7 @@ DLL_FILE_PATH = r"L5PC_NEURON_simulation/nrnmech.dll"
 
 
 def get_L5PC():
-    if not hasattr(h, "ProbUDFsyn2"):
+    if not hasattr(h, "L5PCtemplate"):
         if platform.system() == 'Windows':
             h.nrn_load_dll(DLL_FILE_PATH)
         h.load_file(biophysicalModelFilename)
