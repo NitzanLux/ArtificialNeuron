@@ -315,4 +315,4 @@ class SomaNetwork(RecursiveNeuronModel):
             outputs.append(branch(x))
         outputs = torch.cat(outputs, dim=SYNAPSE_DIMENTION_POSITION)
         s,v = self.model(outputs)
-        return s.squeeze(2),v.squeeze(2)
+        return s.squeeze(1),v.squeeze(1)

@@ -58,7 +58,7 @@ class DavidsNeuronNetwork(nn.Module):
         out = self.last_layer(out)
         out_v = self.v_fc(out)
         out_s = self.sigmoid(self.s_fc(out))
-        return out_s, out_v
+        return out_s.squeeze(1), out_v.squeeze(1)
 
     def init_weights(self, sd=0.05):
         def init_params(m):
