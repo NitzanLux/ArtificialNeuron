@@ -2,7 +2,7 @@ import argparse
 import glob
 import os
 import random
-import sklearn as sk
+import sklearn.metrics as skm
 import torch.optim as optim
 import wandb
 from typing import List, Tuple
@@ -270,7 +270,7 @@ def display_accuracy(target, output, step, additional_str=''):
     output = np.vstack([np.abs(1 - output), output]).T
     print("*#$* debugging batch size %d \n\t #$ step %d \n\t ## number of true values %d " % (
         target.shape[0], step, np.count_nonzero(target)), flush=True)
-    fpr, tpr, thresholds = sk.metrics.roc_curve(target, output, pos_label=2)  # wandb has now possible to extruct it yet
+    fpr, tpr, thresholds = skm.roc_curve(target, output, pos_label=2)  # wandb has now possible to extruct it yet
     wandb.log({"pr %s" % additional_str: wandb.plot.pr_curve(target, output,
                                                              labels=None, classes_to_plot=None),
                "roc %s" % additional_str: wandb.plot.roc_curve(target, output, labels=None, classes_to_plot=None),
