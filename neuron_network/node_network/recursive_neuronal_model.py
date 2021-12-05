@@ -131,32 +131,32 @@ class RecursiveNeuronModel(nn.Module):
     def forward(self, x):
         pass
 
-    # def save(self, path):  # todo fix
-    #     state_dict = self.state_dict()
-    #     with open('%s.pkl' % path, 'wb') as outp:
-    #         pickle.dump(state_dict, outp)
-    #         # pickle.dump(self, outp,pickle.HIGHEST_PROTOCOL)
-    #
-    # @staticmethod
-    # def load(config):
-    #     path = os.path.join(MODELS_DIR, *config.model_path)
-    #     with open('%s.pkl' % path if path[-len(".pkl"):] != ".pkl" else path, 'rb') as outp:
-    #         neuronal_model_data = pickle.load(outp)
-    #     L5PC = get_L5PC()
-    #     model = RecursiveNeuronModel.build_david_data_model(config, L5PC)
-    #     model.load_state_dict(neuronal_model_data)
-    #     return model
-
-    def save(self, path):  # todo replace
+    def save(self, path):  # todo fix
+        state_dict = self.state_dict()
         with open('%s.pkl' % path, 'wb') as outp:
-            # pickle.dump(self, outp)
-            pickle.dump(self, outp,pickle.HIGHEST_PROTOCOL)
+            pickle.dump(state_dict, outp)
+            # pickle.dump(self, outp,pickle.HIGHEST_PROTOCOL)
+
     @staticmethod
     def load(config):
         path = os.path.join(MODELS_DIR, *config.model_path)
         with open('%s.pkl' % path if path[-len(".pkl"):] != ".pkl" else path, 'rb') as outp:
-                neuronal_model_data = pickle.load(outp)
-        return neuronal_model_data
+            neuronal_model_data = pickle.load(outp)
+        L5PC = get_L5PC()
+        model = RecursiveNeuronModel.build_david_data_model(config, L5PC)
+        model.load_state_dict(neuronal_model_data)
+        return model
+
+    # def save(self, path):  # todo replace
+    #     with open('%s.pkl' % path, 'wb') as outp:
+    #         # pickle.dump(self, outp)
+    #         pickle.dump(self, outp,pickle.HIGHEST_PROTOCOL)
+    # @staticmethod
+    # def load(config):
+    #     path = os.path.join(MODELS_DIR, *config.model_path)
+    #     with open('%s.pkl' % path if path[-len(".pkl"):] != ".pkl" else path, 'rb') as outp:
+    #             neuronal_model_data = pickle.load(outp)
+    #     return neuronal_model_data
     @abc.abstractmethod
     def __iter__(self) -> 'RecursiveNeuronModel':
         pass
