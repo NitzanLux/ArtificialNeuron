@@ -39,10 +39,10 @@ include_DVT = False
 WATCH_MODEL = False
 
 # for dibugging
-BATCH_LOG_UPDATE_FREQ = 1
-AUC_UPDATE_FREQUENCY = 1
-BUFFER_SIZE_IN_FILES_VALID = 1
-BUFFER_SIZE_IN_FILES_TRAINING = 1
+# BATCH_LOG_UPDATE_FREQ = 1
+# AUC_UPDATE_FREQUENCY = 1
+# BUFFER_SIZE_IN_FILES_VALID = 1
+# BUFFER_SIZE_IN_FILES_TRAINING = 1
 # logging.error("Aaaaa")
 
 print('-----------------------------------------------')
