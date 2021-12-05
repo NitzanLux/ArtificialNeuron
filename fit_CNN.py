@@ -39,11 +39,11 @@ include_DVT = False
 WATCH_MODEL = False
 
 # for dibugging
-# BATCH_LOG_UPDATE_FREQ = 1
-# VALIDATION_EVALUATION_FREQUENCY=1
-# ACCURACY_EVALUATION_FREQUENCY = 1
-# BUFFER_SIZE_IN_FILES_VALID = 1
-# BUFFER_SIZE_IN_FILES_TRAINING = 1
+BATCH_LOG_UPDATE_FREQ = 1
+VALIDATION_EVALUATION_FREQUENCY=1
+ACCURACY_EVALUATION_FREQUENCY = 1
+BUFFER_SIZE_IN_FILES_VALID = 1
+BUFFER_SIZE_IN_FILES_TRAINING = 1
 # logging.error("Aaaaa")
 
 print('-----------------------------------------------')
@@ -264,14 +264,14 @@ def train_log(loss, step, epoch=None, learning_rate=None, sigma=None, weights=No
 
 
 def display_accuracy(target, output, step, additional_str=''):
-    if not DOCUMENT_ON_WANDB:
+    if not DOCUMENT_ON_WANDB or step==0:
         return
     target = target.cpu().detach().numpy().astype(bool).squeeze()
     output = output.cpu().detach().numpy().squeeze()
     output = np.vstack([np.abs(1 - output), output]).T
     print("*#$* debugging batch size %d \n\t #$ step %d \n\t ## number of true values %d " % (
         target.shape[0], step, np.count_nonzero(target)), flush=True)
-    fpr, tpr, thresholds = skm.roc_curve(target, output[1,:], pos_label=2)  # wandb has now possible to extruct it yet
+    fpr, tpr, thresholds = skm.roc_curve(target, output[:,1], pos_label=2)  # wandb has now possible to extruct it yet
     wandb.log({"pr %s" % additional_str: wandb.plot.pr_curve(target, output,
                                                              labels=None, classes_to_plot=None),
                "roc %s" % additional_str: wandb.plot.roc_curve(target, output, labels=None, classes_to_plot=None),
