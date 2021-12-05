@@ -4,7 +4,7 @@ from neuron import h, gui
 import numpy as np
 import torch
 import time
-
+from typing import List,Tuple
 NULL_SPIKE_FACTOR_VALUE = 0
 
 USE_CVODE = True
