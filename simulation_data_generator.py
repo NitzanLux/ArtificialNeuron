@@ -92,7 +92,7 @@ class SimulationDataGenerator():
         self.files_shuffle_checker(non_spikes[SIM_INDEX].shape[0], spikes[SIM_INDEX].shape[0])
 
     @staticmethod
-    def shuffle_array(arrays: Tuple[np.array]):
+    def shuffle_array(arrays: List[np.array]):
         """
         shuffle arrays of 1d when the shuffle should be the same for the two arrays (i.e. x,y)
         :return: new arrays
