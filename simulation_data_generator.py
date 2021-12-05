@@ -82,6 +82,7 @@ class SimulationDataGenerator():
             # shuffle them
             spikes = self.shuffle_array(spikes)
             non_spikes = self.shuffle_array(non_spikes)
+
         if not self.is_shuffel_data:
             yield from self.iterate_deterministic_no_repetition(non_spikes, spikes, number_of_non_spikes_in_batch,
                                                                 number_of_spikes_in_batch)
