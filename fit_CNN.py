@@ -19,9 +19,7 @@ import get_neuron_modle
 from get_neuron_modle import get_L5PC
 import re
 
-ACCURACY_EVALUATION_FREQUENCY = 500
 
-VALIDATION_EVALUATION_FREQUENCY = 10
 
 WANDB_API_KEY = "2725e59f8f4484605300fdf4da4c270ff0fe44a3"
 
@@ -29,7 +27,9 @@ WANDB_PROJECT_NAME = "ArtificialNeuron1"
 
 DOCUMENT_ON_WANDB = True
 
-AUC_UPDATE_FREQUENCY = 500
+
+VALIDATION_EVALUATION_FREQUENCY = 10
+ACCURACY_EVALUATION_FREQUENCY = 500
 BATCH_LOG_UPDATE_FREQ = 20
 BUFFER_SIZE_IN_FILES_VALID = 2
 BUFFER_SIZE_IN_FILES_TRAINING = 8
@@ -39,10 +39,11 @@ include_DVT = False
 WATCH_MODEL = False
 
 # for dibugging
-# BATCH_LOG_UPDATE_FREQ = 1
-# AUC_UPDATE_FREQUENCY = 1
-# BUFFER_SIZE_IN_FILES_VALID = 1
-# BUFFER_SIZE_IN_FILES_TRAINING = 1
+BATCH_LOG_UPDATE_FREQ = 1
+VALIDATION_EVALUATION_FREQUENCY=1
+ACCURACY_EVALUATION_FREQUENCY = 1
+BUFFER_SIZE_IN_FILES_VALID = 1
+BUFFER_SIZE_IN_FILES_TRAINING = 1
 # logging.error("Aaaaa")
 
 print('-----------------------------------------------')
@@ -270,11 +271,11 @@ def display_accuracy(target, output, step, additional_str=''):
     output = np.vstack([np.abs(1 - output), output]).T
     print("*#$* debugging batch size %d \n\t #$ step %d \n\t ## number of true values %d " % (
         target.shape[0], step, np.count_nonzero(target)), flush=True)
-    fpr, tpr, thresholds = skm.roc_curve(target, output, pos_label=2)  # wandb has now possible to extruct it yet
+    fpr, tpr, thresholds = skm.roc_curve(target, output[1,:], pos_label=2)  # wandb has now possible to extruct it yet
     wandb.log({"pr %s" % additional_str: wandb.plot.pr_curve(target, output,
                                                              labels=None, classes_to_plot=None),
                "roc %s" % additional_str: wandb.plot.roc_curve(target, output, labels=None, classes_to_plot=None),
-               "AUC %s" % additional_str: sk.metrics.auc(fpr, tpr)}, commit=True)
+               "AUC %s" % additional_str: skm.auc(fpr, tpr)}, commit=True)
 
     # todo add fp tp
 

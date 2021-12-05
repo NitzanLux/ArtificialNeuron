@@ -14,7 +14,7 @@ SIM_INDEX = 0
 class SimulationDataGenerator():
     'Characterizes a dataset for PyTorch'
 
-    def __init__(self, sim_experiment_files, buffer_size_in_files=12, epoch_size=None  ,
+    def __init__(self, sim_experiment_files, buffer_size_in_files=12, epoch_size=None,
                  batch_size=8, sample_ratio_to_shuffel=1, window_size_ms=300, file_load=0.3, DVT_PCA_model=None,
                  ignore_time_from_start=0, y_train_soma_bias=-67.7, y_soma_threshold=-55.0, y_DTV_threshold=3.0,
                  shuffle_files=True, include_DVT=False, is_training=True, is_shuffel_data=False):
@@ -79,37 +79,57 @@ class SimulationDataGenerator():
             non_spikes[SIM_INDEX] = non_spikes[SIM_INDEX][non_spikes_in_bound]
             non_spikes[1] = non_spikes[1][non_spikes_in_bound]
 
+            # shuffle them
+            spikes = self.shuffle_array(spikes)
+            non_spikes = self.shuffle_array(non_spikes)
         if not self.is_shuffel_data:
-            yield from self.iterate_deterministic_no_repetition(non_spikes, number_of_non_spikes_in_batch,
-                                                                number_of_spikes_in_batch, spikes)
+            yield from self.iterate_deterministic_no_repetition(non_spikes, spikes, number_of_non_spikes_in_batch,
+                                                                number_of_spikes_in_batch)
         else:
             yield from self.iterate_and_shuffle(non_spikes, spikes, number_of_non_spikes_in_batch,
                                                 number_of_spikes_in_batch)
         self.files_shuffle_checker(non_spikes[SIM_INDEX].shape[0], spikes[SIM_INDEX].shape[0])
+
+    @staticmethod
+    def shuffle_array(arrays: Tuple[np.array]):
+        """
+        shuffle arrays of 1d when the shuffle should be the same for the two arrays (i.e. x,y)
+        :return: new arrays
+        """
+        new_indices = np.arange(arrays[0].shape[0])
+        np.random.shuffle(new_indices)
+        new_arrays = list(arrays)
+        for i in range(len(new_arrays)):
+            new_arrays[i] = new_arrays[i][new_indices, ...]
+        return new_arrays
+
     def shuffel_data(self):
         indexes = np.arange(self.X.shape[0])
         np.random.shuffle(indexes)
-        self.X=self.X[indexes,:,:].squeeze()
-        self.y_soma=self.y_soma[indexes,:].squeeze()
-        self.y_spike=self.y_spike[indexes,:]
+        self.X = self.X[indexes, :, :].squeeze()
+        self.y_soma = self.y_soma[indexes, :].squeeze()
+        self.y_spike = self.y_spike[indexes, :]
 
-    def iterate_deterministic_no_repetition(self, non_spikes, number_of_non_spikes_in_batch, number_of_spikes_in_batch, spikes):
-        counter=0
-        while self.epoch_size is None or counter<self.epoch_size:
-            counter+=1
+    def iterate_deterministic_no_repetition(self, non_spikes, spikes, number_of_non_spikes_in_batch,
+                                            number_of_spikes_in_batch):
+        counter = 0
+        while self.epoch_size is None or counter < self.epoch_size:
+            counter += 1
             if self.__return_spike_factor == NULL_SPIKE_FACTOR_VALUE:
                 yield self[np.arange(self.sample_counter, self.sample_counter + self.batch_size) % self.X.shape[
                     SIM_INDEX], np.random.choice(range(self.sampling_start_time, self.X.shape[2] - 1),
                                                  size=self.batch_size, replace=False)]
             else:
-                number_of_iteration = (self.sample_counter // self.batch_size)+1
+                number_of_iteration = (self.sample_counter // self.batch_size) + 1
                 spike_idxs = np.arange(int(number_of_iteration * number_of_spikes_in_batch),
-                                       int(number_of_iteration * (number_of_spikes_in_batch + 1))) % self.X.shape[SIM_INDEX]
+                                       int((number_of_iteration + 1) * number_of_spikes_in_batch)) % self.X.shape[
+                                 SIM_INDEX]
                 spikes_sim_idxs = spikes[SIM_INDEX][spike_idxs]
                 spikes_sim_time = spikes[1][spike_idxs]
 
                 non_spike_idxs = np.arange(int(number_of_iteration * number_of_non_spikes_in_batch),
-                                           int(number_of_iteration * (number_of_non_spikes_in_batch + 1))) % self.X.shape[
+                                           int((number_of_iteration + 1) * number_of_non_spikes_in_batch)) % \
+                                 self.X.shape[
                                      SIM_INDEX]
                 non_spikes_sim_idxs = non_spikes[SIM_INDEX][non_spike_idxs]
                 non_spikes_sim_time = non_spikes[1][non_spike_idxs]
@@ -117,7 +137,6 @@ class SimulationDataGenerator():
                 selected_sim_idxs = np.hstack([spikes_sim_idxs, non_spikes_sim_idxs])
                 selected_time_idxs = np.hstack([spikes_sim_time, non_spikes_sim_time])
                 yield self[selected_sim_idxs, selected_time_idxs]
-
 
     def iterate_and_shuffle(self, non_spikes, spikes, number_of_non_spikes_in_batch, number_of_spikes_in_batch):
         counter = 0
@@ -173,8 +192,8 @@ class SimulationDataGenerator():
             print(e)
             print("a")
         pred_index = win_time
-        y_spike_batch = self.y_spike[sim_ind,pred_index]
-        y_soma_batch = self.y_soma[sim_ind,pred_index]
+        y_spike_batch = self.y_spike[sim_ind, pred_index]
+        y_soma_batch = self.y_soma[sim_ind, pred_index]
         y_soma_batch = y_soma_batch[:, np.newaxis, ...]
         y_spike_batch = y_spike_batch[:, np.newaxis, ...]
         if self.include_DVT:  # positions are wrong and probability wont work :(
@@ -233,7 +252,6 @@ class SimulationDataGenerator():
             self.y_spike.append(y_spike)
             self.y_soma.append(y_soma)
 
-
         self.X = np.vstack(self.X)
         self.y_spike = np.vstack(self.y_spike).squeeze(1)
         self.y_soma = np.vstack(self.y_soma).squeeze(1)
@@ -250,6 +268,7 @@ class SimulationDataGenerator():
             if self.sample_counter / self.X.shape[0] >= self.sample_ratio_to_shuffle:
                 self.reload_files()
         self.shuffel_data()
+
 
 def parse_sim_experiment_file_with_DVT(sim_experiment_file, DVT_PCA_model=None, print_logs=False):
     """:DVT_PCA_model is """
