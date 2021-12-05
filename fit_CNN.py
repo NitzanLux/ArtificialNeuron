@@ -263,7 +263,7 @@ def train_log(loss, step, epoch=None, learning_rate=None, sigma=None, weights=No
 
 
 def display_accuracy(target, output, step, additional_str=''):
-    if step % AUC_UPDATE_FREQUENCY != 0 and not DOCUMENT_ON_WANDB:
+    if not DOCUMENT_ON_WANDB:
         return
     target = target.cpu().detach().numpy().astype(bool).squeeze()
     output = output.cpu().detach().numpy().squeeze()
