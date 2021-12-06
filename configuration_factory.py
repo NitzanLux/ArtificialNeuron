@@ -85,7 +85,7 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                                  number_of_layers_root= 3, number_of_layers_leaf=3, number_of_layers_intersection=3,
                                  number_of_layers_branch_intersection=3,
                                  david_layers = [55,13,13,13,13,13,13],
-                                 skip_conections=False,
+                                 skip_conections=True,
                                  kernel_size=21,
                                  number_of_layers=2,
                                  stride=1,
