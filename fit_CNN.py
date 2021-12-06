@@ -269,13 +269,13 @@ def display_accuracy(target, output, step, additional_str=''):
     target = target.cpu().detach().numpy().astype(bool).squeeze()
     output = output.cpu().detach().numpy().squeeze()
     output = np.vstack([np.abs(1 - output), output]).T
-    print("*#$* debugging batch size %d \n\t #$ step %d \n\t ## number of true values %d " % (
-        target.shape[0], step, np.count_nonzero(target)), flush=True)
-    fpr, tpr, thresholds = skm.roc_curve(target, output[:,1], pos_label=2)  # wandb has now possible to extruct it yet
+    # fpr, tpr, thresholds = skm.roc_curve(target, output[:,1], )  # wandb has now possible to extruct it yet
+    auc =  skm.roc_auc_score(target,output[:,1])
+    print("AUC   ",auc)
     wandb.log({"pr %s" % additional_str: wandb.plot.pr_curve(target, output,
                                                              labels=None, classes_to_plot=None),
                "roc %s" % additional_str: wandb.plot.roc_curve(target, output, labels=None, classes_to_plot=None),
-               "AUC %s" % additional_str: skm.auc(fpr, tpr)}, commit=True)
+               "AUC %s" % additional_str:auc}, commit=True)
 
     # todo add fp tp
 
