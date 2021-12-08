@@ -181,7 +181,7 @@ def generate_config_files_multiple_seeds(config_path: [str, Dict], number_of_con
 
 if __name__ == '__main__':
     config_morpho =config_factory(dynamic_learning_params=False, architecture_type="LAYERED_TEMPORAL_CONV", kernel_size=21,
-                        model_tag="simple_skip_connection_model")
+                        model_tag="complex_skip_connection_model")
     # config_david =config_factory(dynamic_learning_params=False, architecture_type="DavidsNeuronNetwork", inner_scope_channel_number=128,
     #                     model_tag="cr_david_model")
     # configs_dynamic = generate_config_files_multiple_seeds(config_dynamic, 2)
@@ -189,7 +189,7 @@ if __name__ == '__main__':
     # configs_static = generate_config_files_multiple_seeds(config_static, 1)
     # configs_to_read = configs_dynamic+[config_factory(loss_function="loss_zero_mse_on_spikes")]
     #
-    with open(os.path.join(MODELS_DIR, "complex_model.json"), 'w') as file:
+    with open(os.path.join(MODELS_DIR, "complex_skip_connection_model.json"), 'w') as file:
         file.write(json.dumps([config_morpho]))  # use `json.loads` to do the reverse
 
     # config = load_config_file("models/NMDA/simplest_model_dynamic_NMDA_Tree_TCN__2021-09-30__16_51__ID_78714/simplest_model_dynamic_NMDA_Tree_TCN__2021-09-30__16_51__ID_78714.config")
