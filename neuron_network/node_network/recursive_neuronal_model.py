@@ -38,17 +38,20 @@ class RecursiveNeuronModel(nn.Module):
         self.model_type = model_type
         self.include_dendritic_voltage_tracing = include_dendritic_voltage_tracing
         self.is_cuda = is_cuda
-        self.activation_function_name=network_kwargs["activation_function_name"]
-        self.activation_function_kargs=network_kwargs["activation_function_kargs"]
+        self.activation_function_name = network_kwargs["activation_function_name"]
+        self.activation_function_kargs = network_kwargs["activation_function_kargs"]
         self.get_model_block(**network_kwargs)
+        self.skip_connections = network_kwargs['skip_connections']
+        self.skip_connections_model = None
 
+        self.model = None
     def get_activation_function(self):
         activation_function_base_function = getattr(nn, self.activation_function_name)
-        return lambda :activation_function_base_function(**self.activation_function_kargs)
+        return lambda: activation_function_base_function(**self.activation_function_kargs)
 
     def get_model_block(self, **config):
-        if config[
-            "architecture_type"] == ArchitectureType.BASIC_CONV.value:  # probability wont work becuse synapse became channels
+        if config["architecture_type"] == ArchitectureType.BASIC_CONV.value:
+            # probability wont work because synapse became channels
             branch_class = basic_convolution_blocks.BranchBlock
             branch_leaf_class = basic_convolution_blocks.BranchLeafBlock
             intersection_class = basic_convolution_blocks.IntersectionBlock
@@ -112,12 +115,12 @@ class RecursiveNeuronModel(nn.Module):
     @staticmethod
     def build_david_data_model(config, L5PC):
 
-        listOfBasalSections = [L5PC.dend[x] for x in range(len(L5PC.dend))]
-        listOfApicalSections = [L5PC.apic[x] for x in range(len(L5PC.apic))]
-        allSections = listOfBasalSections + listOfApicalSections
+        list_of_basal_sections = [L5PC.dend[x] for x in range(len(L5PC.dend))]
+        list_of_apical_sections = [L5PC.apic[x] for x in range(len(L5PC.apic))]
+        all_sections = list_of_basal_sections + list_of_apical_sections
         segment_synapse_map = []
 
-        for k, section in enumerate(allSections):
+        for k, section in enumerate(all_sections):
             for currSegment in section:
                 segment_synapse_map.append(currSegment)
         segment_synapse_map = {seg: i for i, seg in enumerate(segment_synapse_map)}
@@ -220,14 +223,18 @@ class LeafNetwork(RecursiveNeuronModel):
         return None
 
     def forward(self, x):
-        return self.model(x[:, self.input_indexes, ...])
+        out = self.model(x[:, self.input_indexes, ...])
+        if self.skip_connections:
+            out = out + self.skip_connections_model(x[:, self.input_indexes, ...])
+        return out
 
     def set_inputs_to_model(self, **network_kwargs):
         network_kwargs = deepcopy(network_kwargs)
         network_kwargs["channel_output_number"] = min(len(self.input_indexes), network_kwargs["channel_output_number"])
-
         self.model = self.model((len(self.input_indexes), network_kwargs["input_window_size"]), **network_kwargs,
                                 activation_function=self.get_activation_function())
+        if skip_connections:
+            self.skip_connections_model = nn.Conv1d(len(self.input_indexes), self.channel_output_number, 1)
 
 
 class IntersectionNetwork(RecursiveNeuronModel):
@@ -251,12 +258,19 @@ class IntersectionNetwork(RecursiveNeuronModel):
         self.model = self.model((self.intersection_a.channel_output_number + self.intersection_b.channel_output_number,
                                  network_kwargs["input_window_size"]), **network_kwargs,
                                 activation_function=self.get_activation_function())
+        if skip_connections:
+            self.skip_connections_model = nn.Conv1d(
+                self.intersection_a.channel_output_number + self.intersection_b.channel_output_number,
+                self.channel_output_number, 1)
 
     def forward(self, x):
         input_a = self.intersection_a(x)
         input_b = self.intersection_b(x)
         input = torch.cat([input_a, input_b], dim=SYNAPSE_DIMENTION_POSITION)
-        return self.model(input)
+        out = self.model(input)
+        if skip_connections:
+            out = out + self.skip_connections_model(input)
+        return out
 
     def __iter__(self):
         yield self.intersection_a
@@ -275,16 +289,26 @@ class BranchNetwork(RecursiveNeuronModel):
     def set_inputs_to_model(self, upstream_model: [IntersectionNetwork], **network_kwargs):
         self.upstream_model = upstream_model
         network_kwargs = deepcopy(network_kwargs)
-        network_kwargs["channel_output_number"] = min(self.upstream_model.channel_output_number + len(self.input_indexes), network_kwargs["channel_output_number"])
+        network_kwargs["channel_output_number"] = min(
+            self.upstream_model.channel_output_number + len(self.input_indexes),
+            network_kwargs["channel_output_number"])
         self.channel_output_number = network_kwargs["channel_output_number"]
-        self.model = self.model(input_shape_leaf=(len(self.input_indexes),network_kwargs["input_window_size"]),
-                                input_shape_integration = (len(self.input_indexes) + self.upstream_model.channel_output_number, network_kwargs["input_window_size"]), **network_kwargs,
+        self.model = self.model(input_shape_leaf=(len(self.input_indexes), network_kwargs["input_window_size"]),
+                                input_shape_integration=(
+                                    len(self.input_indexes) + self.upstream_model.channel_output_number,
+                                    network_kwargs["input_window_size"]), **network_kwargs,
                                 activation_function=self.get_activation_function())
-
+        if skip_connections:
+            self.skip_connections_model = nn.Conv1d(len(self.input_indexes) + self.upstream_model.channel_output_number,
+                                                    self.channel_output_number, 1)
 
     def forward(self, x):
         upstream_data = self.upstream_model(x)
-        return self.model(x[:, self.input_indexes, ...],upstream_data)
+        out = self.model(x[:, self.input_indexes, ...], upstream_data)
+        if self.skip_connections:
+            out = out + self.skip_connections_model(
+                torch.cat([upstream_data, x[:, self.input_indexes, ...]], dim=SYNAPSE_DIMENTION_POSITION))
+        return out
 
     def __iter__(self):
         yield self.upstream_model
@@ -300,7 +324,7 @@ class SomaNetwork(RecursiveNeuronModel):
 
     def set_inputs_to_model(self, *branches: [IntersectionNetwork, BranchNetwork], **network_kwargs):
         self.branches.extend(branches)
-        number_of_inputs=sum([branch.channel_output_number for branch in self.branches])
+        number_of_inputs = sum([branch.channel_output_number for branch in self.branches])
         self.model = self.model((number_of_inputs, network_kwargs["input_window_size"]), **network_kwargs,
                                 activation_function=self.get_activation_function())
 
@@ -314,5 +338,5 @@ class SomaNetwork(RecursiveNeuronModel):
         for branch in self.branches:
             outputs.append(branch(x))
         outputs = torch.cat(outputs, dim=SYNAPSE_DIMENTION_POSITION)
-        s,v = self.model(outputs)
-        return s.squeeze(1),v.squeeze(1)
+        s, v = self.model(outputs)
+        return s.squeeze(1), v.squeeze(1)
