@@ -18,6 +18,17 @@ from neuron_network.block_aid_functions import *
 
 SYNAPSE_DIMENTION_POSITION = 1
 
+class Base1DConvolutionBlockLayer(nn.Module):
+    def __init__(self,in_channels, out_channels, kernel_size, stride, padding, dilation,activation_function):
+        super(Base1DConvolutionBlockLayer, self).__init__()
+        self.conv1d = nn.Conv1d(in_channels, out_channels, kernel_size, stride, padding, dilation)
+        self.activation_function=activation_function()
+        self.batch_norm = nn.BatchNorm1d(out_channels)
+    def forward(self,x):
+        out = self.conv1d(x)
+        out=self.activation_function(out)
+        out = self.batch_norm(out)
+        return out
 
 class Base1DConvolutionBlock(nn.Module):
     def __init__(self, number_of_layers, input_shape: Tuple[int, int], activation_function
@@ -38,8 +49,7 @@ class Base1DConvolutionBlock(nn.Module):
                 in_channels = inner_scope_channel_number
             if i == number_of_layers - 1:
                 out_channels = channel_output_number
-            conv_1d = nn.Conv1d(in_channels, out_channels, kernel_size, stride, padding, dilation)
-            model = nn.Sequential(conv_1d, activation_function(), nn.BatchNorm1d(out_channels))
+            model = Base1DConvolutionBlockLayer(in_channels, out_channels, kernel_size, stride, padding, dilation,activation_function)
             self.layers_list.append(model)
 
     def forward(self, x):

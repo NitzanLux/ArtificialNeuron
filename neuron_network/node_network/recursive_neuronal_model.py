@@ -40,11 +40,11 @@ class RecursiveNeuronModel(nn.Module):
         self.is_cuda = is_cuda
         self.activation_function_name = network_kwargs["activation_function_name"]
         self.activation_function_kargs = network_kwargs["activation_function_kargs"]
-        self.get_model_block(**network_kwargs)
-        self.skip_connections = network_kwargs['skip_connections']
-        self.skip_connections_model = None
-
         self.model = None
+        self.get_model_block(**network_kwargs)
+        self.is_inter_module_skip_connections = network_kwargs['inter_module_skip_connections']
+        self.model_skip_connections_inter = None
+
     def get_activation_function(self):
         activation_function_base_function = getattr(nn, self.activation_function_name)
         return lambda: activation_function_base_function(**self.activation_function_kargs)
@@ -65,7 +65,7 @@ class RecursiveNeuronModel(nn.Module):
             assert False, "type is not known"
 
         if self.model_type == SectionType.BRANCH:
-            self.upstream_data = None
+            # self.upstream_data = None
             self.model = branch_class
         elif self.model_type == SectionType.BRANCH_INTERSECTION:
             self.model = intersection_class
@@ -224,8 +224,8 @@ class LeafNetwork(RecursiveNeuronModel):
 
     def forward(self, x):
         out = self.model(x[:, self.input_indexes, ...])
-        if self.skip_connections:
-            out = out + self.skip_connections_model(x[:, self.input_indexes, ...])
+        if self.is_inter_module_skip_connections:
+            out = out + self.model_skip_connections_inter(x[:, self.input_indexes, ...])
         return out
 
     def set_inputs_to_model(self, **network_kwargs):
@@ -233,8 +233,8 @@ class LeafNetwork(RecursiveNeuronModel):
         network_kwargs["channel_output_number"] = min(len(self.input_indexes), network_kwargs["channel_output_number"])
         self.model = self.model((len(self.input_indexes), network_kwargs["input_window_size"]), **network_kwargs,
                                 activation_function=self.get_activation_function())
-        if skip_connections:
-            self.skip_connections_model = nn.Conv1d(len(self.input_indexes), self.channel_output_number, 1)
+        if self.is_inter_module_skip_connections:
+            self.model_skip_connections_inter = nn.Conv1d(len(self.input_indexes), self.channel_output_number, 1)
 
 
 class IntersectionNetwork(RecursiveNeuronModel):
@@ -258,8 +258,9 @@ class IntersectionNetwork(RecursiveNeuronModel):
         self.model = self.model((self.intersection_a.channel_output_number + self.intersection_b.channel_output_number,
                                  network_kwargs["input_window_size"]), **network_kwargs,
                                 activation_function=self.get_activation_function())
-        if skip_connections:
-            self.skip_connections_model = nn.Conv1d(
+        if self.is_inter_module_skip_connections:
+
+            self.model_skip_connections_inter = nn.Conv1d(
                 self.intersection_a.channel_output_number + self.intersection_b.channel_output_number,
                 self.channel_output_number, 1)
 
@@ -268,8 +269,8 @@ class IntersectionNetwork(RecursiveNeuronModel):
         input_b = self.intersection_b(x)
         input = torch.cat([input_a, input_b], dim=SYNAPSE_DIMENTION_POSITION)
         out = self.model(input)
-        if skip_connections:
-            out = out + self.skip_connections_model(input)
+        if self.is_inter_module_skip_connections:
+            out = out + self.model_skip_connections_inter(input)
         return out
 
     def __iter__(self):
@@ -298,15 +299,16 @@ class BranchNetwork(RecursiveNeuronModel):
                                     len(self.input_indexes) + self.upstream_model.channel_output_number,
                                     network_kwargs["input_window_size"]), **network_kwargs,
                                 activation_function=self.get_activation_function())
-        if skip_connections:
-            self.skip_connections_model = nn.Conv1d(len(self.input_indexes) + self.upstream_model.channel_output_number,
+        if self.is_inter_module_skip_connections:
+            self.model_skip_connections_inter = nn.Conv1d(len(self.input_indexes) + self.upstream_model.channel_output_number,
                                                     self.channel_output_number, 1)
 
     def forward(self, x):
         upstream_data = self.upstream_model(x)
         out = self.model(x[:, self.input_indexes, ...], upstream_data)
-        if self.skip_connections:
-            out = out + self.skip_connections_model(
+        if self.is_inter_module_skip_connections:
+
+            out = out + self.model_skip_connections_inter(
                 torch.cat([upstream_data, x[:, self.input_indexes, ...]], dim=SYNAPSE_DIMENTION_POSITION))
         return out
 
@@ -335,7 +337,7 @@ class SomaNetwork(RecursiveNeuronModel):
     def forward(self, x):
         x = x.type(torch.cuda.DoubleTensor) if self.is_cuda else x.type(torch.DoubleTensor)
         outputs = []
-        for branch in self.branches:
+        for i,branch in enumerate(self.branches):
             outputs.append(branch(x))
         outputs = torch.cat(outputs, dim=SYNAPSE_DIMENTION_POSITION)
         s, v = self.model(outputs)

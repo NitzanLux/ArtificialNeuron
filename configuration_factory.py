@@ -63,7 +63,7 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                    **kargs):
     ##default values can be overridden by kargs
     config = AttrDict(config_version=1.0,input_window_size=300, num_segments=2 * 639, num_syn_types=1,
-                      num_epochs=15000, epoch_size=30, batch_size_train=50, batch_size_validation=200,
+                      num_epochs=15000, epoch_size=30, batch_size_train=30, batch_size_validation=200,
                       train_file_load=0.5, valid_file_load=0.5, spike_probability=0.5,
                       # files_filter_regex=".*exBas_0_1100_inhBasDiff_-1100_600__exApic_0_1100_inhApicDiff_-1100_600_SpTemp[^\\/\.]*\.p",
                       files_filter_regex=".*",
@@ -82,12 +82,13 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                                  time_domain_shape=config.input_window_size,
                                  # kernel_size_2d=3,
                                  # kernel_size_1d=9,
-                                 number_of_layers_root= 7, number_of_layers_leaf=5, number_of_layers_intersection=5,
-                                 number_of_layers_branch_intersection=5,
+                                 number_of_layers_root= 10, number_of_layers_leaf=7, number_of_layers_intersection=7,
+                                 number_of_layers_branch_intersection=7,
                                  david_layers = [55,13,13,13,13,13,13],
                                  skip_conections=True,
+                                 inter_module_skip_connections=True,
                                  kernel_size=11,
-                                 number_of_layers=2,
+                                 # number_of_layers=2,
                                  stride=1,
                                  padding=0,
                                  dilation=1,
@@ -179,8 +180,8 @@ def generate_config_files_multiple_seeds(config_path: [str, Dict], number_of_con
 
 
 if __name__ == '__main__':
-    config_morpho =config_factory(dynamic_learning_params=False, architecture_type="LAYERED_TEMPORAL_CONV", kernel_size=31,
-                        model_tag="complex_model")
+    config_morpho =config_factory(dynamic_learning_params=False, architecture_type="LAYERED_TEMPORAL_CONV", kernel_size=21,
+                        model_tag="simple_skip_connection_model")
     # config_david =config_factory(dynamic_learning_params=False, architecture_type="DavidsNeuronNetwork", inner_scope_channel_number=128,
     #                     model_tag="cr_david_model")
     # configs_dynamic = generate_config_files_multiple_seeds(config_dynamic, 2)
