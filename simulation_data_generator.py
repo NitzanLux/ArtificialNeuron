@@ -86,8 +86,7 @@ class SimulationDataGenerator():
     def __iter__(self):
         """create epoch iterator"""
         if not self.is_shuffel_data:
-            yield from self.iterate_deterministic_no_repetition(non_spikes, spikes, number_of_non_spikes_in_batch,
-                                                                number_of_spikes_in_batch)
+            yield from self.iterate_deterministic_no_repetition()
         else:
             yield from self.iterate_and_shuffle(non_spikes, spikes, number_of_non_spikes_in_batch,
                                                 number_of_spikes_in_batch)
@@ -112,8 +111,8 @@ class SimulationDataGenerator():
         self.y_soma = self.y_soma[indexes, :].squeeze()
         self.y_spike = self.y_spike[indexes, :]
         self.separate_spike_and_non_spike_samples()
-    def iterate_deterministic_no_repetition(self, non_spikes, spikes, number_of_non_spikes_in_batch,
-                                            number_of_spikes_in_batch):
+
+    def iterate_deterministic_no_repetition(self):
         counter = 0
         while self.epoch_size is None or counter < self.epoch_size:
             counter += 1
@@ -123,25 +122,25 @@ class SimulationDataGenerator():
                                                  size=self.batch_size, replace=False)]
             else:
                 number_of_iteration = (self.sample_counter // self.batch_size) + 1
-                spike_idxs = np.arange(int(number_of_iteration * number_of_spikes_in_batch),
-                                       int((number_of_iteration + 1) * number_of_spikes_in_batch)) % self.X.shape[
+                spike_idxs = np.arange(int(number_of_iteration * self.number_of_spikes_in_batch),
+                                       int((number_of_iteration + 1) * self.number_of_spikes_in_batch)) % self.X.shape[
                                  SIM_INDEX]
-                spikes_sim_idxs = spikes[SIM_INDEX][spike_idxs]
-                spikes_sim_time = spikes[1][spike_idxs]
+                spikes_sim_idxs = self.spikes[SIM_INDEX][spike_idxs]
+                spikes_sim_time = self.spikes[1][spike_idxs]
 
-                non_spike_idxs = np.arange(int(number_of_iteration * number_of_non_spikes_in_batch),
-                                           int((number_of_iteration + 1) * number_of_non_spikes_in_batch)) % \
+                non_spike_idxs = np.arange(int(number_of_iteration * self.number_of_non_spikes_in_batch),
+                                           int((number_of_iteration + 1) * self.number_of_non_spikes_in_batch)) % \
                                  self.X.shape[
                                      SIM_INDEX]
-                non_spikes_sim_idxs = non_spikes[SIM_INDEX][non_spike_idxs]
-                non_spikes_sim_time = non_spikes[1][non_spike_idxs]
+                non_spikes_sim_idxs = self.non_spikes[SIM_INDEX][non_spike_idxs]
+                non_spikes_sim_time = self.non_spikes[1][non_spike_idxs]
 
                 selected_sim_idxs = np.hstack([spikes_sim_idxs, non_spikes_sim_idxs])
                 selected_time_idxs = np.hstack([spikes_sim_time, non_spikes_sim_time])
                 yield self[selected_sim_idxs, selected_time_idxs]
-            self.files_shuffle_checker(non_spikes[SIM_INDEX].shape[0], spikes[SIM_INDEX].shape[0])
+            self.files_shuffle_checker(self.non_spikes[SIM_INDEX].shape[0], self.spikes[SIM_INDEX].shape[0])
 
-    def iterate_and_shuffle(self, non_spikes, spikes, number_of_non_spikes_in_batch, number_of_spikes_in_batch):
+    def iterate_and_shuffle(self):
         counter = 0
         while self.epoch_size is None or counter < self.epoch_size:
             counter += 1
@@ -152,21 +151,21 @@ class SimulationDataGenerator():
                                                       size=self.batch_size, replace=False)  # simulation duration
             else:
 
-                spike_idxs = np.random.choice(np.arange(spikes[SIM_INDEX].shape[0]), size=number_of_spikes_in_batch,
+                spike_idxs = np.random.choice(np.arange(self.spikes[SIM_INDEX].shape[0]), size=self.number_of_spikes_in_batch,
                                               replace=True)  # number of simulations per file
-                spikes_sim_idxs = spikes[SIM_INDEX][spike_idxs]
-                spikes_sim_time = spikes[1][spike_idxs]
+                spikes_sim_idxs = self.spikes[SIM_INDEX][spike_idxs]
+                spikes_sim_time = self.spikes[1][spike_idxs]
 
-                non_spike_idxs = np.random.choice(np.arange(non_spikes[SIM_INDEX].shape[0]),
-                                                  size=number_of_non_spikes_in_batch,
+                non_spike_idxs = np.random.choice(np.arange(self.non_spikes[SIM_INDEX].shape[0]),
+                                                  size=self.number_of_non_spikes_in_batch,
                                                   replace=True)  # number of simulations per file
-                non_spikes_sim_idxs = non_spikes[SIM_INDEX][non_spike_idxs]
-                non_spikes_sim_time = non_spikes[1][non_spike_idxs]
+                non_spikes_sim_idxs = self.non_spikes[SIM_INDEX][non_spike_idxs]
+                non_spikes_sim_time = self.non_spikes[1][non_spike_idxs]
 
                 selected_sim_idxs = np.hstack([spikes_sim_idxs, non_spikes_sim_idxs])
                 selected_time_idxs = np.hstack([spikes_sim_time, non_spikes_sim_time])
             yield self[selected_sim_idxs, selected_time_idxs]
-            self.files_shuffle_checker(non_spikes[SIM_INDEX].shape[0], spikes[SIM_INDEX].shape[0])
+            self.files_shuffle_checker(self.non_spikes[SIM_INDEX].shape[0], self.spikes[SIM_INDEX].shape[0])
 
     def files_shuffle_checker(self, number_of_non_spikes=0, number_of_spikes=0):
         self.sample_counter += self.batch_size
