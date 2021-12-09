@@ -73,7 +73,7 @@ class BranchLeafBlock(nn.Module):
         super(BranchLeafBlock, self).__init__()
         self.base_conv_1d = Base1DConvolutionBlock(number_of_layers_leaf, input_shape, activation_function,
                                                    inner_scope_channel_number, channel_output_number, kernel_size,
-                                                   stride, dilation)
+                                                   stride, dilation,kwargs['skip_connections'])
 
     def forward(self, x):
         out = self.base_conv_1d(x)
@@ -90,7 +90,7 @@ class IntersectionBlock(nn.Module):
                                                    input_shape,
                                                    activation_function,
                                                    inner_scope_channel_number,
-                                                   channel_output_number, kernel_size, stride, dilation)
+                                                   channel_output_number, kernel_size, stride, dilation,kwargs['skip_connections'])
 
     def forward(self, x):
         out = self.base_conv_1d(x)
@@ -115,7 +115,7 @@ class BranchBlock(nn.Module):
                                                    input_shape_integration,
                                                    activation_function,
                                                    inner_scope_channel_number,
-                                                   channel_output_number, kernel_size, stride, dilation)
+                                                   channel_output_number, kernel_size, stride, dilation,kwargs['skip_connections'])
 
 
 
@@ -135,7 +135,7 @@ class RootBlock(nn.Module):
         super(RootBlock, self).__init__()
         self.conv1d_root = Base1DConvolutionBlock(number_of_layers_root, input_shape, activation_function,
                                                   inner_scope_channel_number, inner_scope_channel_number, kernel_size,
-                                                  stride, dilation)
+                                                  stride, dilation,kwargs['skip_connections'])
         self.model = nn.Sequential(self.conv1d_root, activation_function())
 
         self.spike_prediction = nn.Conv1d(inner_scope_channel_number
