@@ -181,10 +181,11 @@ def generate_config_files_multiple_seeds(config_path: [str, Dict], number_of_con
 
 if __name__ == '__main__':
     config_morpho_0 =config_factory(dynamic_learning_params=False, architecture_type="LAYERED_TEMPORAL_CONV", kernel_size=11,
-                        model_tag="complex")
-    config_morpho_1 =config_factory(dynamic_learning_params=False, architecture_type="LAYERED_TEMPORAL_CONV", kernel_size=11,
                         model_tag="complex_skip",skip_conections=True,
-                                 inter_module_skip_connections=False,)
+                                 inter_module_skip_connections=False)
+    config_morpho_1 =config_factory(dynamic_learning_params=False, architecture_type="LAYERED_TEMPORAL_CONV", kernel_size=11,
+                        model_tag="complex_dskip",skip_conections=True,
+                                 inter_module_skip_connections=True)
 
     # config_david =config_factory(dynamic_learning_params=False, architecture_type="DavidsNeuronNetwork", inner_scope_channel_number=128,
     #                     model_tag="cr_david_model")
