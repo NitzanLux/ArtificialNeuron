@@ -41,8 +41,8 @@ class SimulationDataGenerator():
         self.curr_files_to_use = None
         self.sampling_start_time = ignore_time_from_start
         self.X, self.y_spike, self.y_soma, self.y_DVT = None, None, None, None
-        self.reload_files()
         self.__return_spike_factor = 0.  # if we want to return x spikes in the features.
+        self.reload_files()
         self.non_spikes, self.spikes, self.number_of_non_spikes_in_batch, self.number_of_spikes_in_batch=None,None,None,None
         # self.non_spikes,self.spikes,self.number_of_non_spikes_in_batch,self.nuber_of_spikes_in_batch = non_spikes, spikes, number_of_non_spikes_in_batch,
         #                                                         number_of_spikes_in_batch
@@ -54,18 +54,18 @@ class SimulationDataGenerator():
         """
         assert 0 <= spike_factor <= 1, "number must be between 0 and 1"
         self.__return_spike_factor = spike_factor
-
+        self.separate_spike_and_non_spike_samples()
     def __len__(self):
         'Denotes the total number of samples'
         return self.epoch_size
 
     def separate_spike_and_non_spike_samples(self):
-        self.non_spikes = np.array([])
-        self.spikes = np.array([])
-        self.number_of_spikes_in_batch, self.number_of_non_spikes_in_batch = 0, 0
+        # self.non_spikes = np.array([])
+        # self.spikes = np.array([])
+        # self.number_of_spikes_in_batch, self.number_of_non_spikes_in_batch = 0, 0
         if self.__return_spike_factor != 0:
             self.number_of_spikes_in_batch = int(self.batch_size * self.__return_spike_factor)
-            self.number_of_non_spikes_in_batch = self.batch_size - number_of_spikes_in_batch
+            self.number_of_non_spikes_in_batch = self.batch_size - self.number_of_spikes_in_batch
 
             # get spikes location
             spike_mask = self.y_spike.squeeze() == 1
@@ -88,8 +88,7 @@ class SimulationDataGenerator():
         if not self.is_shuffel_data:
             yield from self.iterate_deterministic_no_repetition()
         else:
-            yield from self.iterate_and_shuffle(non_spikes, spikes, number_of_non_spikes_in_batch,
-                                                number_of_spikes_in_batch)
+            yield from self.iterate_and_shuffle()
 
     @staticmethod
     def shuffle_array(arrays: List[np.array]):
