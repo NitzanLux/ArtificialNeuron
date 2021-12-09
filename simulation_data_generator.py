@@ -43,7 +43,9 @@ class SimulationDataGenerator():
         self.X, self.y_spike, self.y_soma, self.y_DVT = None, None, None, None
         self.reload_files()
         self.__return_spike_factor = 0.  # if we want to return x spikes in the features.
-
+        self.non_spikes, self.spikes, self.number_of_non_spikes_in_batch, self.number_of_spikes_in_batch=None,None,None,None
+        # self.non_spikes,self.spikes,self.number_of_non_spikes_in_batch,self.nuber_of_spikes_in_batch = non_spikes, spikes, number_of_non_spikes_in_batch,
+        #                                                         number_of_spikes_in_batch
     def change_spike_probability(self, spike_factor):
         """
         change the probability of spikes in the sample space.
@@ -57,14 +59,13 @@ class SimulationDataGenerator():
         'Denotes the total number of samples'
         return self.epoch_size
 
-    def __iter__(self):
-        """create epoch iterator"""
-        non_spikes = np.array([])
-        spikes = np.array([])
-        number_of_spikes_in_batch, number_of_non_spikes_in_batch = 0, 0
+    def separate_spike_and_non_spike_samples(self):
+        self.non_spikes = np.array([])
+        self.spikes = np.array([])
+        self.number_of_spikes_in_batch, self.number_of_non_spikes_in_batch = 0, 0
         if self.__return_spike_factor != 0:
-            number_of_spikes_in_batch = int(self.batch_size * self.__return_spike_factor)
-            number_of_non_spikes_in_batch = self.batch_size - number_of_spikes_in_batch
+            self.number_of_spikes_in_batch = int(self.batch_size * self.__return_spike_factor)
+            self.number_of_non_spikes_in_batch = self.batch_size - number_of_spikes_in_batch
 
             # get spikes location
             spike_mask = self.y_spike.squeeze() == 1
@@ -80,16 +81,16 @@ class SimulationDataGenerator():
             non_spikes[1] = non_spikes[1][non_spikes_in_bound]
 
             # shuffle them
-            spikes = self.shuffle_array(spikes)
-            non_spikes = self.shuffle_array(non_spikes)
-
+            self.spikes = self.shuffle_array(spikes)
+            self.non_spikes = self.shuffle_array(non_spikes)
+    def __iter__(self):
+        """create epoch iterator"""
         if not self.is_shuffel_data:
             yield from self.iterate_deterministic_no_repetition(non_spikes, spikes, number_of_non_spikes_in_batch,
                                                                 number_of_spikes_in_batch)
         else:
             yield from self.iterate_and_shuffle(non_spikes, spikes, number_of_non_spikes_in_batch,
                                                 number_of_spikes_in_batch)
-        self.files_shuffle_checker(non_spikes[SIM_INDEX].shape[0], spikes[SIM_INDEX].shape[0])
 
     @staticmethod
     def shuffle_array(arrays: List[np.array]):
@@ -110,7 +111,7 @@ class SimulationDataGenerator():
         self.X = self.X[indexes, :, :].squeeze()
         self.y_soma = self.y_soma[indexes, :].squeeze()
         self.y_spike = self.y_spike[indexes, :]
-
+        self.separate_spike_and_non_spike_samples()
     def iterate_deterministic_no_repetition(self, non_spikes, spikes, number_of_non_spikes_in_batch,
                                             number_of_spikes_in_batch):
         counter = 0
@@ -138,6 +139,7 @@ class SimulationDataGenerator():
                 selected_sim_idxs = np.hstack([spikes_sim_idxs, non_spikes_sim_idxs])
                 selected_time_idxs = np.hstack([spikes_sim_time, non_spikes_sim_time])
                 yield self[selected_sim_idxs, selected_time_idxs]
+            self.files_shuffle_checker(non_spikes[SIM_INDEX].shape[0], spikes[SIM_INDEX].shape[0])
 
     def iterate_and_shuffle(self, non_spikes, spikes, number_of_non_spikes_in_batch, number_of_spikes_in_batch):
         counter = 0
@@ -164,6 +166,7 @@ class SimulationDataGenerator():
                 selected_sim_idxs = np.hstack([spikes_sim_idxs, non_spikes_sim_idxs])
                 selected_time_idxs = np.hstack([spikes_sim_time, non_spikes_sim_time])
             yield self[selected_sim_idxs, selected_time_idxs]
+            self.files_shuffle_checker(non_spikes[SIM_INDEX].shape[0], spikes[SIM_INDEX].shape[0])
 
     def files_shuffle_checker(self, number_of_non_spikes=0, number_of_spikes=0):
         self.sample_counter += self.batch_size
@@ -222,7 +225,6 @@ class SimulationDataGenerator():
                                          ((self.files_counter + 1) * self.buffer_size_in_files) % len(
                                              self.sim_experiment_files)]  # cyclic reloading
                 self.files_counter += 1
-
         self.load_files_to_buffer()
 
     def load_files_to_buffer(self):
