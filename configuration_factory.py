@@ -70,9 +70,9 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                       optimizer_type="AdamW", optimizer_params={},
                       batch_counter=0, epoch_counter=0,  # default counter
                       torch_seed=42, numpy_seed=21, random_seed=12, init_weights_sd=0.05,
-                      dynamic_learning_params=False,
+                      dynamic_learning_params=True,
                       constant_loss_weights=[100., 1., 0., 0], constant_sigma=1.2, constant_learning_rate=0.0001,
-                      dynamic_learning_params_function="learning_parameters_iter_slow_10_with_constant_weights",
+                      dynamic_learning_params_function="learning_parameters_iter_slow_50_with_constant_weights",
                       config_path="", model_tag="complex_constant_model", model_path=None,
                       loss_function="bcel_mse_dvt_loss")
 
@@ -85,8 +85,8 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                                  number_of_layers_root= 10, number_of_layers_leaf=7, number_of_layers_intersection=7,
                                  number_of_layers_branch_intersection=7,
                                  david_layers = [55,13,13,13,13,13,13],
-                                 skip_connections=False,
-                                 inter_module_skip_connections=False,
+                                 skip_connections=True,
+                                 inter_module_skip_connections=True,
                                  kernel_size=11,
                                  # number_of_layers=2,
                                  stride=1,
