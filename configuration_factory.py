@@ -180,11 +180,11 @@ def generate_config_files_multiple_seeds(config_path: [str, Dict], number_of_con
 
 
 if __name__ == '__main__':
-    config_morpho_0 =config_factory(dynamic_learning_params=False, architecture_type="LAYERED_TEMPORAL_CONV", kernel_size=11,
-                        model_tag="complex_skip",skip_conections=True,
+    config_morpho_0 =config_factory(dynamic_learning_params=True, architecture_type="LAYERED_TEMPORAL_CONV", kernel_size=11,
+                        model_tag="complex_skip_dynamic",skip_conections=True,
                                  inter_module_skip_connections=False)
-    config_morpho_1 =config_factory(dynamic_learning_params=False, architecture_type="LAYERED_TEMPORAL_CONV", kernel_size=11,
-                        model_tag="complex_dskip",skip_conections=True,
+    config_morpho_1 =config_factory(dynamic_learning_params=True, architecture_type="LAYERED_TEMPORAL_CONV", kernel_size=11,
+                        model_tag="complex_dskip_dynamic",skip_conections=True,
                                  inter_module_skip_connections=True)
 
     # config_david =config_factory(dynamic_learning_params=False, architecture_type="DavidsNeuronNetwork", inner_scope_channel_number=128,
@@ -194,7 +194,7 @@ if __name__ == '__main__':
     # configs_static = generate_config_files_multiple_seeds(config_static, 1)
     # configs_to_read = configs_dynamic+[config_factory(loss_function="loss_zero_mse_on_spikes")]
     #
-    with open(os.path.join(MODELS_DIR, "complex_skip_connection_model.json"), 'w') as file:
+    with open(os.path.join(MODELS_DIR, "complex_dynamic_skip_connection_model.json"), 'w') as file:
         file.write(json.dumps([config_morpho_0,config_morpho_1]))  # use `json.loads` to do the reverse
 
     # config = load_config_file("models/NMDA/simplest_model_dynamic_NMDA_Tree_TCN__2021-09-30__16_51__ID_78714/simplest_model_dynamic_NMDA_Tree_TCN__2021-09-30__16_51__ID_78714.config")
