@@ -18,7 +18,7 @@ from simulation_data_generator import *
 import get_neuron_modle
 from get_neuron_modle import get_L5PC
 import re
-ra
+
 
 
 WANDB_API_KEY = "2725e59f8f4484605300fdf4da4c270ff0fe44a3"
