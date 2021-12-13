@@ -67,11 +67,11 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                       train_file_load=0.5, valid_file_load=0.5, spike_probability=0.5,
                       files_filter_regex=".*exBas_0_1100_inhBasDiff_-1100_600__exApic_0_1100_inhApicDiff_-1100_600_SpTemp[^\\/\.]*\.p",
                       # files_filter_regex=".*",
-                      optimizer_type="AdamW", optimizer_params={},
+                      optimizer_type="RMSprop", optimizer_params={},
                       batch_counter=0, epoch_counter=0,  # default counter
                       torch_seed=42, numpy_seed=21, random_seed=12, init_weights_sd=0.05,
                       dynamic_learning_params=True,
-                      constant_loss_weights=[100., 1., 0., 0], constant_sigma=1.2, constant_learning_rate=0.0001,
+                      constant_loss_weights=[200., 1., 0., 0], constant_sigma=1.2, constant_learning_rate=0.001,
                       dynamic_learning_params_function="learning_parameters_iter_slow_50_with_constant_weights",
                       config_path="", model_tag="complex_constant_model", model_path=None,
                       loss_function="bcel_mse_dvt_loss")
@@ -82,8 +82,8 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                                  time_domain_shape=config.input_window_size,
                                  # kernel_size_2d=3,
                                  # kernel_size_1d=9,
-                                 number_of_layers_root= 10, number_of_layers_leaf=7, number_of_layers_intersection=7,
-                                 number_of_layers_branch_intersection=7,
+                                 number_of_layers_root= 7, number_of_layers_leaf=4, number_of_layers_intersection=11,
+                                 number_of_layers_branch_intersection=9,
                                  david_layers = [55,13,13,13,13,13,13],
                                  skip_connections=True,
                                  inter_module_skip_connections=True,
@@ -180,11 +180,11 @@ def generate_config_files_multiple_seeds(config_path: [str, Dict], number_of_con
 
 
 if __name__ == '__main__':
-    config_morpho_0 =config_factory(dynamic_learning_params=True, architecture_type="LAYERED_TEMPORAL_CONV", kernel_size=11,
-                        model_tag="complex_skip_dynamic",skip_conections=True,
+    config_morpho_0 =config_factory(dynamic_learning_params=False, architecture_type="LAYERED_TEMPORAL_CONV", kernel_size=11,
+                        model_tag="complex_skip_dynamic_rmsprop",skip_conections=True,
                                  inter_module_skip_connections=False)
-    config_morpho_1 =config_factory(dynamic_learning_params=True, architecture_type="LAYERED_TEMPORAL_CONV", kernel_size=11,
-                        model_tag="complex_dskip_dynamic",skip_conections=True,
+    config_morpho_1 =config_factory(dynamic_learning_params=False, architecture_type="LAYERED_TEMPORAL_CONV", kernel_size=11,
+                        model_tag="complex_dskip_dynamic_rmsprop",skip_conections=True,
                                  inter_module_skip_connections=True)
 
     # config_david =config_factory(dynamic_learning_params=False, architecture_type="DavidsNeuronNetwork", inner_scope_channel_number=128,
@@ -194,7 +194,7 @@ if __name__ == '__main__':
     # configs_static = generate_config_files_multiple_seeds(config_static, 1)
     # configs_to_read = configs_dynamic+[config_factory(loss_function="loss_zero_mse_on_spikes")]
     #
-    with open(os.path.join(MODELS_DIR, "complex_dynamic_skip_connection_model.json"), 'w') as file:
+    with open(os.path.join(MODELS_DIR, "complex_dynamic_rmsprop_model.json"), 'w') as file:
         file.write(json.dumps([config_morpho_0,config_morpho_1]))  # use `json.loads` to do the reverse
 
     # config = load_config_file("models/NMDA/simplest_model_dynamic_NMDA_Tree_TCN__2021-09-30__16_51__ID_78714/simplest_model_dynamic_NMDA_Tree_TCN__2021-09-30__16_51__ID_78714.config")

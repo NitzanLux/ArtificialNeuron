@@ -1,4 +1,5 @@
 import pickle
+import random
 import sys
 from neuron import h, gui
 import numpy as np
@@ -17,7 +18,7 @@ class SimulationDataGenerator():
     def __init__(self, sim_experiment_files, buffer_size_in_files=12, epoch_size=None,
                  batch_size=8, sample_ratio_to_shuffel=1, window_size_ms=300, file_load=0.3, DVT_PCA_model=None,
                  ignore_time_from_start=0, y_train_soma_bias=-67.7, y_soma_threshold=-55.0, y_DTV_threshold=3.0,
-                 shuffle_files=True, include_DVT=False, is_training=True, is_shuffel_data=False):
+                 shuffle_files=False, include_DVT=False, is_training=True, is_shuffel_data=False):
         'data generator initialization'
         self.is_training = is_training
         self.include_DVT = include_DVT
@@ -213,8 +214,10 @@ class SimulationDataGenerator():
             self.curr_files_to_use = self.sim_experiment_files
         else:
             if self.shuffle_files:
-                self.curr_files_to_use = np.random.choice(self.sim_experiment_files, size=self.buffer_size_in_files,
-                                                          replace=False)
+                if self.files_counter*self.buffer_size_in_files>=len(self.sim_experiment_files):
+                    random.shuffle(self.sim_experiment_files)
+                # self.curr_files_to_use = np.random.choice(self.sim_experiment_files, size=self.buffer_size_in_files,
+                #                                           replace=False)
             else:
 
                 self.curr_files_to_use = self.sim_experiment_files[

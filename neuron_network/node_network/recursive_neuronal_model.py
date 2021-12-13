@@ -167,6 +167,8 @@ class RecursiveNeuronModel(nn.Module):
     def count_parameters(self):
 
         param_sum = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
+        if self.model_skip_connections_inter is not None:
+            param_sum+=sum(p.numel() for p in self.model_skip_connections_inter.parameters() if p.requires_grad)
         if self.model_type != SectionType.BRANCH_LEAF:
             for mod in self:
                 param_sum += mod.count_parameters()
@@ -307,7 +309,6 @@ class BranchNetwork(RecursiveNeuronModel):
         upstream_data = self.upstream_model(x)
         out = self.model(x[:, self.input_indexes, ...], upstream_data)
         if self.is_inter_module_skip_connections:
-
             out = out + self.model_skip_connections_inter(
                 torch.cat([upstream_data, x[:, self.input_indexes, ...]], dim=SYNAPSE_DIMENTION_POSITION))
         return out
