@@ -181,8 +181,11 @@ def generate_config_files_multiple_seeds(config_path: [str, Dict], number_of_con
 
 if __name__ == '__main__':
     config_morpho_0 =config_factory(dynamic_learning_params=False, architecture_type="LAYERED_TEMPORAL_CONV",
-                        model_tag="simple_rmsprop",skip_conections=True,
+                        model_tag="lr_w_3_simple_rmsprop",skip_conections=True,
                                  inter_module_skip_connections=True)
+    config_morpho_1 =config_factory(dynamic_learning_params=False, architecture_type="LAYERED_TEMPORAL_CONV",
+                        model_tag="lr_w_2_simple_rmsprop",skip_conections=True,
+                                 inter_module_skip_connections=True,constant_learning_rate=0.001)
     # config_morpho_1 =config_factory(dynamic_learning_params=False, architecture_type="LAYERED_TEMPORAL_CONV", kernel_size=11,
     #                     model_tag="complex_dskip_rmsprop",skip_conections=True,
     #                              inter_module_skip_connections=True)
@@ -194,9 +197,9 @@ if __name__ == '__main__':
     # configs_static = generate_config_files_multiple_seeds(config_static, 1)
     # configs_to_read = configs_dynamic+[config_factory(loss_function="loss_zero_mse_on_spikes")]
     #
-    with open(os.path.join(MODELS_DIR, "simple_rmsprop.json"), 'w') as file:
-        # file.write(json.dumps([config_morpho_0,config_morpho_1]))  # use `json.loads` to do the reverse
-        file.write(json.dumps([config_morpho_0]))  # use `json.loads` to do the reverse
+    with open(os.path.join(MODELS_DIR, "lr_w_simple_rmsprop.json"), 'w') as file:
+        file.write(json.dumps([config_morpho_0,config_morpho_1]))  # use `json.loads` to do the reverse
+        # file.write(json.dumps([config_morpho_0]))  # use `json.loads` to do the reverse
 
     # config = load_config_file("models/NMDA/simplest_model_dynamic_NMDA_Tree_TCN__2021-09-30__16_51__ID_78714/simplest_model_dynamic_NMDA_Tree_TCN__2021-09-30__16_51__ID_78714.config")
     # m = overwrite_config(config)
