@@ -157,16 +157,7 @@ class RecursiveNeuronModel(nn.Module):
         model.load_state_dict(neuronal_model_data)
         return model
 
-    # def save(self, path):  # todo replace
-    #     with open('%s.pkl' % path, 'wb') as outp:
-    #         # pickle.dump(self, outp)
-    #         pickle.dump(self, outp,pickle.HIGHEST_PROTOCOL)
-    # @staticmethod
-    # def load(config):
-    #     path = os.path.join(MODELS_DIR, *config.model_path)
-    #     with open('%s.pkl' % path if path[-len(".pkl"):] != ".pkl" else path, 'rb') as outp:
-    #             neuronal_model_data = pickle.load(outp)
-    #     return neuronal_model_data
+
     @abc.abstractmethod
     def __iter__(self) -> 'RecursiveNeuronModel':
         pass
@@ -217,7 +208,8 @@ class RecursiveNeuronModel(nn.Module):
         if self.model_type != SectionType.BRANCH_LEAF:
             for mod in self:
                 mod.init_weights(sd)
-
+    def plot_model(self,is_root=True):
+        pass
 
 class LeafNetwork(RecursiveNeuronModel):
     def __init__(self, input_indexes, is_cuda=False, include_dendritic_voltage_tracing=False
