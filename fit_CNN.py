@@ -265,6 +265,7 @@ def train_log(loss, step, epoch=None, learning_rate=None, sigma=None, weights=No
 
 
 def display_accuracy(target, output, step, additional_str=''):
+    return #todo ooooooooooooooooooooooooooooooo debugging
     if not DOCUMENT_ON_WANDB or step==0:
         return
     target = target.cpu().detach().numpy().astype(bool).squeeze()

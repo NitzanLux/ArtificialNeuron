@@ -208,8 +208,10 @@ class RecursiveNeuronModel(nn.Module):
         if self.model_type != SectionType.BRANCH_LEAF:
             for mod in self:
                 mod.init_weights(sd)
-    def plot_model(self,is_root=True):
-        pass
+    def plot_model(self,depth,graph:[List,None]=None):
+        assert depth!=0 and graph is None, "graph did not passed."
+
+
 
 class LeafNetwork(RecursiveNeuronModel):
     def __init__(self, input_indexes, is_cuda=False, include_dendritic_voltage_tracing=False
