@@ -18,11 +18,13 @@ class SimulationDataGenerator():
     def __init__(self, sim_experiment_files, buffer_size_in_files=12, epoch_size=None,
                  batch_size=8, sample_ratio_to_shuffel=1, window_size_ms=300, file_load=0.3, DVT_PCA_model=None,
                  ignore_time_from_start=0, y_train_soma_bias=-67.7, y_soma_threshold=-55.0, y_DTV_threshold=3.0,
-                 shuffle_files=False, include_DVT=False, is_training=True, is_shuffel_data=False):
+                 shuffle_files=False, include_DVT=False, is_training=True, is_shuffel_data=False,number_of_traces_from_file=6,number_of_files=1):
         'data generator initialization'
         self.is_training = is_training
         self.include_DVT = include_DVT
         self.sim_experiment_files = sim_experiment_files
+        if number_of_files is not None:
+            self.sim_experiment_files=self.sim_experiment_files[:number_of_files]
         self.buffer_size_in_files = buffer_size_in_files
         self.batch_size = batch_size
         self.window_size_ms = window_size_ms
@@ -40,11 +42,14 @@ class SimulationDataGenerator():
         self.files_counter = 0
         self.sample_counter = 0
         self.curr_files_to_use = None
+        self.number_of_traces_from_file=number_of_traces_from_file
+
         self.sampling_start_time = ignore_time_from_start
         self.X, self.y_spike, self.y_soma, self.y_DVT = None, None, None, None
         self.__return_spike_factor = 0.  # if we want to return x spikes in the features.
         self.reload_files()
         self.non_spikes, self.spikes, self.number_of_non_spikes_in_batch, self.number_of_spikes_in_batch=None,None,None,None
+
         # self.non_spikes,self.spikes,self.number_of_non_spikes_in_batch,self.nuber_of_spikes_in_batch = non_spikes, spikes, number_of_non_spikes_in_batch,
         #                                                         number_of_spikes_in_batch
     def change_spike_probability(self, spike_factor):
@@ -250,7 +255,10 @@ class SimulationDataGenerator():
             X = np.transpose(X, axes=[2, 0, 1])
             y_spike = y_spike.T[:, np.newaxis, :]
             y_soma = y_soma.T[:, np.newaxis, :]
-
+            if self.number_of_traces_from_file is not None:
+                X=X[:self.number_of_traces_from_file,:,:]
+                y_spike=y_spike[:self.number_of_traces_from_file,:,:]
+                y_soma=y_soma[:self.number_of_traces_from_file,:,:]
             # y_soma = y_soma - self.y_train_soma_bias
             self.X.append(X)
             self.y_spike.append(y_spike)
