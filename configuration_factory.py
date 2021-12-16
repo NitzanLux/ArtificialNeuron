@@ -197,7 +197,7 @@ if __name__ == '__main__':
     # configs_static = generate_config_files_multiple_seeds(config_static, 1)
     # configs_to_read = configs_dynamic+[config_factory(loss_function="loss_zero_mse_on_spikes")]
     #
-    with open(os.path.join(MODELS_DIR, "lr_w_simple_rmsprop.json"), 'w') as file:
+    with open(os.path.join(MODELS_DIR, "overfit_models.json"), 'w') as file:
         file.write(json.dumps([config_morpho_0,config_morpho_1]))  # use `json.loads` to do the reverse
         # file.write(json.dumps([config_morpho_0]))  # use `json.loads` to do the reverse
 
