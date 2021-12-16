@@ -8,6 +8,7 @@ from synapse_tree import SectionNode, SectionType
 import os
 from enum import Enum
 import neuron_network.basic_convolution_blocks as basic_convolution_blocks
+import neuron_network.linear_convolution_blocks as linear_convolution_blocks
 import neuron_network.temporal_convolution_blocks as temporal_convolution_blocks
 import torch.nn as nn
 import copy
@@ -26,6 +27,7 @@ from get_neuron_modle import get_L5PC
 class ArchitectureType(Enum):
     BASIC_CONV = "BASIC_CONV"
     LAYERED_TEMPORAL_CONV = "LAYERED_TEMPORAL_CONV"
+    LINEAR = 'LINEAR'
 
 
 SYNAPSE_DIMENTION_POSITION = 1
@@ -61,6 +63,11 @@ class RecursiveNeuronModel(nn.Module):
             branch_leaf_class = temporal_convolution_blocks.BranchLeafBlock
             intersection_class = temporal_convolution_blocks.IntersectionBlock
             root_class = temporal_convolution_blocks.RootBlock
+        elif config["architecture_type"] == ArchitectureType.LINEAR.value:
+            branch_class = linear_convolution_blocks.BranchBlock
+            branch_leaf_class = linear_convolution_blocks.BranchLeafBlock
+            intersection_class = linear_convolution_blocks.IntersectionBlock
+            root_class = linear_convolution_blocks.RootBlock
         else:
             assert False, "type is not known"
 

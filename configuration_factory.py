@@ -182,21 +182,11 @@ def generate_config_files_multiple_seeds(config_path: [str, Dict], number_of_con
 if __name__ == '__main__':
     config_morpho_0 =config_factory(dynamic_learning_params=False, architecture_type="LAYERED_TEMPORAL_CONV",
                         model_tag="overfit_skip",skip_conections=True,
-                                 inter_module_skip_connections=False)
+                                 inter_module_skip_connections=True,batch_size_validation=30,spike_probability=None)
     config_morpho_1 =config_factory(dynamic_learning_params=False, architecture_type="LAYERED_TEMPORAL_CONV",
-                        model_tag="overfit_skip",skip_conections=True,
-                                 inter_module_skip_connections=True)
-    # config_morpho_1 =config_factory(dynamic_learning_params=False, architecture_type="LAYERED_TEMPORAL_CONV", kernel_size=11,
-    #                     model_tag="complex_dskip_rmsprop",skip_conections=True,
-    #                              inter_module_skip_connections=True)
+                        model_tag="overfit_l_skip",skip_conections=False,
+                                 inter_module_skip_connections=False,batch_size_validation=30,spike_probability=None)
 
-    # config_david =config_factory(dynamic_learning_params=False, architecture_type="DavidsNeuronNetwork", inner_scope_channel_number=128,
-    #                     model_tag="cr_david_model")
-    # configs_dynamic = generate_config_files_multiple_seeds(config_dynamic, 2)
-    # config_static = config_factory(dynamic_learning_params=False)
-    # configs_static = generate_config_files_multiple_seeds(config_static, 1)
-    # configs_to_read = configs_dynamic+[config_factory(loss_function="loss_zero_mse_on_spikes")]
-    #
     with open(os.path.join(MODELS_DIR, "overfit_models.json"), 'w') as file:
         file.write(json.dumps([config_morpho_0,config_morpho_1]))  # use `json.loads` to do the reverse
         # file.write(json.dumps([config_morpho_0]))  # use `json.loads` to do the reverse
