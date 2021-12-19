@@ -208,8 +208,23 @@ class RecursiveNeuronModel(nn.Module):
         if self.model_type != SectionType.BRANCH_LEAF:
             for mod in self:
                 mod.init_weights(sd)
-    def plot_model(self,depth,graph:[List,None]=None):
-        assert depth!=0 and graph is None, "graph did not passed."
+
+
+
+    def plot_model(self,depth=0,nodes_alignment_pos=-1,graph:[Tuple[int,int,List],None]=None): #todo implemnt
+        assert depth!=0 and (graph is None or nodes_alignment_pos==-1), "graph did not passed."
+        if graph is None:
+            graph=[0,-1,[]]
+        number_of_childrens=len(list(self))
+        current_position_in_alignment=0
+        for i,node in enumerate(self):
+            nodes_alignment_pos = node.plot_model(depth+1,nodes_alignment_pos,graph)
+            if number_of_childrens//2==i:
+                pass
+                # current_position_in_alignment=
+            pass
+
+
 
 
 
