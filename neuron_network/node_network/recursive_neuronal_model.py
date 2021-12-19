@@ -18,7 +18,7 @@ import neuron
 import nrn
 from neuron import h
 from neuron import gui
-from typing import List, Dict
+from typing import List, Dict,Tuple
 from copy import deepcopy
 import get_neuron_modle
 from get_neuron_modle import get_L5PC
