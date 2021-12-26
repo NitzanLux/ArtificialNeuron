@@ -39,11 +39,11 @@ synapse_type = 'NMDA'
 include_DVT = False
 
 # for dibugging
-# BATCH_LOG_UPDATE_FREQ = 1
-# VALIDATION_EVALUATION_FREQUENCY=1
-# ACCURACY_EVALUATION_FREQUENCY = 1
-# BUFFER_SIZE_IN_FILES_VALID = 1
-# BUFFER_SIZE_IN_FILES_TRAINING = 1
+BATCH_LOG_UPDATE_FREQ = 1
+VALIDATION_EVALUATION_FREQUENCY=1
+ACCURACY_EVALUATION_FREQUENCY = 1
+BUFFER_SIZE_IN_FILES_VALID = 1
+BUFFER_SIZE_IN_FILES_TRAINING = 1
 # logging.error("Aaaaa")
 
 print('-----------------------------------------------')
@@ -133,7 +133,7 @@ def train_network(config):
         dynamic_parameter_loss_genrator = getattr(dlpf, config.dynamic_learning_params_function)(config)
 
     if DOCUMENT_ON_WANDB and WATCH_MODEL:
-        wandb.watch(model, log='all', log_freq=500, log_graph=True)
+        wandb.watch(model, log='all', log_freq=1, log_graph=True)
     print("start training...", flush=True)
     for epoch in range(config.num_epochs):
         config.update(dict(epoch_counter=config.epoch_counter + 1), allow_val_change=True)

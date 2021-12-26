@@ -18,10 +18,12 @@ import neuron
 import nrn
 from neuron import h
 from neuron import gui
-from typing import List, Dict,Tuple
+from typing import List, Dict, Tuple
 from copy import deepcopy
 import get_neuron_modle
 from get_neuron_modle import get_L5PC
+
+ID_NULL_VALUE = -1
 
 
 class ArchitectureType(Enum):
@@ -46,6 +48,8 @@ class RecursiveNeuronModel(nn.Module):
         self.get_model_block(**network_kwargs)
         self.is_inter_module_skip_connections = network_kwargs['inter_module_skip_connections']
         self.model_skip_connections_inter = None
+        self.__id = ID_NULL_VALUE
+        self.__depth = ID_NULL_VALUE
 
     def get_activation_function(self):
         activation_function_base_function = getattr(nn, self.activation_function_name)
@@ -157,16 +161,24 @@ class RecursiveNeuronModel(nn.Module):
         model.load_state_dict(neuronal_model_data)
         return model
 
-
     @abc.abstractmethod
     def __iter__(self) -> 'RecursiveNeuronModel':
         pass
+
+    def __len__(self) -> int:
+        length = 1
+        for child in self:
+            length += len(child)
+        return length
+
+    def __repr__(self):
+        return "%s %d" % (self.__name__, self.__id)
 
     def count_parameters(self):
 
         param_sum = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
         if self.model_skip_connections_inter is not None:
-            param_sum+=sum(p.numel() for p in self.model_skip_connections_inter.parameters() if p.requires_grad)
+            param_sum += sum(p.numel() for p in self.model_skip_connections_inter.parameters() if p.requires_grad)
         if self.model_type != SectionType.BRANCH_LEAF:
             for mod in self:
                 param_sum += mod.count_parameters()
@@ -209,23 +221,27 @@ class RecursiveNeuronModel(nn.Module):
             for mod in self:
                 mod.init_weights(sd)
 
+    def set_id(self, id):
+        assert self.__id == ID_NULL_VALUE, "ID for current node already inserted"
+        self.__id = id
 
+    def get_id(self):
+        return self.__id
 
-    def plot_model(self,depth=0,nodes_alignment_pos=-1,graph:[Tuple[int,int,List],None]=None): #todo implemnt
-        assert depth!=0 and (graph is None or nodes_alignment_pos==-1), "graph did not passed."
-        if graph is None:
-            graph=[0,-1,[]]
-        number_of_childrens=len(list(self))
-        current_position_in_alignment=0
-        for i,node in enumerate(self):
-            nodes_alignment_pos = node.plot_model(depth+1,nodes_alignment_pos,graph)
-            if number_of_childrens//2==i:
-                pass
-                # current_position_in_alignment=
-            pass
+    def set_depth(self, depth):
+        assert self.__depth == ID_NULL_VALUE, "ID for current node already inserted"
+        self.__depth = depth
 
-
-
+    def get_nodes_per_level(self):
+        node_stack = [self]
+        level_stack = [[self]]
+        while (len(node_stack) > 0):
+            childrens_on_level = []
+            for node in node_stack:
+                childrens_on_level.extend(node)
+            level_stack.append(childrens_on_level)
+            node_stack = childrens_on_level
+        return level_stack
 
 
 class LeafNetwork(RecursiveNeuronModel):
@@ -236,9 +252,14 @@ class LeafNetwork(RecursiveNeuronModel):
                          **network_kwargs)
         self.input_indexes = input_indexes
         self.channel_output_number = min(len(self.input_indexes), network_kwargs["channel_output_number"])
+        self.__name__ = "LeafNetwork"
 
     def __iter__(self):
-        return None
+        return
+        yield
+
+    def __repr__(self):
+        return super(LeafNetwork, self).__repr__() + ' #syn %d' % len(self.input_indexes)
 
     def forward(self, x):
         out = self.model(x[:, self.input_indexes, ...])
@@ -263,6 +284,7 @@ class IntersectionNetwork(RecursiveNeuronModel):
         self.intersection_a: [LeafNetwork, 'BranchNetwork', None] = None
         self.intersection_b: [LeafNetwork, 'BranchNetwork', None] = None
         self.channel_output_number = None
+        self.__name__ = "IntersectionNetwork"
 
     def set_inputs_to_model(self, intersection_a: [LeafNetwork, 'BranchNetwork'],
                             intersection_b: [LeafNetwork, 'BranchNetwork'], **network_kwargs):
@@ -277,7 +299,6 @@ class IntersectionNetwork(RecursiveNeuronModel):
                                  network_kwargs["input_window_size"]), **network_kwargs,
                                 activation_function=self.get_activation_function())
         if self.is_inter_module_skip_connections:
-
             self.model_skip_connections_inter = nn.Conv1d(
                 self.intersection_a.channel_output_number + self.intersection_b.channel_output_number,
                 self.channel_output_number, 1)
@@ -304,6 +325,7 @@ class BranchNetwork(RecursiveNeuronModel):
         self.input_indexes = input_indexes
         self.upstream_model: [IntersectionNetwork, None] = None
         self.get_model_block(**network_kwargs)
+        self.__name__ = "BranchNetwork"
 
     def set_inputs_to_model(self, upstream_model: [IntersectionNetwork], **network_kwargs):
         self.upstream_model = upstream_model
@@ -318,8 +340,12 @@ class BranchNetwork(RecursiveNeuronModel):
                                     network_kwargs["input_window_size"]), **network_kwargs,
                                 activation_function=self.get_activation_function())
         if self.is_inter_module_skip_connections:
-            self.model_skip_connections_inter = nn.Conv1d(len(self.input_indexes) + self.upstream_model.channel_output_number,
-                                                    self.channel_output_number, 1)
+            self.model_skip_connections_inter = nn.Conv1d(
+                len(self.input_indexes) + self.upstream_model.channel_output_number,
+                self.channel_output_number, 1)
+
+    def __repr__(self):
+        return super(BranchNetwork, self).__repr__() + ' #syn %d' % len(self.input_indexes)
 
     def forward(self, x):
         upstream_data = self.upstream_model(x)
@@ -340,12 +366,14 @@ class SomaNetwork(RecursiveNeuronModel):
                          include_dendritic_voltage_tracing, **network_kwargs)
         self.branches = nn.ModuleList()
         self.get_model_block(**network_kwargs)
+        self.__name__ = 'SomaNetwork'
 
     def set_inputs_to_model(self, *branches: [IntersectionNetwork, BranchNetwork], **network_kwargs):
         self.branches.extend(branches)
         number_of_inputs = sum([branch.channel_output_number for branch in self.branches])
         self.model = self.model((number_of_inputs, network_kwargs["input_window_size"]), **network_kwargs,
                                 activation_function=self.get_activation_function())
+        self.set_id_and_depth_for_tree()
 
     def __iter__(self):
         for mod in self.branches:
@@ -354,8 +382,17 @@ class SomaNetwork(RecursiveNeuronModel):
     def forward(self, x):
         x = x.type(torch.cuda.DoubleTensor) if self.is_cuda else x.type(torch.DoubleTensor)
         outputs = []
-        for i,branch in enumerate(self.branches):
+        for i, branch in enumerate(self.branches):
             outputs.append(branch(x))
         outputs = torch.cat(outputs, dim=SYNAPSE_DIMENTION_POSITION)
         s, v = self.model(outputs)
         return s.squeeze(1), v.squeeze(1)
+
+    def set_id_and_depth_for_tree(self):
+        nodes_list = self.get_nodes_per_level()
+        id_counter = 0
+        for depth, sublist in enumerate(nodes_list):
+            for node in sublist:
+                node.set_depth(depth)
+                node.set_id(id_counter)
+                id_counter += 1
