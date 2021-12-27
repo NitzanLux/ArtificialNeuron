@@ -25,10 +25,10 @@ class Base1DConvolutionBlockLayer(nn.Module):
         self.activation_function=activation_function()
         self.batch_norm = nn.BatchNorm1d(out_channels)
     def forward(self,x):
-        x = self.conv1d(x)
-        x =self.activation_function(x)
-        x = self.batch_norm(x)
-        return x
+        out = self.conv1d(x)
+        out=self.activation_function(out)
+        out = self.batch_norm(out)
+        return out
 
 class Base1DConvolutionBlock(nn.Module):
     def __init__(self, number_of_layers, input_shape: Tuple[int, int], activation_function
@@ -53,15 +53,16 @@ class Base1DConvolutionBlock(nn.Module):
             self.layers_list.append(model)
 
     def forward(self, x):
+        cur_out = x
         for i, model in enumerate(self.layers_list):
             if self.skip_connections and not (
                     (i == 0 and self.channel_input_number != self.inner_scope_channel_number) or
                     (i == len(self.layers_list) - 1 and self.channel_output_number != self.inner_scope_channel_number)):
-                x = x + model(x)
+                cur_out = cur_out + model(cur_out)
             else:
-                x = model(x)
+                cur_out = model(cur_out)
 
-        return x
+        return cur_out
 
 
 class BranchLeafBlock(nn.Module):
@@ -119,12 +120,9 @@ class BranchBlock(nn.Module):
 
 
     def forward(self, x,prev_segment):
-        x = self.synapse_model(x)
-        x = self.activation_function(x)
-        out = torch.cat((x, prev_segment), dim=SYNAPSE_DIMENTION_POSITION)
-        del x
-        del prev_segment
-        gc.collect()
+        out = self.synapse_model(x)
+        out = self.activation_function(out)
+        out = torch.cat((out, prev_segment), dim=SYNAPSE_DIMENTION_POSITION)
         out = self.intersection_block(out)
         return out
 

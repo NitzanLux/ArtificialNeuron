@@ -85,6 +85,7 @@ def load_files_names(files_filter_regex: str = ".*") -> Tuple[List[str], List[st
 
 def batch_train(network, optimizer, custom_loss, inputs, labels,clip_gradient):
     # zero the parameter gradients
+    torch.cuda.empty_cache()
     optimizer.zero_grad()
     # forward + backward + optimize
     outputs = network(inputs)
