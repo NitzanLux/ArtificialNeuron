@@ -22,7 +22,7 @@ from typing import List, Dict, Tuple
 from copy import deepcopy
 import get_neuron_modle
 from get_neuron_modle import get_L5PC
-
+import gc
 ID_NULL_VALUE = -1
 
 
@@ -307,6 +307,9 @@ class IntersectionNetwork(RecursiveNeuronModel):
         input_a = self.intersection_a(x)
         input_b = self.intersection_b(x)
         input = torch.cat([input_a, input_b], dim=SYNAPSE_DIMENTION_POSITION)
+        del input_b
+        del input_a
+        gc.collect()
         out = self.model(input)
         if self.is_inter_module_skip_connections:
             out = out + self.model_skip_connections_inter(input)
