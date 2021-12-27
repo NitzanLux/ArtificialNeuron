@@ -181,13 +181,16 @@ def generate_config_files_multiple_seeds(config_path: [str, Dict], number_of_con
 
 if __name__ == '__main__':
     config_morpho_0 =config_factory(dynamic_learning_params=False, architecture_type="LAYERED_TEMPORAL_CONV",
-                        model_tag="overfit_skip",skip_conections=True,
-                                 inter_module_skip_connections=True,batch_size_validation=30,spike_probability=None)
+                        model_tag="cm_2.5_model",skip_conections=True,
+                                 inter_module_skip_connections=True,batch_size_validation=30,spike_probability=0.5,clip_gradients_factor=2.5)
     config_morpho_1 =config_factory(dynamic_learning_params=False, architecture_type="LAYERED_TEMPORAL_CONV",
-                        model_tag="overfit_l_skip",skip_conections=False,
-                                 inter_module_skip_connections=False,batch_size_validation=30,spike_probability=None)
+                        model_tag="cm_5_model",skip_conections=True,
+                                 inter_module_skip_connections=True,batch_size_validation=30,spike_probability=0.5,clip_gradients_factor=5)
+    # config_morpho_1 =config_factory(dynamic_learning_params=False, architecture_type="LAYERED_TEMPORAL_CONV",
+    #                     model_tag="overfit_l_skip",skip_conections=False,
+    #                              inter_module_skip_connections=False,batch_size_validation=30,spike_probability=None)
 
-    with open(os.path.join(MODELS_DIR, "overfit_models.json"), 'w') as file:
+    with open(os.path.join(MODELS_DIR, "cm_model.json"), 'w') as file:
         file.write(json.dumps([config_morpho_0,config_morpho_1]))  # use `json.loads` to do the reverse
         # file.write(json.dumps([config_morpho_0]))  # use `json.loads` to do the reverse
 
