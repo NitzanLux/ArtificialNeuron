@@ -156,7 +156,7 @@ def train_network(config):
             # get the inputs; data is a list of [inputs, labels]
             batch_counter += 1
 
-            train_loss = batch_train(model, optimizer, custom_loss, *train_data)
+            train_loss = batch_train(model, optimizer, custom_loss, *train_data,config.clip_gradients_factor)
             with torch.no_grad():
                 train_log(train_loss, batch_counter, epoch, learning_rate, sigma, loss_weights,
                           additional_str="train")
