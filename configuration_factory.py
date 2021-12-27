@@ -180,18 +180,21 @@ def generate_config_files_multiple_seeds(config_path: [str, Dict], number_of_con
 
 
 if __name__ == '__main__':
-    config_morpho_0 =config_factory(dynamic_learning_params=False, architecture_type="LAYERED_TEMPORAL_CONV",
-                        model_tag="cm_2.5_model",skip_conections=True,
-                                 inter_module_skip_connections=True,batch_size_validation=30,spike_probability=0.5,clip_gradients_factor=2.5)
-    config_morpho_1 =config_factory(dynamic_learning_params=False, architecture_type="LAYERED_TEMPORAL_CONV",
-                        model_tag="cm_5_model",skip_conections=True,
-                                 inter_module_skip_connections=True,batch_size_validation=30,spike_probability=0.5,clip_gradients_factor=5)
+    configs = []
+    for i in [0.04,0.1,0.5,1,2.5]:
+        config_morpho_0 =config_factory(dynamic_learning_params=False, architecture_type="LAYERED_TEMPORAL_CONV",
+                        model_tag="cm_%0.2f_model"%i,skip_conections=True,
+                                 inter_module_skip_connections=True,batch_size_validation=200,spike_probability=0.5,clip_gradients_factor=i)
+        configs.append(config_morpho_0)
+    # config_morpho_1 =config_factory(dynamic_learning_params=False, architecture_type="LAYERED_TEMPORAL_CONV",
+    #                     model_tag="cm_5_model",skip_conections=True,
+    #                              inter_module_skip_connections=True,batch_size_validation=30,spike_probability=0.5,clip_gradients_factor=5)
     # config_morpho_1 =config_factory(dynamic_learning_params=False, architecture_type="LAYERED_TEMPORAL_CONV",
     #                     model_tag="overfit_l_skip",skip_conections=False,
     #                              inter_module_skip_connections=False,batch_size_validation=30,spike_probability=None)
 
-    with open(os.path.join(MODELS_DIR, "cm_model.json"), 'w') as file:
-        file.write(json.dumps([config_morpho_0,config_morpho_1]))  # use `json.loads` to do the reverse
+    with open(os.path.join(MODELS_DIR, "cm_model_2.json"), 'w') as file:
+        file.write(json.dumps(configs))  # use `json.loads` to do the reverse
         # file.write(json.dumps([config_morpho_0]))  # use `json.loads` to do the reverse
 
     # config = load_config_file("models/NMDA/simplest_model_dynamic_NMDA_Tree_TCN__2021-09-30__16_51__ID_78714/simplest_model_dynamic_NMDA_Tree_TCN__2021-09-30__16_51__ID_78714.config")
