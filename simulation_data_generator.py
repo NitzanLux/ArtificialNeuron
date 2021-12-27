@@ -224,7 +224,6 @@ class SimulationDataGenerator():
                 # self.curr_files_to_use = np.random.choice(self.sim_experiment_files, size=self.buffer_size_in_files,
                 #                                           replace=False)
             else:
-
                 self.curr_files_to_use = self.sim_experiment_files[
                                          (self.files_counter * self.buffer_size_in_files) % len(
                                              self.sim_experiment_files):
