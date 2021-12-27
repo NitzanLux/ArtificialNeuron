@@ -63,7 +63,7 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                    **kargs):
     ##default values can be overridden by kargs
     config = AttrDict(config_version=1.0,input_window_size=300, num_segments=2 * 639, num_syn_types=1,
-                      num_epochs=15000, epoch_size=30, batch_size_train=30, batch_size_validation=200,
+                      num_epochs=15000, epoch_size=30, batch_size_train=200, batch_size_validation=200,
                       train_file_load=0.5, valid_file_load=0.5, spike_probability=0.5,
                       files_filter_regex=".*exBas_0_1100_inhBasDiff_-1100_600__exApic_0_1100_inhApicDiff_-1100_600_SpTemp[^\\/\.]*\.p",
                       # files_filter_regex=".*",
@@ -181,9 +181,9 @@ def generate_config_files_multiple_seeds(config_path: [str, Dict], number_of_con
 
 if __name__ == '__main__':
     configs = []
-    for i in [0.04,0.1,0.5,1]:
+    for i in [0.2,0.3,0.5,1]:
         config_morpho_0 =config_factory(dynamic_learning_params=False, architecture_type="LAYERED_TEMPORAL_CONV",
-                        model_tag="cm_%0.2f_model"%i,skip_conections=True,
+                        model_tag="cm_%0.2f_3_model"%i,skip_conections=True,
                                  inter_module_skip_connections=True,batch_size_validation=200,spike_probability=0.5,clip_gradients_factor=i)
         configs.append(config_morpho_0)
     # config_morpho_1 =config_factory(dynamic_learning_params=False, architecture_type="LAYERED_TEMPORAL_CONV",
@@ -193,7 +193,7 @@ if __name__ == '__main__':
     #                     model_tag="overfit_l_skip",skip_conections=False,
     #                              inter_module_skip_connections=False,batch_size_validation=30,spike_probability=None)
 
-    with open(os.path.join(MODELS_DIR, "cm_model_2.json"), 'w') as file:
+    with open(os.path.join(MODELS_DIR, "cm_model_3.json"), 'w') as file:
         file.write(json.dumps(configs))  # use `json.loads` to do the reverse
         # file.write(json.dumps([config_morpho_0]))  # use `json.loads` to do the reverse
 
