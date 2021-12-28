@@ -177,11 +177,10 @@ class SimulationDataGenerator():
         if self.__return_spike_factor == NULL_SPIKE_FACTOR_VALUE:
             if self.sample_counter / (self.X.shape[0] * self.X.shape[2]) >= self.sample_ratio_to_shuffle:
                 self.reload_files()
-        else:
+        elif (self.sample_counter / min(self.non_spikes[SIM_INDEX].shape[0]/(1-self.__return_spike_factor),
+                        self.spikes[SIM_INDEX].shape[0]/self.__return_spike_factor)) >= self.sample_ratio_to_shuffle:
             # in case we are deterministically sampling from different probability space then the data.
-            if self.sample_counter / min(self.non_spikes[SIM_INDEX].shape[0],
-                                         self.spikes[SIM_INDEX].shape[0]) >= self.sample_ratio_to_shuffle:
-                self.reload_files()
+            self.reload_files()
 
     def __getitem__(self, item):
         """
