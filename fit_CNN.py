@@ -83,14 +83,16 @@ def load_files_names(files_filter_regex: str = ".*") -> Tuple[List[str], List[st
     return train_files, valid_files, test_files
 
 
-def batch_train(network, optimizer, custom_loss, inputs, labels,clip_gradient):
+def batch_train(network, optimizer, custom_loss, train_data_iterator, labels,clip_gradient,accumulate_loss_batch_factor):
     # zero the parameter gradients
     torch.cuda.empty_cache()
     optimizer.zero_grad()
-    # forward + backward + optimize
-    outputs = network(inputs)
-    general_loss, loss_bcel, loss_mse, loss_dvt, loss_gausian_mse = custom_loss(outputs, labels)
-    general_loss.backward()
+    for i in range(accumulate_loss_batch_factor):
+        train_data = next(train_data_iterator)
+        # forward + backward + optimize
+        outputs = network(inputs)
+        general_loss, loss_bcel, loss_mse, loss_dvt, loss_gausian_mse = custom_loss(outputs, labels)
+        general_loss.backward()
     torch.nn.utils.clip_grad_norm_(network.parameters(), clip_gradient)
     optimizer.step()
     out = general_loss, loss_bcel, loss_mse, loss_dvt, loss_gausian_mse
@@ -152,12 +154,12 @@ def train_network(config):
             config.optimizer_params["lr"] = learning_rate
             optimizer = getattr(optim, config.optimizer_type)(model.parameters(),
                                                               **config.optimizer_params)
-        for i, train_data in enumerate(train_data_generator):
+        train_data_iterator = iter(train_data_generator)
+        for i in range(train_data_generator.epoch_size):
             config.update(dict(batch_counter=config.batch_counter + 1), allow_val_change=True)
             # get the inputs; data is a list of [inputs, labels]
             batch_counter += 1
-
-            train_loss = batch_train(model, optimizer, custom_loss, *train_data,config.clip_gradients_factor)
+            train_loss = batch_train(model, optimizer, custom_loss, train_data_iterator,config.clip_gradients_factor,config.accumulate_loss_batch_factor)
             with torch.no_grad():
                 train_log(train_loss, batch_counter, epoch, learning_rate, sigma, loss_weights,
                           additional_str="train")
@@ -188,7 +190,7 @@ def get_data_generators(DVT_PCA_model, config):
 
     train_files, valid_files, test_files = load_files_names(config.files_filter_regex)
     train_data_generator = SimulationDataGenerator(train_files, buffer_size_in_files=BUFFER_SIZE_IN_FILES_TRAINING,
-                                                   batch_size=config.batch_size_train, epoch_size=config.epoch_size,
+                                                   batch_size=config.batch_size_train, epoch_size=config.epoch_size*config.accumulate_loss_batch_factor,
                                                    window_size_ms=config.time_domain_shape,
                                                    file_load=config.train_file_load,
                                                    DVT_PCA_model=DVT_PCA_model)
