@@ -87,8 +87,8 @@ def batch_train(network, optimizer, custom_loss, train_data_iterator,clip_gradie
     # zero the parameter gradients
     torch.cuda.empty_cache()
     optimizer.zero_grad()
-    for i in range(accumulate_loss_batch_factor):
-        inputs,labels = next(train_data_iterator)
+    for _,data in zip(range(accumulate_loss_batch_factor),train_data_iterator):
+        inputs,labels = data
         # forward + backward + optimize
         outputs = network(inputs)
         general_loss, loss_bcel, loss_mse, loss_dvt, loss_gausian_mse = custom_loss(outputs, labels)
