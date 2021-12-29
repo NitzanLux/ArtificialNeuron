@@ -155,7 +155,7 @@ def train_network(config):
             optimizer = getattr(optim, config.optimizer_type)(model.parameters(),
                                                               **config.optimizer_params)
         train_data_iterator = iter(train_data_generator)
-        for i in range(train_data_generator.epoch_size):
+        for i in range(config.epoch_size):
             config.update(dict(batch_counter=config.batch_counter + 1), allow_val_change=True)
             # get the inputs; data is a list of [inputs, labels]
             batch_counter += 1
