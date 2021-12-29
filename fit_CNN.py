@@ -19,7 +19,9 @@ import get_neuron_modle
 from get_neuron_modle import get_L5PC
 import re
 
-
+print(torch.cuda.get_device_name(0))
+print(torch.cuda.is_available())
+print("done")
 
 WANDB_API_KEY = "2725e59f8f4484605300fdf4da4c270ff0fe44a3"
 
