@@ -186,7 +186,7 @@ if __name__ == '__main__':
                          inter_module_skip_connections=True,batch_size_validation=200,spike_probability=0.5,clip_gradients_factor=1)
     configs.append(config_morpho_0)
 
-    with open(os.path.join(MODELS_DIR, "cm_overcheack_model_4.json"), 'w') as file:
+    with open(os.path.join(MODELS_DIR, "cm_overcheack_model_5.json"), 'w') as file:
         file.write(json.dumps(configs))  # use `json.loads` to do the reverse
         # file.write(json.dumps([config_morpho_0]))  # use `json.loads` to do the reverse
 
