@@ -63,7 +63,7 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                    **kargs):
     ##default values can be overridden by kargs
     config = AttrDict(config_version=1.1,input_window_size=200, num_segments=2 * 639, num_syn_types=1,
-                      num_epochs=15000, epoch_size=300, batch_size_train=30,accumulate_loss_batch_factor=1, batch_size_validation=200,
+                      num_epochs=15000, epoch_size=300, batch_size_train=30,accumulate_loss_batch_factor=1, batch_size_validation=20,
                       train_file_load=0.5, valid_file_load=0.5, spike_probability=0.5,
                       files_filter_regex=".*exBas_0_1100_inhBasDiff_-1100_600__exApic_0_1100_inhApicDiff_-1100_600_SpTemp[^\\/\.]*\.p",
                       # files_filter_regex=".*",
@@ -71,7 +71,7 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                       batch_counter=0, epoch_counter=0,  # default counter
                       torch_seed=42, numpy_seed=21, random_seed=12, init_weights_sd=0.05,
                       dynamic_learning_params=True,
-                      constant_loss_weights=[50., 1., 0., 0], constant_sigma=1.2, constant_learning_rate=0.00001,
+                      constant_loss_weights=[50., 1., 0., 0], constant_sigma=1.2, constant_learning_rate=0.001,
                       dynamic_learning_params_function="learning_parameters_iter_slow_50_with_constant_weights",
                       config_path="", model_tag="complex_constant_model", model_path=None,
                       loss_function="bcel_mse_dvt_loss")
