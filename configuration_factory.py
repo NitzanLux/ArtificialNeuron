@@ -62,16 +62,16 @@ def load_config_file(path: str) -> AttrDict:
 def config_factory(save_model_to_config_dir=True, config_new_path=None, generate_random_seeds=False, is_new_name=False,
                    **kargs):
     ##default values can be overridden by kargs
-    config = AttrDict(config_version=1.1,input_window_size=300, num_segments=2 * 639, num_syn_types=1,
+    config = AttrDict(config_version=1.1,input_window_size=200, num_segments=2 * 639, num_syn_types=1,
                       num_epochs=15000, epoch_size=300, batch_size_train=30,accumulate_loss_batch_factor=2, batch_size_validation=200,
                       train_file_load=0.5, valid_file_load=0.5, spike_probability=0.5,
                       files_filter_regex=".*exBas_0_1100_inhBasDiff_-1100_600__exApic_0_1100_inhApicDiff_-1100_600_SpTemp[^\\/\.]*\.p",
                       # files_filter_regex=".*",
-                      optimizer_type="RMSprop", optimizer_params={},clip_gradients_factor=5,
+                      optimizer_type="AdamW", optimizer_params={},clip_gradients_factor=2,
                       batch_counter=0, epoch_counter=0,  # default counter
                       torch_seed=42, numpy_seed=21, random_seed=12, init_weights_sd=0.05,
                       dynamic_learning_params=True,
-                      constant_loss_weights=[50., 1., 0., 0], constant_sigma=1.2, constant_learning_rate=0.0001,
+                      constant_loss_weights=[50., 1., 0., 0], constant_sigma=1.2, constant_learning_rate=0.001,
                       dynamic_learning_params_function="learning_parameters_iter_slow_50_with_constant_weights",
                       config_path="", model_tag="complex_constant_model", model_path=None,
                       loss_function="bcel_mse_dvt_loss")
@@ -181,13 +181,12 @@ def generate_config_files_multiple_seeds(config_path: [str, Dict], number_of_con
 
 if __name__ == '__main__':
     configs = []
-    for i in ['RMSprop','NAdam','AdamW']:
-        config_morpho_0 =config_factory(dynamic_learning_params=False, architecture_type="LAYERED_TEMPORAL_CONV",optimizer_type=i,
-                        model_tag="cm_%s_3_model"%i,skip_conections=True,
-                             inter_module_skip_connections=True,batch_size_validation=200,spike_probability=0.5,clip_gradients_factor=1)
-        configs.append(config_morpho_0)
+    config_morpho_0 =config_factory(dynamic_learning_params=False, architecture_type="LAYERED_TEMPORAL_CONV",
+                    model_tag="cm_cheack_overfitting_%s_4_model"%i,skip_conections=True,
+                         inter_module_skip_connections=True,batch_size_validation=200,spike_probability=0.5,clip_gradients_factor=1)
+    configs.append(config_morpho_0)
 
-    with open(os.path.join(MODELS_DIR, "cm_model_3.json"), 'w') as file:
+    with open(os.path.join(MODELS_DIR, "cm_overcheack_model_4.json"), 'w') as file:
         file.write(json.dumps(configs))  # use `json.loads` to do the reverse
         # file.write(json.dumps([config_morpho_0]))  # use `json.loads` to do the reverse
 

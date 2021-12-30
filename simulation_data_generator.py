@@ -17,7 +17,7 @@ class SimulationDataGenerator():
 
     def __init__(self, sim_experiment_files, buffer_size_in_files=12, epoch_size=None,
                  batch_size=8, sample_ratio_to_shuffle=1, window_size_ms=300, file_load=0.3, DVT_PCA_model=None,
-                 ignore_time_from_start=0, y_train_soma_bias=-67.7, y_soma_threshold=-55.0, y_DTV_threshold=3.0,
+                 ignore_time_from_start=20, y_train_soma_bias=-67.7, y_soma_threshold=-55.0, y_DTV_threshold=3.0,
                  shuffle_files=False, include_DVT=False, is_shuffle_data=False, number_of_traces_from_file=None, number_of_files=None):
         'data generator initialization'
         self.include_DVT = include_DVT
@@ -75,13 +75,13 @@ class SimulationDataGenerator():
             # get spikes location
             spike_mask = self.y_spike.squeeze() == 1
             spikes = list(np.where(spike_mask))
-            spikes_in_bound = spikes[1] > self.sampling_start_time + self.window_size_ms
+            spikes_in_bound = spikes[1] > self.window_size_ms
             spikes[SIM_INDEX] = spikes[SIM_INDEX][spikes_in_bound]
             spikes[1] = spikes[1][spikes_in_bound]
 
             # get non spikes location
             non_spikes = list(np.where(np.logical_not(spike_mask)))
-            non_spikes_in_bound = non_spikes[1] > self.sampling_start_time + self.window_size_ms
+            non_spikes_in_bound = non_spikes[1] > self.window_size_ms
             non_spikes[SIM_INDEX] = non_spikes[SIM_INDEX][non_spikes_in_bound]
             non_spikes[1] = non_spikes[1][non_spikes_in_bound]
 
@@ -122,7 +122,7 @@ class SimulationDataGenerator():
             counter += 1
             if self.__return_spike_factor == NULL_SPIKE_FACTOR_VALUE:
                 yield self[np.arange(self.sample_counter, self.sample_counter + self.batch_size) % self.X.shape[
-                    SIM_INDEX], np.random.choice(range(self.sampling_start_time, self.X.shape[2] - 1),
+                    SIM_INDEX], np.random.choice(range(0, self.X.shape[2] - 1),
                                                  size=self.batch_size, replace=False)]
             else:
                 number_of_iteration = (self.sample_counter // self.batch_size) + 1
@@ -151,7 +151,7 @@ class SimulationDataGenerator():
             if self.__return_spike_factor == NULL_SPIKE_FACTOR_VALUE:
                 selected_sim_idxs = np.random.choice(range(self.X.shape[0]), size=self.batch_size,
                                                      replace=True)  # number of simulations per file
-                selected_time_idxs = np.random.choice(range(self.sampling_start_time, self.X.shape[2] - 1),
+                selected_time_idxs = np.random.choice(range(0, self.X.shape[2] - 1),
                                                       size=self.batch_size, replace=False)  # simulation duration
             else:
 
@@ -174,9 +174,9 @@ class SimulationDataGenerator():
     def files_shuffle_checker(self):
         self.sample_counter += self.batch_size
         if self.__return_spike_factor == NULL_SPIKE_FACTOR_VALUE:
-            if self.sample_counter / (self.X.shape[0] * self.X.shape[2]) >= self.sample_ratio_to_shuffle:
+            if (self.sample_counter+self.batch_size) / (self.X.shape[0] * self.X.shape[2]) >= self.sample_ratio_to_shuffle:
                 self.reload_files()
-        elif (self.sample_counter / min(self.non_spikes[SIM_INDEX].shape[0]/(1-self.__return_spike_factor),
+        elif ((self.sample_counter+self.batch_size) / min(self.non_spikes[SIM_INDEX].shape[0]/(1-self.__return_spike_factor),
                         self.spikes[SIM_INDEX].shape[0]/self.__return_spike_factor)) >= self.sample_ratio_to_shuffle:
             # in case we are deterministically sampling from different probability space then the data.
             self.reload_files()
@@ -250,6 +250,7 @@ class SimulationDataGenerator():
                 X, y_spike, y_soma, _ = parse_sim_experiment_file_with_DVT(f, DVT_PCA_model=self.DVT_PCA_model)
             # reshape to what is needed
             X = np.transpose(X, axes=[2, 0, 1])
+            X = X[:,self.sampling_start_time:]
             y_spike = y_spike.T[:, np.newaxis, :]
             y_soma = y_soma.T[:, np.newaxis, :]
             if self.number_of_traces_from_file is not None:
