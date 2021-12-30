@@ -63,7 +63,7 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                    **kargs):
     ##default values can be overridden by kargs
     config = AttrDict(config_version=1.1,input_window_size=200, num_segments=2 * 639, num_syn_types=1,
-                      num_epochs=15000, epoch_size=300, batch_size_train=30,accumulate_loss_batch_factor=2, batch_size_validation=200,
+                      num_epochs=15000, epoch_size=300, batch_size_train=30,accumulate_loss_batch_factor=1, batch_size_validation=200,
                       train_file_load=0.5, valid_file_load=0.5, spike_probability=0.5,
                       files_filter_regex=".*exBas_0_1100_inhBasDiff_-1100_600__exApic_0_1100_inhApicDiff_-1100_600_SpTemp[^\\/\.]*\.p",
                       # files_filter_regex=".*",
