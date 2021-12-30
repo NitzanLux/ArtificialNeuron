@@ -179,7 +179,6 @@ class SimulationDataGenerator():
         elif ((self.sample_counter+self.batch_size) / min(self.non_spikes[SIM_INDEX].shape[0]/(1-self.__return_spike_factor),
                         self.spikes[SIM_INDEX].shape[0]/self.__return_spike_factor)) >= self.sample_ratio_to_shuffle:
             # in case we are deterministically sampling from different probability space then the data.
-            print("*******                  loading file at batch number %s"%self.sample_counter,flush=True)
             self.reload_files()
 
     def __getitem__(self, item):
@@ -193,11 +192,8 @@ class SimulationDataGenerator():
                                                     np.arange(self.X.shape[1]), np.arange(self.window_size_ms, 0, -1),
                                                     indexing='ij')
         win_ind = win_time[:, np.newaxis, np.newaxis] - win_ind
-        try:
-            X_batch = self.X[sim_ind_mat, chn_ind, win_ind]
-        except Exception as e:
-            print(e)
-            print("a")
+        X_batch = self.X[sim_ind_mat, chn_ind, win_ind]
+
         pred_index = win_time
         y_spike_batch = self.y_spike[sim_ind, pred_index]
         y_soma_batch = self.y_soma[sim_ind, pred_index]
