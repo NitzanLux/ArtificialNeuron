@@ -182,8 +182,8 @@ def generate_config_files_multiple_seeds(config_path: [str, Dict], number_of_con
 if __name__ == '__main__':
     configs = []
     config_morpho_0 =config_factory(dynamic_learning_params=False, architecture_type="LAYERED_TEMPORAL_CONV",
-                    model_tag="cm_cheack_overfitting_9_model",skip_conections=True,
-                         inter_module_skip_connections=True,batch_size_validation=200,spike_probability=0.5,clip_gradients_factor=2)
+                    model_tag="cm_cheack_overfitting_10_model",skip_conections=True,
+                         inter_module_skip_connections=True,batch_size_validation=200,spike_probability=0.5,clip_gradients_factor=1,constant_learning_rate=0.0007)
     configs.append(config_morpho_0)
 
     with open(os.path.join(MODELS_DIR, "cm_overcheack_model_9.json"), 'w') as file:
