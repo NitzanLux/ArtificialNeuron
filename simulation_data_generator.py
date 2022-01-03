@@ -187,6 +187,7 @@ class SimulationDataGenerator():
         :return:items (X, y_spike,y_soma ,y_DVT [if exists])
         """
         sim_ind, win_time = item
+        print(item,flush=True)
         for k,v in zip(sim_ind,win_time):
             if (k,v) in self.index_set:
                 assert False,"ooooooooooooooooo cannot add (%d ,%d)"%(k,v)
@@ -230,7 +231,7 @@ class SimulationDataGenerator():
                                              self.sim_experiment_files)]  # cyclic reloading
                 self.files_counter += 1
         self.load_files_to_buffer()
-        self.index_set = set()
+        self.index_set = set() # todo debugging
 
     def load_files_to_buffer(self):
         'load new file to draw batches from'
