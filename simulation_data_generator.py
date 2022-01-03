@@ -5,7 +5,8 @@ from neuron import h, gui
 import numpy as np
 import torch
 import time
-from typing import List,Tuple
+from typing import List, Tuple
+
 NULL_SPIKE_FACTOR_VALUE = 0
 
 USE_CVODE = True
@@ -18,12 +19,13 @@ class SimulationDataGenerator():
     def __init__(self, sim_experiment_files, buffer_size_in_files=12, epoch_size=None,
                  batch_size=8, sample_ratio_to_shuffle=1, window_size_ms=300, file_load=0.3, DVT_PCA_model=None,
                  ignore_time_from_start=20, y_train_soma_bias=-67.7, y_soma_threshold=-55.0, y_DTV_threshold=3.0,
-                 shuffle_files=False, include_DVT=False, is_shuffle_data=False, number_of_traces_from_file=None, number_of_files=None):
+                 shuffle_files=True, include_DVT=False, is_shuffle_data=False, number_of_traces_from_file=None,
+                 number_of_files=None):
         'data generator initialization'
         self.include_DVT = include_DVT
         self.sim_experiment_files = sim_experiment_files
         if number_of_files is not None:
-            self.sim_experiment_files=self.sim_experiment_files[:number_of_files]
+            self.sim_experiment_files = self.sim_experiment_files[:number_of_files]
         self.buffer_size_in_files = buffer_size_in_files
         self.batch_size = batch_size
         self.window_size_ms = window_size_ms
@@ -41,16 +43,17 @@ class SimulationDataGenerator():
         self.files_counter = 0
         self.sample_counter = 0
         self.curr_files_to_use = None
-        self.number_of_traces_from_file=number_of_traces_from_file
+        self.number_of_traces_from_file = number_of_traces_from_file
 
         self.sampling_start_time = ignore_time_from_start
         self.X, self.y_spike, self.y_soma, self.y_DVT = None, None, None, None
         self.__return_spike_factor = 0.  # if we want to return x spikes in the features.
         self.reload_files()
-        self.non_spikes, self.spikes, self.number_of_non_spikes_in_batch, self.number_of_spikes_in_batch=None,None,None,None
-        self.index_set=set()
+        self.non_spikes, self.spikes, self.number_of_non_spikes_in_batch, self.number_of_spikes_in_batch = None, None, None, None
+        self.index_set = set()
         # self.non_spikes,self.spikes,self.number_of_non_spikes_in_batch,self.nuber_of_spikes_in_batch = non_spikes, spikes, number_of_non_spikes_in_batch,
         #                                                         number_of_spikes_in_batch
+
     def change_spike_probability(self, spike_factor):
         """
         change the probability of spikes in the sample space.
@@ -60,6 +63,7 @@ class SimulationDataGenerator():
         assert 0 <= spike_factor <= 1, "number must be between 0 and 1"
         self.__return_spike_factor = spike_factor
         self.separate_spike_and_non_spike_samples()
+
     def __len__(self):
         'Denotes the total number of samples'
         return self.epoch_size
@@ -88,6 +92,7 @@ class SimulationDataGenerator():
             # shuffle them
             self.spikes = self.shuffle_array(spikes)
             self.non_spikes = self.shuffle_array(non_spikes)
+
     def __iter__(self):
         """create epoch iterator"""
         if not self.is_shuffel_data:
@@ -155,7 +160,8 @@ class SimulationDataGenerator():
                                                       size=self.batch_size, replace=False)  # simulation duration
             else:
 
-                spike_idxs = np.random.choice(np.arange(self.spikes[SIM_INDEX].shape[0]), size=self.number_of_spikes_in_batch,
+                spike_idxs = np.random.choice(np.arange(self.spikes[SIM_INDEX].shape[0]),
+                                              size=self.number_of_spikes_in_batch,
                                               replace=True)  # number of simulations per file
                 spikes_sim_idxs = self.spikes[SIM_INDEX][spike_idxs]
                 spikes_sim_time = self.spikes[1][spike_idxs]
@@ -174,14 +180,17 @@ class SimulationDataGenerator():
 
     def files_shuffle_checker(self):
         if self.__return_spike_factor == NULL_SPIKE_FACTOR_VALUE:
-            if (self.sample_counter+self.batch_size) / (self.X.shape[0] * self.X.shape[2]) >= self.sample_ratio_to_shuffle:
+            if (self.sample_counter + self.batch_size) / (
+                    self.X.shape[0] * self.X.shape[2]) >= self.sample_ratio_to_shuffle:
                 self.reload_files()
                 return True
-        if ((self.sample_counter+self.batch_size)*self.__return_spike_factor)/self.spikes[SIM_INDEX].shape[0] >= self.sample_ratio_to_shuffle:
+        if ((self.sample_counter + self.batch_size) * self.__return_spike_factor) / self.spikes[SIM_INDEX].shape[
+            0] >= self.sample_ratio_to_shuffle:
             # in case we are deterministically sampling from different probability space then the data.
             self.reload_files()
             return True
         return False
+
     def __getitem__(self, item):
         """
         get items
@@ -190,10 +199,12 @@ class SimulationDataGenerator():
         """
         sim_ind, win_time = item
 
-        #todo debug
-        for k,v in zip(sim_ind,win_time):
-            assert (k,v) not in self.index_set or self.__return_spike_factor>1 or self.__return_spike_factor>0,"ooooooooooooooooo cannot add (%d ,%d)"%(k,v)
-            self.index_set.add((k,v))
+        # todo debug
+        for k, v in zip(sim_ind, win_time):
+            assert (k,
+                    v) not in self.index_set or self.__return_spike_factor > 1 or self.__return_spike_factor > 0, "ooooooooooooooooo cannot add (%d ,%d)" % (
+            k, v)
+            self.index_set.add((k, v))
 
         sim_ind_mat, chn_ind, win_ind = np.meshgrid(sim_ind,
                                                     np.arange(self.X.shape[1]), np.arange(self.window_size_ms, 0, -1),
@@ -220,21 +231,23 @@ class SimulationDataGenerator():
         if len(self.sim_experiment_files) <= self.buffer_size_in_files:
             self.curr_files_to_use = self.sim_experiment_files
         else:
-            if self.shuffle_files:
-                if self.files_counter*self.buffer_size_in_files>=len(self.sim_experiment_files):
-                    random.shuffle(self.sim_experiment_files)
-                # self.curr_files_to_use = np.random.choice(self.sim_experiment_files, size=self.buffer_size_in_files,
-                #                                           replace=False)
+            if self.shuffle_files and \
+                    self.files_counter * self.buffer_size_in_files >= len(self.sim_experiment_files):
+                random.shuffle(self.sim_experiment_files)
+            # self.curr_files_to_use = np.random.choice(self.sim_experiment_files, size=self.buffer_size_in_files,
+            #                                           replace=False)
+            # else:
+            first_index= (self.files_counter * self.buffer_size_in_files) % len(
+                                         self.sim_experiment_files)
+            last_index=  ((self.files_counter + 1) * self.buffer_size_in_files) % len(
+                                         self.sim_experiment_files)
+            if first_index<last_index:
+                self.curr_files_to_use = self.sim_experiment_files[first_index:last_index]
             else:
-                self.curr_files_to_use = self.sim_experiment_files[
-                                         (self.files_counter * self.buffer_size_in_files) % len(
-                                             self.sim_experiment_files):
-                                         ((self.files_counter + 1) * self.buffer_size_in_files) % len(
-                                             self.sim_experiment_files)]  # cyclic reloading
-                self.files_counter += 1
+                self.curr_files_to_use= self.sim_experiment_files[:last_index]+self.sim_experiment_files[first_index:]
+            self.files_counter += 1
         self.load_files_to_buffer()
-        self.index_set = set() # todo debugging
-        print('reloading.........')
+        self.index_set = set()  # todo debugging
 
     def load_files_to_buffer(self):
         'load new file to draw batches from'
@@ -256,13 +269,13 @@ class SimulationDataGenerator():
                 X, y_spike, y_soma, _ = parse_sim_experiment_file_with_DVT(f, DVT_PCA_model=self.DVT_PCA_model)
             # reshape to what is needed
             X = np.transpose(X, axes=[2, 0, 1])
-            X = X[:,self.sampling_start_time:]
+            X = X[:, self.sampling_start_time:]
             y_spike = y_spike.T[:, np.newaxis, :]
             y_soma = y_soma.T[:, np.newaxis, :]
             if self.number_of_traces_from_file is not None:
-                X=X[:self.number_of_traces_from_file,:,:]
-                y_spike=y_spike[:self.number_of_traces_from_file,:,:]
-                y_soma=y_soma[:self.number_of_traces_from_file,:,:]
+                X = X[:self.number_of_traces_from_file, :, :]
+                y_spike = y_spike[:self.number_of_traces_from_file, :, :]
+                y_soma = y_soma[:self.number_of_traces_from_file, :, :]
             # y_soma = y_soma - self.y_train_soma_bias
             self.X.append(X)
             self.y_spike.append(y_spike)
