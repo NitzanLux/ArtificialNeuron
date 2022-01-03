@@ -183,7 +183,7 @@ if __name__ == '__main__':
     configs = []
     for i in [1,2.5,5,10]:
         config_morpho_0 =config_factory(dynamic_learning_params=False, architecture_type="LAYERED_TEMPORAL_CONV",
-                        model_tag="evaluation_model",skip_conections=True,
+                        model_tag="evaluation_model_cn%d"%(i*10),skip_conections=True,
                              inter_module_skip_connections=True,batch_size_validation=200,spike_probability=0.5,clip_gradients_factor=i,constant_learning_rate=0.0007)
         configs.append(config_morpho_0)
 
