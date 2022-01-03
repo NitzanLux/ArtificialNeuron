@@ -201,7 +201,7 @@ def get_data_generators(DVT_PCA_model, config):
     validation_data_generator = SimulationDataGenerator(valid_files, buffer_size_in_files=BUFFER_SIZE_IN_FILES_VALID,
                                                         batch_size=config.batch_size_validation,
                                                         window_size_ms=config.time_domain_shape,
-                                                        file_load=config.train_file_load,sample_ratio_to_shuffle=1,
+                                                        file_load=config.train_file_load,sample_ratio_to_shuffle=1.5,
                                                         DVT_PCA_model=DVT_PCA_model)
     if "spike_probability" in config and config.spike_probability is not None:
         train_data_generator.change_spike_probability(config.spike_probability)
