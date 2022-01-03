@@ -191,12 +191,10 @@ class SimulationDataGenerator():
         sim_ind, win_time = item
 
         #todo debug
-        print("item len %d"%len(item[0]),flush=True)
         for k,v in zip(sim_ind,win_time):
-            if (k,v) in self.index_set:
-                assert False,"ooooooooooooooooo cannot add (%d ,%d)"%(k,v)
-            else:
-                self.index_set.add((k,v))
+            assert (k,v) not in self.index_set and self.__return_spike_factor<=1 and self.__return_spike_factor>0,"ooooooooooooooooo cannot add (%d ,%d)"%(k,v)
+            self.index_set.add((k,v))
+
         sim_ind_mat, chn_ind, win_ind = np.meshgrid(sim_ind,
                                                     np.arange(self.X.shape[1]), np.arange(self.window_size_ms, 0, -1),
                                                     indexing='ij')
