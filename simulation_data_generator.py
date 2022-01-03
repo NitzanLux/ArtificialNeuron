@@ -192,7 +192,7 @@ class SimulationDataGenerator():
 
         #todo debug
         for k,v in zip(sim_ind,win_time):
-            assert (k,v) not in self.index_set and self.__return_spike_factor<=1 and self.__return_spike_factor>0,"ooooooooooooooooo cannot add (%d ,%d)"%(k,v)
+            assert (k,v) not in self.index_set or self.__return_spike_factor>1 or self.__return_spike_factor>0,"ooooooooooooooooo cannot add (%d ,%d)"%(k,v)
             self.index_set.add((k,v))
 
         sim_ind_mat, chn_ind, win_ind = np.meshgrid(sim_ind,
