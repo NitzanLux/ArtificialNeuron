@@ -181,10 +181,11 @@ def generate_config_files_multiple_seeds(config_path: [str, Dict], number_of_con
 
 if __name__ == '__main__':
     configs = []
-    config_morpho_0 =config_factory(dynamic_learning_params=False, architecture_type="LAYERED_TEMPORAL_CONV",
-                    model_tag="evaluation_model",skip_conections=True,
-                         inter_module_skip_connections=True,batch_size_validation=200,spike_probability=0.5,clip_gradients_factor=4,constant_learning_rate=0.0007)
-    configs.append(config_morpho_0)
+    for i in [1,2.5,5,10]:
+        config_morpho_0 =config_factory(dynamic_learning_params=False, architecture_type="LAYERED_TEMPORAL_CONV",
+                        model_tag="evaluation_model",skip_conections=True,
+                             inter_module_skip_connections=True,batch_size_validation=200,spike_probability=0.5,clip_gradients_factor=i,constant_learning_rate=0.0007)
+        configs.append(config_morpho_0)
 
     with open(os.path.join(MODELS_DIR, "evaluation_model_0.json"), 'w') as file:
         file.write(json.dumps(configs))  # use `json.loads` to do the reverse
