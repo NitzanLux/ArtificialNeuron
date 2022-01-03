@@ -73,7 +73,9 @@ def hinge_mse_dvt_loss(loss_weights, window_size, sigma):
         loss_blur_item = 0
 
         if loss_weights[0] > 0:
-            loss_bcel =  hinge_loss(output[0]*2-1,target[0]*2-1)  # removing channel dimention
+            out_hinge=output[0]*2-1
+            tar_hinge = target[0]*2-1
+            loss_bcel =  hinge_loss(out_hinge,tar_hinge)  # removing channel dimention
             loss_bcel_item = loss_bcel.item()
             general_loss = loss_weights[0] *loss_bcel
 

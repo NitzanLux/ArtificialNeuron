@@ -48,7 +48,7 @@ class SimulationDataGenerator():
         self.__return_spike_factor = 0.  # if we want to return x spikes in the features.
         self.reload_files()
         self.non_spikes, self.spikes, self.number_of_non_spikes_in_batch, self.number_of_spikes_in_batch=None,None,None,None
-
+        self.index_set=set()
         # self.non_spikes,self.spikes,self.number_of_non_spikes_in_batch,self.nuber_of_spikes_in_batch = non_spikes, spikes, number_of_non_spikes_in_batch,
         #                                                         number_of_spikes_in_batch
     def change_spike_probability(self, spike_factor):
@@ -187,6 +187,11 @@ class SimulationDataGenerator():
         :return:items (X, y_spike,y_soma ,y_DVT [if exists])
         """
         sim_ind, win_time = item
+        for k,v in zip(sim_ind,win_time):
+            if (k,v) in self.index_set:
+                assert False,"ooooooooooooooooo cannot add (%d ,%d)"%(k,v)
+            else:
+                self.index_set.add((k,v))
         sim_ind_mat, chn_ind, win_ind = np.meshgrid(sim_ind,
                                                     np.arange(self.X.shape[1]), np.arange(self.window_size_ms, 0, -1),
                                                     indexing='ij')
@@ -225,6 +230,7 @@ class SimulationDataGenerator():
                                              self.sim_experiment_files)]  # cyclic reloading
                 self.files_counter += 1
         self.load_files_to_buffer()
+        self.index_set = set()
 
     def load_files_to_buffer(self):
         'load new file to draw batches from'
