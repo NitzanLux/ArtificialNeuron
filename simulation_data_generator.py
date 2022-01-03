@@ -176,7 +176,9 @@ class SimulationDataGenerator():
         if self.__return_spike_factor == NULL_SPIKE_FACTOR_VALUE:
             if (self.sample_counter+self.batch_size) / (self.X.shape[0] * self.X.shape[2]) >= self.sample_ratio_to_shuffle:
                 self.reload_files()
-        elif ((self.sample_counter+self.batch_size)*self.__return_spike_factor)/self.spikes[SIM_INDEX].shape[0] >= self.sample_ratio_to_shuffle:
+            return
+        print("the ratio is %0.5f"%((self.sample_counter+self.batch_size)*self.__return_spike_factor)/self.spikes[SIM_INDEX].shape[0]) #todo debug
+        if ((self.sample_counter+self.batch_size)*self.__return_spike_factor)/self.spikes[SIM_INDEX].shape[0] >= self.sample_ratio_to_shuffle:
             # in case we are deterministically sampling from different probability space then the data.
             self.reload_files()
 
@@ -187,7 +189,7 @@ class SimulationDataGenerator():
         :return:items (X, y_spike,y_soma ,y_DVT [if exists])
         """
         sim_ind, win_time = item
-        print(item,flush=True)
+        print("item len %d"%len(item[0]),flush=True)
         for k,v in zip(sim_ind,win_time):
             if (k,v) in self.index_set:
                 assert False,"ooooooooooooooooo cannot add (%d ,%d)"%(k,v)
