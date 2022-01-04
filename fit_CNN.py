@@ -85,7 +85,7 @@ def load_files_names(files_filter_regex: str = ".*") -> Tuple[List[str], List[st
     return train_files, valid_files, test_files
 
 
-def batch_train(network, optimizer, custom_loss, train_data_iterator,clip_gradient,accumulate_loss_batch_factor):
+def batch_train(network, optimizer, custom_loss, train_data_iterator,clip_gradient,accumulate_loss_batch_factor,optimizer_scdualer):
     # zero the parameter gradients
     torch.cuda.empty_cache()
     optimizer.zero_grad()
@@ -95,6 +95,8 @@ def batch_train(network, optimizer, custom_loss, train_data_iterator,clip_gradie
         outputs = network(inputs)
         general_loss, loss_bcel, loss_mse, loss_dvt, loss_gausian_mse = custom_loss(outputs, labels)
         general_loss.backward()
+        if optimizer_scdualer is not None:
+            optimizer_scdualer.step(general_loss)
     torch.nn.utils.clip_grad_norm_(network.parameters(), clip_gradient)
     optimizer.step()
     out = general_loss, loss_bcel, loss_mse, loss_dvt, loss_gausian_mse
@@ -132,9 +134,10 @@ def train_network(config):
     validation_data_iterator = iter(validation_data_generator)
     batch_counter = 0
     saving_counter = 0
+    optimizer_scdualer=None
     if not config.dynamic_learning_params:
         learning_rate, loss_weights, optimizer, sigma = generate_constant_learning_parameters(config, model)
-        optimizer = ReduceLROnPlateau(optimizer, 'min')
+        optimizer_scdualer = ReduceLROnPlateau(optimizer, 'min',patience=10,factor=0.5)
     else:
         learning_rate, loss_weights, sigma = 0.001, [1] * 3, 0.1  # default values
         dynamic_parameter_loss_genrator = getattr(dlpf, config.dynamic_learning_params_function)(config)
@@ -162,7 +165,7 @@ def train_network(config):
             config.update(dict(batch_counter=config.batch_counter + 1), allow_val_change=True)
             # get the inputs; data is a list of [inputs, labels]
             batch_counter += 1
-            train_loss = batch_train(model, optimizer, custom_loss, train_data_iterator,config.clip_gradients_factor,config.accumulate_loss_batch_factor)
+            train_loss = batch_train(model, optimizer, custom_loss, train_data_iterator,config.clip_gradients_factor,config.accumulate_loss_batch_factor,optimizer_scdualer)
             with torch.no_grad():
                 train_log(train_loss, batch_counter, epoch, learning_rate, sigma, loss_weights,
                           additional_str="train")
