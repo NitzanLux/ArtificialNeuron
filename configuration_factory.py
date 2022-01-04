@@ -183,13 +183,13 @@ def generate_config_files_multiple_seeds(config_path: [str, Dict], number_of_con
 if __name__ == '__main__':
     configs = []
     # for i in [1,2.5,5,10]:
-    config_morpho_0 =config_factory(dynamic_learning_params=True,dynamic_learning_params_function="learning_parameters_iter_with_constant_weights", architecture_type="LAYERED_TEMPORAL_CONV",
-                    model_tag="evaluation_model_dynamic_fast",skip_conections=True,optimizer_type='RMSprop',
+    config_morpho_0 =config_factory(dynamic_learning_params=False,dynamic_learning_params_function="learning_parameters_iter_with_constant_weights", architecture_type="LAYERED_TEMPORAL_CONV",
+                    model_tag="evaluation_model_on_plateau",skip_conections=True,optimizer_type='RMSprop',
                                      accumulate_loss_batch_factor=1,
-                         inter_module_skip_connections=True,batch_size_validation=200,spike_probability=0.5,clip_gradients_factor=5,constant_learning_rate=0.0003)
+                         inter_module_skip_connections=True,batch_size_validation=200,spike_probability=0.5,clip_gradients_factor=5,constant_learning_rate=0.005)
     configs.append(config_morpho_0)
 
-    with open(os.path.join(MODELS_DIR, "evaluation_model_5.json"), 'w') as file:
+    with open(os.path.join(MODELS_DIR, "evaluation_model_6.json"), 'w') as file:
         file.write(json.dumps(configs))  # use `json.loads` to do the reverse
         # file.write(json.dumps([config_morpho_0]))  # use `json.loads` to do the reverse
 

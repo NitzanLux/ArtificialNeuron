@@ -13,7 +13,7 @@ from neuron_network import neuronal_model
 from neuron_network.node_network import recursive_neuronal_model
 from neuron_network import davids_network
 from project_path import *
-
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 from simulation_data_generator import *
 import get_neuron_modle
 from get_neuron_modle import get_L5PC
@@ -134,6 +134,7 @@ def train_network(config):
     saving_counter = 0
     if not config.dynamic_learning_params:
         learning_rate, loss_weights, optimizer, sigma = generate_constant_learning_parameters(config, model)
+        optimizer = ReduceLROnPlateau(optimizer, 'min')
     else:
         learning_rate, loss_weights, sigma = 0.001, [1] * 3, 0.1  # default values
         dynamic_parameter_loss_genrator = getattr(dlpf, config.dynamic_learning_params_function)(config)
