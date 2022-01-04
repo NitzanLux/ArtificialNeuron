@@ -63,7 +63,7 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                    **kargs):
     ##default values can be overridden by kargs
     config = AttrDict(config_version=1.1,input_window_size=200, num_segments=2 * 639, num_syn_types=1,
-                      num_epochs=15000, epoch_size=40, batch_size_train=30,accumulate_loss_batch_factor=1, batch_size_validation=20,
+                      num_epochs=15000, epoch_size=50, batch_size_train=30,accumulate_loss_batch_factor=1, batch_size_validation=20,
                       train_file_load=0.5, valid_file_load=0.5, spike_probability=0.5,
                       # files_filter_regex=".*exBas_0_1100_inhBasDiff_-1100_600__exApic_0_1100_inhApicDiff_-1100_600_SpTemp[^\\/\.]*\.p",
                       files_filter_regex=".*",
@@ -183,9 +183,9 @@ def generate_config_files_multiple_seeds(config_path: [str, Dict], number_of_con
 if __name__ == '__main__':
     configs = []
     # for i in [1,2.5,5,10]:
-    config_morpho_0 =config_factory(dynamic_learning_params=True,dynamic_learning_params_function="learning_parameters_iter_slow_10_with_constant_weights", architecture_type="LAYERED_TEMPORAL_CONV",
-                    model_tag="evaluation_model_dynamic",skip_conections=True,#optimizer_type='RMSprop'
-                                     accumulate_loss_batch_factor=2,
+    config_morpho_0 =config_factory(dynamic_learning_params=True,dynamic_learning_params_function="learning_parameters_iter_with_constant_weights", architecture_type="LAYERED_TEMPORAL_CONV",
+                    model_tag="evaluation_model_dynamic",skip_conections=True,optimizer_type='RMSprop',
+                                     accumulate_loss_batch_factor=1,
                          inter_module_skip_connections=True,batch_size_validation=200,spike_probability=0.5,clip_gradients_factor=5,constant_learning_rate=0.0003)
     configs.append(config_morpho_0)
 
