@@ -94,8 +94,8 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                                  padding=0,
                                  dilation=1,
                                  channel_input_number=1278,  # synapse number
-                                 inner_scope_channel_number=26,
-                                 channel_output_number=17,
+                                 inner_scope_channel_number=21,
+                                 channel_output_number=21,
                                  activation_function_name="LeakyReLU",
                                  activation_function_kargs=dict(negative_slope=0.5),
                                  include_dendritic_voltage_tracing=False)
