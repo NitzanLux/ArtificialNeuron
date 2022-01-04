@@ -83,8 +83,8 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                                  time_domain_shape=config.input_window_size,
                                  # kernel_size_2d=3,
                                  # kernel_size_1d=9,
-                                 number_of_layers_root= 3, number_of_layers_leaf=3, number_of_layers_intersection=3,
-                                 number_of_layers_branch_intersection=3,
+                                 number_of_layers_root= 4, number_of_layers_leaf=4, number_of_layers_intersection=4,
+                                 number_of_layers_branch_intersection=4,
                                  david_layers = [55,13,13,13,13,13,13],
                                  skip_connections=True,
                                  inter_module_skip_connections=True,
@@ -184,11 +184,12 @@ if __name__ == '__main__':
     configs = []
     # for i in [1,2.5,5,10]:
     config_morpho_0 =config_factory(dynamic_learning_params=False, architecture_type="LAYERED_TEMPORAL_CONV",
-                    model_tag="evaluation_model_cn_all",skip_conections=True,optimizer_type='RMSprop',accumulate_loss_batch_factor=2,
+                    model_tag="evaluation_model_heavy",skip_conections=True,#optimizer_type='RMSprop'
+                                     accumulate_loss_batch_factor=2,
                          inter_module_skip_connections=True,batch_size_validation=200,spike_probability=0.5,clip_gradients_factor=5,constant_learning_rate=0.0003)
     configs.append(config_morpho_0)
 
-    with open(os.path.join(MODELS_DIR, "evaluation_model_2.json"), 'w') as file:
+    with open(os.path.join(MODELS_DIR, "evaluation_model_3.json"), 'w') as file:
         file.write(json.dumps(configs))  # use `json.loads` to do the reverse
         # file.write(json.dumps([config_morpho_0]))  # use `json.loads` to do the reverse
 
