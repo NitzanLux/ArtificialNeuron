@@ -27,7 +27,7 @@ def learning_parameters_iter_with_constant_weights(config) -> Generator[Tuple[in
     DVT_loss_mult_factor = 0
     # epoch_in_each_step = config.num_epochs // 5 + (config.num_epochs % 5 != 0)
     while(True):
-        learning_rate_per_epoch = 1. / (((config.epoch_counter) + 1) * 1000)
+        learning_rate_per_epoch =1e-6 + 1. / (((config.epoch_counter) + 1) * 1000)
         loss_weights_per_epoch = [30, 1, DVT_loss_mult_factor * 0.00005]
         sigma = (sigma-1) / (np.sqrt(config.epoch_counter) + 1) +1
         yield learning_rate_per_epoch, loss_weights_per_epoch, sigma
