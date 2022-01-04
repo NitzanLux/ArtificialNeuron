@@ -184,8 +184,8 @@ if __name__ == '__main__':
     configs = []
     # for i in [1,2.5,5,10]:
     config_morpho_0 =config_factory(dynamic_learning_params=False, architecture_type="LAYERED_TEMPORAL_CONV",
-                    model_tag="evaluation_model_cn%d"%(i*10),skip_conections=True,optimizer_type='RMSprop',accumulate_loss_batch_factor=2,
-                         inter_module_skip_connections=True,batch_size_validation=200,spike_probability=0.5,clip_gradients_factor=i,constant_learning_rate=0.0003)
+                    model_tag="evaluation_model_cn_rms",skip_conections=True,optimizer_type='RMSprop',accumulate_loss_batch_factor=2,
+                         inter_module_skip_connections=True,batch_size_validation=200,spike_probability=0.5,clip_gradients_factor=5,constant_learning_rate=0.0003)
     configs.append(config_morpho_0)
 
     with open(os.path.join(MODELS_DIR, "evaluation_model_1.json"), 'w') as file:
