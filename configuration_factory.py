@@ -50,6 +50,8 @@ def save_config(config, path: [str, None] = None):
 
 
 def load_config_file(path: str) -> AttrDict:
+    if path[-len('.config'):]!='.config':
+        path+='.config'
     with open(path, 'r') as file:
         config = json.load(file)
     return AttrDict(config)
