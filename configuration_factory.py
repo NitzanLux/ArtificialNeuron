@@ -90,7 +90,7 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                                  david_layers = [55,13,13,13,13,13,13],
                                  skip_connections=True,
                                  inter_module_skip_connections=True,
-                                 kernel_size=19,
+                                 kernel_size=15,
                                  # number_of_layers=2,
                                  stride=1,
                                  padding=0,
@@ -191,7 +191,7 @@ if __name__ == '__main__':
                          inter_module_skip_connections=False,batch_size_validation=200,spike_probability=0.5,clip_gradients_factor=5,constant_learning_rate=0.005)
     configs.append(config_morpho_0)
 
-    with open(os.path.join(MODELS_DIR, "evaluation_model_1.json"), 'w') as file:
+    with open(os.path.join(MODELS_DIR, "full_synapse.json"), 'w') as file:
         file.write(json.dumps(configs))  # use `json.loads` to do the reverse
         # file.write(json.dumps([config_morpho_0]))  # use `json.loads` to do the reverse
 
