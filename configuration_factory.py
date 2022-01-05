@@ -85,12 +85,12 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                                  time_domain_shape=config.input_window_size,
                                  # kernel_size_2d=3,
                                  # kernel_size_1d=9,
-                                 number_of_layers_root= 3, number_of_layers_leaf=3, number_of_layers_intersection=3,
+                                 number_of_layers_root= 3, number_of_layers_leaf=2, number_of_layers_intersection=3,
                                  number_of_layers_branch_intersection=3,
                                  david_layers = [55,13,13,13,13,13,13],
                                  skip_connections=True,
                                  inter_module_skip_connections=True,
-                                 kernel_size=15,
+                                 kernel_size=13,
                                  # number_of_layers=2,
                                  stride=1,
                                  padding=0,
@@ -191,7 +191,7 @@ if __name__ == '__main__':
                          inter_module_skip_connections=False,batch_size_validation=200,spike_probability=0.5,clip_gradients_factor=5,constant_learning_rate=0.005)
     configs.append(config_morpho_0)
 
-    with open(os.path.join(MODELS_DIR, "full_synapse.json"), 'w') as file:
+    with open(os.path.join(MODELS_DIR, "full_synapse0.json"), 'w') as file:
         file.write(json.dumps(configs))  # use `json.loads` to do the reverse
         # file.write(json.dumps([config_morpho_0]))  # use `json.loads` to do the reverse
 
