@@ -91,31 +91,31 @@ def plot_network_and_actual_results(file_path: [str, List[str]], model_path: [st
     plt.show()
 
 
-plot_network_and_actual_results( r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\data\L5PC_NMDA_validation\exBas_0_750_inhBasDiff_-550_200__exApic_0_800_inhApicDiff_-550_200__saved_InputSpikes_DVTs__811_outSpikes__128_simulationRuns__6_secDuration__randomSeed_100512.p" \
-,r"models/NMDA/evaluation_file_filter_NMDA_Tree_TCN__2021-11-01__18_31__ID_23775/evaluation_file_filter_NMDA_Tree_TCN__2021-11-01__18_31__ID_23775.pkl"\
- ,0 ,1300, 3000)
-
-parser = argparse.ArgumentParser(description='evaluation arguments')
-
-parser.add_argument(dest="validation_path", type=str,
-                    help='validation file to be evaluate by', default=None)
-
-parser.add_argument(dest="model_name", type=str,
-                    help=',model path')
-
-parser.add_argument(dest="sample_idx", type=int,
-                    help='simulation index', default=0)
-parser.add_argument(dest="time_point", type=int,
-                    help='simulation time point', default=1300)
-parser.add_argument(dest="window_size", type=int,
-                    help='window size for evaluation', default=400)
-parser.add_argument(dest="job_id", help="the job id", type=str)
-
-args = parser.parse_args()
-print(args)
-# from general_aid_function import *
+# plot_network_and_actual_results( r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\data\L5PC_NMDA_validation\exBas_0_750_inhBasDiff_-550_200__exApic_0_800_inhApicDiff_-550_200__saved_InputSpikes_DVTs__811_outSpikes__128_simulationRuns__6_secDuration__randomSeed_100512.p" \
+# ,r"models/NMDA/evaluation_file_filter_NMDA_Tree_TCN__2021-11-01__18_31__ID_23775/evaluation_file_filter_NMDA_Tree_TCN__2021-11-01__18_31__ID_23775.pkl"\
+#  ,0 ,1300, 3000)
+#
+# parser = argparse.ArgumentParser(description='evaluation arguments')
+#
+# parser.add_argument(dest="validation_path", type=str,
+#                     help='validation file to be evaluate by', default=None)
+#
+# parser.add_argument(dest="model_name", type=str,
+#                     help=',model path')
+#
+# parser.add_argument(dest="sample_idx", type=int,
+#                     help='simulation index', default=0)
+# parser.add_argument(dest="time_point", type=int,
+#                     help='simulation time point', default=1300)
+# parser.add_argument(dest="window_size", type=int,
+#                     help='window size for evaluation', default=400)
+# parser.add_argument(dest="job_id", help="the job id", type=str)
+#
+# args = parser.parse_args()
+# print(args)
+from general_aid_function import *
 # configs_file = args.configs_paths
-# args  = AttrDict(validation_path = r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\data\L5PC_NMDA_validation\exBas_0_750_inhBasDiff_-550_200__exApic_0_800_inhApicDiff_-550_200__saved_InputSpikes_DVTs__811_outSpikes__128_simulationRuns__6_secDuration__randomSeed_100512.p",model_name='cm_0.20_3_model_NMDA_Tree_TCN__2021-12-28__10_41__ID_36237',sample_idx=2,time_point=20,window_size=300)
+args  = AttrDict(validation_path = r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\data\L5PC_NMDA_validation\exBas_0_750_inhBasDiff_-550_200__exApic_0_800_inhApicDiff_-550_200__saved_InputSpikes_DVTs__811_outSpikes__128_simulationRuns__6_secDuration__randomSeed_100512.p",model_name='evaluation_model_cn_all_NMDA_Tree_TCN__2022-01-04__09_13__ID_99364',sample_idx=2,time_point=20,window_size=700)
 plot_network_and_actual_results(
     r"/ems/elsc-labs/segev-i/david.beniaguev/Reseach/Single_Neuron_InOut/ExperimentalData/L5PC_NMDA_valid_mixed"
     r"/exBas_0_1100_inhBasDiff_-1100_600__exApic_0_1100_inhApicDiff_-1100_600_SpTemp__saved_InputSpikes_DVTs__1062"

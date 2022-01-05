@@ -130,11 +130,13 @@ class RecursiveNeuronModel(nn.Module):
         list_of_basal_sections = [L5PC.dend[x] for x in range(len(L5PC.dend))]
         list_of_apical_sections = [L5PC.apic[x] for x in range(len(L5PC.apic))]
         all_sections = list_of_basal_sections + list_of_apical_sections
-        segment_synapse_map = []
+        temp_segment_synapse_map = []
 
         for k, section in enumerate(all_sections):
             for currSegment in section:
-                segment_synapse_map.append(currSegment)
+                temp_segment_synapse_map.append(currSegment)
+        segment_synapse_map = [*temp_segment_synapse_map,*temp_segment_synapse_map]
+        print(len(segment_synapse_map))
         segment_synapse_map = {seg: i for i, seg in enumerate(segment_synapse_map)}
         return RecursiveNeuronModel.build_model(config, L5PC, segment_synapse_map).double()
 
@@ -154,7 +156,8 @@ class RecursiveNeuronModel(nn.Module):
 
     @staticmethod
     def load(config_path):
-        config = load_config_file(config_path)
+        # config = load_config_file(config_path)
+        config = config_path
         path = os.path.join(MODELS_DIR, *config.model_path)
         with open('%s.pkl' % path if path[-len(".pkl"):] != ".pkl" else path, 'rb') as outp:
             neuronal_model_data = pickle.load(outp)
@@ -189,8 +192,11 @@ class RecursiveNeuronModel(nn.Module):
     def double(self, **kwargs):
         super(RecursiveNeuronModel, self).double(**kwargs)
         # torch.cuda.synchronize()
+
+        if self.model_skip_connections_inter is not None:
+            self.model_skip_connections_inter.double(**kwargs)
         self.model.double(**kwargs)
-        self.is_cuda = True
+        # self.is_cuda = True
         if self.model_type != SectionType.BRANCH_LEAF:
             for mod in self:
                 mod.double(**kwargs)
@@ -199,6 +205,9 @@ class RecursiveNeuronModel(nn.Module):
     def cuda(self, **kwargs):
         super(RecursiveNeuronModel, self).cuda(**kwargs)
         # torch.cuda.synchronize()
+        if self.model_skip_connections_inter is not None:
+            self.model_skip_connections_inter.cuda(**kwargs)
+        self.model.cuda(**kwargs)
         self.is_cuda = True
         if self.model_type != SectionType.BRANCH_LEAF:
             for mod in self:
