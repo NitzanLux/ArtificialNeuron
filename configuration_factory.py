@@ -72,7 +72,7 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                       batch_counter=0, epoch_counter=0,  # default counter
                       torch_seed=42, numpy_seed=21, random_seed=12, init_weights_sd=0.05,
                       dynamic_learning_params=True,
-                      constant_loss_weights=[20, 1., 0., 0], constant_sigma=1.2, constant_learning_rate=0.0001,
+                      constant_loss_weights=[1., 1., 0., 0], constant_sigma=1.2, constant_learning_rate=0.0001,
                       dynamic_learning_params_function="learning_parameters_iter_slow_50_with_constant_weights",
                       config_path="", model_tag="complex_constant_model", model_path=None,
                       loss_function="bcel_mse_dvt_loss")
@@ -94,8 +94,8 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                                  padding=0,
                                  dilation=1,
                                  channel_input_number=1278,  # synapse number
-                                 inner_scope_channel_number=21,
-                                 channel_output_number=21,
+                                 inner_scope_channel_number=25,
+                                 channel_output_number=25,
                                  activation_function_name="LeakyReLU",
                                  activation_function_kargs=dict(negative_slope=0.5),
                                  include_dendritic_voltage_tracing=False)
@@ -189,7 +189,7 @@ if __name__ == '__main__':
                          inter_module_skip_connections=True,batch_size_validation=200,spike_probability=0.5,clip_gradients_factor=5,constant_learning_rate=0.005)
     configs.append(config_morpho_0)
 
-    with open(os.path.join(MODELS_DIR, "evaluation_model_8.json"), 'w') as file:
+    with open(os.path.join(MODELS_DIR, "evaluation_model_9.json"), 'w') as file:
         file.write(json.dumps(configs))  # use `json.loads` to do the reverse
         # file.write(json.dumps([config_morpho_0]))  # use `json.loads` to do the reverse
 
