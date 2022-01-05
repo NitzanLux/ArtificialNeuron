@@ -12,7 +12,7 @@ import argparse
 from tqdm import tqdm
 import pickle
 from project_path import *
-
+from neuron_network.node_network import node_network as node_network
 def plot_network_and_actual_results(file_path: [str, List[str]], model_path: [str, List[str]] = '',
                                     sample_idx: [None, int] = None, time_idx: [None, int] = None,
                                     window_size: int = 2000, include_DVT=True, DVT_PCA_model=None):
@@ -43,7 +43,10 @@ def plot_network_and_actual_results(file_path: [str, List[str]], model_path: [st
         model_path = [model_path]
     first_path_name = ""
     for p in model_path:
-        network = neuronal_model.NeuronConvNet.load(p)
+        try:
+            network = neuronal_model.NeuronConvNet.load(p)
+        except:
+            network = node_network.RecursiveNeuronModel.load(p)
         # network.cpu()
         regex_match = re.search('(?<=TCN__)[0-9]{4}-[0-9]{2}-[0-9]{2}__[0-9]{2}_[0-9]{2}__ID_[0-9]+(?=\.pkl)?', p)
         try:
