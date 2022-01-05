@@ -18,7 +18,7 @@ from simulation_data_generator import *
 import get_neuron_modle
 from get_neuron_modle import get_L5PC
 import re
-
+torch.backends.cudnn.enabled = False
 print(torch.cuda.get_device_name(0))
 print(torch.cuda.is_available())
 print("done")
