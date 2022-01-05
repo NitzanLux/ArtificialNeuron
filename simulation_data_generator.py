@@ -198,13 +198,16 @@ class SimulationDataGenerator():
         :return:items (X, y_spike,y_soma ,y_DVT [if exists])
         """
         sim_ind, win_time = item
-
+        if isinstance(sim_ind,int):
+            sim_ind = np.array([sim_ind])
+        if isinstance(win_time,int):
+            win_time = np.array([win_time])
         # todo debug
-        for k, v in zip(sim_ind, win_time):
-            assert (k,
-                    v) not in self.index_set or self.__return_spike_factor > 1 or self.__return_spike_factor > 0, "ooooooooooooooooo cannot add (%d ,%d)" % (
-            k, v)
-            self.index_set.add((k, v))
+        # for k, v in zip(sim_ind, win_time):
+        #     assert (k,
+        #             v) not in self.index_set or self.__return_spike_factor > 1 or self.__return_spike_factor > 0, "ooooooooooooooooo cannot add (%d ,%d)" % (
+        #     k, v)
+        #     self.index_set.add((k, v))
 
         sim_ind_mat, chn_ind, win_ind = np.meshgrid(sim_ind,
                                                     np.arange(self.X.shape[1]), np.arange(self.window_size_ms, 0, -1),
