@@ -88,7 +88,7 @@ class RecursiveNeuronModel(nn.Module):
             assert False, "Type not found"
 
     @staticmethod
-    def build_model(config, neuron_biophysics_model, segment_synapse_map: Dict[nrn.Segment, int]):  # todo implement
+    def build_model(config, neuron_biophysics_model, segment_synapse_map: Dict[nrn.Segment, list]):  # todo implement
 
         soma = SomaNetwork(**config)
         childrens = neuron_biophysics_model.soma[0].children()
@@ -102,13 +102,13 @@ class RecursiveNeuronModel(nn.Module):
         return soma
 
     @staticmethod
-    def __build_sub_model(config, neuron_section: nrn.Section, segment_synapse_map: Dict[nrn.Segment, int],
+    def __build_sub_model(config, neuron_section: nrn.Section, segment_synapse_map: Dict[nrn.Segment, list],
                           starting_position=1):
         parent = neuron_section.parentseg()
         assert "soma" in parent.sec.name() or 1 == parent.x, "position not match 1 the building of the model is incomplete parent name - %s" % parent
         indexes = []
         for seg in neuron_section:
-            indexes.append(segment_synapse_map[seg])
+            indexes.extend(segment_synapse_map[seg])
         childrens = neuron_section.children()
         if len(childrens) == 0:
             leaf = LeafNetwork(**config, input_indexes=indexes)
@@ -134,9 +134,15 @@ class RecursiveNeuronModel(nn.Module):
         for k, section in enumerate(all_sections):
             for currSegment in section:
                 temp_segment_synapse_map.append(currSegment)
-        segment_synapse_map = [*temp_segment_synapse_map,*temp_segment_synapse_map]
-        print(len(segment_synapse_map))
-        segment_synapse_map = {seg: i for i, seg in enumerate(segment_synapse_map)}
+        for k, section in enumerate(all_sections):
+            for currSegment in section:
+                temp_segment_synapse_map.append(currSegment)
+        segment_synapse_map=dict()
+        for i,seg in enumerate(temp_segment_synapse_map):
+            if seg in segment_synapse_map:
+                segment_synapse_map[seg].append(i)
+            else:
+                segment_synapse_map[seg]=[i]
         return RecursiveNeuronModel.build_model(config, L5PC, segment_synapse_map).double()
 
     @abc.abstractmethod
@@ -270,6 +276,7 @@ class LeafNetwork(RecursiveNeuronModel):
         return super(LeafNetwork, self).__repr__() + ' #syn %d' % len(self.input_indexes)
 
     def forward(self, x):
+        print(self.input_indexes)
         out = self.model(x[:, self.input_indexes, ...])
         if self.is_inter_module_skip_connections:
             out = out + self.model_skip_connections_inter(x[:, self.input_indexes, ...])

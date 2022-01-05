@@ -272,7 +272,7 @@ class SimulationDataGenerator():
                 X, y_spike, y_soma, _ = parse_sim_experiment_file_with_DVT(f, DVT_PCA_model=self.DVT_PCA_model)
             # reshape to what is needed
             X = np.transpose(X, axes=[2, 0, 1])
-            X = X[:, self.sampling_start_time:]
+            X = X[:,:, self.sampling_start_time:]
             y_spike = y_spike.T[:, np.newaxis, :]
             y_soma = y_soma.T[:, np.newaxis, :]
             if self.number_of_traces_from_file is not None:
