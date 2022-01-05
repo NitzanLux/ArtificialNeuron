@@ -32,11 +32,11 @@ def plot_network_and_actual_results(file_path: [str, List[str]], model_path: [st
         time_idx = np.random.choice(range(0, X.shape[1] - window_size),
                                     size=1, replace=False)[0]  # simulation duration
 
-    X_batch = torch.from_numpy(X[sample_idx, time_idx:time_idx + window_size, ...][np.newaxis, np.newaxis, ...])
-    y_spike_batch = y_spike[sample_idx, time_idx:time_idx + window_size, ...][:, ...]
-    y_soma_batch = y_soma[sample_idx, time_idx:time_idx + window_size, ...][:, ...]
+    X_batch = torch.from_numpy(X[sample_idx,:, time_idx:time_idx + window_size, ...])
+    y_spike_batch = y_spike[sample_idx,:, time_idx:time_idx + window_size, ...]
+    y_soma_batch = y_soma[sample_idx,:, time_idx:time_idx + window_size, ...]
     if include_DVT:
-        y_DVT_batch = y_DVT[sample_idx, time_idx:time_idx + window_size, ...][:, ...]
+        y_DVT_batch = y_DVT[sample_idx, time_idx:time_idx + window_size, ...]
     fig, axs = plt.subplots(2)
     window_size = 0
     if isinstance(model_path, str):
