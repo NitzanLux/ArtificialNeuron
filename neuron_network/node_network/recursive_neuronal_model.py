@@ -22,6 +22,7 @@ from typing import List, Dict, Tuple
 from copy import deepcopy
 import get_neuron_modle
 from get_neuron_modle import get_L5PC
+from configuration_factory import load_config_file
 import gc
 ID_NULL_VALUE = -1
 
@@ -152,7 +153,8 @@ class RecursiveNeuronModel(nn.Module):
             # pickle.dump(self, outp,pickle.HIGHEST_PROTOCOL)
 
     @staticmethod
-    def load(config):
+    def load(config_path):
+        config = load_config_file(config_path)
         path = os.path.join(MODELS_DIR, *config.model_path)
         with open('%s.pkl' % path if path[-len(".pkl"):] != ".pkl" else path, 'rb') as outp:
             neuronal_model_data = pickle.load(outp)
