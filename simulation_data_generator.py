@@ -79,13 +79,13 @@ class SimulationDataGenerator():
             # get spikes location
             spike_mask = self.y_spike.squeeze() == 1
             spikes = list(np.where(spike_mask))
-            spikes_in_bound = spikes[1] > self.window_size_ms
+            spikes_in_bound = spikes[1] > self.window_size_ms-1
             spikes[SIM_INDEX] = spikes[SIM_INDEX][spikes_in_bound]
             spikes[1] = spikes[1][spikes_in_bound]
 
             # get non spikes location
             non_spikes = list(np.where(np.logical_not(spike_mask)))
-            non_spikes_in_bound = non_spikes[1] > self.window_size_ms
+            non_spikes_in_bound = non_spikes[1] > self.window_size_ms-1
             non_spikes[SIM_INDEX] = non_spikes[SIM_INDEX][non_spikes_in_bound]
             non_spikes[1] = non_spikes[1][non_spikes_in_bound]
 
