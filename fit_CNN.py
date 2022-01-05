@@ -19,7 +19,8 @@ import get_neuron_modle
 from get_neuron_modle import get_L5PC
 import torch
 import re
-CUDA_LAUNCH_BLOCKING=1
+# CUDA_LAUNCH_BLOCKING=1
+# torch.backends.cudnn.benchmark = False
 # torch.backends.cudnn.enabled = False
 print(torch.cuda.get_device_name(0))
 print(torch.cuda.is_available())
