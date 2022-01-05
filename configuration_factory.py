@@ -74,7 +74,7 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                       batch_counter=0, epoch_counter=0,  # default counter
                       torch_seed=42, numpy_seed=21, random_seed=12, init_weights_sd=0.05,
                       dynamic_learning_params=True,
-                      constant_loss_weights=[1., 1., 0., 0], constant_sigma=1.2, constant_learning_rate=0.0001,
+                      constant_loss_weights=[1., 10., 0., 0], constant_sigma=1.2, constant_learning_rate=0.0001,
                       dynamic_learning_params_function="learning_parameters_iter_slow_50_with_constant_weights",
                       config_path="", model_tag="complex_constant_model", model_path=None,
                       loss_function="bcel_mse_dvt_loss")
@@ -186,12 +186,12 @@ if __name__ == '__main__':
     configs = []
     # for i in [1,2.5,5,10]:
     config_morpho_0 =config_factory(dynamic_learning_params=False,dynamic_learning_params_function="learning_parameters_iter_with_constant_weights", architecture_type="LAYERED_TEMPORAL_CONV",
-                    model_tag="number_of_synapses_fixed",skip_conections=True,optimizer_type='RMSprop',
+                    model_tag="number_of_synapses_fixed_larger_W",skip_conections=True,optimizer_type='RMSprop',
                                      accumulate_loss_batch_factor=1,
                          inter_module_skip_connections=False,batch_size_validation=200,spike_probability=0.5,clip_gradients_factor=5,constant_learning_rate=0.005)
     configs.append(config_morpho_0)
 
-    with open(os.path.join(MODELS_DIR, "full_synapse.json"), 'w') as file:
+    with open(os.path.join(MODELS_DIR, "full_synapse0.json"), 'w') as file:
         file.write(json.dumps(configs))  # use `json.loads` to do the reverse
         # file.write(json.dumps([config_morpho_0]))  # use `json.loads` to do the reverse
 
