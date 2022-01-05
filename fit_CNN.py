@@ -17,6 +17,7 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 from simulation_data_generator import *
 import get_neuron_modle
 from get_neuron_modle import get_L5PC
+import torch
 import re
 torch.backends.cudnn.enabled = False
 print(torch.cuda.get_device_name(0))
