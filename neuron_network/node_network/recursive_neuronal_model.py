@@ -276,7 +276,6 @@ class LeafNetwork(RecursiveNeuronModel):
         return super(LeafNetwork, self).__repr__() + ' #syn %d' % len(self.input_indexes)
 
     def forward(self, x):
-        print(self.input_indexes)
         out = self.model(x[:, self.input_indexes, ...])
         if self.is_inter_module_skip_connections:
             out = out + self.model_skip_connections_inter(x[:, self.input_indexes, ...])

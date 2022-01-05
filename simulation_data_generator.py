@@ -273,8 +273,8 @@ class SimulationDataGenerator():
             # reshape to what is needed
             X = np.transpose(X, axes=[2, 0, 1])
             X = X[:,:, self.sampling_start_time:]
-            y_spike = y_spike.T[:, np.newaxis, :]
-            y_soma = y_soma.T[:, np.newaxis, :]
+            y_spike = y_spike.T[:, np.newaxis,  self.sampling_start_time:]
+            y_soma = y_soma.T[:, np.newaxis,  self.sampling_start_time:]
             if self.number_of_traces_from_file is not None:
                 X = X[:self.number_of_traces_from_file, :, :]
                 y_spike = y_spike[:self.number_of_traces_from_file, :, :]
