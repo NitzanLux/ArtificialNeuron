@@ -371,6 +371,7 @@ class SomaNetwork(RecursiveNeuronModel):
                          include_dendritic_voltage_tracing, **network_kwargs)
         self.branches = nn.ModuleList()
         self.get_model_block(**network_kwargs)
+        self.time_domain_shape=network_kwargs["input_window_size"]
         self.__name__ = 'SomaNetwork'
 
     def set_inputs_to_model(self, *branches: [IntersectionNetwork, BranchNetwork], **network_kwargs):
