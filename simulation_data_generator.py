@@ -184,6 +184,7 @@ class SimulationDataGenerator():
                     self.X.shape[0] * self.X.shape[2]) >= self.sample_ratio_to_shuffle:
                 self.reload_files()
                 return True
+            return False
         if ((self.sample_counter + self.batch_size) * self.__return_spike_factor) / self.spikes[SIM_INDEX].shape[
             0] >= self.sample_ratio_to_shuffle:
             # in case we are deterministically sampling from different probability space then the data.

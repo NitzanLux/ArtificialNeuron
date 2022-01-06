@@ -210,7 +210,7 @@ def get_data_generators(DVT_PCA_model, config):
                                                         DVT_PCA_model=DVT_PCA_model)
     if "spike_probability" in config and config.spike_probability is not None:
         train_data_generator.change_spike_probability(config.spike_probability)
-        # validation_data_generator.change_spike_probability(config.spike_probability)
+        validation_data_generator.change_spike_probability(0.5)
     print("finished with the data!!!", flush=True)
 
     return train_data_generator, validation_data_generator

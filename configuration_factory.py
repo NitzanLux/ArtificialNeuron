@@ -188,7 +188,7 @@ if __name__ == '__main__':
     config_morpho_0 =config_factory(dynamic_learning_params=False,dynamic_learning_params_function="learning_parameters_iter_with_constant_weights", architecture_type="LAYERED_TEMPORAL_CONV",
                     model_tag="number_of_synapses_fixed_larger_W",skip_conections=True,optimizer_type='RMSprop',
                                      accumulate_loss_batch_factor=1,
-                         inter_module_skip_connections=False,batch_size_validation=200,spike_probability=0.05,clip_gradients_factor=2,constant_learning_rate=0.01,)
+                         inter_module_skip_connections=False,batch_size_validation=200,spike_probability=0.05,clip_gradients_factor=2,constant_learning_rate=0.01)
     configs.append(config_morpho_0)
 
     with open(os.path.join(MODELS_DIR, "full_synapse4.json"), 'w') as file:
