@@ -85,19 +85,19 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                                  time_domain_shape=config.input_window_size,
                                  # kernel_size_2d=3,
                                  # kernel_size_1d=9,
-                                 number_of_layers_root= 3, number_of_layers_leaf=3, number_of_layers_intersection=3,
-                                 number_of_layers_branch_intersection=3,
+                                 number_of_layers_root= 3, number_of_layers_leaf=3, number_of_layers_intersection=4,
+                                 number_of_layers_branch_intersection=4,
                                  david_layers = [55,13,13,13,13,13,13],
                                  skip_connections=True,
                                  inter_module_skip_connections=True,
-                                 kernel_size=21,
+                                 kernel_size=25,
                                  # number_of_layers=2,
                                  stride=1,
                                  padding=0,
                                  dilation=1,
                                  channel_input_number=1278,  # synapse number
-                                 inner_scope_channel_number=21,
-                                 channel_output_number=21,
+                                 inner_scope_channel_number=31,
+                                 channel_output_number=31,
                                  activation_function_name="LeakyReLU",
                                  activation_function_kargs=dict(negative_slope=0.5),
                                  include_dendritic_voltage_tracing=False)
@@ -191,7 +191,7 @@ if __name__ == '__main__':
                          inter_module_skip_connections=False,batch_size_validation=200,spike_probability=0.5,clip_gradients_factor=5,constant_learning_rate=0.005)
     configs.append(config_morpho_0)
 
-    with open(os.path.join(MODELS_DIR, "full_synapse0.json"), 'w') as file:
+    with open(os.path.join(MODELS_DIR, "full_synapse1.json"), 'w') as file:
         file.write(json.dumps(configs))  # use `json.loads` to do the reverse
         # file.write(json.dumps([config_morpho_0]))  # use `json.loads` to do the reverse
 
