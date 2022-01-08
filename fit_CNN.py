@@ -167,10 +167,7 @@ def train_network(config):
             # get the inputs; data is a list of [inputs, labels]
             batch_counter += 1
             train_loss = batch_train(model, optimizer, custom_loss, train_data_iterator,config.clip_gradients_factor,config.accumulate_loss_batch_factor,optimizer_scdualer)
-            if optimizer_scdualer is not None:
-                lr = optimizer_scdualer.get_lr()
-            else:
-                lr=optimizer.param_groups[0]['lr']
+            lr=optimizer.param_groups[0]['lr']
             if lr!= config.optimizer_params['lr']:
                 optim_params = config.optimizer_params
                 optim_params['lr']=lr
