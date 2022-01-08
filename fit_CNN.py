@@ -20,7 +20,7 @@ from get_neuron_modle import get_L5PC
 import torch
 import re
 
-LR_PATENCE_FACTOR = 6
+LR_PATENCE_FACTOR = 4
 
 print(torch.cuda.get_device_name(0))
 print(torch.cuda.is_available())
