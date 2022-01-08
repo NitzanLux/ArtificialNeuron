@@ -167,8 +167,16 @@ def train_network(config):
             # get the inputs; data is a list of [inputs, labels]
             batch_counter += 1
             train_loss = batch_train(model, optimizer, custom_loss, train_data_iterator,config.clip_gradients_factor,config.accumulate_loss_batch_factor,optimizer_scdualer)
+            if optimizer_scdualer is not None:
+                lr = optimizer_scdualer.get_lr()
+            else:
+                lr=optimizer.param_groups[0]['lr']
+            if lr!= config.optimizer_params['lr']:
+                optim_params = config.optimizer_params
+                optim_params['lr']=lr
+                config.update(dict(optim_params=optim_params), allow_val_change=True)
             with torch.no_grad():
-                train_log(train_loss, batch_counter, epoch, learning_rate, sigma, loss_weights,
+                train_log(train_loss, batch_counter, epoch, lr, sigma, loss_weights,
                           additional_str="train")
             evaluate_validation(config, custom_loss, epoch, model, validation_data_iterator)
         # save model every once a while
@@ -194,16 +202,18 @@ def evaluate_validation(config, custom_loss, epoch, model, validation_data_itera
 
 def get_data_generators(DVT_PCA_model, config):
     print("loading data...training", flush=True)
-
+    prediction_length=1
+    if config.config_version>=1.2:
+        prediction_length=config.prediction_length
     train_files, valid_files, test_files = load_files_names(config.files_filter_regex)
-    train_data_generator = SimulationDataGenerator(train_files, buffer_size_in_files=BUFFER_SIZE_IN_FILES_TRAINING,
+    train_data_generator = SimulationDataGenerator(train_files, buffer_size_in_files=BUFFER_SIZE_IN_FILES_TRAINING,prediction_length=prediction_length,
                                                    batch_size=config.batch_size_train, epoch_size=config.epoch_size*config.accumulate_loss_batch_factor,
                                                    window_size_ms=config.time_domain_shape,
                                                    file_load=config.train_file_load,sample_ratio_to_shuffle=1,
                                                    DVT_PCA_model=DVT_PCA_model)
     print("loading data...validation", flush=True)
 
-    validation_data_generator = SimulationDataGenerator(valid_files, buffer_size_in_files=BUFFER_SIZE_IN_FILES_VALID,
+    validation_data_generator = SimulationDataGenerator(valid_files, buffer_size_in_files=BUFFER_SIZE_IN_FILES_VALID,prediction_length=prediction_length,
                                                         batch_size=config.batch_size_validation,
                                                         window_size_ms=config.time_domain_shape,
                                                         file_load=config.train_file_load,sample_ratio_to_shuffle=1.5,

@@ -17,7 +17,7 @@ class SimulationDataGenerator():
     'Characterizes a dataset for PyTorch'
 
     def __init__(self, sim_experiment_files, buffer_size_in_files=12, epoch_size=None,
-                 batch_size=8, sample_ratio_to_shuffle=1, window_size_ms=300, file_load=0.3, DVT_PCA_model=None,
+                 batch_size=8, sample_ratio_to_shuffle=1, prediction_length=1, window_size_ms=300, file_load=0.3, DVT_PCA_model=None,
                  ignore_time_from_start=20, y_train_soma_bias=-67.7, y_soma_threshold=-55.0, y_DTV_threshold=3.0,
                  shuffle_files=True, include_DVT=False, is_shuffle_data=False, number_of_traces_from_file=None,
                  number_of_files=None):
@@ -28,7 +28,7 @@ class SimulationDataGenerator():
             self.sim_experiment_files = self.sim_experiment_files[:number_of_files]
         self.buffer_size_in_files = buffer_size_in_files
         self.batch_size = batch_size
-        self.window_size_ms = window_size_ms
+        self.window_size_ms = window_size_ms+prediction_length-1 # the window size that are important for prediction
         self.ignore_time_from_start = ignore_time_from_start
         self.file_load = file_load
         self.DVT_PCA_model = DVT_PCA_model
@@ -44,7 +44,7 @@ class SimulationDataGenerator():
         self.sample_counter = 0
         self.curr_files_to_use = None
         self.number_of_traces_from_file = number_of_traces_from_file
-
+        self.prediction_length=prediction_length
         self.sampling_start_time = ignore_time_from_start
         self.X, self.y_spike, self.y_soma, self.y_DVT = None, None, None, None
         self.__return_spike_factor = 0.  # if we want to return x spikes in the features.
@@ -215,10 +215,10 @@ class SimulationDataGenerator():
                                                     indexing='ij')
         win_ind = win_time[:, np.newaxis, np.newaxis] - win_ind
         X_batch = self.X[sim_ind_mat, chn_ind, win_ind]
-
-        pred_index = win_time
-        y_spike_batch = self.y_spike[sim_ind, pred_index]
-        y_soma_batch = self.y_soma[sim_ind, pred_index]
+        pred_index = win_time[:,np.newaxis]*np.ones((win_time.shape[0],self.prediction_length))-np.arange(self.prediction_length,0,-1)[np.newaxis,:]
+        pred_index = pred_index.astype(np.int)
+        y_spike_batch = self.y_spike[sim_ind[:,np.newaxis], pred_index]
+        y_soma_batch = self.y_soma[sim_ind[:,np.newaxis], pred_index]
         y_soma_batch = y_soma_batch[:, np.newaxis, ...]
         y_spike_batch = y_spike_batch[:, np.newaxis, ...]
         if self.include_DVT:  # positions are wrong and probability wont work :(
