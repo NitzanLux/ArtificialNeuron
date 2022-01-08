@@ -219,8 +219,8 @@ class SimulationDataGenerator():
         pred_index = pred_index.astype(np.int)
         y_spike_batch = self.y_spike[sim_ind[:,np.newaxis], pred_index]
         y_soma_batch = self.y_soma[sim_ind[:,np.newaxis], pred_index]
-        y_soma_batch = y_soma_batch[:, np.newaxis, ...]
-        y_spike_batch = y_spike_batch[:, np.newaxis, ...]
+        # y_soma_batch = y_soma_batch[:, np.newaxis, ...]
+        # y_spike_batch = y_spike_batch[:, np.newaxis, ...]
         if self.include_DVT:  # positions are wrong and probability wont work :(
             y_DVT_batch = self.y_DVT[sim_ind, :, np.max(win_time) + 1, ...]
             # return the actual batch
