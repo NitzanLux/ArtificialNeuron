@@ -90,14 +90,14 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                                  david_layers = [55,13,13,13,13,13,13],
                                  skip_connections=True,
                                  inter_module_skip_connections=True,
-                                 kernel_size=31,
+                                 kernel_size=21,
                                  # number_of_layers=2,
                                  stride=1,
                                  padding=0,
                                  dilation=1,
                                  channel_input_number=1278,  # synapse number
-                                 inner_scope_channel_number=25,
-                                 channel_output_number=25,
+                                 inner_scope_channel_number=15,
+                                 channel_output_number=15,
                                  activation_function_name="LeakyReLU",
                                  activation_function_kargs=dict(negative_slope=0.5),
                                  include_dendritic_voltage_tracing=False)
@@ -186,12 +186,12 @@ if __name__ == '__main__':
     configs = []
     # for i in [1,2.5,5,10]:
     config_morpho_0 =config_factory(dynamic_learning_params=False,dynamic_learning_params_function="learning_parameters_iter_with_constant_weights", architecture_type="LAYERED_TEMPORAL_CONV",
-                    model_tag="causal_conv",skip_conections=True,
+                    model_tag="causal_conv_l",skip_conections=True,
                                      accumulate_loss_batch_factor=1,
                          inter_module_skip_connections=False,batch_size_validation=200,clip_gradients_factor=2,constant_learning_rate=0.01)
     configs.append(config_morpho_0)
 
-    with open(os.path.join(MODELS_DIR, "causal_conv.json"), 'w') as file:
+    with open(os.path.join(MODELS_DIR, "causal_conv_l.json"), 'w') as file:
         file.write(json.dumps(configs))  # use `json.loads` to do the reverse
         # file.write(json.dumps([config_morpho_0]))  # use `json.loads` to do the reverse
 
