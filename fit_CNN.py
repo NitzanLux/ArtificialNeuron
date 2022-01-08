@@ -20,6 +20,8 @@ from get_neuron_modle import get_L5PC
 import torch
 import re
 
+LR_PATENCE_FACTOR = 6
+
 print(torch.cuda.get_device_name(0))
 print(torch.cuda.is_available())
 print("done")
@@ -138,7 +140,7 @@ def train_network(config):
     optimizer_scdualer=None
     if not config.dynamic_learning_params:
         learning_rate, loss_weights, optimizer, sigma = generate_constant_learning_parameters(config, model)
-        optimizer_scdualer = ReduceLROnPlateau(optimizer, 'min',patience=6*config.accumulate_loss_batch_factor,factor=0.5)
+        optimizer_scdualer = ReduceLROnPlateau(optimizer, 'min', patience=LR_PATENCE_FACTOR * config.accumulate_loss_batch_factor, factor=0.5)
     else:
         learning_rate, loss_weights, sigma = 0.001, [1] * 3, 0.1  # default values
         dynamic_parameter_loss_genrator = getattr(dlpf, config.dynamic_learning_params_function)(config)
