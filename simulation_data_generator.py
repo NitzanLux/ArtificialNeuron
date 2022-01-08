@@ -215,7 +215,7 @@ class SimulationDataGenerator():
                                                     indexing='ij')
         win_ind = win_time[:, np.newaxis, np.newaxis] - win_ind
         X_batch = self.X[sim_ind_mat, chn_ind, win_ind]
-        pred_index = win_time[:,np.newaxis]*np.ones((win_time.shape[0],self.prediction_length))-np.arange(self.prediction_length,0,-1)[np.newaxis,:]
+        pred_index = (win_time[:,np.newaxis]-self.prediction_length+1)*np.ones((win_time.shape[0],self.prediction_length))+np.arange(0,self.prediction_length,1)[np.newaxis,:]
         pred_index = pred_index.astype(np.int)
         y_spike_batch = self.y_spike[sim_ind[:,np.newaxis], pred_index]
         y_soma_batch = self.y_soma[sim_ind[:,np.newaxis], pred_index]
