@@ -174,7 +174,7 @@ def train_network(config):
                 optim_params['lr']=lr
                 config.update(dict(optim_params=optim_params), allow_val_change=True)
             with torch.no_grad():
-                train_log(train_loss, batch_counter, epoch, lr, sigma, loss_weights,
+                train_log(train_loss, config.batch_counter, epoch, lr, sigma, loss_weights,
                           additional_str="train")
             evaluate_validation(config, custom_loss, epoch, model, validation_data_iterator)
         # save model every once a while
