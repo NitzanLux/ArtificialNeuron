@@ -192,7 +192,7 @@ if __name__ == '__main__':
                          inter_module_skip_connections=False,batch_size_validation=200,clip_gradients_factor=2,constant_learning_rate=0.005)
     configs.append(config_morpho_0)
 
-    with open(os.path.join(MODELS_DIR, "causal_conv_l5.json"), 'w') as file:
+    with open(os.path.join(MODELS_DIR, "causal_conv_l6.json"), 'w') as file:
         file.write(json.dumps(configs))  # use `json.loads` to do the reverse
         # file.write(json.dumps([config_morpho_0]))  # use `json.loads` to do the reverse
 
