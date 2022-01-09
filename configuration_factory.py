@@ -185,9 +185,10 @@ def generate_config_files_multiple_seeds(config_path: [str, Dict], number_of_con
 if __name__ == '__main__':
     configs = []
     # for i in [1,2.5,5,10]:
-    config_morpho_0 =config_factory(loss_function='loss_zero_mse_on_spikes',dynamic_learning_params=False#,optimizer_type='RMSprop'
+    config_morpho_0 =config_factory(#loss_function='loss_zero_mse_on_spikes',
+                                    dynamic_learning_params=False#,optimizer_type='RMSprop'
                                     ,dynamic_learning_params_function="learning_parameters_iter_with_constant_weights", architecture_type="LAYERED_TEMPORAL_CONV",
-                    model_tag="causal_conv_l",skip_conections=True,
+                    model_tag="threshold_had_been_changed",skip_conections=True,
                                      accumulate_loss_batch_factor=1,
                          inter_module_skip_connections=False,batch_size_validation=200,clip_gradients_factor=2,constant_learning_rate=0.005)
     configs.append(config_morpho_0)
