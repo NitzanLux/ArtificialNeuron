@@ -70,7 +70,7 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                       # files_filter_regex=".*exBas_0_1100_inhBasDiff_-1100_600__exApic_0_1100_inhApicDiff_-1100_600_SpTemp[^\\/\.]*\.p",
                       files_filter_regex=".*",
                       optimizer_type="AdamW", optimizer_params={'eps':1e-6},
-                      clip_gradients_factor=1.5, lr_decay_factor=0.75, lr_patience_factor=20,
+                      clip_gradients_factor=1.5, lr_decay_factor=0.5, lr_patience_factor=50,
                       batch_counter=0, epoch_counter=0,  # default counter
                       torch_seed=42, numpy_seed=21, random_seed=12, init_weights_sd=0.05,
                       dynamic_learning_params=True,
