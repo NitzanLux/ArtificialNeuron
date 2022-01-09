@@ -189,7 +189,7 @@ if __name__ == '__main__':
                                     ,dynamic_learning_params_function="learning_parameters_iter_with_constant_weights", architecture_type="LAYERED_TEMPORAL_CONV",
                     model_tag="causal_conv_l",skip_conections=True,
                                      accumulate_loss_batch_factor=1,
-                         inter_module_skip_connections=False,batch_size_validation=200,clip_gradients_factor=2,constant_learning_rate=0.01)
+                         inter_module_skip_connections=False,batch_size_validation=200,clip_gradients_factor=2,constant_learning_rate=0.005)
     configs.append(config_morpho_0)
 
     with open(os.path.join(MODELS_DIR, "causal_conv_l4.json"), 'w') as file:
