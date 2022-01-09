@@ -64,13 +64,13 @@ def load_config_file(path: str) -> AttrDict:
 def config_factory(save_model_to_config_dir=True, config_new_path=None, generate_random_seeds=False, is_new_name=False,
                    **kargs):
     ##default values can be overridden by kargs
-    config = AttrDict(config_version=1.2,input_window_size=200,prediction_length=1, num_segments=2 * 639, num_syn_types=1,
-                      num_epochs=15000, epoch_size=50, batch_size_train=30,accumulate_loss_batch_factor=1, batch_size_validation=200,
+    config = AttrDict(config_version=1.3, input_window_size=200, prediction_length=1, num_segments=2 * 639, num_syn_types=1,
+                      num_epochs=15000, epoch_size=50, batch_size_train=30, accumulate_loss_batch_factor=1, batch_size_validation=200,
                       train_file_load=0.5, valid_file_load=0.5, spike_probability=0.5,
                       # files_filter_regex=".*exBas_0_1100_inhBasDiff_-1100_600__exApic_0_1100_inhApicDiff_-1100_600_SpTemp[^\\/\.]*\.p",
                       files_filter_regex=".*",
                       optimizer_type="AdamW", optimizer_params={'eps':1e-6},
-                      clip_gradients_factor=1.5,
+                      clip_gradients_factor=1.5, lr_decay_factor=0.75, lr_patience_factor=20,
                       batch_counter=0, epoch_counter=0,  # default counter
                       torch_seed=42, numpy_seed=21, random_seed=12, init_weights_sd=0.05,
                       dynamic_learning_params=True,
@@ -192,7 +192,7 @@ if __name__ == '__main__':
                          inter_module_skip_connections=False,batch_size_validation=200,clip_gradients_factor=2,constant_learning_rate=0.005)
     configs.append(config_morpho_0)
 
-    with open(os.path.join(MODELS_DIR, "causal_conv_l4.json"), 'w') as file:
+    with open(os.path.join(MODELS_DIR, "causal_conv_l5.json"), 'w') as file:
         file.write(json.dumps(configs))  # use `json.loads` to do the reverse
         # file.write(json.dumps([config_morpho_0]))  # use `json.loads` to do the reverse
 
