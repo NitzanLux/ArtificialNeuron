@@ -190,10 +190,10 @@ if __name__ == '__main__':
                                     ,dynamic_learning_params_function="learning_parameters_iter_with_constant_weights", architecture_type="LAYERED_TEMPORAL_CONV",
                     model_tag="threshold_had_been_changed",skip_conections=True,
                                      accumulate_loss_batch_factor=1,
-                         inter_module_skip_connections=False,batch_size_validation=200,clip_gradients_factor=2,constant_learning_rate=0.005)
+                         inter_module_skip_connections=False,batch_size_validation=200,clip_gradients_factor=5,constant_learning_rate=0.005)
     configs.append(config_morpho_0)
 
-    with open(os.path.join(MODELS_DIR, "causal_conv_l7.json"), 'w') as file:
+    with open(os.path.join(MODELS_DIR, "causal_conv_l8.json"), 'w') as file:
         file.write(json.dumps(configs))  # use `json.loads` to do the reverse
         # file.write(json.dumps([config_morpho_0]))  # use `json.loads` to do the reverse
 
