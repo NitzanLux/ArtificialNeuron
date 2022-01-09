@@ -96,8 +96,8 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                                  padding=0,
                                  dilation=1,
                                  channel_input_number=1278,  # synapse number
-                                 inner_scope_channel_number=31,
-                                 channel_output_number=31,
+                                 inner_scope_channel_number=25,
+                                 channel_output_number=25,
                                  activation_function_name="LeakyReLU",
                                  activation_function_kargs=dict(negative_slope=0.5),
                                  include_dendritic_voltage_tracing=False)
@@ -191,7 +191,7 @@ if __name__ == '__main__':
                          inter_module_skip_connections=False,batch_size_validation=200,clip_gradients_factor=2,constant_learning_rate=0.01)
     configs.append(config_morpho_0)
 
-    with open(os.path.join(MODELS_DIR, "causal_conv_l0.json"), 'w') as file:
+    with open(os.path.join(MODELS_DIR, "causal_conv_l1.json"), 'w') as file:
         file.write(json.dumps(configs))  # use `json.loads` to do the reverse
         # file.write(json.dumps([config_morpho_0]))  # use `json.loads` to do the reverse
 
