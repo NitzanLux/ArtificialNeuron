@@ -70,7 +70,7 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                       # files_filter_regex=".*exBas_0_1100_inhBasDiff_-1100_600__exApic_0_1100_inhApicDiff_-1100_600_SpTemp[^\\/\.]*\.p",
                       files_filter_regex=".*",
                       optimizer_type="AdamW", optimizer_params={'eps':1e-6},
-                      clip_gradients_factor=1.5, lr_decay_factor=0.5, lr_patience_factor=50,
+                      clip_gradients_factor=1.5, lr_decay_factor=0.75, lr_patience_factor=100,
                       batch_counter=0, epoch_counter=0,  # default counter
                       torch_seed=42, numpy_seed=21, random_seed=12, init_weights_sd=0.05,
                       dynamic_learning_params=True,
@@ -85,12 +85,12 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                                  time_domain_shape=config.input_window_size,
                                  # kernel_size_2d=3,
                                  # kernel_size_1d=9,
-                                 number_of_layers_root= 3, number_of_layers_leaf=3, number_of_layers_intersection=4,
-                                 number_of_layers_branch_intersection=4,
+                                 number_of_layers_root= 3, number_of_layers_leaf=2, number_of_layers_intersection=5,
+                                 number_of_layers_branch_intersection=3,
                                  david_layers = [55,13,13,13,13,13,13],
                                  skip_connections=True,
                                  inter_module_skip_connections=True,
-                                 kernel_size=21,
+                                 kernel_size=41,
                                  # number_of_layers=2,
                                  stride=1,
                                  padding=0,
@@ -193,7 +193,7 @@ if __name__ == '__main__':
                          inter_module_skip_connections=False,batch_size_validation=200,clip_gradients_factor=5,constant_learning_rate=0.005)
     configs.append(config_morpho_0)
 
-    with open(os.path.join(MODELS_DIR, "causal_conv_l8.json"), 'w') as file:
+    with open(os.path.join(MODELS_DIR, "causal_conv_l9.json"), 'w') as file:
         file.write(json.dumps(configs))  # use `json.loads` to do the reverse
         # file.write(json.dumps([config_morpho_0]))  # use `json.loads` to do the reverse
 
