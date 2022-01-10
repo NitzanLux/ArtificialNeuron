@@ -191,8 +191,9 @@ if __name__ == '__main__':
                     model_tag="threshold_had_been_changed",skip_conections=True,
                                      accumulate_loss_batch_factor=1,
                          inter_module_skip_connections=False,batch_size_validation=200,clip_gradients_factor=5,constant_learning_rate=0.005)
-    configs.append(config_morpho_0)
 
+    # configs.append(config_morpho_0)
+    configs = generate_config_files_multiple_seeds(config_morpho_0,2)
     with open(os.path.join(MODELS_DIR, "causal_conv_l9.json"), 'w') as file:
         file.write(json.dumps(configs))  # use `json.loads` to do the reverse
         # file.write(json.dumps([config_morpho_0]))  # use `json.loads` to do the reverse
