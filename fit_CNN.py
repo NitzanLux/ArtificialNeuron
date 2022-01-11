@@ -217,7 +217,7 @@ def get_data_generators(DVT_PCA_model, config):
                                                         DVT_PCA_model=DVT_PCA_model)
     if "spike_probability" in config and config.spike_probability is not None:
         train_data_generator.change_spike_probability(config.spike_probability)
-        validation_data_generator.change_spike_probability(0.5)
+    validation_data_generator.change_spike_probability(0.5)
     print("finished with the data!!!", flush=True)
 
     return train_data_generator, validation_data_generator
@@ -308,8 +308,8 @@ def plot_grad_flow(named_parameters):
 def display_accuracy(target, output, step, additional_str=''):
     if not DOCUMENT_ON_WANDB or step==0:
         return
-    target = target.cpu().detach().numpy().astype(bool).squeeze()
-    output = output.cpu().detach().numpy().squeeze()
+    target = target.cpu().detach().numpy().astype(bool).squeeze().flatten()
+    output = output.cpu().detach().numpy().squeeze().flatten()
     output = np.vstack([np.abs(1 - output), output]).T
     # fpr, tpr, thresholds = skm.roc_curve(target, output[:,1], )  # wandb has now possible to extruct it yet
     auc =  skm.roc_auc_score(target,output[:,1])
