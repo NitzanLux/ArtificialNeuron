@@ -10,6 +10,7 @@ from torch.nn.utils import weight_norm
 
 def keep_dimensions_by_padding_claculator(input_shape, kernel_size, stride, dilation, along_dim: [None, int] = None) -> \
         Tuple[int, int]:
+    assert kernel_size%2==1, "cannot keep dimensions of an even number kernel_size"
     if isinstance(stride, int):
         stride = (stride, stride)
     stride = np.array(stride)
