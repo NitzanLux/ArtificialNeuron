@@ -19,7 +19,7 @@ import get_neuron_modle
 from get_neuron_modle import get_L5PC
 import torch
 import re
-
+from copy import copy
 
 print(torch.cuda.get_device_name(0))
 print(torch.cuda.is_available())
