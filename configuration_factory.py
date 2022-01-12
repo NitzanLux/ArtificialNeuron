@@ -63,7 +63,7 @@ def surround_with_default_config_values(**kargs):
                       batch_counter=0, epoch_counter=0,  # default counter
                       torch_seed=42, numpy_seed=21, random_seed=12, init_weights_sd=0.05,
                       dynamic_learning_params=True,
-                      constant_loss_weights=[20., 1., 0., 0], constant_sigma=1.2, constant_learning_rate=0.0001,
+                      constant_loss_weights=[5., 1., 0., 0], constant_sigma=1.2, constant_learning_rate=0.0001,
                       dynamic_learning_params_function="learning_parameters_iter_slow_50_with_constant_weights",
                       config_path="", model_tag="complex_constant_model", model_path=None,
                       loss_function="bcel_mse_dvt_loss")
@@ -194,10 +194,10 @@ def generate_config_files_multiple_seeds(config_path: [str, Dict], number_of_con
 if __name__ == '__main__':
     configs = []
     # for i in [1,2.5,5,10]:
-    config_morpho_0 =config_factory(#loss_function='loss_zero_mse_on_spikes',
+    config_morpho_0 =config_factory(loss_function='focalbcel_mse_loss',
                                     dynamic_learning_params=False#,optimizer_type='RMSprop'
                                     ,dynamic_learning_params_function="learning_parameters_iter_with_constant_weights", architecture_type="LAYERED_TEMPORAL_CONV",
-                    model_tag="heavy",skip_conections=True,
+                    model_tag="heavy",skip_conections=True,optimizer_type='RMSprop',
                                      accumulate_loss_batch_factor=1,spike_probability=None,prediction_length=1000,
                          inter_module_skip_connections=False,batch_size_validation=200,batch_size_train=30,clip_gradients_factor=2,constant_learning_rate=0.05)
 
