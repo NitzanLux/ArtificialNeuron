@@ -237,9 +237,12 @@ def generate_constant_learning_parameters(config, model):
     else:
         custom_loss = loss_function_factory.bcel_mse_dvt_loss(loss_weights, config.time_domain_shape, sigma)
     if "lr" in (config.optimizer_params):
-        config.constant_learning_rate = config.optimizer_params["lr"]
+        config.update(dict(constant_learning_rate=config.optimizer_params["lr"]), allow_val_change=True)
     else:
-        config.optimizer_params["lr"] = config.constant_learning_rate
+        optimizer_params = copy(config.optimizer_params)
+        optimizer_params["lr"] = config.constant_learning_rate
+        config.update(dict(optimizer_params=optimizer_params), allow_val_change=True)
+
     optimizer = getattr(optim, config.optimizer_type)(model.parameters(),
                                                       **config.optimizer_params)
     return learning_rate, loss_weights, optimizer, sigma
