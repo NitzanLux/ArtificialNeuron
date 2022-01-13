@@ -89,6 +89,7 @@ class SimulationDataGenerator():
             non_spikes[SIM_INDEX] = non_spikes[SIM_INDEX][non_spikes_in_bound]
             non_spikes[1] = non_spikes[1][non_spikes_in_bound]
 
+
             # shuffle them
             self.spikes = self.shuffle_array(spikes)
             self.non_spikes = self.shuffle_array(non_spikes)
@@ -126,7 +127,7 @@ class SimulationDataGenerator():
         while self.epoch_size is None or counter < self.epoch_size:
             if self.__return_spike_factor == NULL_SPIKE_FACTOR_VALUE:
                 yield self[np.arange(self.sample_counter, self.sample_counter + self.batch_size) % self.X.shape[
-                    SIM_INDEX], np.random.choice(range(0, self.X.shape[2] - 1),
+                    SIM_INDEX], np.random.choice(range(0, self.X.shape[2] - 1,self.window_size_ms),
                                                  size=self.batch_size, replace=False)]
             else:
                 number_of_iteration = (self.sample_counter // self.batch_size)
@@ -157,7 +158,7 @@ class SimulationDataGenerator():
                 selected_sim_idxs = np.random.choice(range(self.X.shape[0]), size=self.batch_size,
                                                      replace=True)  # number of simulations per file
                 selected_time_idxs = np.random.choice(range(0, self.X.shape[2] - 1),
-                                                      size=self.batch_size, replace=False)  # simulation duration
+                                                      size=self.batch_size+1, replace=False)  # simulation duration
             else:
 
                 spike_idxs = np.random.choice(np.arange(self.spikes[SIM_INDEX].shape[0]),
