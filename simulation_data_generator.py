@@ -128,7 +128,7 @@ class SimulationDataGenerator():
             if self.__return_spike_factor == NULL_SPIKE_FACTOR_VALUE:
                 yield self[np.arange(self.sample_counter, self.sample_counter + self.batch_size) % self.X.shape[
                     SIM_INDEX], np.random.choice(range(0, self.X.shape[2] - 1,self.window_size_ms),
-                                                 size=self.batch_size, replace=False)]
+                                                 size=self.batch_size, replace=True)]
             else:
                 number_of_iteration = (self.sample_counter // self.batch_size)
                 spike_idxs = np.arange(int(number_of_iteration * self.number_of_spikes_in_batch),
