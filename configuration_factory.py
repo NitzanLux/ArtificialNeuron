@@ -197,7 +197,7 @@ if __name__ == '__main__':
     config_morpho_0 =config_factory(#loss_function='focalbcel_mse_loss',
                                     dynamic_learning_params=False#,optimizer_type='RMSprop'
                                     ,dynamic_learning_params_function="learning_parameters_iter_with_constant_weights", architecture_type="LAYERED_TEMPORAL_CONV",
-                    model_tag="heavy",skip_conections=True,optimizer_type='RMSprop',
+                    model_tag="heavy",skip_conections=False,optimizer_type='RMSprop',
                                      accumulate_loss_batch_factor=1,spike_probability=None,prediction_length=500,
                          inter_module_skip_connections=False,batch_size_validation=200,batch_size_train=30,clip_gradients_factor=2,constant_learning_rate=0.05)
 
