@@ -199,7 +199,7 @@ if __name__ == '__main__':
                                     ,dynamic_learning_params_function="learning_parameters_iter_with_constant_weights", architecture_type="LAYERED_TEMPORAL_CONV",
                     model_tag="heavy",optimizer_type='RMSprop',
                                      accumulate_loss_batch_factor=1,spike_probability=None,prediction_length=500,
-                        batch_size_validation=200,batch_size_train=30,clip_gradients_factor=2,constant_learning_rate=0.05)
+                        batch_size_validation=200,batch_size_train=5,clip_gradients_factor=2,constant_learning_rate=0.05)
 
     configs.append(config_morpho_0)
     # configs = generate_config_files_multiple_seeds(config_morpho_0,2)
