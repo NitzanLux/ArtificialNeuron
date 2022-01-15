@@ -74,11 +74,11 @@ def surround_with_default_config_values(**kargs):
                                  time_domain_shape=config.input_window_size,
                                  # kernel_size_2d=3,
                                  # kernel_size_1d=9,
-                                 number_of_layers_root= 5, number_of_layers_leaf=5, number_of_layers_intersection=5,
-                                 number_of_layers_branch_intersection=5,
+                                 number_of_layers_root= 7, number_of_layers_leaf=7, number_of_layers_intersection=7,
+                                 number_of_layers_branch_intersection=7,
                                  david_layers = [55,13,13,13,13,13,13],
-                                 skip_connections=True,
-                                 inter_module_skip_connections=True,
+                                 skip_connections=False,
+                                 inter_module_skip_connections=False,
                                  kernel_size=21,
                                  # number_of_layers=2,
                                  stride=1,
@@ -197,9 +197,9 @@ if __name__ == '__main__':
     config_morpho_0 =config_factory(#loss_function='focalbcel_mse_loss',
                                     dynamic_learning_params=False#,optimizer_type='RMSprop'
                                     ,dynamic_learning_params_function="learning_parameters_iter_with_constant_weights", architecture_type="LAYERED_TEMPORAL_CONV",
-                    model_tag="heavy",skip_conections=False,optimizer_type='RMSprop',
+                    model_tag="heavy",optimizer_type='RMSprop',
                                      accumulate_loss_batch_factor=1,spike_probability=None,prediction_length=500,
-                         inter_module_skip_connections=False,batch_size_validation=200,batch_size_train=30,clip_gradients_factor=2,constant_learning_rate=0.05)
+                        batch_size_validation=200,batch_size_train=30,clip_gradients_factor=2,constant_learning_rate=0.05)
 
     configs.append(config_morpho_0)
     # configs = generate_config_files_multiple_seeds(config_morpho_0,2)
