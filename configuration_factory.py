@@ -54,7 +54,7 @@ def save_config(config, path: [str, None] = None):
 def surround_with_default_config_values(**kargs):
     ##default values can be overridden by kargs
     config = AttrDict(config_version=CURRENT_VERSION, input_window_size=200, prediction_length=1, num_segments=2 * 639, num_syn_types=1,
-                      num_epochs=15000, epoch_size=50, batch_size_train=10, accumulate_loss_batch_factor=1, batch_size_validation=100,
+                      num_epochs=15000, epoch_size=50, batch_size_train=5, accumulate_loss_batch_factor=1, batch_size_validation=100,
                       train_file_load=0.5, valid_file_load=0.5, spike_probability=0.5,
                       # files_filter_regex=".*exBas_0_1100_inhBasDiff_-1100_600__exApic_0_1100_inhApicDiff_-1100_600_SpTemp[^\\/\.]*\.p",
                       files_filter_regex=".*",
