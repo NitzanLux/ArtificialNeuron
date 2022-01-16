@@ -77,8 +77,8 @@ def surround_with_default_config_values(**kargs):
                                  number_of_layers_root= 7, number_of_layers_leaf=7, number_of_layers_intersection=7,
                                  number_of_layers_branch_intersection=7,
                                  david_layers = [55,13,13,13,13,13,13],
-                                 skip_connections=False,
-                                 inter_module_skip_connections=False,
+                                 skip_connections=True,
+                                 inter_module_skip_connections=True,
                                  kernel_size=21,
                                  # number_of_layers=2,
                                  stride=1,
@@ -198,7 +198,7 @@ if __name__ == '__main__':
                                     dynamic_learning_params=False#,optimizer_type='RMSprop'
                                     ,dynamic_learning_params_function="learning_parameters_iter_with_constant_weights", architecture_type="LAYERED_TEMPORAL_CONV",
                     model_tag="heavy",optimizer_type='RMSprop',
-                                     accumulate_loss_batch_factor=1,spike_probability=None,prediction_length=500,
+                                     accumulate_loss_batch_factor=2,spike_probability=None,prediction_length=500,
                         batch_size_validation=200,batch_size_train=10,clip_gradients_factor=2,constant_learning_rate=0.005)
 
     configs.append(config_morpho_0)
