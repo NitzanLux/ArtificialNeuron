@@ -398,7 +398,7 @@ class SomaNetwork(RecursiveNeuronModel):
             yield mod
 
     def forward(self, x):
-        x = x.type(torch.cuda.DoubleTensor) if self.is_cuda else x.type(torch.DoubleTensor)
+        # x = x.type(torch.cuda.DoubleTensor) if self.is_cuda else x.type(torch.DoubleTensor)
         outputs = []
         for i, branch in enumerate(self.branches):
             outputs.append(branch(x))

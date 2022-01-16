@@ -23,7 +23,7 @@ def bcel_mse_dvt_loss(loss_weights, window_size, sigma):
             min_len = min(len(target),len(output))
             for i in range(min_len):  # same processor for comperison
                 target[i] = target[i].to(output[i].device)
-        binary_cross_entropy_loss = nn.BCELoss()
+        # binary_cross_entropy_loss = nn.functional.binary_cross_entropy_with_logits()
         mse_loss = nn.MSELoss()
         general_loss = None
         loss_bcel_item = 0
@@ -32,7 +32,7 @@ def bcel_mse_dvt_loss(loss_weights, window_size, sigma):
         loss_blur_item = 0
 
         if loss_weights[0] > 0:
-            loss_bcel =  binary_cross_entropy_loss(output[0],target[0])  # removing channel dimention
+            loss_bcel =  F.binary_cross_entropy_with_logits(output[0],target[0])  # removing channel dimention
             loss_bcel_item = loss_bcel.item()
             general_loss = loss_weights[0] *loss_bcel
 

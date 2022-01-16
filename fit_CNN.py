@@ -20,7 +20,7 @@ from get_neuron_modle import get_L5PC
 import torch
 import re
 from copy import copy
-
+torch.cuda.empty_cache()
 print(torch.cuda.get_device_name(0))
 print(torch.cuda.is_available())
 print("done")
@@ -43,11 +43,11 @@ synapse_type = 'NMDA'
 include_DVT = False
 
 # for dibugging
-# BATCH_LOG_UPDATE_FREQ = 1
-# VALIDATION_EVALUATION_FREQUENCY=1
-# ACCURACY_EVALUATION_FREQUENCY = 1
-# BUFFER_SIZE_IN_FILES_VALID = 1
-# BUFFER_SIZE_IN_FILES_TRAINING = 1
+BATCH_LOG_UPDATE_FREQ = 1
+VALIDATION_EVALUATION_FREQUENCY=1
+ACCURACY_EVALUATION_FREQUENCY = 1
+BUFFER_SIZE_IN_FILES_VALID = 1
+BUFFER_SIZE_IN_FILES_TRAINING = 1
 
 print('-----------------------------------------------')
 print('finding data')
@@ -86,19 +86,25 @@ def load_files_names(files_filter_regex: str = ".*") -> Tuple[List[str], List[st
     return train_files, valid_files, test_files
 
 
-def batch_train(network, optimizer, custom_loss, train_data_iterator,clip_gradient,accumulate_loss_batch_factor,optimizer_scdualer):
+def batch_train(network, optimizer, custom_loss, train_data_iterator,clip_gradient,accumulate_loss_batch_factor,optimizer_scdualer,scaler):
     # zero the parameter gradients
     torch.cuda.empty_cache()
     optimizer.zero_grad()
     for _,data in zip(range(accumulate_loss_batch_factor),train_data_iterator):
         inputs,labels = data
+        inputs=inputs.cuda().type(torch.cuda.DoubleTensor)
+        labels=[l.cuda() for l in labels]
         # forward + backward + optimize
-        outputs = network(inputs)
-        general_loss, loss_bcel, loss_mse, loss_dvt, loss_gausian_mse = custom_loss(outputs, labels)
-        general_loss.backward()
+        with torch.cuda.amp.autocast():
+            outputs = network(inputs)
+            general_loss, loss_bcel, loss_mse, loss_dvt, loss_gausian_mse = custom_loss(outputs, labels)
+        scaler.scale(general_loss).backward()
+
         if optimizer_scdualer is not None:
             optimizer_scdualer.step(general_loss)
     torch.nn.utils.clip_grad_norm_(network.parameters(), clip_gradient)
+    scaler.step(optimizer)
+    scaler.update()
     optimizer.step()
     out = general_loss, loss_bcel, loss_mse, loss_dvt, loss_gausian_mse
 
@@ -142,7 +148,7 @@ def train_network(config):
     else:
         learning_rate, loss_weights, sigma = 0.001, [1] * 3, 0.1  # default values
         dynamic_parameter_loss_genrator = getattr(dlpf, config.dynamic_learning_params_function)(config)
-
+    scaler = torch.cuda.amp.GradScaler()
     if DOCUMENT_ON_WANDB and WATCH_MODEL:
         wandb.watch(model, log='all', log_freq=1, log_graph=True)
     print("start training...", flush=True)
@@ -166,7 +172,7 @@ def train_network(config):
             config.update(dict(batch_counter=config.batch_counter + 1), allow_val_change=True)
             # get the inputs; data is a list of [inputs, labels]
             batch_counter += 1
-            train_loss = batch_train(model, optimizer, custom_loss, train_data_iterator,config.clip_gradients_factor,config.accumulate_loss_batch_factor,optimizer_scdualer)
+            train_loss = batch_train(model, optimizer, custom_loss, train_data_iterator,config.clip_gradients_factor,config.accumulate_loss_batch_factor,optimizer_scdualer,scaler)
             lr=optimizer.param_groups[0]['lr']
             if lr!= config.optimizer_params['lr']:
                 optim_params = config.optimizer_params
@@ -184,6 +190,8 @@ def train_network(config):
 
 def evaluate_validation(config, custom_loss, epoch, model, validation_data_iterator):
     valid_input, valid_labels = next(validation_data_iterator)
+    valid_input = valid_input.cuda().type(torch.cuda.DoubleTensor)
+    valid_labels = [l.cuda() for l in valid_labels]
     with torch.no_grad():
         validation_loss = custom_loss(model(valid_input), valid_labels)
         validation_loss = list(validation_loss)
