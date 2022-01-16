@@ -43,11 +43,11 @@ synapse_type = 'NMDA'
 include_DVT = False
 
 # for dibugging
-# BATCH_LOG_UPDATE_FREQ = 1
-# VALIDATION_EVALUATION_FREQUENCY=1
-# ACCURACY_EVALUATION_FREQUENCY = 1
-# BUFFER_SIZE_IN_FILES_VALID = 1
-# BUFFER_SIZE_IN_FILES_TRAINING = 1
+BATCH_LOG_UPDATE_FREQ = 1
+VALIDATION_EVALUATION_FREQUENCY=1
+ACCURACY_EVALUATION_FREQUENCY = 1
+BUFFER_SIZE_IN_FILES_VALID = 1
+BUFFER_SIZE_IN_FILES_TRAINING = 1
 
 print('-----------------------------------------------')
 print('finding data')
@@ -93,10 +93,11 @@ def batch_train(network, optimizer, custom_loss, train_data_iterator,clip_gradie
     for _,data in zip(range(accumulate_loss_batch_factor),train_data_iterator):
         inputs,labels = data
         inputs=inputs.cuda().type(torch.cuda.DoubleTensor)
-        labels=[l.cuda() for l in labels]
+        labels=[l.cuda().flatten() for l in labels]
         # forward + backward + optimize
         with torch.cuda.amp.autocast():
             outputs = network(inputs)
+            outputs = [i.flatten() for i in outputs]
             general_loss, loss_bcel, loss_mse, loss_dvt, loss_gausian_mse = custom_loss(outputs, labels)
         scaler.scale(general_loss).backward()
 
