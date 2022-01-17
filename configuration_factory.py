@@ -198,7 +198,7 @@ if __name__ == '__main__':
                                     dynamic_learning_params=False#,optimizer_type='RMSprop'
                                     ,dynamic_learning_params_function="learning_parameters_iter_with_constant_weights", architecture_type="LAYERED_TEMPORAL_CONV",
                     model_tag="heavy",optimizer_type='RMSprop',
-                                     accumulate_loss_batch_factor=2,spike_probability=0.5,prediction_length=500,
+                                     accumulate_loss_batch_factor=1,spike_probability=0.5,prediction_length=1,
                         batch_size_validation=200,batch_size_train=10,clip_gradients_factor=2,constant_learning_rate=0.005)
 
     configs.append(config_morpho_0)
