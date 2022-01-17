@@ -193,11 +193,11 @@ def generate_config_files_multiple_seeds(config_path: [str, Dict], number_of_con
 if __name__ == '__main__':
     configs = []
     # for i in [1,2.5,5,10]:
-    config_morpho_0 =config_factory(#loss_function='focalbcel_mse_loss',
+    config_morpho_0 =config_factory(loss_function='focalbcel_mse_loss',
                                     dynamic_learning_params=False#,optimizer_type='RMSprop'
                                     ,dynamic_learning_params_function="learning_parameters_iter_with_constant_weights", architecture_type="LAYERED_TEMPORAL_CONV",
                     model_tag="heavy",optimizer_type='RMSprop',
-                                     accumulate_loss_batch_factor=2,spike_probability=None,prediction_length=1,
+                                     accumulate_loss_batch_factor=2,spike_probability=None,prediction_length=500,
                         batch_size_validation=200,batch_size_train=10,clip_gradients_factor=5,constant_learning_rate=0.005)
     # config_morpho_1 =config_factory(#loss_function='focalbcel_mse_loss',
     #                                 dynamic_learning_params=False#,optimizer_type='RMSprop'
