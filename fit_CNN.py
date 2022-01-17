@@ -92,23 +92,23 @@ def batch_train(network, optimizer, custom_loss, train_data_iterator,clip_gradie
     # zero the parameter gradients
     torch.cuda.empty_cache()
     optimizer.zero_grad()
+
     for _,data in zip(range(accumulate_loss_batch_factor),train_data_iterator):
         inputs,labels = data
         inputs=inputs.cuda().type(torch.cuda.DoubleTensor)
         labels=[l.cuda().flatten() for l in labels]
         # forward + backward + optimize
-        # with torch.cuda.amp.autocast():
-        outputs = network(inputs)
-        outputs = [i.flatten() for i in outputs]
-        general_loss, loss_bcel, loss_mse, loss_dvt, loss_gausian_mse = custom_loss(outputs, labels)
-        # scaler.scale(general_loss).backward()
-
-        if optimizer_scdualer is not None:
-            optimizer_scdualer.step(general_loss)
-    torch.nn.utils.clip_grad_norm_(network.parameters(), clip_gradient)
-    # scaler.step(optimizer)
-    # scaler.update()
-    optimizer.step()
+        with torch.cuda.amp.autocast():
+            outputs = network(inputs)
+            outputs = [i.flatten() for i in outputs]
+            general_loss, loss_bcel, loss_mse, loss_dvt, loss_gausian_mse = custom_loss(outputs, labels)
+        scaler.scale(general_loss).backward()
+        torch.nn.utils.clip_grad_norm_(network.parameters(), clip_gradient)
+    if optimizer_scdualer is not None:
+        optimizer_scdualer.step(general_loss)
+    scaler.step(optimizer)
+    scaler.update()
+    # optimizer.step()
     out = general_loss, loss_bcel, loss_mse, loss_dvt, loss_gausian_mse
 
     return out
