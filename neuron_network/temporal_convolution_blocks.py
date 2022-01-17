@@ -148,5 +148,5 @@ class RootBlock(nn.Module):
         out = self.model(x)
         v = self.voltage_prediction(out)
         s = self.spike_prediction(out)
-        s = self.sigmoid(s)
+        # s = self.sigmoid(s)
         return s, v
