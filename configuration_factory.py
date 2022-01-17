@@ -202,7 +202,7 @@ if __name__ == '__main__':
 
     configs.append(config_morpho_0)
     # configs = generate_config_files_multiple_seeds(config_morpho_0,2)
-    with open(os.path.join(MODELS_DIR, "sliding_window_d1.json"), 'w') as file:
+    with open(os.path.join(MODELS_DIR, "sliding_window_d2.json"), 'w') as file:
         file.write(json.dumps(configs))  # use `json.loads` to do the reverse
         # file.write(json.dumps([config_morpho_0]))  # use `json.loads` to do the reverse
 
