@@ -103,6 +103,8 @@ def batch_train(network, optimizer, custom_loss, train_data_iterator,clip_gradie
             outputs = [i.flatten() for i in outputs]
             general_loss, loss_bcel, loss_mse, loss_dvt, loss_gausian_mse = custom_loss(outputs, labels)
         scaler.scale(general_loss).backward()
+        #unscaling and clipping
+        scaler.unscale_(optimizer)
         torch.nn.utils.clip_grad_norm_(network.parameters(), clip_gradient)
     if optimizer_scdualer is not None:
         optimizer_scdualer.step(general_loss)
