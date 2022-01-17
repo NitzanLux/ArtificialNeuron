@@ -91,7 +91,7 @@ def load_files_names(files_filter_regex: str = ".*") -> Tuple[List[str], List[st
 def batch_train(network, optimizer, custom_loss, train_data_iterator,clip_gradient,accumulate_loss_batch_factor,optimizer_scdualer,scaler):
     # zero the parameter gradients
     torch.cuda.empty_cache()
-    optimizer.zero_grad()
+
 
     for _,data in zip(range(accumulate_loss_batch_factor),train_data_iterator):
         inputs,labels = data
@@ -110,7 +110,7 @@ def batch_train(network, optimizer, custom_loss, train_data_iterator,clip_gradie
         optimizer_scdualer.step(general_loss)
     scaler.step(optimizer)
     scaler.update()
-    # optimizer.step()
+    optimizer.zero_grad()
     out = general_loss, loss_bcel, loss_mse, loss_dvt, loss_gausian_mse
 
     return out
