@@ -205,9 +205,9 @@ if __name__ == '__main__':
     #                 model_tag="heavy",optimizer_type='AdamW',
     #                                  accumulate_loss_batch_factor=4,spike_probability=None,prediction_length=1,
     #                     batch_size_validation=200,batch_size_train=10,clip_gradients_factor=5,constant_learning_rate=0.005)
-    configs.append(config_morpho_0)
+    # configs.append(config_morpho_0)
     # configs.append(config_morpho_1)
-    # configs = generate_config_files_multiple_seeds(config_morpho_0,2)
+    configs = generate_config_files_multiple_seeds(config_morpho_0,2)
     with open(os.path.join(MODELS_DIR, "sliding_window_no_sigmoid.json"), 'w') as file:
         file.write(json.dumps(configs))  # use `json.loads` to do the reverse
         # file.write(json.dumps([config_morpho_0]))  # use `json.loads` to do the reverse
