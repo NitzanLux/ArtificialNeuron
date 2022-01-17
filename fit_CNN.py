@@ -95,18 +95,18 @@ def batch_train(network, optimizer, custom_loss, train_data_iterator,clip_gradie
         inputs=inputs.cuda().type(torch.cuda.DoubleTensor)
         labels=[l.cuda().flatten() for l in labels]
         # forward + backward + optimize
-        # with torch.cuda.amp.autocast():
-        outputs = network(inputs)
-        outputs = [i.flatten() for i in outputs]
-        general_loss, loss_bcel, loss_mse, loss_dvt, loss_gausian_mse = custom_loss(outputs, labels)
-        # scaler.scale(general_loss).backward()
+        with torch.cuda.amp.autocast():
+            outputs = network(inputs)
+            outputs = [i.flatten() for i in outputs]
+            general_loss, loss_bcel, loss_mse, loss_dvt, loss_gausian_mse = custom_loss(outputs, labels)
+        scaler.scale(general_loss).backward()
 
         if optimizer_scdualer is not None:
             optimizer_scdualer.step(general_loss)
     torch.nn.utils.clip_grad_norm_(network.parameters(), clip_gradient)
-    # scaler.step(optimizer)
-    # scaler.update()
-    optimizer.step()
+    scaler.step(optimizer)
+    scaler.update()
+    # optimizer.step()
     out = general_loss, loss_bcel, loss_mse, loss_dvt, loss_gausian_mse
 
     return out
@@ -149,7 +149,7 @@ def train_network(config):
     else:
         learning_rate, loss_weights, sigma = 0.001, [1] * 3, 0.1  # default values
         dynamic_parameter_loss_genrator = getattr(dlpf, config.dynamic_learning_params_function)(config)
-    scaler = torch.cuda.amp.GradScaler()
+    scaler = torch.cuda.amp.GradScaler(enabled=True)
     if DOCUMENT_ON_WANDB and WATCH_MODEL:
         wandb.watch(model, log='all', log_freq=1, log_graph=True)
     print("start training...", flush=True)
