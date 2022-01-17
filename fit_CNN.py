@@ -21,6 +21,8 @@ import torch
 import re
 from copy import copy
 torch.cuda.empty_cache()
+torch.set_default_dtype(torch.float64)
+
 print(torch.cuda.get_device_name(0))
 print(torch.cuda.is_available())
 print("done")
