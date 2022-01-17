@@ -325,7 +325,8 @@ def display_accuracy(target, output, step, additional_str=''):
     if not DOCUMENT_ON_WANDB or step==0:
         return
     target = target.cpu().detach().numpy().astype(bool).squeeze().flatten()
-    output = output.cpu().detach().numpy().squeeze().flatten()
+    output = torch.nn.Sigmoid()(output)
+    output = np.output.cpu().detach().numpy().squeeze().flatten()
     output = np.vstack([np.abs(1 - output), output]).T
     # fpr, tpr, thresholds = skm.roc_curve(target, output[:,1], )  # wandb has now possible to extruct it yet
     auc =  skm.roc_auc_score(target,output[:,1])
