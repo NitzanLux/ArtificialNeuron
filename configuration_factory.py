@@ -62,7 +62,7 @@ def surround_with_default_config_values(**kargs):
                       batch_counter=0, epoch_counter=0,  # default counter
                       torch_seed=42, numpy_seed=21, random_seed=12, init_weights_sd=0.05,
                       dynamic_learning_params=True,
-                      constant_loss_weights=[10., 1., 0., 0], constant_sigma=1.2, constant_learning_rate=0.0001,
+                      constant_loss_weights=[50., 1., 0., 0], constant_sigma=1.2, constant_learning_rate=0.0001,
                       dynamic_learning_params_function="learning_parameters_iter_slow_50_with_constant_weights",
                       config_path="", model_tag="complex_constant_model", model_path=None,
                       loss_function="bcel_mse_dvt_loss")
