@@ -149,7 +149,7 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
             elif  config.network_architecture_structure=="recursive":
                 L5PC = get_L5PC()
                 model =recursive_neuronal_model.RecursiveNeuronModel.build_david_data_model(config,L5PC)
-                model.load(os.path.join(MODELS_DIR, *config.model_path))
+                model.load(config)
             else:
                 model = neuronal_model.NeuronConvNet.load(os.path.join(MODELS_DIR, *config.model_path))
 
