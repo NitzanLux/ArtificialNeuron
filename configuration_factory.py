@@ -58,11 +58,11 @@ def surround_with_default_config_values(**kargs):
                       # files_filter_regex=".*exBas_0_1100_inhBasDiff_-1100_600__exApic_0_1100_inhApicDiff_-1100_600_SpTemp[^\\/\.]*\.p",
                       files_filter_regex=".*",
                       optimizer_type="AdamW",optimizer_params={},# optimizer_params={'eps':1e-8},
-                      clip_gradients_factor=1.5, lr_decay_factor=0.75, lr_patience_factor=50,
+                      clip_gradients_factor=1.5, lr_decay_factor=0.75, lr_patience_factor=100,
                       batch_counter=0, epoch_counter=0,  # default counter
                       torch_seed=42, numpy_seed=21, random_seed=12, init_weights_sd=0.05,
                       dynamic_learning_params=True,
-                      constant_loss_weights=[50., 1., 0., 0], constant_sigma=1.2, constant_learning_rate=0.0001,
+                      constant_loss_weights=[100., 1., 0., 0], constant_sigma=1.2, constant_learning_rate=0.0001,
                       dynamic_learning_params_function="learning_parameters_iter_slow_50_with_constant_weights",
                       config_path="", model_tag="complex_constant_model", model_path=None,
                       loss_function="bcel_mse_dvt_loss")
@@ -84,8 +84,8 @@ def surround_with_default_config_values(**kargs):
                                  padding=0,
                                  dilation=1,
                                  channel_input_number=1278,  # synapse number
-                                 inner_scope_channel_number=21,
-                                 channel_output_number=21,
+                                 inner_scope_channel_number=31,
+                                 channel_output_number=31,
                                  activation_function_name="LeakyReLU",
                                  activation_function_kargs=dict(negative_slope=0.5),
                                  include_dendritic_voltage_tracing=False)
@@ -199,7 +199,7 @@ if __name__ == '__main__':
                                     ,dynamic_learning_params_function="learning_parameters_iter_with_constant_weights", architecture_type="LAYERED_TEMPORAL_CONV",
                     model_tag="heavy",optimizer_type='AdamW',
                                      accumulate_loss_batch_factor=2,spike_probability=None,prediction_length=750,
-                        batch_size_validation=200,batch_size_train=10,clip_gradients_factor=5,constant_learning_rate=0.005)
+                        batch_size_validation=200,batch_size_train=10,clip_gradients_factor=1.5,constant_learning_rate=0.005)
     # config_morpho_1 =config_factory(#loss_function='focalbcel_mse_loss',
     #                                 dynamic_learning_params=False#,optimizer_type='RMSprop'
     #                                 ,dynamic_learning_params_function="learning_parameters_iter_with_constant_weights", architecture_type="LAYERED_TEMPORAL_CONV",
@@ -209,7 +209,7 @@ if __name__ == '__main__':
     # configs.append(config_morpho_0)
     # configs.append(config_morpho_1)
     configs = generate_config_files_multiple_seeds(config_morpho_0,2)
-    with open(os.path.join(MODELS_DIR, "sliding_window_focal2.json"), 'w') as file:
+    with open(os.path.join(MODELS_DIR, "silver_grass_mash.json"), 'w') as file:
         file.write(json.dumps(configs))  # use `json.loads` to do the reverse
         # file.write(json.dumps([config_morpho_0]))  # use `json.loads` to do the reverse
 
