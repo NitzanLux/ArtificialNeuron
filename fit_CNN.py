@@ -186,17 +186,17 @@ def train_network(config):
             with torch.no_grad():
                 train_log(train_loss, config.batch_counter, epoch, lr, sigma, loss_weights,
                           additional_str="train")
-            evaluate_validation(config, custom_loss, epoch, model, validation_data_iterator)
+            evaluate_validation(config, custom_loss, None, model, validation_data_iterator)
         # save model every once a while
         if saving_counter % 10 == 0:
             save_model(model, saving_counter, config)
     save_model(model, saving_counter, config)
 
 
-def evaluate_validation(config, custom_loss, epoch, model, validation_data_iterator):
+def evaluate_validation(config, custom_loss, model, validation_data_iterator):
     if not (config.batch_counter % VALIDATION_EVALUATION_FREQUENCY == 0 or config.batch_counter % ACCURACY_EVALUATION_FREQUENCY == 0 or config.batch_counter % ACCURACY_EVALUATION_FREQUENCY == 0):
         return
-
+    print("validate ")
     valid_input, valid_labels = next(validation_data_iterator)
     with torch.no_grad():
         valid_input = valid_input.cuda().type(torch.cuda.DoubleTensor)
@@ -208,8 +208,9 @@ def evaluate_validation(config, custom_loss, epoch, model, validation_data_itera
 
         if config.batch_counter % VALIDATION_EVALUATION_FREQUENCY == 0 or config.batch_counter % ACCURACY_EVALUATION_FREQUENCY == 0:
             validation_loss=custom_loss(output,valid_labels)
-            train_log(validation_loss, config.batch_counter, epoch,
+            train_log(validation_loss, config.batch_counter, None,
                       additional_str="validation", commit=False)
+
             target_v = valid_labels[1].cpu().detach().numpy().squeeze().flatten()
             output_v = valid_labels[1].cpu().detach().numpy().squeeze().flatten()
             log_dict={"brier score(s) validation":skm.brier_score_loss(target_s,output_s),
