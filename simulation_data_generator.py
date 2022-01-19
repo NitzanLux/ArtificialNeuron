@@ -147,7 +147,7 @@ class SimulationDataGenerator():
                 selected_time_idxs = np.hstack([spikes_sim_time, non_spikes_sim_time])
                 yield self[selected_sim_idxs, selected_time_idxs]
             counter += 1
-            self.sample_counter += self.batch_size
+            self.sample_counter += self.batch_size*self.prediction_length
             self.files_shuffle_checker()
 
     def iterate_and_shuffle(self):
@@ -176,17 +176,17 @@ class SimulationDataGenerator():
                 selected_sim_idxs = np.hstack([spikes_sim_idxs, non_spikes_sim_idxs])
                 selected_time_idxs = np.hstack([spikes_sim_time, non_spikes_sim_time])
             yield self[selected_sim_idxs, selected_time_idxs]
-            self.sample_counter += self.batch_size
+            self.sample_counter += self.batch_size*self.prediction_length
             self.files_shuffle_checker()
 
     def files_shuffle_checker(self):
         if self.__return_spike_factor == NULL_SPIKE_FACTOR_VALUE:
-            if (self.sample_counter + self.batch_size) / (
+            if (self.sample_counter + self.batch_size*self.prediction_length) / (
                     self.X.shape[0] * self.X.shape[2]) >= self.sample_ratio_to_shuffle:
                 self.reload_files()
                 return True
             return False
-        if ((self.sample_counter + self.batch_size) * self.__return_spike_factor) / self.spikes[SIM_INDEX].shape[
+        if ((self.sample_counter + self.batch_size*self.prediction_length) * self.__return_spike_factor) / self.spikes[SIM_INDEX].shape[
             0] >= self.sample_ratio_to_shuffle:
             # in case we are deterministically sampling from different probability space then the data.
             self.reload_files()
