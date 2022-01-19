@@ -208,7 +208,7 @@ if __name__ == '__main__':
     #                     batch_size_validation=200,batch_size_train=10,clip_gradients_factor=5,constant_learning_rate=0.005)
     # configs.append(config_morpho_0)
     # configs.append(config_morpho_1)
-    for i in ['AdamW','RMSprop']:
+    for i in ['NAdam']:
         config_morpho_0 = config_factory(loss_function='focalbcel_mse_loss',
                                          dynamic_learning_params=False  # ,optimizer_type='RMSprop'
                                          ,
@@ -219,7 +219,7 @@ if __name__ == '__main__':
                                          batch_size_validation=200, batch_size_train=5, clip_gradients_factor=2.5,
                                          constant_learning_rate=0.005)
         configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
-    with open(os.path.join(MODELS_DIR, "robust_microwave.json"), 'w') as file:
+    with open(os.path.join(MODELS_DIR, "robust_microwave1.json"), 'w') as file:
         file.write(json.dumps(configs))  # use `json.loads` to do the reverse
         # file.write(json.dumps([config_morpho_0]))  # use `json.loads` to do the reverse
 
