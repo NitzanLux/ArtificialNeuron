@@ -194,19 +194,30 @@ def train_network(config):
 
 
 def evaluate_validation(config, custom_loss, epoch, model, validation_data_iterator):
+    if not (config.batch_counter % VALIDATION_EVALUATION_FREQUENCY == 0 or config.batch_counter % ACCURACY_EVALUATION_FREQUENCY == 0 or config.batch_counter % ACCURACY_EVALUATION_FREQUENCY == 0):
+        return
+
     valid_input, valid_labels = next(validation_data_iterator)
-    valid_input = valid_input.cuda().type(torch.cuda.DoubleTensor)
-    valid_labels = [l.cuda() for l in valid_labels]
     with torch.no_grad():
-        validation_loss = custom_loss(model(valid_input), valid_labels)
-        validation_loss = list(validation_loss)
-        validation_loss[0] = validation_loss[0]
-        validation_loss = tuple(validation_loss)
+        valid_input = valid_input.cuda().type(torch.cuda.DoubleTensor)
+        valid_labels = [l.cuda() for l in valid_labels]
+        output = model(valid_input)
+        target_s = valid_labels[0].cpu().detach().numpy().astype(bool).squeeze().flatten()
+        output_s = torch.nn.Sigmoid()(output[0])
+        output_s = output_s.cpu().detach().numpy().squeeze().flatten()
+
         if config.batch_counter % VALIDATION_EVALUATION_FREQUENCY == 0 or config.batch_counter % ACCURACY_EVALUATION_FREQUENCY == 0:
+            validation_loss=custom_loss(output,valid_labels)
             train_log(validation_loss, config.batch_counter, epoch,
-                      additional_str="validation", commit=True)
+                      additional_str="validation", commit=False)
+            target_v = valid_labels[1].cpu().detach().numpy().squeeze().flatten()
+            output_v = valid_labels[1].cpu().detach().numpy().squeeze().flatten()
+            log_dict={"brier score(s) validation":skm.brier_score_loss(target_s,output_s),
+                      "R squared score(v) validation":skm.r2_score(target_v,output_v)}
+            wandb.log(log_dict, step=step ,commit=True)  # add training parameters per step
+
         if config.batch_counter % ACCURACY_EVALUATION_FREQUENCY == 0:
-            display_accuracy(valid_labels[0], model(valid_input)[0], config.batch_counter,
+            display_accuracy(target_s, output_s, config.batch_counter,
                              additional_str="validation")
 
 
