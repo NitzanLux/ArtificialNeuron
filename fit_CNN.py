@@ -196,7 +196,7 @@ def train_network(config):
 def evaluate_validation(config, custom_loss, model, validation_data_iterator):
     if not (config.batch_counter % VALIDATION_EVALUATION_FREQUENCY == 0 or config.batch_counter % ACCURACY_EVALUATION_FREQUENCY == 0 or config.batch_counter % ACCURACY_EVALUATION_FREQUENCY == 0):
         return
-    print("validate ")
+    print("validate %d"%config.batch_counter)
     valid_input, valid_labels = next(validation_data_iterator)
     with torch.no_grad():
         valid_input = valid_input.cuda().type(torch.cuda.DoubleTensor)
@@ -215,7 +215,7 @@ def evaluate_validation(config, custom_loss, model, validation_data_iterator):
             output_v = valid_labels[1].cpu().detach().numpy().squeeze().flatten()
             log_dict={"brier score(s) validation":skm.brier_score_loss(target_s,output_s),
                       "R squared score(v) validation":skm.r2_score(target_v,output_v)}
-            wandb.log(log_dict, step=step ,commit=True)  # add training parameters per step
+            wandb.log(log_dict, step= config.batch_counter ,commit=True)  # add training parameters per step
 
         if config.batch_counter % ACCURACY_EVALUATION_FREQUENCY == 0:
             display_accuracy(target_s, output_s, config.batch_counter,
