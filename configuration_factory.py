@@ -215,7 +215,7 @@ if __name__ == '__main__':
                                          dynamic_learning_params_function="learning_parameters_iter_with_constant_weights",
                                          architecture_type="LAYERED_TEMPORAL_CONV",
                                          model_tag="heavy", optimizer_type=i,
-                                         accumulate_loss_batch_factor=4, spike_probability=None, prediction_length=2000,
+                                         accumulate_loss_batch_factor=3, spike_probability=None, prediction_length=2000,
                                          batch_size_validation=200, batch_size_train=5, clip_gradients_factor=2.5,
                                          constant_learning_rate=0.005)
         configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
