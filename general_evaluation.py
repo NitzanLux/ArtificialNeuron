@@ -2,7 +2,7 @@ import configuration_factory
 from neuron_network import neuronal_model
 import pickle
 from typing import Iterable
-
+import sklearn.metrics as skm
 import dash
 import numpy as np
 import plotly.graph_objects as go
@@ -16,7 +16,7 @@ from simulation_data_generator import SimulationDataGenerator
 import neuron_network.node_network.recursive_neuronal_model as recursive_neuronal_model
 from general_aid_function import *
 from neuron_network import neuronal_model
-
+import plotly.express as px
 BUFFER_SIZE_IN_FILES_VALID = 8
 
 
@@ -64,7 +64,16 @@ class EvaluationData():
 
     def __iter__(self):
         for i in range(len(self)):
-            return self[i]
+            yield self[i]
+    def get_spikes_for_ROC(self):
+        output=[]
+        for i in self:
+            _,__,s_arr, s_p_arr=i
+            for s,s_p in zip(s_arr,s_p_arr):
+                output.append((s,s_p ))
+        return np.array(output)
+
+
 
     @staticmethod
     def __cast_indexing(is_predicted, is_spike):
@@ -125,7 +134,15 @@ class ModelEvaluator():
 
     def display(self):
         app = dash.Dash()
-
+        labels_predictions = self.data.get_spikes_for_ROC()
+        labels,prediction=labels_predictions[:,0],labels_predictions[:,1]
+        labels.squeeze()
+        prediction.squeeze()
+        auc = skm.roc_auc_score(labels,prediction)
+        fpr,tpr,_=skm.roc_curve(labels,prediction)
+        fig=go.Figure()
+        fig.add_trace(go.Scatter(x=fpr,y=tpr))
+        fig.add_trace(go.Scatter(x=[0,1],y=[0,1]))
         app.layout = html.Div([
             dcc.Slider(
                 id='my-slider',
@@ -139,7 +156,10 @@ class ModelEvaluator():
             html.Div([
                 dcc.Graph(id='evaluation-graph', figure=self.display_window(len(self.data) // 2),
                           style={'height': '95vh', 'margin': '0', 'border-style': 'solid', 'align': 'center'})],
-                style={'height': '95vh', 'margin': '0', 'border-style': 'solid', 'align': 'center'})
+                style={'height': '95vh', 'margin': '0', 'border-style': 'solid', 'align': 'center'}),
+           html.Div([dcc.Markdown('AUC: %0.5f'%auc)]),
+           html.Div([dcc.Graph(id='eval-roc',figure=fig,style={'height': '95vh', 'margin': '0', 'border-style': 'solid', 'align': 'center'})],
+           )
         ])
 
         @app.callback(

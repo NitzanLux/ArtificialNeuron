@@ -5,7 +5,8 @@ import sklearn.metrics as skm
 import torch
 import torch.optim as optim
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-
+from general_evaluation import ModelEvaluator
+import time
 import configuration_factory
 import wandb
 from general_aid_function import *
@@ -15,7 +16,9 @@ from neuron_network.node_network import recursive_neuronal_model
 from parameters_factories import dynamic_learning_parameters_factory as dlpf, loss_function_factory
 from project_path import *
 from simulation_data_generator import *
+from datetime import datetime,timedelta
 
+NUMBER_OF_HOURS_FOR_PLOTTING_EVALUATIONS_PLOTS = 23
 torch.cuda.empty_cache()
 torch.set_default_dtype(torch.float64)
 
@@ -119,10 +122,11 @@ def train_network(config):
     validation_data_iterator = iter(validation_data_generator)
     batch_counter = 0
     saving_counter = 0
-    optimizer_scdualer=None
+    optimizer_scheduler=None
+    evaluation_plotter_scheduler = EvaluationPlotterScheduler()
     if not config.dynamic_learning_params:
         learning_rate, loss_weights, optimizer, sigma,custom_loss = generate_constant_learning_parameters(config, model)
-        optimizer_scdualer = ReduceLROnPlateau(optimizer, 'min', patience=config.lr_patience_factor * config.accumulate_loss_batch_factor, factor=config.lr_decay_factor,cooldown=10,min_lr=1e-6)
+        optimizer_scheduler = ReduceLROnPlateau(optimizer, 'min', patience=config.lr_patience_factor * config.accumulate_loss_batch_factor, factor=config.lr_decay_factor,cooldown=10,min_lr=1e-6)
     else:
         learning_rate, loss_weights, sigma = 0.001, [1] * 3, 0.1  # default values
         dynamic_parameter_loss_genrator = getattr(dlpf, config.dynamic_learning_params_function)(config)
@@ -141,13 +145,14 @@ def train_network(config):
             config.update(dict(batch_counter=config.batch_counter + 1), allow_val_change=True)
             # get the inputs; data is a list of [inputs, labels]
             batch_counter += 1
-            train_loss = batch_train(model, optimizer, custom_loss, train_data_iterator,config.clip_gradients_factor,config.accumulate_loss_batch_factor,optimizer_scdualer,scaler)
+            train_loss = batch_train(model, optimizer, custom_loss, train_data_iterator,config.clip_gradients_factor,config.accumulate_loss_batch_factor,optimizer_scheduler,scaler)
             lr = log_lr(config, optimizer)
             train_log(train_loss, config.batch_counter, epoch, lr, sigma, loss_weights,additional_str="train")
             evaluate_validation(config, custom_loss, model, validation_data_iterator)
         # save model every once a while
-        if saving_counter % 10 == 0:
+        if saving_counter % 20 == 0:
             save_model(model, saving_counter, config)
+            evaluation_plotter_scheduler(config)
     save_model(model, saving_counter, config)
 
 
@@ -230,8 +235,24 @@ def get_data_generators(DVT_PCA_model, config):
 
     return train_data_generator, validation_data_generator
 
+class EvaluationPlotterScheduler():
+    """
+    create evaluation plots , every 23 hours.
+    :return: evaluation
+    """
+    def __init__(self,time_in_hours=NUMBER_OF_HOURS_FOR_PLOTTING_EVALUATIONS_PLOTS):
+        self.current_time = datetime.now()
+        self.time_in_hours=time_in_hours
 
-# without train logging.
+    def create_evaluation(self,config):
+        new_time=datetime.now()
+        delta_time=new_time-self.current_time
+        if (delta_time.total_seconds()//60)//60> self.time_in_hours:
+            self.current_time=new_time
+            ModelEvaluator.build_and_save(os.path.join(MODELS_DIR, *config.model_path))
+    def __call__(self,config):
+        self.create_evaluation(config)
+
 
 
 def generate_constant_learning_parameters(config, model):

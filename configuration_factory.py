@@ -4,7 +4,7 @@ import os.path
 from typing import Dict
 
 import pandas as pd
-
+from datetime import datetime
 from general_aid_function import *
 from get_neuron_modle import get_L5PC
 from neuron_network import davids_network
@@ -21,7 +21,7 @@ def generate_model_name(additional_str: str = ''):
     model_ID = np.random.randint(100000)
     modelID_str = 'ID_%d' % (model_ID)
     # train_string = 'samples_%d' % (batch_counter)
-    current_datetime = str(pd.datetime.now())[:-10].replace(':', '_').replace(' ', '__')
+    current_datetime = str(datetime.now())[:-10].replace(':', '_').replace(' ', '__')
     if len(additional_str) > 0:
         model_prefix = '%s_%s_Tree_TCN' % (additional_str, synapse_type)
     else:
