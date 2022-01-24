@@ -141,8 +141,8 @@ class ModelEvaluator():
         auc = skm.roc_auc_score(labels,prediction)
         fpr,tpr,_=skm.roc_curve(labels,prediction)
         fig=go.Figure()
-        fig.add_trace(go.Scatter(x=fpr,y=tpr))
-        fig.add_trace(go.Scatter(x=[0,1],y=[0,1]))
+        fig.add_trace(go.Scatter(x=fpr,y=tpr,name='model'))
+        fig.add_trace(go.Scatter(x=[0,1],y=[0,1],name='chance'))
         app.layout = html.Div([
             dcc.Slider(
                 id='my-slider',
@@ -231,8 +231,8 @@ class ModelEvaluator():
         evaluation_engine.save()
 
 
-if __name__ == '__main__':
+# if __name__ == '__main__':
     # ModelEvaluator.build_and_save(r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\heavy_NMDA_Tree_TCN__2022-01-24__13_33__ID_85887\heavy_NMDA_Tree_TCN__2022-01-24__13_33__ID_85887")
-    eval = ModelEvaluator.load(
-        r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\heavy_NMDA_Tree_TCN__2022-01-24__13_33__ID_85887\heavy_NMDA_Tree_TCN__2022-01-24__13_33__ID_85887.eval")
-    eval.display()
+    # eval = ModelEvaluator.load(
+    #     r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\heavy_NMDA_Tree_TCN__2022-01-24__13_33__ID_85887\heavy_NMDA_Tree_TCN__2022-01-24__13_33__ID_85887.eval")
+    # eval.display()
