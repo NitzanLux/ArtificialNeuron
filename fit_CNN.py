@@ -18,7 +18,7 @@ from project_path import *
 from simulation_data_generator import *
 from datetime import datetime,timedelta
 
-NUMBER_OF_HOURS_FOR_PLOTTING_EVALUATIONS_PLOTS = 23
+NUMBER_OF_HOURS_FOR_PLOTTING_EVALUATIONS_PLOTS = 0.3
 torch.cuda.empty_cache()
 torch.set_default_dtype(torch.float64)
 
@@ -248,7 +248,7 @@ class EvaluationPlotterScheduler():
     def create_evaluation(self,config):
         new_time=datetime.now()
         delta_time=new_time-self.current_time
-        if (delta_time.total_seconds()//60)//60> self.time_in_hours:
+        if (delta_time.total_seconds()/60)/60> self.time_in_hours:
             self.current_time=new_time
             ModelEvaluator.build_and_save(os.path.join(MODELS_DIR, *config.model_path))
     def __call__(self,config):

@@ -226,8 +226,8 @@ if __name__ == '__main__':
                                          accumulate_loss_batch_factor=1, spike_probability=None, prediction_length=1000,
                                          batch_size_validation=200, batch_size_train=5, clip_gradients_factor=2.5,
                                          constant_learning_rate=0.005)
-        configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
-    with open(os.path.join(MODELS_DIR, "robust_microwave1.json"), 'w') as file:
+        # configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
+    with open(os.path.join(MODELS_DIR, "testing_evaluation.json"), 'w') as file:
         file.write(json.dumps(configs))  # use `json.loads` to do the reverse
         # file.write(json.dumps([config_morpho_0]))  # use `json.loads` to do the reverse
 
