@@ -1,25 +1,21 @@
 import argparse
-import glob
-import os
-import random
+from copy import copy
+
 import sklearn.metrics as skm
+import torch
 import torch.optim as optim
-import wandb
-from typing import List, Tuple
-from parameters_factories import dynamic_learning_parameters_factory as dlpf, loss_function_factory
+from torch.optim.lr_scheduler import ReduceLROnPlateau
+
 import configuration_factory
+import wandb
 from general_aid_function import *
+from neuron_network import davids_network
 from neuron_network import neuronal_model
 from neuron_network.node_network import recursive_neuronal_model
-from neuron_network import davids_network
+from parameters_factories import dynamic_learning_parameters_factory as dlpf, loss_function_factory
 from project_path import *
-from torch.optim.lr_scheduler import ReduceLROnPlateau
 from simulation_data_generator import *
-import get_neuron_modle
-from get_neuron_modle import get_L5PC
-import torch
-import re
-from copy import copy
+
 torch.cuda.empty_cache()
 torch.set_default_dtype(torch.float64)
 
@@ -63,29 +59,7 @@ print('-----------------------------------------------', flush=True)
 
 # num_DVT_components = 20 if synapse_type == 'NMDA' else 30
 
-def filter_file_names(files: List[str], filter: str) -> List[str]:
-    compile_filter = re.compile(filter)
-    new_files = []
-    for i, f_name in enumerate(files):
-        if compile_filter.match(f_name) is not None:
-            new_files.append(f_name)
 
-    return new_files
-
-
-def load_files_names(files_filter_regex: str = ".*") -> Tuple[List[str], List[str], List[str]]:
-    train_files = glob.glob(TRAIN_DATA_DIR + '*_128_simulationRuns*_6_secDuration_*')
-    train_files = filter_file_names(train_files, files_filter_regex)
-    print("train_files size %d" % (len(train_files)))
-    valid_files = glob.glob(VALID_DATA_DIR + '*_128_simulationRuns*_6_secDuration_*')
-    valid_files = filter_file_names(valid_files, files_filter_regex)
-    print("valid_files size %d" % (len(valid_files)))
-
-    test_files = glob.glob(TEST_DATA_DIR + '*_128_simulationRuns*_6_secDuration_*')
-    test_files = filter_file_names(test_files, files_filter_regex)
-    print("test_files size %d" % (len(test_files)))
-
-    return train_files, valid_files, test_files
 
 
 def batch_train(network, optimizer, custom_loss, train_data_iterator,clip_gradient,accumulate_loss_batch_factor,optimizer_scdualer,scaler):
@@ -115,7 +89,6 @@ def batch_train(network, optimizer, custom_loss, train_data_iterator,clip_gradie
 
     return out
 
-
 def save_model(network, saving_counter, config):
     print('-----------------------------------------------------------------------------------------')
     print('finished epoch %d. saving...\n     "%s"\n"' % (
@@ -138,10 +111,10 @@ def train_network(config):
         model = recursive_neuronal_model.RecursiveNeuronModel.load(config)
     else:
         model = neuronal_model.NeuronConvNet.build_model_from_config(config)
-    if config.epoch_counter == 0:
+    if config.batch_counter == 0:
         model.init_weights(config.init_weights_sd)
     print("model parmeters: %d" % model.count_parameters())
-    model.cuda()
+    model.cuda().train()
     train_data_generator, validation_data_generator = get_data_generators(DVT_PCA_model, config)
     validation_data_iterator = iter(validation_data_generator)
     batch_counter = 0
@@ -160,32 +133,17 @@ def train_network(config):
     for epoch in range(config.num_epochs):
         config.update(dict(epoch_counter=config.epoch_counter + 1), allow_val_change=True)
         saving_counter += 1
-        epoch_start_time = time.time()
-
-        if config.dynamic_learning_params:
-            learning_rate, loss_weights, sigma = next(dynamic_parameter_loss_genrator)
-            if "loss_function" in config:
-                custom_loss = getattr(loss_function_factory, config.loss_function)(loss_weights,
-                                                                                   config.time_domain_shape, sigma)
-            else:
-                custom_loss = loss_function_factory.bcel_mse_dvt_loss(loss_weights, config.time_domain_shape, sigma)
-            config.optimizer_params["lr"] = learning_rate
-            optimizer = getattr(optim, config.optimizer_type)(model.parameters(),
-                                                              **config.optimizer_params)
+        # epoch_start_time = time.time()
+        loss_weights, optimizer, sigma = set_dynamic_learning_parameters(config, dynamic_parameter_loss_genrator,
+                                                                         loss_weights, model, optimizer, sigma)
         train_data_iterator = iter(train_data_generator)
         for i in range(config.epoch_size):
             config.update(dict(batch_counter=config.batch_counter + 1), allow_val_change=True)
             # get the inputs; data is a list of [inputs, labels]
             batch_counter += 1
             train_loss = batch_train(model, optimizer, custom_loss, train_data_iterator,config.clip_gradients_factor,config.accumulate_loss_batch_factor,optimizer_scdualer,scaler)
-            lr=optimizer.param_groups[0]['lr']
-            if lr!= config.optimizer_params['lr']:
-                optim_params = config.optimizer_params
-                optim_params['lr']=lr
-                config.update(dict(optim_params=optim_params), allow_val_change=True)
-            with torch.no_grad():
-                train_log(train_loss, config.batch_counter, epoch, lr, sigma, loss_weights,
-                          additional_str="train")
+            lr = log_lr(config, optimizer)
+            train_log(train_loss, config.batch_counter, epoch, lr, sigma, loss_weights,additional_str="train")
             evaluate_validation(config, custom_loss, model, validation_data_iterator)
         # save model every once a while
         if saving_counter % 10 == 0:
@@ -193,11 +151,36 @@ def train_network(config):
     save_model(model, saving_counter, config)
 
 
+def log_lr(config, optimizer):
+    lr = optimizer.param_groups[0]['lr']
+    if lr != config.optimizer_params['lr']:
+        optim_params = config.optimizer_params
+        optim_params['lr'] = lr
+        config.update(dict(optim_params=optim_params), allow_val_change=True)
+    return lr
+
+
+def set_dynamic_learning_parameters(config, dynamic_parameter_loss_genrator, loss_weights, model, optimizer, sigma):
+    global custom_loss
+    if config.dynamic_learning_params:
+        learning_rate, loss_weights, sigma = next(dynamic_parameter_loss_genrator)
+        if "loss_function" in config:
+            custom_loss = getattr(loss_function_factory, config.loss_function)(loss_weights,
+                                                                               config.time_domain_shape, sigma)
+        else:
+            custom_loss = loss_function_factory.bcel_mse_dvt_loss(loss_weights, config.time_domain_shape, sigma)
+        config.optimizer_params["lr"] = learning_rate
+        optimizer = getattr(optim, config.optimizer_type)(model.parameters(),
+                                                          **config.optimizer_params)
+    return loss_weights, optimizer, sigma
+
+
 def evaluate_validation(config, custom_loss, model, validation_data_iterator):
     if not (config.batch_counter % VALIDATION_EVALUATION_FREQUENCY == 0 or config.batch_counter % ACCURACY_EVALUATION_FREQUENCY == 0 or config.batch_counter % ACCURACY_EVALUATION_FREQUENCY == 0):
         return
     print("validate %d"%config.batch_counter)
     valid_input, valid_labels = next(validation_data_iterator)
+    model.eval()
     with torch.no_grad():
         valid_input = valid_input.cuda().type(torch.cuda.DoubleTensor)
         valid_labels = [l.cuda() for l in valid_labels]
@@ -220,7 +203,7 @@ def evaluate_validation(config, custom_loss, model, validation_data_iterator):
         if config.batch_counter % ACCURACY_EVALUATION_FREQUENCY == 0:
             display_accuracy(target_s, output_s, config.batch_counter,
                              additional_str="validation")
-
+    model.train()
 
 def get_data_generators(DVT_PCA_model, config):
     print("loading data...training", flush=True)
@@ -235,7 +218,7 @@ def get_data_generators(DVT_PCA_model, config):
                                                    DVT_PCA_model=DVT_PCA_model)
     print("loading data...validation", flush=True)
 
-    validation_data_generator = SimulationDataGenerator(valid_files, buffer_size_in_files=BUFFER_SIZE_IN_FILES_VALID,prediction_length=prediction_length,
+    validation_data_generator = SimulationDataGenerator(valid_files, buffer_size_in_files=BUFFER_SIZE_IN_FILES_VALID,prediction_length=1,
                                                         batch_size=config.batch_size_validation,
                                                         window_size_ms=config.time_domain_shape,
                                                         file_load=config.train_file_load,sample_ratio_to_shuffle=1.5,

@@ -108,6 +108,7 @@ class BranchBlock(nn.Module):
                                            , input_shape_leaf[0]
                                            , input_shape_leaf[0], kernel_size, stride,
                                            dilation,**kwargs)
+
         self.activation_function = activation_function()
         self.synapse_model = nn.Sequential(self.branch_leaf, activation_function())
 

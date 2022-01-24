@@ -1,21 +1,17 @@
-from project_path import *
-from general_aid_function import *
+import json
+import os
+import os.path
 from typing import Dict
 
 import pandas as pd
-from neuron import h
-from neuron import gui
-from simulation_data_generator import *
-from synapse_tree import SectionNode
-import json
-import os.path
+
+from general_aid_function import *
+from get_neuron_modle import get_L5PC
+from neuron_network import davids_network
 from neuron_network import neuronal_model
 from neuron_network.node_network import recursive_neuronal_model
-from neuron_network import davids_network
-import os
-import logging
-import get_neuron_modle
-from get_neuron_modle import get_L5PC
+from simulation_data_generator import *
+from synapse_tree import SectionNode
 
 synapse_type = 'NMDA'
 include_DVT = False
@@ -73,19 +69,19 @@ def surround_with_default_config_values(**kargs):
                                  time_domain_shape=config.input_window_size,
                                  # kernel_size_2d=3,
                                  # kernel_size_1d=9,
-                                 number_of_layers_root= 7, number_of_layers_leaf=7, number_of_layers_intersection=7,
-                                 number_of_layers_branch_intersection=7,
+                                 number_of_layers_root= 2, number_of_layers_leaf=2, number_of_layers_intersection=2,
+                                 number_of_layers_branch_intersection=2,
                                  david_layers = [55,13,13,13,13,13,13],
                                  skip_connections=True,
                                  inter_module_skip_connections=True,
-                                 kernel_size=21,
+                                 kernel_size=11,
                                  # number_of_layers=2,
                                  stride=1,
                                  padding=0,
                                  dilation=1,
                                  channel_input_number=1278,  # synapse number
-                                 inner_scope_channel_number=21,
-                                 channel_output_number=21,
+                                 inner_scope_channel_number=11,
+                                 channel_output_number=11,
                                  activation_function_name="LeakyReLU",
                                  activation_function_kargs=dict(negative_slope=0.5),
                                  include_dendritic_voltage_tracing=False)
@@ -97,8 +93,8 @@ def surround_with_default_config_values(**kargs):
 
 
 def load_config_file(path: str) -> AttrDict:
-    # if path[-len('.config'):]!='.config':
-    #     path+='.config'
+    if path[-len('.config'):]!='.config':
+        path+='.config'
     with open(path, 'r') as file:
         config = json.load(file)
     config=AttrDict(config)
@@ -208,6 +204,18 @@ if __name__ == '__main__':
     #                     batch_size_validation=200,batch_size_train=10,clip_gradients_factor=5,constant_learning_rate=0.005)
     # configs.append(config_morpho_0)
     # configs.append(config_morpho_1)
+    # for i in ['NAdam']:
+    #     config_morpho_0 = config_factory(loss_function='focalbcel_mse_loss',
+    #                                      dynamic_learning_params=False  # ,optimizer_type='RMSprop'
+    #                                      ,
+    #                                      dynamic_learning_params_function="learning_parameters_iter_with_constant_weights",
+    #                                      architecture_type="LAYERED_TEMPORAL_CONV",
+    #                                      model_tag="heavy", optimizer_type=i,
+    #                                      accumulate_loss_batch_factor=3, spike_probability=None, prediction_length=2000,
+    #                                      batch_size_validation=200, batch_size_train=5, clip_gradients_factor=2.5,
+    #                                      constant_learning_rate=0.005)
+    #     configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
+
     for i in ['NAdam']:
         config_morpho_0 = config_factory(loss_function='focalbcel_mse_loss',
                                          dynamic_learning_params=False  # ,optimizer_type='RMSprop'
@@ -215,11 +223,11 @@ if __name__ == '__main__':
                                          dynamic_learning_params_function="learning_parameters_iter_with_constant_weights",
                                          architecture_type="LAYERED_TEMPORAL_CONV",
                                          model_tag="heavy", optimizer_type=i,
-                                         accumulate_loss_batch_factor=3, spike_probability=None, prediction_length=2000,
+                                         accumulate_loss_batch_factor=1, spike_probability=None, prediction_length=1,
                                          batch_size_validation=200, batch_size_train=5, clip_gradients_factor=2.5,
                                          constant_learning_rate=0.005)
         configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
-    with open(os.path.join(MODELS_DIR, "robust_microwave1.json"), 'w') as file:
-        file.write(json.dumps(configs))  # use `json.loads` to do the reverse
+    # with open(os.path.join(MODELS_DIR, "robust_microwave1.json"), 'w') as file:
+    #     file.write(json.dumps(configs))  # use `json.loads` to do the reverse
         # file.write(json.dumps([config_morpho_0]))  # use `json.loads` to do the reverse
 
