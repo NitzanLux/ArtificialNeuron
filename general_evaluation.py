@@ -17,7 +17,7 @@ import neuron_network.node_network.recursive_neuronal_model as recursive_neurona
 from general_aid_function import *
 from neuron_network import neuronal_model
 import plotly.express as px
-BUFFER_SIZE_IN_FILES_VALID = 8
+BUFFER_SIZE_IN_FILES_VALID = 1
 import datetime
 
 class EvaluationData():
@@ -215,7 +215,7 @@ class ModelEvaluator():
         train_files, valid_files, test_files = load_files_names()
         data_files = valid_files if is_validation else test_files
         validation_data_generator = SimulationDataGenerator(data_files, buffer_size_in_files=BUFFER_SIZE_IN_FILES_VALID,
-                                                            batch_size=128,
+                                                            batch_size=8,
                                                             window_size_ms=config.time_domain_shape,
                                                             file_load=config.train_file_load,
                                                             sample_ratio_to_shuffle=1,
