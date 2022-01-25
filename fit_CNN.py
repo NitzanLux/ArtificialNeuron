@@ -18,7 +18,7 @@ from project_path import *
 from simulation_data_generator import *
 from datetime import datetime,timedelta
 
-NUMBER_OF_HOURS_FOR_PLOTTING_EVALUATIONS_PLOTS = 0.1
+NUMBER_OF_HOURS_FOR_PLOTTING_EVALUATIONS_PLOTS = 23
 torch.cuda.empty_cache()
 torch.set_default_dtype(torch.float64)
 
@@ -224,14 +224,14 @@ def get_data_generators(DVT_PCA_model, config):
                                                    DVT_PCA_model=DVT_PCA_model)
     print("loading data...validation", flush=True)
 
-    validation_data_generator = SimulationDataGenerator(valid_files, buffer_size_in_files=BUFFER_SIZE_IN_FILES_VALID,prediction_length=1,
+    validation_data_generator = SimulationDataGenerator(valid_files, buffer_size_in_files=BUFFER_SIZE_IN_FILES_VALID,prediction_length=1000,
                                                         batch_size=config.batch_size_validation,
                                                         window_size_ms=config.time_domain_shape,
                                                         file_load=config.train_file_load,sample_ratio_to_shuffle=1.5,
                                                         DVT_PCA_model=DVT_PCA_model)
     if "spike_probability" in config and config.spike_probability is not None:
         train_data_generator.change_spike_probability(config.spike_probability)
-    validation_data_generator.change_spike_probability(0.5)
+    # validation_data_generator.change_spike_probability(0.5)
     print("finished with the data!!!", flush=True)
 
     return train_data_generator, validation_data_generator
