@@ -137,12 +137,12 @@ def train_network(config):
     print("start training...", flush=True)
     for epoch in range(config.num_epochs):
         config.update(dict(epoch_counter=config.epoch_counter + 1), allow_val_change=True)
-        saving_counter += 1
         # epoch_start_time = time.time()
         loss_weights, optimizer, sigma = set_dynamic_learning_parameters(config, dynamic_parameter_loss_genrator,
                                                                          loss_weights, model, optimizer, sigma)
         train_data_iterator = iter(train_data_generator)
         for i in range(config.epoch_size):
+            saving_counter += 1
             config.update(dict(batch_counter=config.batch_counter + 1), allow_val_change=True)
             # get the inputs; data is a list of [inputs, labels]
             batch_counter += 1
@@ -151,7 +151,7 @@ def train_network(config):
             train_log(train_loss, config.batch_counter, epoch, lr, sigma, loss_weights,additional_str="train")
             evaluate_validation(config, custom_loss, model, validation_data_iterator)
         # save model every once a while
-        if saving_counter % 20 == 0:
+        if saving_counter % 200 == 0:
             save_model(model, saving_counter, config)
             evaluation_plotter_scheduler(config)
     save_model(model, saving_counter, config)
