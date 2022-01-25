@@ -16,8 +16,7 @@ from neuron_network.node_network import recursive_neuronal_model
 from parameters_factories import dynamic_learning_parameters_factory as dlpf, loss_function_factory
 from project_path import *
 from simulation_data_generator import *
-from datetime import datetime,timedelta
-
+from datetime import datetime, timedelta
 
 torch.cuda.empty_cache()
 torch.set_default_dtype(torch.float64)
@@ -64,24 +63,23 @@ print('-----------------------------------------------', flush=True)
 # num_DVT_components = 20 if synapse_type == 'NMDA' else 30
 
 
-
-
-def batch_train(model, optimizer, custom_loss, train_data_iterator, clip_gradient, accumulate_loss_batch_factor, optimizer_scdualer, scaler):
+def batch_train(model, optimizer, custom_loss, train_data_iterator, clip_gradient, accumulate_loss_batch_factor,
+                optimizer_scdualer, scaler):
     # zero the parameter gradients
     torch.cuda.empty_cache()
 
     model.train()
-    for _,data in zip(range(accumulate_loss_batch_factor),train_data_iterator):
-        inputs,labels = data
-        inputs=inputs.cuda().type(torch.cuda.DoubleTensor)
-        labels=[l.cuda().flatten() for l in labels]
+    for _, data in zip(range(accumulate_loss_batch_factor), train_data_iterator):
+        inputs, labels = data
+        inputs = inputs.cuda().type(torch.cuda.DoubleTensor)
+        labels = [l.cuda().flatten() for l in labels]
         # forward + backward + optimize
         with torch.cuda.amp.autocast():
             outputs = model(inputs)
             outputs = [i.flatten() for i in outputs]
             general_loss, loss_bcel, loss_mse, loss_dvt, loss_gausian_mse = custom_loss(outputs, labels)
-        scaler.scale(general_loss/accumulate_loss_batch_factor).backward()
-        #unscaling and clipping
+        scaler.scale(general_loss / accumulate_loss_batch_factor).backward()
+        # unscaling and clipping
     scaler.unscale_(optimizer)
     torch.nn.utils.clip_grad_norm_(model.parameters(), clip_gradient)
     if optimizer_scdualer is not None:
@@ -94,9 +92,7 @@ def batch_train(model, optimizer, custom_loss, train_data_iterator, clip_gradien
     return out
 
 
-
-
-def train_network(config,model):
+def train_network(config, model):
     DVT_PCA_model = None
 
     model.cuda().train()
@@ -104,13 +100,16 @@ def train_network(config,model):
     validation_data_iterator = iter(validation_data_generator)
     batch_counter = 0
     saving_counter = 0
-    optimizer_scheduler=None
-    custom_loss=None
+    optimizer_scheduler = None
+    custom_loss = None
     evaluation_plotter_scheduler = SavingAndEvaluationScheduler()
     if not config.dynamic_learning_params:
-        learning_rate, loss_weights, optimizer, sigma,custom_loss = generate_constant_learning_parameters(config, model)
-        optimizer_scheduler = ReduceLROnPlateau(optimizer, 'min', patience=config.lr_patience_factor * config.accumulate_loss_batch_factor, factor=config.lr_decay_factor,cooldown=10,min_lr=1e-6)
-        dynamic_parameter_loss_genrator=None
+        learning_rate, loss_weights, optimizer, sigma, custom_loss = generate_constant_learning_parameters(config,
+                                                                                                           model)
+        optimizer_scheduler = ReduceLROnPlateau(optimizer, 'min',
+                                                patience=config.lr_patience_factor * config.accumulate_loss_batch_factor,
+                                                factor=config.lr_decay_factor, cooldown=10, min_lr=1e-6)
+        dynamic_parameter_loss_genrator = None
     else:
         learning_rate, loss_weights, sigma = 0.001, [1] * 3, 0.1  # default values
         dynamic_parameter_loss_genrator = getattr(dlpf, config.dynamic_learning_params_function)(config)
@@ -129,13 +128,14 @@ def train_network(config,model):
             config.update(dict(batch_counter=config.batch_counter + 1), allow_val_change=True)
             # get the inputs; data is a list of [inputs, labels]
             batch_counter += 1
-            train_loss = batch_train(model, optimizer, custom_loss, train_data_iterator,config.clip_gradients_factor,config.accumulate_loss_batch_factor,optimizer_scheduler,scaler)
+            train_loss = batch_train(model, optimizer, custom_loss, train_data_iterator, config.clip_gradients_factor,
+                                     config.accumulate_loss_batch_factor, optimizer_scheduler, scaler)
             lr = log_lr(config, optimizer)
-            train_log(train_loss, config.batch_counter, epoch, lr, sigma, loss_weights,additional_str="train")
+            train_log(train_loss, config.batch_counter, epoch, lr, sigma, loss_weights, additional_str="train")
             evaluate_validation(config, custom_loss, model, validation_data_iterator)
             # save model every once a while
             if saving_counter % 10 == 0:
-                evaluation_plotter_scheduler(model,config)
+                evaluation_plotter_scheduler(model, config)
 
 
 def load_model(config):
@@ -177,9 +177,10 @@ def set_dynamic_learning_parameters(config, dynamic_parameter_loss_genrator, los
 
 
 def evaluate_validation(config, custom_loss, model, validation_data_iterator):
-    if not (config.batch_counter % VALIDATION_EVALUATION_FREQUENCY == 0 or config.batch_counter % ACCURACY_EVALUATION_FREQUENCY == 0 or config.batch_counter % ACCURACY_EVALUATION_FREQUENCY == 0):
+    if not (
+            config.batch_counter % VALIDATION_EVALUATION_FREQUENCY == 0 or config.batch_counter % ACCURACY_EVALUATION_FREQUENCY == 0 or config.batch_counter % ACCURACY_EVALUATION_FREQUENCY == 0):
         return
-    print("validate %d"%config.batch_counter)
+    print("validate %d" % config.batch_counter)
     valid_input, valid_labels = next(validation_data_iterator)
     model.eval()
     with torch.no_grad():
@@ -191,38 +192,42 @@ def evaluate_validation(config, custom_loss, model, validation_data_iterator):
         output_s = output_s.cpu().detach().numpy().squeeze().flatten()
 
         if config.batch_counter % VALIDATION_EVALUATION_FREQUENCY == 0 or config.batch_counter % ACCURACY_EVALUATION_FREQUENCY == 0:
-            validation_loss=custom_loss(output,valid_labels)
+            validation_loss = custom_loss(output, valid_labels)
             train_log(validation_loss, config.batch_counter, None,
                       additional_str="validation", commit=False)
 
             target_v = valid_labels[1].cpu().detach().numpy().squeeze().flatten()
             output_v = output[1].cpu().detach().numpy().squeeze().flatten()
-            log_dict={"brier score(s) validation":skm.brier_score_loss(target_s,output_s),
-                      "R squared score(v) validation":skm.r2_score(target_v,output_v)}
-            wandb.log(log_dict, step= config.batch_counter ,commit=True)  # add training parameters per step
+            log_dict = {"brier score(s) validation": skm.brier_score_loss(target_s, output_s),
+                        "R squared score(v) validation": skm.r2_score(target_v, output_v)}
+            wandb.log(log_dict, step=config.batch_counter, commit=True)  # add training parameters per step
 
         if config.batch_counter % ACCURACY_EVALUATION_FREQUENCY == 0:
             display_accuracy(target_s, output_s, config.batch_counter,
                              additional_str="validation")
     model.train()
 
+
 def get_data_generators(DVT_PCA_model, config):
     print("loading data...training", flush=True)
-    prediction_length=1
-    if config.config_version>=1.2:
-        prediction_length=config.prediction_length
+    prediction_length = 1
+    if config.config_version >= 1.2:
+        prediction_length = config.prediction_length
     train_files, valid_files, test_files = load_files_names(config.files_filter_regex)
-    train_data_generator = SimulationDataGenerator(train_files, buffer_size_in_files=BUFFER_SIZE_IN_FILES_TRAINING,prediction_length=prediction_length,
-                                                   batch_size=config.batch_size_train, epoch_size=config.epoch_size*config.accumulate_loss_batch_factor,
+    train_data_generator = SimulationDataGenerator(train_files, buffer_size_in_files=BUFFER_SIZE_IN_FILES_TRAINING,
+                                                   prediction_length=prediction_length,
+                                                   batch_size=config.batch_size_train,
+                                                   epoch_size=config.epoch_size * config.accumulate_loss_batch_factor,
                                                    window_size_ms=config.time_domain_shape,
-                                                   file_load=config.train_file_load,sample_ratio_to_shuffle=1,
+                                                   file_load=config.train_file_load, sample_ratio_to_shuffle=1,
                                                    DVT_PCA_model=DVT_PCA_model)
     print("loading data...validation", flush=True)
 
-    validation_data_generator = SimulationDataGenerator(valid_files, buffer_size_in_files=BUFFER_SIZE_IN_FILES_VALID,prediction_length=1000,
+    validation_data_generator = SimulationDataGenerator(valid_files, buffer_size_in_files=BUFFER_SIZE_IN_FILES_VALID,
+                                                        prediction_length=1000,
                                                         batch_size=config.batch_size_validation,
                                                         window_size_ms=config.time_domain_shape,
-                                                        file_load=config.train_file_load,sample_ratio_to_shuffle=1.5,
+                                                        file_load=config.train_file_load, sample_ratio_to_shuffle=1.5,
                                                         DVT_PCA_model=DVT_PCA_model)
     if "spike_probability" in config and config.spike_probability is not None:
         train_data_generator.change_spike_probability(config.spike_probability)
@@ -231,38 +236,45 @@ def get_data_generators(DVT_PCA_model, config):
 
     return train_data_generator, validation_data_generator
 
+
 class SavingAndEvaluationScheduler():
     """
     create evaluation plots , every 23 hours.
     :return: evaluation
     """
-    def __init__(self, time_in_hours_for_saving=NUMBER_OF_HOURS_FOR_SAVING_MODEL_AND_CONFIG, time_in_hours_for_evaluation=NUMBER_OF_HOURS_FOR_PLOTTING_EVALUATIONS_PLOTS):
+
+    def __init__(self, time_in_hours_for_saving=NUMBER_OF_HOURS_FOR_SAVING_MODEL_AND_CONFIG,
+                 time_in_hours_for_evaluation=NUMBER_OF_HOURS_FOR_PLOTTING_EVALUATIONS_PLOTS):
         self.last_time_evaluation = datetime.now()
         self.last_time_saving = datetime.now()
 
-        self.time_in_hours_for_saving= time_in_hours_for_saving
-        self.time_in_hours_for_evaluation=time_in_hours_for_evaluation
-    def create_evaluation_schduler(self, config,model=None):
+        self.time_in_hours_for_saving = time_in_hours_for_saving
+        self.time_in_hours_for_evaluation = time_in_hours_for_evaluation
+
+    def create_evaluation_schduler(self, config, model=None):
         current_time = datetime.now()
-        delta_time=current_time-self.last_time_evaluation
-        if (delta_time.total_seconds()/60)/60> self.time_in_hours_for_evaluation:
-            ModelEvaluator.build_and_save(config=config,model=model)
-            self.last_time_evaluation=datetime.now()
-    def save_model_schduler(self, config,model):
+        delta_time = current_time - self.last_time_evaluation
+        if (delta_time.total_seconds() / 60) / 60 > self.time_in_hours_for_evaluation:
+            ModelEvaluator.build_and_save(config=config, model=model)
+            self.last_time_evaluation = datetime.now()
+
+    def save_model_schduler(self, config, model):
         current_time = datetime.now()
         delta_time = current_time - self.last_time_saving
-        if (delta_time.total_seconds()/60)/60> self.time_in_hours_for_saving:
+        if (delta_time.total_seconds() / 60) / 60 > self.time_in_hours_for_saving:
             self.save_model(model, config)
-            self.last_time_saving=datetime.now()
+            self.last_time_saving = datetime.now()
+
     @staticmethod
-    def flush_all(model,config):
+    def flush_all(model, config):
         ModelEvaluator.build_and_save(config=config, model=model)
         SavingAndEvaluationScheduler.save_model(model, config)
+
     @staticmethod
     def save_model(model, config):
         print('-----------------------------------------------------------------------------------------')
         print('finished epoch %d saving...\n     "%s"\n"' % (
-             config.epoch_counter,config.model_filename.split('/')[-1]))
+            config.epoch_counter, config.model_filename.split('/')[-1]))
         print('-----------------------------------------------------------------------------------------')
 
         if os.path.exists(os.path.join(MODELS_DIR, *config.model_path)):  # overwrite
@@ -271,8 +283,8 @@ class SavingAndEvaluationScheduler():
         configuration_factory.overwrite_config(AttrDict(config))
 
     def __call__(self, model, config):
-        self.create_evaluation_schduler(config,model)
-        self.save_model(config,model)
+        self.create_evaluation_schduler(config, model)
+        self.save_model(config, model)
 
 
 def generate_constant_learning_parameters(config, model):
@@ -293,11 +305,10 @@ def generate_constant_learning_parameters(config, model):
 
     optimizer = getattr(optim, config.optimizer_type)(model.parameters(),
                                                       **config.optimizer_params)
-    return learning_rate, loss_weights, optimizer, sigma,custom_loss
+    return learning_rate, loss_weights, optimizer, sigma, custom_loss
 
 
 def model_pipline(hyperparameters):
-
     if DOCUMENT_ON_WANDB:
         wandb.login()
         with wandb.init(project=(WANDB_PROJECT_NAME), config=hyperparameters, entity='nilu', allow_val_change=True):
@@ -320,7 +331,7 @@ def train_log(loss, step, epoch=None, learning_rate=None, sigma=None, weights=No
     general_loss, loss_bcel, loss_mse, loss_dvt, blur_loss = loss
     general_loss = float(general_loss.item())
     if DOCUMENT_ON_WANDB:
-        log_dict = { "general loss %s" % additional_str: general_loss,
+        log_dict = {"general loss %s" % additional_str: general_loss,
                     "mse loss %s" % additional_str: loss_mse, "bcel loss %s" % additional_str: loss_bcel,
                     "dvt loss %s" % additional_str: loss_dvt, "blur loss %s" % additional_str: blur_loss}
         if epoch is not None:
@@ -365,17 +376,18 @@ def plot_grad_flow(named_parameters):
     plt.xlabel("Layers")
     plt.ylabel("average gradient")
 
+
 def display_accuracy(target, output, step, additional_str=''):
-    if not DOCUMENT_ON_WANDB or step==0:
+    if not DOCUMENT_ON_WANDB or step == 0:
         return
     output = np.vstack([np.abs(1 - output), output]).T
     # fpr, tpr, thresholds = skm.roc_curve(target, output[:,1], )  # wandb has now possible to extruct it yet
-    auc =  skm.roc_auc_score(target,output[:,1])
-    print("AUC   ",auc)
+    auc = skm.roc_auc_score(target, output[:, 1])
+    print("AUC   ", auc)
     wandb.log({"pr %s" % additional_str: wandb.plot.pr_curve(target, output,
                                                              labels=None, classes_to_plot=None),
                "roc %s" % additional_str: wandb.plot.roc_curve(target, output, labels=None, classes_to_plot=None),
-               "AUC %s" % additional_str:auc}, commit=True)
+               "AUC %s" % additional_str: auc}, commit=True)
 
     # todo add fp tp
 
@@ -400,7 +412,7 @@ def run_fit_cnn():
     # send_mail("nitzan.luxembourg@mail.huji.ac.il","somthing went wrong",e)
     # raise e
 
-run_fit_cnn()
 
+run_fit_cnn()
 
 # send_mail("nitzan.luxembourg@mail.huji.ac.il","finished run","finished run")
