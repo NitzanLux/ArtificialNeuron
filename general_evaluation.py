@@ -119,7 +119,7 @@ class ModelEvaluator():
 
         data_generator = self.load_data_generator(self.config, self.is_validation)
         for i, data in enumerate(data_generator):
-            print(i)
+            print(i,flush=True)
             d_input, d_labels = data
             s, v = d_labels
             with torch.cuda.amp.autocast():
