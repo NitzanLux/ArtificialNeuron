@@ -18,7 +18,7 @@ from general_aid_function import *
 from neuron_network import neuronal_model
 import plotly.express as px
 BUFFER_SIZE_IN_FILES_VALID = 8
-
+import datetime
 
 class EvaluationData():
     def __init__(self, recoreded_data=None):
@@ -233,7 +233,7 @@ class ModelEvaluator():
         evaluation_engine.evaluate_model(model)
         evaluation_engine.save()
         end_time=datetime.datetime.now()
-        print("evaluation took %0.1f minutes"%(end_time-start_time).total_seconds()/60.)
+        print("evaluation took %0.1f minutes"%((end_time-start_time).total_seconds()/60.))
 
 
 # if __name__ == '__main__':
