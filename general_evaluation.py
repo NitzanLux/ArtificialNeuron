@@ -50,14 +50,35 @@ class EvaluationData():
             self.append(*i)
 
     def append(self, v, v_pred, s, s_pred):
-        input_data = [[v, v_pred], [s, s_pred]]
-        self.data_per_recording.append(input_data)
+        input_data=[]
+        if len(v.shape)>1:
+            for i in range(v.shape[0]):
+                input_data.append([[v[i,:],v_pred[i,:]],[s[i,:],s_pred[i,:]]])
+            self.data_per_recording.extend(input_data)
+        else:
+            input_data = [[v, v_pred], [s, s_pred]]
+            self.data_per_recording.append(input_data)
 
     def __setitem__(self, recording_index, is_spike, is_predicted, value):
         is_predicted, is_spike = self.__cast_indexing(is_predicted, is_spike)
 
         self.data_per_recording[recording_index][is_spike][is_predicted] = value
         return value
+
+    def flatten_batch_dimensions(self):
+        new_data=EvaluationData()
+        for i,d in enumerate(self):
+            v,vp,s,sp=d
+            if len(v.shape)>1:
+                if v.shape[0]>1:
+                    for j in range(v.shape[0]):
+                        new_data.append(v[j,:],vp[j,:],s[j,:],sp[j,:])
+                else:
+                    new_data.append(v[0,:],vp[0,:],s[0,:],sp[0,:])
+            else:
+                new_data.append(v,vp,s,sp)
+        self.data_per_recording=new_data.data_per_recording
+
 
     def __len__(self):
         return len(self.data_per_recording)
@@ -135,8 +156,8 @@ class ModelEvaluator():
         app = dash.Dash()
         labels_predictions = self.data.get_spikes_for_ROC()
         labels,prediction=labels_predictions[:,0],labels_predictions[:,1]
-        labels.squeeze()
-        prediction.squeeze()
+        labels=labels.squeeze().flatten()
+        prediction=prediction.squeeze().flatten()
         auc = skm.roc_auc_score(labels,prediction)
         fpr,tpr,_=skm.roc_curve(labels,prediction)
         fig=go.Figure()
@@ -236,7 +257,10 @@ class ModelEvaluator():
 
 
 # if __name__ == '__main__':
-    # ModelEvaluator.build_and_save(r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\heavy_NMDA_Tree_TCN__2022-01-24__13_33__ID_85887\heavy_NMDA_Tree_TCN__2022-01-24__13_33__ID_85887")
+#     ModelEvaluator.build_and_save(r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\heavy_NMDA_Tree_TCN__2022-01-24__13_33__ID_85887\heavy_NMDA_Tree_TCN__2022-01-24__13_33__ID_85887")
     # eval = ModelEvaluator.load(
-    #     r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\heavy_NMDA_Tree_TCN__2022-01-24__13_33__ID_85887\heavy_NMDA_Tree_TCN__2022-01-24__13_33__ID_85887.eval")
+    #     r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\heavy_NMDA_Tree_TCN__2022-01-25__13_45__ID_99995\heavy_NMDA_Tree_TCN__2022-01-25__13_45__ID_99995.eval")
+    # eval.data.flatten_batch_dimensions()
+    # eval.save()
     # eval.display()
+#
