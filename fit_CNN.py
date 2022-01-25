@@ -257,7 +257,7 @@ class SavingAndEvaluationScheduler():
             ModelEvaluator.build_and_save(config=config, model=model)
             self.last_time_evaluation = datetime.now()
 
-    def save_model_schduler(self, config, model):
+    def save_model_schduler(self,config,model):
         current_time = datetime.now()
         delta_time = current_time - self.last_time_saving
         if (delta_time.total_seconds() / 60) / 60 > self.time_in_hours_for_saving:
@@ -265,7 +265,7 @@ class SavingAndEvaluationScheduler():
             self.last_time_saving = datetime.now()
 
     @staticmethod
-    def flush_all(model, config):
+    def flush_all( config,model):
         ModelEvaluator.build_and_save(config=config, model=model)
         SavingAndEvaluationScheduler.save_model(model, config)
 
@@ -283,7 +283,7 @@ class SavingAndEvaluationScheduler():
 
     def __call__(self, model, config):
         self.create_evaluation_schduler(config, model)
-        self.save_model(config, model)
+        self.save_model_schduler(config, model)
 
 
 def generate_constant_learning_parameters(config, model):
@@ -323,7 +323,7 @@ def load_and_train(config):
     try:
         train_network(config, model)
     finally:
-        SavingAndEvaluationScheduler.flush_all(model, config)
+        SavingAndEvaluationScheduler.flush_all(config,model)
 
 
 def train_log(loss, step, epoch=None, learning_rate=None, sigma=None, weights=None, additional_str='', commit=False):
