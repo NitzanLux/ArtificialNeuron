@@ -261,7 +261,6 @@ class SimulationDataGenerator():
             else:
                 self.curr_files_to_use=[]
             self.files_counter += 1
-        print(self.curr_files_to_use,flush=True)
         self.load_files_to_buffer()
 
     def load_files_to_buffer(self):
