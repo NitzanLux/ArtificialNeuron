@@ -18,9 +18,7 @@ from project_path import *
 from simulation_data_generator import *
 from datetime import datetime,timedelta
 
-NUMBER_OF_HOURS_FOR_SAVING_MODEL_AND_CONFIG = 0.1
 
-NUMBER_OF_HOURS_FOR_PLOTTING_EVALUATIONS_PLOTS = 0.1
 torch.cuda.empty_cache()
 torch.set_default_dtype(torch.float64)
 
@@ -35,7 +33,8 @@ WANDB_PROJECT_NAME = "ArtificialNeuron1"
 DOCUMENT_ON_WANDB = True
 WATCH_MODEL = False
 
-
+NUMBER_OF_HOURS_FOR_PLOTTING_EVALUATIONS_PLOTS = 12
+NUMBER_OF_HOURS_FOR_SAVING_MODEL_AND_CONFIG = 6
 VALIDATION_EVALUATION_FREQUENCY = 20
 ACCURACY_EVALUATION_FREQUENCY = 40
 BATCH_LOG_UPDATE_FREQ = 20
@@ -134,9 +133,9 @@ def train_network(config,model):
             lr = log_lr(config, optimizer)
             train_log(train_loss, config.batch_counter, epoch, lr, sigma, loss_weights,additional_str="train")
             evaluate_validation(config, custom_loss, model, validation_data_iterator)
-        # save model every once a while
-            # if saving_counter % 10 == 0:
-            evaluation_plotter_scheduler(model,config)
+            # save model every once a while
+            if saving_counter % 10 == 0:
+                evaluation_plotter_scheduler(model,config)
 
 
 def load_model(config):
