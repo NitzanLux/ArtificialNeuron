@@ -104,17 +104,17 @@ class ModelEvaluator():
         self.config = config
         self.is_validation = is_validation
 
-    def evaluate_model(self):
+    def evaluate_model(self,model=None):
         assert not self.data.is_recording(), "evaluation had been done in this object"
-
-        print("loading model...", flush=True)
-        if self.config.architecture_type == "DavidsNeuronNetwork":
-            model = davids_network.DavidsNeuronNetwork(self.config)
-        elif "network_architecture_structure" in self.config and self.config.network_architecture_structure == "recursive":
-            model = recursive_neuronal_model.RecursiveNeuronModel.load(self.config)
-        else:
-            model = neuronal_model.NeuronConvNet.build_model_from_self.config(self.config)
-        print("model parmeters: %d" % model.count_parameters())
+        if model is None:
+            print("loading model...", flush=True)
+            if self.config.architecture_type == "DavidsNeuronNetwork":
+                model = davids_network.DavidsNeuronNetwork(self.config)
+            elif "network_architecture_structure" in self.config and self.config.network_architecture_structure == "recursive":
+                model = recursive_neuronal_model.RecursiveNeuronModel.load(self.config)
+            else:
+                model = neuronal_model.NeuronConvNet.build_model_from_self.config(self.config)
+            print("model parmeters: %d" % model.count_parameters())
         model.cuda().eval()
 
         data_generator = self.load_data_generator(self.config, self.is_validation)
@@ -224,10 +224,12 @@ class ModelEvaluator():
         return validation_data_generator
 
     @staticmethod
-    def build_and_save(config_path):
-        config = configuration_factory.load_config_file(config_path)
+    def build_and_save(config_path='',config=None,model=None):
+        print("start create evaluation",flush=True)
+        if config is None:
+            config = configuration_factory.load_config_file(config_path)
         evaluation_engine = ModelEvaluator(config)
-        evaluation_engine.evaluate_model()
+        evaluation_engine.evaluate_model(model)
         evaluation_engine.save()
 
 

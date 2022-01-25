@@ -18,7 +18,9 @@ from project_path import *
 from simulation_data_generator import *
 from datetime import datetime,timedelta
 
-NUMBER_OF_HOURS_FOR_PLOTTING_EVALUATIONS_PLOTS = 23
+NUMBER_OF_HOURS_FOR_SAVING_MODEL_AND_CONFIG = 0.1
+
+NUMBER_OF_HOURS_FOR_PLOTTING_EVALUATIONS_PLOTS = 0.1
 torch.cuda.empty_cache()
 torch.set_default_dtype(torch.float64)
 
@@ -92,38 +94,20 @@ def batch_train(network, optimizer, custom_loss, train_data_iterator,clip_gradie
 
     return out
 
-def save_model(network, saving_counter, config):
-    print('-----------------------------------------------------------------------------------------')
-    print('finished epoch %d. saving...\n     "%s"\n"' % (
-        saving_counter, config.model_filename.split('/')[-1]))
-    print('-----------------------------------------------------------------------------------------')
-
-    if os.path.exists(os.path.join(MODELS_DIR, *config.model_path)):  # overwrite
-        os.remove(os.path.join(MODELS_DIR, *config.model_path))
-    network.save(os.path.join(MODELS_DIR, *config.model_path))
-    configuration_factory.overwrite_config(AttrDict(config))
 
 
-def train_network(config):
-    global dynamic_parameter_loss_genrator, custom_loss
+
+def train_network(config,model):
     DVT_PCA_model = None
-    print("loading model...", flush=True)
-    if config.architecture_type == "DavidsNeuronNetwork":
-        model = davids_network.DavidsNeuronNetwork(config)
-    elif "network_architecture_structure" in config and config.network_architecture_structure == "recursive":
-        model = recursive_neuronal_model.RecursiveNeuronModel.load(config)
-    else:
-        model = neuronal_model.NeuronConvNet.build_model_from_config(config)
-    if config.batch_counter == 0:
-        model.init_weights(config.init_weights_sd)
-    print("model parmeters: %d" % model.count_parameters())
+
     model.cuda().train()
     train_data_generator, validation_data_generator = get_data_generators(DVT_PCA_model, config)
     validation_data_iterator = iter(validation_data_generator)
     batch_counter = 0
     saving_counter = 0
     optimizer_scheduler=None
-    evaluation_plotter_scheduler = EvaluationPlotterScheduler()
+    custom_loss=None
+    evaluation_plotter_scheduler = SavingAndEvaluationScheduler()
     if not config.dynamic_learning_params:
         learning_rate, loss_weights, optimizer, sigma,custom_loss = generate_constant_learning_parameters(config, model)
         optimizer_scheduler = ReduceLROnPlateau(optimizer, 'min', patience=config.lr_patience_factor * config.accumulate_loss_batch_factor, factor=config.lr_decay_factor,cooldown=10,min_lr=1e-6)
@@ -151,10 +135,22 @@ def train_network(config):
             train_log(train_loss, config.batch_counter, epoch, lr, sigma, loss_weights,additional_str="train")
             evaluate_validation(config, custom_loss, model, validation_data_iterator)
         # save model every once a while
-        if saving_counter % 100 == 0:
-            save_model(model, saving_counter, config)
-            evaluation_plotter_scheduler(config)
-    save_model(model, saving_counter, config)
+        if saving_counter % 10 == 0:
+            evaluation_plotter_scheduler(model,config)
+
+
+def load_model(config):
+    print("loading model...", flush=True)
+    if config.architecture_type == "DavidsNeuronNetwork":
+        model = davids_network.DavidsNeuronNetwork(config)
+    elif "network_architecture_structure" in config and config.network_architecture_structure == "recursive":
+        model = recursive_neuronal_model.RecursiveNeuronModel.load(config)
+    else:
+        model = neuronal_model.NeuronConvNet.build_model_from_config(config)
+    if config.batch_counter == 0:
+        model.init_weights(config.init_weights_sd)
+    print("model parmeters: %d" % model.count_parameters())
+    return model
 
 
 def log_lr(config, optimizer):
@@ -236,25 +232,50 @@ def get_data_generators(DVT_PCA_model, config):
 
     return train_data_generator, validation_data_generator
 
-class EvaluationPlotterScheduler():
+class SavingAndEvaluationScheduler():
     """
     create evaluation plots , every 23 hours.
     :return: evaluation
     """
-    def __init__(self,time_in_hours=NUMBER_OF_HOURS_FOR_PLOTTING_EVALUATIONS_PLOTS):
-        self.last_time = datetime.now()
-        self.time_in_hours=time_in_hours
-        self.debug_flag=True
-    def create_evaluation(self,config):
-        current_time = datetime.now()
-        delta_time=current_time-self.last_time
-        if (delta_time.total_seconds()/60)/60> self.time_in_hours or self.debug_flag:
-            self.debug_flag=False
-            ModelEvaluator.build_and_save(os.path.join(MODELS_DIR, *config.model_path))
-            self.last_time=datetime.now()
-    def __call__(self,config):
-        self.create_evaluation(config)
+    def __init__(self, time_in_hours_for_saving=NUMBER_OF_HOURS_FOR_SAVING_MODEL_AND_CONFIG, time_in_hours_for_evaluation=NUMBER_OF_HOURS_FOR_PLOTTING_EVALUATIONS_PLOTS):
+        self.last_time_evaluation = datetime.now()
+        self.last_time_saving = datetime.now()
 
+        self.time_in_hours_for_saving= time_in_hours_for_saving
+        self.time_in_hours_for_evaluation=time_in_hours_for_evaluation
+        self.debug_flag=True
+    def create_evaluation_schduler(self, config,model=None):
+        current_time = datetime.now()
+        delta_time=current_time-self.last_time_evaluation
+        if (delta_time.total_seconds()/60)/60> self.time_in_hours_for_evaluation or self.debug_flag:
+            self.debug_flag=False
+            ModelEvaluator.build_and_save(config=config,model=model)
+            self.last_time_evaluation=datetime.now()
+    def save_model_schduler(self, config,model):
+        current_time = datetime.now()
+        delta_time = current_time - self.last_time_saving
+        if (delta_time.total_seconds()/60)/60> self.time_in_hours_for_saving:
+            self.save_model(model, config)
+            self.last_time_saving=datetime.now()
+    @staticmethod
+    def flush_all(model,config):
+        ModelEvaluator.build_and_save(config=config, model=model)
+        SavingAndEvaluationScheduler.save_model(model, config)
+    @staticmethod
+    def save_model(model, config):
+        print('-----------------------------------------------------------------------------------------')
+        print('finished epoch %d saving...\n     "%s"\n"' % (
+             config.epoch_counter,config.model_filename.split('/')[-1]))
+        print('-----------------------------------------------------------------------------------------')
+
+        if os.path.exists(os.path.join(MODELS_DIR, *config.model_path)):  # overwrite
+            os.remove(os.path.join(MODELS_DIR, *config.model_path))
+        model.save(os.path.join(MODELS_DIR, *config.model_path))
+        configuration_factory.overwrite_config(AttrDict(config))
+
+    def __call__(self, model, config):
+        self.create_evaluation_schduler(config,model)
+        self.save_model(config,model)
 
 
 def generate_constant_learning_parameters(config, model):
@@ -279,14 +300,23 @@ def generate_constant_learning_parameters(config, model):
 
 
 def model_pipline(hyperparameters):
+
     if DOCUMENT_ON_WANDB:
         wandb.login()
         with wandb.init(project=(WANDB_PROJECT_NAME), config=hyperparameters, entity='nilu', allow_val_change=True):
             config = wandb.config
-            train_network(config)
+            load_and_train(config)
     else:
         config = hyperparameters
-        train_network(config)
+        load_and_train(config)
+
+
+def load_and_train(config):
+    model = load_model(config)
+    try:
+        train_network(config, model)
+    finally:
+        SavingAndEvaluationScheduler.flush_all(model, config)
 
 
 def train_log(loss, step, epoch=None, learning_rate=None, sigma=None, weights=None, additional_str='', commit=False):
@@ -373,7 +403,7 @@ def run_fit_cnn():
     # send_mail("nitzan.luxembourg@mail.huji.ac.il","somthing went wrong",e)
     # raise e
 
-
 run_fit_cnn()
+
 
 # send_mail("nitzan.luxembourg@mail.huji.ac.il","finished run","finished run")
