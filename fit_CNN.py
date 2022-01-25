@@ -242,12 +242,10 @@ class SavingAndEvaluationScheduler():
 
         self.time_in_hours_for_saving= time_in_hours_for_saving
         self.time_in_hours_for_evaluation=time_in_hours_for_evaluation
-        self.debug_flag=True
     def create_evaluation_schduler(self, config,model=None):
         current_time = datetime.now()
         delta_time=current_time-self.last_time_evaluation
-        if (delta_time.total_seconds()/60)/60> self.time_in_hours_for_evaluation or self.debug_flag:
-            self.debug_flag=False
+        if (delta_time.total_seconds()/60)/60> self.time_in_hours_for_evaluation:
             ModelEvaluator.build_and_save(config=config,model=model)
             self.last_time_evaluation=datetime.now()
     def save_model_schduler(self, config,model):
