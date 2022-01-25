@@ -215,7 +215,7 @@ class ModelEvaluator():
         train_files, valid_files, test_files = load_files_names()
         data_files = valid_files if is_validation else test_files
         validation_data_generator = SimulationDataGenerator(data_files, buffer_size_in_files=BUFFER_SIZE_IN_FILES_VALID,
-                                                            batch_size=3,
+                                                            batch_size=20,
                                                             window_size_ms=config.time_domain_shape,
                                                             file_load=config.train_file_load,
                                                             sample_ratio_to_shuffle=1,
@@ -226,11 +226,14 @@ class ModelEvaluator():
     @staticmethod
     def build_and_save(config_path='',config=None,model=None):
         print("start create evaluation",flush=True)
+        start_time= datetime.datetime.now()
         if config is None:
             config = configuration_factory.load_config_file(config_path)
         evaluation_engine = ModelEvaluator(config)
         evaluation_engine.evaluate_model(model)
         evaluation_engine.save()
+        end_time=datetime.datetime.now()
+        print("evaluation took %0.1f minutes"%(end_time-start_time).total_seconds()/60.)
 
 
 # if __name__ == '__main__':

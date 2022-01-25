@@ -214,7 +214,6 @@ class SimulationDataGenerator():
         :return:items (X, y_spike,y_soma ,y_DVT [if exists])
         """
         sim_ind, win_time = item
-        print(sim_ind)
         if isinstance(sim_ind,int):
             sim_ind = np.array([sim_ind])
         if isinstance(win_time,int):
@@ -262,6 +261,7 @@ class SimulationDataGenerator():
             else:
                 self.curr_files_to_use=[]
             self.files_counter += 1
+        print(self.curr_files_to_use,flush=True)
         self.load_files_to_buffer()
 
     def load_files_to_buffer(self):
