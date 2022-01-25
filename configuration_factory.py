@@ -216,7 +216,7 @@ if __name__ == '__main__':
     #                                      constant_learning_rate=0.005)
     #     configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
 
-    for i in ['NAdam']:
+    for i in ['NAdam','AdamW','RMSprop']:
         config_morpho_0 = config_factory(loss_function='focalbcel_mse_loss',
                                          dynamic_learning_params=False  # ,optimizer_type='RMSprop'
                                          ,
