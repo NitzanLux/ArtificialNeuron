@@ -32,8 +32,8 @@ WANDB_PROJECT_NAME = "ArtificialNeuron1"
 DOCUMENT_ON_WANDB = True
 WATCH_MODEL = False
 
-NUMBER_OF_HOURS_FOR_PLOTTING_EVALUATIONS_PLOTS = 0.01
-NUMBER_OF_HOURS_FOR_SAVING_MODEL_AND_CONFIG = 0.01
+NUMBER_OF_HOURS_FOR_PLOTTING_EVALUATIONS_PLOTS = 12
+NUMBER_OF_HOURS_FOR_SAVING_MODEL_AND_CONFIG = 11
 VALIDATION_EVALUATION_FREQUENCY = 20
 ACCURACY_EVALUATION_FREQUENCY = 40
 BATCH_LOG_UPDATE_FREQ = 20
@@ -247,14 +247,15 @@ class SavingAndEvaluationScheduler():
                  time_in_hours_for_evaluation=NUMBER_OF_HOURS_FOR_PLOTTING_EVALUATIONS_PLOTS):
         self.last_time_evaluation = datetime.now()
         self.last_time_saving = datetime.now()
-
+        self.debugging_flag=True
         self.time_in_hours_for_saving = time_in_hours_for_saving
         self.time_in_hours_for_evaluation = time_in_hours_for_evaluation
 
     def create_evaluation_schduler(self, config, model=None):
         current_time = datetime.now()
         delta_time = current_time - self.last_time_evaluation
-        if (delta_time.total_seconds() / 60) / 60 > self.time_in_hours_for_evaluation:
+        if (delta_time.total_seconds() / 60) / 60 > self.time_in_hours_for_evaluation or self.debugging_flag:
+            self.debugging_flag=False
             ModelEvaluator.build_and_save(config=config, model=model)
             self.last_time_evaluation = datetime.now()
 
