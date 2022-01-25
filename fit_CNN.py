@@ -151,7 +151,7 @@ def train_network(config):
             train_log(train_loss, config.batch_counter, epoch, lr, sigma, loss_weights,additional_str="train")
             evaluate_validation(config, custom_loss, model, validation_data_iterator)
         # save model every once a while
-        if saving_counter % 200 == 0:
+        if saving_counter % 100 == 0:
             save_model(model, saving_counter, config)
             evaluation_plotter_scheduler(config)
     save_model(model, saving_counter, config)
