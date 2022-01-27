@@ -23,11 +23,11 @@ class Base1DConvolutionBlockLayer(nn.Module):
         super(Base1DConvolutionBlockLayer, self).__init__()
         self.conv1d = nn.Conv1d(in_channels, out_channels, kernel_size, stride, padding, dilation)
         self.activation_function=activation_function()
-        # self.batch_norm = nn.BatchNorm1d(out_channels)
+        # self.batch_norm = nn.BatchNorm1d(out_channels)#todo debugging
     def forward(self,x):
         out = self.conv1d(x)
         out=self.activation_function(out)
-        # out = self.batch_norm(out)
+        # out = self.batch_norm(out)#todo debugging
         return out
 
 class Base1DConvolutionBlock(nn.Module):
@@ -71,11 +71,14 @@ class BranchLeafBlock(nn.Module):
                  , channel_output_number, kernel_size, stride=1,
                  dilation=1, **kwargs):
         super(BranchLeafBlock, self).__init__()
+        self.batch_norm = nn.BatchNorm1d(input_shape[0])#todo debugging
+
         self.base_conv_1d = Base1DConvolutionBlock(number_of_layers_leaf, input_shape, activation_function,
                                                    inner_scope_channel_number, channel_output_number, kernel_size,
                                                    stride, dilation,skip_connections=kwargs['skip_connections'])
 
     def forward(self, x):
+        x = self.batch_norm(x) #todo debugging
         out = self.base_conv_1d(x)
         return out
 

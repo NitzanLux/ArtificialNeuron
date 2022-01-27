@@ -58,7 +58,7 @@ def surround_with_default_config_values(**kargs):
                       batch_counter=0, epoch_counter=0,  # default counter
                       torch_seed=42, numpy_seed=21, random_seed=12, init_weights_sd=0.05,
                       dynamic_learning_params=True,
-                      constant_loss_weights=[100., 1., 0., 0], constant_sigma=1.2, constant_learning_rate=0.0001,
+                      constant_loss_weights=[1000., 1., 0., 0], constant_sigma=1.2, constant_learning_rate=0.0001,
                       dynamic_learning_params_function="learning_parameters_iter_slow_50_with_constant_weights",
                       config_path="", model_tag="complex_constant_model", model_path=None,
                       loss_function="bcel_mse_dvt_loss")
@@ -228,7 +228,7 @@ if __name__ == '__main__':
                                          constant_learning_rate=0.005)
         # configs.append(config_morpho_0)
         configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
-    with open(os.path.join(MODELS_DIR, "no_norm.json"), 'w') as file:
+    with open(os.path.join(MODELS_DIR, "no_norm1.json"), 'w') as file:
         file.write(json.dumps(configs))  # use `json.loads` to do the reverse
         # file.write(json.dumps([config_morpho_0]))  # use `json.loads` to do the reverse
 
