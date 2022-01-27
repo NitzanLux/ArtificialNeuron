@@ -256,11 +256,11 @@ class ModelEvaluator():
         print("evaluation took %0.1f minutes"%((end_time-start_time).total_seconds()/60.))
 
 
-# if __name__ == '__main__':
-#     ModelEvaluator.build_and_save(r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\heavy_NMDA_Tree_TCN__2022-01-24__13_33__ID_85887\heavy_NMDA_Tree_TCN__2022-01-24__13_33__ID_85887")
-    # eval = ModelEvaluator.load(
-    #     r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\heavy_NMDA_Tree_TCN__2022-01-25__13_45__ID_99995\heavy_NMDA_Tree_TCN__2022-01-25__13_45__ID_99995.eval")
+if __name__ == '__main__':
+    # ModelEvaluator.build_and_save(r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\heavy_NMDA_Tree_TCN__2022-01-24__13_33__ID_85887\heavy_NMDA_Tree_TCN__2022-01-24__13_33__ID_85887")
+    eval = ModelEvaluator.load(
+        r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\heavy_NAdam_NMDA_Tree_TCN__2022-01-25__17_57__ID_83764\heavy_NAdam_NMDA_Tree_TCN__2022-01-25__17_57__ID_83764.eval")
     # eval.data.flatten_batch_dimensions()
     # eval.save()
-    # eval.display()
+    eval.display()
 #

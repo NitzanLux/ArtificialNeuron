@@ -23,11 +23,11 @@ class Base1DConvolutionBlockLayer(nn.Module):
         super(Base1DConvolutionBlockLayer, self).__init__()
         self.conv1d = nn.Conv1d(in_channels, out_channels, kernel_size, stride, padding, dilation)
         self.activation_function=activation_function()
-        self.batch_norm = nn.BatchNorm1d(out_channels)
+        # self.batch_norm = nn.BatchNorm1d(out_channels)
     def forward(self,x):
         out = self.conv1d(x)
         out=self.activation_function(out)
-        out = self.batch_norm(out)
+        # out = self.batch_norm(out)
         return out
 
 class Base1DConvolutionBlock(nn.Module):
@@ -143,7 +143,7 @@ class RootBlock(nn.Module):
                                           , 1, kernel_size=input_shape[1])
         self.voltage_prediction = nn.Conv1d(inner_scope_channel_number
                                             , 1, kernel_size=input_shape[1])
-        self.sigmoid = nn.Sigmoid()
+        # self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
         out = self.model(x)
