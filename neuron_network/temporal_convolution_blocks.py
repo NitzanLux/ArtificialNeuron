@@ -42,6 +42,7 @@ class Base1DConvolutionBlock(nn.Module):
         self.inner_scope_channel_number = inner_scope_channel_number
         self.channel_output_number = channel_output_number
         self.channel_input_number = input_shape[0]
+        self.batch_norm = nn.BatchNorm1d(input_shape[0])#todo debugging
 
         for i in range(number_of_layers):
             in_channels, out_channels = self.channel_input_number, inner_scope_channel_number
@@ -53,7 +54,8 @@ class Base1DConvolutionBlock(nn.Module):
             self.layers_list.append(model)
 
     def forward(self, x):
-        cur_out = x
+        cur_out = self.batch_norm(x) #todo debugging
+        # cur_out = x
         for i, model in enumerate(self.layers_list):
             if self.skip_connections and not (
                     (i == 0 and self.channel_input_number != self.inner_scope_channel_number) or
@@ -71,14 +73,12 @@ class BranchLeafBlock(nn.Module):
                  , channel_output_number, kernel_size, stride=1,
                  dilation=1, **kwargs):
         super(BranchLeafBlock, self).__init__()
-        self.batch_norm = nn.BatchNorm1d(input_shape[0])#todo debugging
 
         self.base_conv_1d = Base1DConvolutionBlock(number_of_layers_leaf, input_shape, activation_function,
                                                    inner_scope_channel_number, channel_output_number, kernel_size,
                                                    stride, dilation,skip_connections=kwargs['skip_connections'])
 
     def forward(self, x):
-        x = self.batch_norm(x) #todo debugging
         out = self.base_conv_1d(x)
         return out
 
