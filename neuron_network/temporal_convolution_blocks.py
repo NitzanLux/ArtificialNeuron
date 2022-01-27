@@ -23,9 +23,11 @@ class Base1DConvolutionBlockLayer(nn.Module):
         super(Base1DConvolutionBlockLayer, self).__init__()
         self.conv1d = nn.Conv1d(in_channels, out_channels, kernel_size, stride, padding, dilation)
         self.activation_function=activation_function()
-        # self.batch_norm = nn.BatchNorm1d(out_channels)#todo debugging
+        self.batch_norm = nn.BatchNorm1d(in_channels)#todo debugging
     def forward(self,x):
-        out = self.conv1d(x)
+        out = self.batch_norm(x)#todo debugging
+
+        out = self.conv1d(out)
         out=self.activation_function(out)
         # out = self.batch_norm(out)#todo debugging
         return out
