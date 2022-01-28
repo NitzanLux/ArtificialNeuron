@@ -228,7 +228,7 @@ if __name__ == '__main__':
                                          constant_learning_rate=0.005)
         configs.append(config_morpho_0)
         # configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
-    with open(os.path.join(MODELS_DIR, "mse_only1.json"), 'w') as file:
+    with open(os.path.join(MODELS_DIR, "mse_only2.json"), 'w') as file:
         file.write(json.dumps(configs))  # use `json.loads` to do the reverse
         # file.write(json.dumps([config_morpho_0]))  # use `json.loads` to do the reverse
 
