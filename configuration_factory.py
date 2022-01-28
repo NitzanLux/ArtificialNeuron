@@ -83,7 +83,7 @@ def surround_with_default_config_values(**kargs):
                                  inner_scope_channel_number=21,
                                  channel_output_number=21,
                                  activation_function_name="LeakyReLU",
-                                 activation_function_kargs=dict(negative_slope=0.5),
+                                 activation_function_kargs=dict(negative_slope=0.25),
                                  include_dendritic_voltage_tracing=False)
 
     # config.architecture_dict = architecture_dict
