@@ -218,7 +218,7 @@ if __name__ == '__main__':
 
     for i in ['AdamW']:#,'NAdam','RMSprop']:
         config_morpho_0 = config_factory(loss_function='focalbcel_mse_loss',
-                                         dynamic_learning_params=True  # ,optimizer_type='RMSprop'
+                                         dynamic_learning_params=False  # ,optimizer_type='RMSprop'
                                          ,
                                          dynamic_learning_params_function="learning_parameters_iter_with_constant_weights",
                                          architecture_type="LAYERED_TEMPORAL_CONV",
