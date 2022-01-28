@@ -128,14 +128,7 @@ class ModelEvaluator():
     def evaluate_model(self,model=None):
         assert not self.data.is_recording(), "evaluation had been done in this object"
         if model is None:
-            print("loading model...", flush=True)
-            if self.config.architecture_type == "DavidsNeuronNetwork":
-                model = davids_network.DavidsNeuronNetwork(self.config)
-            elif "network_architecture_structure" in self.config and self.config.network_architecture_structure == "recursive":
-                model = recursive_neuronal_model.RecursiveNeuronModel.load(self.config)
-            else:
-                model = neuronal_model.NeuronConvNet.build_model_from_self.config(self.config)
-            print("model parmeters: %d" % model.count_parameters())
+            model = self.load_model()
         model.cuda().eval()
 
         data_generator = self.load_data_generator(self.config, self.is_validation)
@@ -145,24 +138,28 @@ class ModelEvaluator():
             with torch.cuda.amp.autocast():
                 with torch.no_grad():
                     output_s, output_v = model(d_input.cuda().type(torch.cuda.DoubleTensor))
+                    # output_s, output_v = model(d_input.cuda().type(torch.cuda.FloatTensor))
                     output_s = torch.nn.Sigmoid()(output_s)
             self.data.append(v.cpu().detach().numpy().squeeze(), output_v.cpu().detach().numpy().squeeze(),
                              s.cpu().detach().numpy().squeeze(), output_s.cpu().detach().numpy().squeeze())
+
+    def load_model(self):
+        print("loading model...", flush=True)
+        if self.config.architecture_type == "DavidsNeuronNetwork":
+            model = davids_network.DavidsNeuronNetwork(self.config)
+        elif "network_architecture_structure" in self.config and self.config.network_architecture_structure == "recursive":
+            model = recursive_neuronal_model.RecursiveNeuronModel.load(self.config)
+        else:
+            model = neuronal_model.NeuronConvNet.build_model_from_self.config(self.config)
+        print("model parmeters: %d" % model.count_parameters())
+        return model
 
     def __getitem__(self, index):
         return self.data[index]
 
     def display(self):
         app = dash.Dash()
-        labels_predictions = self.data.get_spikes_for_ROC()
-        labels,prediction=labels_predictions[:,0],labels_predictions[:,1]
-        labels=labels.squeeze().flatten()
-        prediction=prediction.squeeze().flatten()
-        auc = skm.roc_auc_score(labels,prediction)
-        fpr,tpr,_=skm.roc_curve(labels,prediction)
-        fig=go.Figure()
-        fig.add_trace(go.Scatter(x=fpr,y=tpr,name='model'))
-        fig.add_trace(go.Scatter(x=[0,1],y=[0,1],name='chance'))
+        auc, fig = self.create_ROC_curve()
         app.layout = html.Div([
             dcc.Slider(
                 id='my-slider',
@@ -174,7 +171,7 @@ class ModelEvaluator():
             ),
             html.Div(id='slider-output-container', style={'height': '2vh'}),
             html.Div([
-                dcc.Graph(id='evaluation-graph', figure=self.display_window(len(self.data) // 2),
+                dcc.Graph(id='evaluation-graph', figure=go.Figure(),
                           style={'height': '95vh', 'margin': '0', 'border-style': 'solid', 'align': 'center'})],
                 style={'height': '95vh', 'margin': '0', 'border-style': 'solid', 'align': 'center'}),
            html.Div([dcc.Markdown('AUC: %0.5f'%auc)]),
@@ -192,6 +189,21 @@ class ModelEvaluator():
             return 'You have selected "{}"'.format(value), fig
 
         app.run_server(debug=True, use_reloader=False)
+
+    def create_ROC_curve(self):
+        if len(self.data)==0:
+            return 0.5,go.Figure()
+        labels_predictions = self.data.get_spikes_for_ROC()
+        labels, prediction = labels_predictions[:, 0], labels_predictions[:, 1]
+        labels = labels.squeeze().flatten()
+        prediction = prediction.squeeze().flatten()
+        auc = skm.roc_auc_score(labels, prediction)
+        fpr, tpr, _ = skm.roc_curve(labels, prediction)
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(x=fpr, y=tpr, name='model'))
+        fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1], name='chance'))
+        return auc, fig
+
 
     def display_window(self, index):
         v, v_p, s, s_p = self[index]
@@ -239,7 +251,7 @@ class ModelEvaluator():
                                                             window_size_ms=config.time_domain_shape,
                                                             file_load=config.train_file_load,
                                                             sample_ratio_to_shuffle=1,
-                                                            # number_of_files=1,number_of_traces_from_file=2,# todo for debugging
+                                                            number_of_files=1,number_of_traces_from_file=2,# todo for debugging
                                                             ).eval()
         return validation_data_generator
 
@@ -257,10 +269,10 @@ class ModelEvaluator():
 
 
 if __name__ == '__main__':
-    # ModelEvaluator.build_and_save(r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\heavy_NMDA_Tree_TCN__2022-01-24__13_33__ID_85887\heavy_NMDA_Tree_TCN__2022-01-24__13_33__ID_85887")
+    ModelEvaluator.build_and_save(r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\heavy_AdamW_NMDA_Tree_TCN__2022-01-27__17_58__ID_40048\heavy_AdamW_NMDA_Tree_TCN__2022-01-27__17_58__ID_40048")
     eval = ModelEvaluator.load(
-        r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\heavy_NAdam_NMDA_Tree_TCN__2022-01-25__17_57__ID_83764\heavy_NAdam_NMDA_Tree_TCN__2022-01-25__17_57__ID_83764.eval")
+        r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\heavy_AdamW_NMDA_Tree_TCN__2022-01-27__17_58__ID_40048\heavy_AdamW_NMDA_Tree_TCN__2022-01-27__17_58__ID_40048.eval")
     # eval.data.flatten_batch_dimensions()
-    # eval.save()
+    eval.save()
     eval.display()
 #

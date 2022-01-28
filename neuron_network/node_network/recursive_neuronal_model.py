@@ -7,7 +7,7 @@ from copy import deepcopy
 from enum import Enum
 from typing import Dict
 
-import nrn
+# import nrn
 # from torchviz import make_dot
 import torch
 import torch.nn as nn
@@ -18,6 +18,10 @@ import neuron_network.temporal_convolution_blocks as temporal_convolution_blocks
 from get_neuron_modle import get_L5PC
 from project_path import MODELS_DIR
 from synapse_tree import SectionType
+
+BRANCHES = 'branches'
+
+UPSTREAM_MODEL = 'upstream_model'
 
 SKIP_CONNECTIONS_INTER = 'model_skip_connections_inter'
 
@@ -52,6 +56,9 @@ class RecursiveNeuronModel(nn.Module):
         # self.model_skip_connections_inter = None
         self.__id = ID_NULL_VALUE
         self.__depth = ID_NULL_VALUE
+        self.internal_models = []
+        self.named_internal_parameters_that_has_gradients=dict()
+
 
     def get_activation_function(self):
         activation_function_base_function = getattr(nn, self.activation_function_name)
@@ -91,10 +98,23 @@ class RecursiveNeuronModel(nn.Module):
     def register_model(self,attribute,model):
         assert attribute not in self.models ,"attribute already exists"
         # self.models[attribute]=model
+        if attribute not in [INTERSECTION_A,INTERSECTION_B,BRANCHES,UPSTREAM_MODEL]:
+            self.internal_models.append(model)
         setattr(self,attribute,model)
+        for n, p in model.named_parameters():
+            self.named_internal_parameters_that_has_gradients[n] = p.requires_grad()
 
+
+    def freeze_model_gradients(self):
+        for m in self.internal_models:
+            for n, p in m.named_parameters():
+                p.requires_grad = False
+
+    def reset_requires_grad(self):
+        for n, p in self.named_parameters():
+            p.requires_grad = self.named_parameters_that_has_gradients[n]
     @staticmethod
-    def build_model(config, neuron_biophysics_model, segment_synapse_map: Dict[nrn.Segment, list]):  # todo implement
+    def build_model(config, neuron_biophysics_model, segment_synapse_map: Dict):  # todo implement
 
         soma = SomaNetwork(**config)
         childrens = neuron_biophysics_model.soma[0].children()
@@ -108,7 +128,7 @@ class RecursiveNeuronModel(nn.Module):
         return soma
 
     @staticmethod
-    def __build_sub_model(config, neuron_section: nrn.Section, segment_synapse_map: Dict[nrn.Segment, list],
+    def __build_sub_model(config, neuron_section, segment_synapse_map: Dict,
                           starting_position=1):
         parent = neuron_section.parentseg()
         assert "soma" in parent.sec.name() or 1 == parent.x, "position not match 1 the building of the model is incomplete parent name - %s" % parent
@@ -159,6 +179,10 @@ class RecursiveNeuronModel(nn.Module):
     def forward(self, x):
         pass
 
+    def fix_all_subtree_parameters(self):
+        for p in self.parameters():
+            p.requires_grad = False
+
     def save(self, path):  # todo fix
         state_dict = self.state_dict()
         with open('%s.pkl' % path, 'wb') as outp:
@@ -168,7 +192,8 @@ class RecursiveNeuronModel(nn.Module):
     @staticmethod
     def load(config):
         path = os.path.join(MODELS_DIR, *config.model_path)
-        with open('%s.pkl' % path if path[-len(".pkl"):] != ".pkl" else path, 'rb') as outp:
+        path = '%s.pkl' % path if path[-len(".pkl"):] != ".pkl" else path
+        with open(path, 'rb') as outp:
             neuronal_model_data = pickle.load(outp)
         L5PC = get_L5PC()
         model = RecursiveNeuronModel.build_david_data_model(config, L5PC)
@@ -314,7 +339,7 @@ class BranchNetwork(RecursiveNeuronModel):
         self.__name__ = "BranchNetwork"
 
     def set_inputs_to_model(self, upstream_model: [IntersectionNetwork], **network_kwargs):
-        self.register_model('upstream_model', upstream_model)
+        self.register_model(UPSTREAM_MODEL, upstream_model)
         network_kwargs = deepcopy(network_kwargs)
         network_kwargs["channel_output_number"] = min(
             self.upstream_model.channel_output_number + len(self.input_indexes),
@@ -351,10 +376,10 @@ class SomaNetwork(RecursiveNeuronModel):
                  **network_kwargs):
         super().__init__(SectionType.SOMA, is_cuda,
                          include_dendritic_voltage_tracing, **network_kwargs)
-        self.branches = nn.ModuleList()
+        self.register_model(BRANCHES,nn.ModuleList())
         self.time_domain_shape=network_kwargs["input_window_size"]
         self.__name__ = 'SomaNetwork'
-
+        self.named_parameters_that_has_gradients = dict()
     def set_inputs_to_model(self, *branches: [IntersectionNetwork, BranchNetwork], **network_kwargs):
         self.branches.extend(branches)
         number_of_inputs = sum([branch.channel_output_number for branch in self.branches])
@@ -362,6 +387,7 @@ class SomaNetwork(RecursiveNeuronModel):
         self.register_model(MAIN_MODEL, model_block_constructor((number_of_inputs, network_kwargs["input_window_size"]), **network_kwargs,
                                 activation_function=self.get_activation_function()))
         self.set_id_and_depth_for_tree()
+
 
     def __iter__(self):
         for mod in self.branches:
@@ -384,3 +410,8 @@ class SomaNetwork(RecursiveNeuronModel):
                 node.set_depth(depth)
                 node.set_id(id_counter)
                 id_counter += 1
+
+    def keep_gradients_on_level(self, layer_height):
+        pass # todo fix it
+
+

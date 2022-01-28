@@ -54,12 +54,12 @@ def surround_with_default_config_values(**kargs):
                       # files_filter_regex=".*exBas_0_1100_inhBasDiff_-1100_600__exApic_0_1100_inhApicDiff_-1100_600_SpTemp[^\\/\.]*\.p",
                       files_filter_regex=".*",
                       optimizer_type="AdamW",optimizer_params={},# optimizer_params={'eps':1e-8},
-                      clip_gradients_factor=1.5, lr_decay_factor=0.75, lr_patience_factor=25,
+                      clip_gradients_factor=1.5, lr_decay_factor=0.75, lr_patience_factor=25,scheduler_cooldown_factor=50,
                       batch_counter=0, epoch_counter=0,  # default counter
                       torch_seed=42, numpy_seed=21, random_seed=12, init_weights_sd=0.05,
                       dynamic_learning_params=True,
-                      constant_loss_weights=[1000., 1., 0., 0], constant_sigma=1.2, constant_learning_rate=0.0001,
-                      dynamic_learning_params_function="learning_parameters_iter_slow_50_with_constant_weights",
+                      constant_loss_weights=[0., 10000, 0., 0], constant_sigma=1.2, constant_learning_rate=0.0001,
+                      dynamic_learning_params_function="learning_parameters_iter_per_batch",
                       config_path="", model_tag="complex_constant_model", model_path=None,
                       loss_function="bcel_mse_dvt_loss")
 
@@ -69,19 +69,19 @@ def surround_with_default_config_values(**kargs):
                                  time_domain_shape=config.input_window_size,
                                  # kernel_size_2d=3,
                                  # kernel_size_1d=9,
-                                 number_of_layers_root=7, number_of_layers_leaf=7, number_of_layers_intersection=7,
-                                 number_of_layers_branch_intersection=7,
+                                 number_of_layers_root=2, number_of_layers_leaf=2, number_of_layers_intersection=2,
+                                 number_of_layers_branch_intersection=2,
                                  david_layers = [55,13,13,13,13,13,13],
                                  skip_connections=True,
                                  inter_module_skip_connections=True,
-                                 kernel_size=21,
+                                 kernel_size=11,
                                  # number_of_layers=2,
                                  stride=1,
                                  padding=0,
                                  dilation=1,
                                  channel_input_number=1278,  # synapse number
-                                 inner_scope_channel_number=21,
-                                 channel_output_number=21,
+                                 inner_scope_channel_number=11,
+                                 channel_output_number=11,
                                  activation_function_name="LeakyReLU",
                                  activation_function_kargs=dict(negative_slope=0.5),
                                  include_dendritic_voltage_tracing=False)
@@ -218,17 +218,17 @@ if __name__ == '__main__':
 
     for i in ['AdamW']:#,'NAdam','RMSprop']:
         config_morpho_0 = config_factory(loss_function='focalbcel_mse_loss',
-                                         dynamic_learning_params=False  # ,optimizer_type='RMSprop'
+                                         dynamic_learning_params=True  # ,optimizer_type='RMSprop'
                                          ,
                                          dynamic_learning_params_function="learning_parameters_iter_with_constant_weights",
                                          architecture_type="LAYERED_TEMPORAL_CONV",
-                                         model_tag="heavy_%s"%i, optimizer_type=i,
+                                         model_tag="mse_only_%s"%i, optimizer_type=i,
                                          accumulate_loss_batch_factor=1, spike_probability=None, prediction_length=1000,
-                                         batch_size_validation=200, batch_size_train=5, clip_gradients_factor=2.5,
+                                         batch_size_validation=200, batch_size_train=5, clip_gradients_factor=1,
                                          constant_learning_rate=0.005)
-        # configs.append(config_morpho_0)
-        configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
-    with open(os.path.join(MODELS_DIR, "no_norm2.json"), 'w') as file:
+        configs.append(config_morpho_0)
+        # configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
+    with open(os.path.join(MODELS_DIR, "mse_only.json"), 'w') as file:
         file.write(json.dumps(configs))  # use `json.loads` to do the reverse
         # file.write(json.dumps([config_morpho_0]))  # use `json.loads` to do the reverse
 

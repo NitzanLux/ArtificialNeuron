@@ -1,3 +1,4 @@
+import configuration_factory
 from neuron_network.node_network.recursive_neuronal_model import *
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
@@ -10,11 +11,14 @@ from dash import html
 import dash_bootstrap_components as dbc
 import time
 from dash.dependencies import Input, Output
+from simulation_data_generator import SimulationDataGenerator
 # mpl.use('Qt5Agg')
 import numpy as np
 import json
 from collections.abc import Iterable
+from general_aid_function import *
 import re
+import parameters_factories.loss_function_factory as loss_function_factory
 NUMBER_OF_COLUMN = 2
 
 NUMBER_OF_FIGS_IN_GRID = 4
@@ -85,7 +89,7 @@ class CyclicFixedSizeStack():
 
 
 class NeuronalView():
-    def __init__(self, ):
+    def __init__(self):
         self.graph = Graph()
         self.length = 0
         self.id_node_mapping = {}
@@ -99,17 +103,47 @@ class NeuronalView():
         # self.
         # self.graph.plot()
 
-    def create_mapping(self, soma: SomaNetwork):
+    def create_mapping(self, soma: SomaNetwork,config):
+        data_generator=iter(self.load_data_generator(config,True))
+        custom_loss = getattr(loss_function_factory, config["loss_function"])(config.constant_loss_weights,
+                                                                              config.time_domain_shape, 1)
+        inputs,labels=next(data_generator)
+        labels = [label.cuda().type(torch.cuda.FloatTensor) for label in labels]
+        inputs = inputs.cuda().type(torch.cuda.FloatTensor)
+        soma.cuda().float()
+        soma.eval()
+        scaler = torch.cuda.amp.GradScaler(enabled=True)
+        with torch.cuda.amp.autocast():
+            output=soma(inputs)
+            general_loss, loss_bcel, loss_mse, loss_dvt, loss_gausian_mse = custom_loss(output, labels)
+        scaler.scale(general_loss).backward()
+
         stack = [soma]
         while (len(stack) > 0):
             cur_node = stack.pop(0)
             self.id_node_mapping[cur_node.get_id()] = cur_node
             stack.extend(cur_node)
 
-    def create_graph(self, soma: SomaNetwork):
+    @staticmethod
+    def load_data_generator(config, is_validation):
+        train_files, valid_files, test_files = load_files_names()
+        data_files = valid_files if is_validation else test_files
+        validation_data_generator = SimulationDataGenerator(data_files, buffer_size_in_files=1,
+                                                            batch_size=1,
+                                                            window_size_ms=config.time_domain_shape,
+                                                            file_load=config.train_file_load,
+                                                            sample_ratio_to_shuffle=1,
+                                                            number_of_files=1,number_of_traces_from_file=8,# todo for debugging
+                                                            ).eval()
+        return validation_data_generator
 
+
+
+    def create_graph(self, config,soma=None):
+        if soma is None:
+            soma = load_model(config)
         self.length = len(soma)
-        self.create_mapping(soma)
+        self.create_mapping(soma,config)
         self.graph.add_vertices(self.length)
         self.__create_subgraph(soma)
 
@@ -273,7 +307,7 @@ class NeuronalView():
         height=(100/(self.number_of_figs_in_grid/NUMBER_OF_COLUMN))-10
         width = (100/NUMBER_OF_COLUMN)-1
         print(height,width,flush=True)
-        def create_graph(id_number) :
+        def create_node_plot(id_number) :
             graph = dbc.Col(
                 [
                     dcc.Dropdown(
@@ -295,12 +329,12 @@ class NeuronalView():
         for i in range((self.number_of_figs_in_grid//NUMBER_OF_COLUMN)):
             current_row =[]
             for j in range(NUMBER_OF_COLUMN):
-                current_row.append(create_graph(i * NUMBER_OF_COLUMN+j))
+                current_row.append(create_node_plot(i * NUMBER_OF_COLUMN+j))
 
             rows.append(dbc.Row(current_row))
         last_row=[]
         for i in range(self.number_of_figs_in_grid%NUMBER_OF_COLUMN):
-            last_row.append( create_graph(len(rows)*NUMBER_OF_COLUMN+i))
+            last_row.append( create_node_plot(len(rows)*NUMBER_OF_COLUMN+i))
 
         if len(last_row)>0: rows.append(dbc.Row(last_row))
         return rows
@@ -355,8 +389,8 @@ class NeuronalView():
 
     def create_generic_fig(self,id=0,axs=0):
         for j,id in enumerate(self.grid_id_stack):
-            model = self.id_node_mapping[id].model
-            name,param = next(iter(model.named_parameters()))
+            main_model = self.id_node_mapping[id].main_model
+            name,param = next(iter(main_model.named_parameters()))
             self.grid_fig_stack[j] = plotpx.scatter(x=np.random.random(id+1), y=np.random.random(id+1))
 
 
@@ -367,12 +401,13 @@ class NeuronalView():
             self.create_single_gradient_fig(id,ax)
 
     def create_single_gradient_fig(self,id,ax=0):
-        model = self.id_node_mapping[id].model
-        name, param = next(iter(model.named_parameters()))
-        if param.gard is None:
-            matrix = np.zeros_like(param.detach().numpy())
-        else:
-            matrix = param.gard.detach().numpy()
+        main_model = self.id_node_mapping[id].main_model
+        for name,param in main_model.named_parameters():
+            if param.gard is None or 'weight' not in name:
+                matrix = np.zeros_like(param.shape)
+            else:
+                matrix = param.gard.cpu().numpy()
+                break
         fig = go.Figure(data=[go.Surface(z=matrix.take(i, ax) + 2 * i, showscale=i == 0, opacity=0.8) for i in
                               range(matrix.shape[ax])])
         fig.update_layout(title="%s dims %s"%(str(self.id_node_mapping[id]),str(matrix.shape)))
@@ -380,7 +415,7 @@ class NeuronalView():
         if id in self.grid_id_stack:
             self.grid_fig_stack[self.grid_id_stack.find(id)]=fig
         else:
-            self.grid_fig_stack.push(fig)  # ,title="%s %s"%(model,name))
+            self.grid_fig_stack.push(fig)  # ,title="%s %s"%(main_model,name))
 
 
     def create_weights_fig(self, axs=0):
@@ -390,8 +425,8 @@ class NeuronalView():
             self.create_single_weights_fig(id,ax)
 
     def create_single_weights_fig(self,id,ax=0):
-        model = self.id_node_mapping[id].model
-        name, param = next(iter(model.named_parameters()))
+        main_model = self.id_node_mapping[id].main_model
+        name, param = next(iter(main_model.named_parameters()))
         matrix = param.detach().numpy()
         fig = go.Figure(data=[go.Surface(z=matrix.take(i, ax) + 2 * i, showscale=i == 0, opacity=0.8) for i in
                               range(matrix.shape[ax])])
@@ -400,3 +435,10 @@ class NeuronalView():
             self.grid_fig_stack[self.grid_id_stack.find(id)]=fig
         else:
             self.grid_fig_stack.push(fig)
+
+if __name__ == '__main__':
+    config = configuration_factory.load_config_file(
+        r"models/NMDA/heavy_AdamW_NMDA_Tree_TCN__2022-01-27__17_58__ID_40048/heavy_AdamW_NMDA_Tree_TCN__2022-01-27__17_58__ID_40048.config")
+    nv=NeuronalView()
+    nv.create_graph(config)
+    nv.show_view()

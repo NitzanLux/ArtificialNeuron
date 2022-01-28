@@ -61,3 +61,13 @@ def learning_parameters_iter_slow_10_with_slow_lr(config) -> Generator[Tuple[int
         loss_weights_per_epoch = [1.0, 10 / (np.sqrt(config.epoch_counter//20) + 1), DVT_loss_mult_factor * 0.00005]
         sigma = (sigma-1) / (np.sqrt(config.epoch_counter//10) + 1) +1
         yield learning_rate_per_epoch, loss_weights_per_epoch, sigma
+def learning_parameters_iter_per_batch(config) -> Generator[Tuple[int, float, Tuple[float, float, float]], None, None]:
+    sigma = config.time_domain_shape
+    DVT_loss_mult_factor = 0
+    _ = 0.01
+    sigma = _
+    # epoch_in_each_step = config.num_epochs // 5 + (config.num_epochs % 5 != 0)
+    while(True):
+        loss_weights_per_epoch = [1.0, 1000 / (np.sqrt(config.batch_counter//10) + 1), DVT_loss_mult_factor * 0.00005]
+        # sigma = (sigma-1) / (np.sqrt(config.epoch_counter//10) + 1) +1
+        yield _, loss_weights_per_epoch, sigma

@@ -3,11 +3,19 @@ import os
 from project_path import *
 from typing import List, Tuple
 import re
+import neuron_network.node_network.recursive_neuronal_model as recursive_neuronal_model
 class AttrDict(dict):
     def __init__(self, *args, **kwargs):
         super(AttrDict, self).__init__(*args, **kwargs)
         self.__dict__ = self
 
+def load_model(config):
+    print("loading model...", flush=True)
+    if "network_architecture_structure" in config and config.network_architecture_structure == "recursive":
+        model = recursive_neuronal_model.RecursiveNeuronModel.load(config)
+    else:
+        assert False,"cannot import model"
+    return model
 
 def filter_file_names(files: List[str], filter: str) -> List[str]:
     compile_filter = re.compile(filter)
