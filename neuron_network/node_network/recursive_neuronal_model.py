@@ -102,7 +102,7 @@ class RecursiveNeuronModel(nn.Module):
             self.internal_models.append(model)
         setattr(self,attribute,model)
         for n, p in model.named_parameters():
-            self.named_internal_parameters_that_has_gradients[n] = p.requires_grad()
+            self.named_internal_parameters_that_has_gradients[n] = p.requires_grad
 
 
     def freeze_model_gradients(self):
