@@ -223,12 +223,12 @@ if __name__ == '__main__':
                                          dynamic_learning_params_function="learning_parameters_iter_with_constant_weights",
                                          architecture_type="LAYERED_TEMPORAL_CONV",
                                          model_tag="mse_only_%s"%i, optimizer_type=i,
-                                         accumulate_loss_batch_factor=1, spike_probability=None, prediction_length=1000,
-                                         batch_size_validation=200, batch_size_train=5, clip_gradients_factor=1,
+                                         accumulate_loss_batch_factor=2, spike_probability=None, prediction_length=1000,
+                                         batch_size_validation=200, batch_size_train=5, clip_gradients_factor=0.2,
                                          constant_learning_rate=0.005)
         configs.append(config_morpho_0)
         # configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
-    with open(os.path.join(MODELS_DIR, "mse_only2.json"), 'w') as file:
+    with open(os.path.join(MODELS_DIR, "mse_only3.json"), 'w') as file:
         file.write(json.dumps(configs))  # use `json.loads` to do the reverse
         # file.write(json.dumps([config_morpho_0]))  # use `json.loads` to do the reverse
 
