@@ -67,7 +67,6 @@ def batch_train(model, optimizer, custom_loss, train_data_iterator, clip_gradien
                 optimizer_scdualer, scaler):
     # zero the parameter gradients
     torch.cuda.empty_cache()
-
     model.train()
     for _, data in zip(range(accumulate_loss_batch_factor), train_data_iterator):
         inputs, labels = data
@@ -81,9 +80,9 @@ def batch_train(model, optimizer, custom_loss, train_data_iterator, clip_gradien
         scaler.scale(general_loss / accumulate_loss_batch_factor).backward()
         # plot_grad_flow(model)
         # plt.show()
-        for n,p in model.named_parameters():
-            if 'weight' in n:
-                print('===========\ngradient:{}\n----------\n{}\n*\n{}'.format(n, p.grad.mean(),p.grad.mean()))
+        # for n,p in model.named_parameters():
+        #     if 'weight' in n:
+        #         print('===========\ngradient:{}\n----------\n{}\n*\n{}'.format(n, p.grad.mean(),p.grad.mean()))
         # unscaling and clipping
     scaler.unscale_(optimizer)
     torch.nn.utils.clip_grad_norm_(model.parameters(), clip_gradient)
@@ -146,6 +145,7 @@ def train_network(config, model):
     scaler = torch.cuda.amp.GradScaler(enabled=True)
     if DOCUMENT_ON_WANDB and WATCH_MODEL:
         wandb.watch(model, log='all', log_freq=1, log_graph=True)
+    model_level_training_scadualer = model.train_subtree(5)
     print("start training...", flush=True)
     for epoch in range(config.num_epochs):
         config.update(dict(epoch_counter=config.epoch_counter + 1), allow_val_change=True)
@@ -158,6 +158,7 @@ def train_network(config, model):
             config.update(dict(batch_counter=config.batch_counter + 1), allow_val_change=True)
             # get the inputs; data is a list of [inputs, labels]
             batch_counter += 1
+            next(model_level_training_scadualer)
             train_loss = batch_train(model, optimizer, custom_loss, train_data_iterator, config.clip_gradients_factor,
                                      config.accumulate_loss_batch_factor, optimizer_scheduler, scaler)
             lr = log_lr(config, optimizer)
