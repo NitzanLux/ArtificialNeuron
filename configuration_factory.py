@@ -224,6 +224,7 @@ if __name__ == '__main__':
                                          architecture_type="LAYERED_TEMPORAL_CONV",
                                          model_tag="mse_only_%s"%i, optimizer_type=i,
                                          accumulate_loss_batch_factor=2, spike_probability=None, prediction_length=1000,
+
                                          batch_size_validation=200, batch_size_train=5, clip_gradients_factor=0.2,
                                          constant_learning_rate=0.005)
         configs.append(config_morpho_0)
