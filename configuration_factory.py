@@ -222,7 +222,7 @@ if __name__ == '__main__':
                                          ,
                                          dynamic_learning_params_function="learning_parameters_iter_with_constant_weights",
                                          architecture_type="LAYERED_TEMPORAL_CONV",
-                                         model_tag="%s%s"%(i,s), optimizer_type=i,
+                                         model_tag="%s%s"%(i,configurations_name), optimizer_type=i,
                                          accumulate_loss_batch_factor=2, spike_probability=None, prediction_length=1000,
 
                                          batch_size_validation=200, batch_size_train=5, clip_gradients_factor=20,
