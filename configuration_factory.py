@@ -69,19 +69,19 @@ def surround_with_default_config_values(**kargs):
                                  time_domain_shape=config.input_window_size,
                                  # kernel_size_2d=3,
                                  # kernel_size_1d=9,
-                                 number_of_layers_root=7, number_of_layers_leaf=7, number_of_layers_intersection=7,
-                                 number_of_layers_branch_intersection=7,
+                                 number_of_layers_root=5, number_of_layers_leaf=5, number_of_layers_intersection=5,
+                                 number_of_layers_branch_intersection=5,
                                  david_layers = [55,13,13,13,13,13,13],
                                  skip_connections=True,
                                  inter_module_skip_connections=True,
-                                 kernel_size=21,
+                                 kernel_size=51,
                                  # number_of_layers=2,
                                  stride=1,
                                  padding=0,
                                  dilation=1,
                                  channel_input_number=1278,  # synapse number
-                                 inner_scope_channel_number=21,
-                                 channel_output_number=21,
+                                 inner_scope_channel_number=31,
+                                 channel_output_number=31,
                                  activation_function_name="LeakyReLU",
                                  activation_function_kargs=dict(negative_slope=0.25),
                                  include_dendritic_voltage_tracing=False)
@@ -215,7 +215,7 @@ if __name__ == '__main__':
     #                                      batch_size_validation=200, batch_size_train=5, clip_gradients_factor=2.5,
     #                                      constant_learning_rate=0.005)
     #     configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
-    configurations_name="f_g_p1"
+    configurations_name="f_g_p2"
     for i in ['AdamW','NAdam']:#,'NAdam','RMSprop']:
         config_morpho_0 = config_factory(loss_function='focalbcel_mse_loss',
                                          dynamic_learning_params=False  # ,optimizer_type='RMSprop'
