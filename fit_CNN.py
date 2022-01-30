@@ -146,7 +146,7 @@ def train_network(config, model):
     scaler = torch.cuda.amp.GradScaler(enabled=True)
     if DOCUMENT_ON_WANDB and WATCH_MODEL:
         wandb.watch(model, log='all', log_freq=1, log_graph=True)
-    model_level_training_scadualer = model.train_random_subtree(15)
+    model_level_training_scadualer = model.train_random_subtree(220)
     print("start training...", flush=True)
     for epoch in range(config.num_epochs):
         config.update(dict(epoch_counter=config.epoch_counter + 1), allow_val_change=True)

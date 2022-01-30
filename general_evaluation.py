@@ -275,6 +275,8 @@ if __name__ == '__main__':
     # eval.data.flatten_batch_dimensions()
     # eval.save()
     a=recursive_neuronal_model.RecursiveNeuronModel.load(eval.config)
-    print(len(a.get_nodes_per_level()))
+    out= a.get_nodes_per_level()
+    out=[m for level in out for m in level]
+    print(len(out))
     # eval.display()
 #

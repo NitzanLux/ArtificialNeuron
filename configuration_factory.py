@@ -49,7 +49,7 @@ def save_config(config, path: [str, None] = None):
 def surround_with_default_config_values(**kargs):
     ##default values can be overridden by kargs
     config = AttrDict(config_version=CURRENT_VERSION, input_window_size=200, prediction_length=1, num_segments=2 * 639, num_syn_types=1,
-                      num_epochs=15000, epoch_size=10, batch_size_train=5, accumulate_loss_batch_factor=4, batch_size_validation=200,
+                      num_epochs=15000, epoch_size=5, batch_size_train=5, accumulate_loss_batch_factor=4, batch_size_validation=200,
                       train_file_load=0.5, valid_file_load=0.5, spike_probability=0.5,
                       # files_filter_regex=".*exBas_0_1100_inhBasDiff_-1100_600__exApic_0_1100_inhApicDiff_-1100_600_SpTemp[^\\/\.]*\.p",
                       files_filter_regex=".*",
@@ -223,9 +223,9 @@ if __name__ == '__main__':
                                          dynamic_learning_params_function="learning_parameters_iter_with_constant_weights",
                                          architecture_type="LAYERED_TEMPORAL_CONV",
                                          model_tag="%s%s"%(i,configurations_name), optimizer_type=i,
-                                         accumulate_loss_batch_factor=4, spike_probability=None, prediction_length=1000,
+                                         accumulate_loss_batch_factor=2, spike_probability=None, prediction_length=1000,
 
-                                         batch_size_validation=200, batch_size_train=5, clip_gradients_factor=5,
+                                         batch_size_validation=200, batch_size_train=5, clip_gradients_factor=None,
                                          constant_learning_rate=0.005)
         configs.append(config_morpho_0)
         # configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
