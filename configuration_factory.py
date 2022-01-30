@@ -52,7 +52,7 @@ def surround_with_default_config_values(**kargs):
                       num_epochs=15000, epoch_size=5, batch_size_train=5, accumulate_loss_batch_factor=4, batch_size_validation=200,
                       train_file_load=0.5, valid_file_load=0.5, spike_probability=0.5,
                       # files_filter_regex=".*exBas_0_1100_inhBasDiff_-1100_600__exApic_0_1100_inhApicDiff_-1100_600_SpTemp[^\\/\.]*\.p",
-                      files_filter_regex=".*",
+                      files_filter_regex=".*",freeze_node_factor=220,
                       optimizer_type="AdamW",optimizer_params={},# optimizer_params={'eps':1e-8},
                       clip_gradients_factor=1.5, lr_decay_factor=0.75, lr_patience_factor=200,scheduler_cooldown_factor=200,
                       batch_counter=0, epoch_counter=0,  # default counter
@@ -215,7 +215,7 @@ if __name__ == '__main__':
     #                                      batch_size_validation=200, batch_size_train=5, clip_gradients_factor=2.5,
     #                                      constant_learning_rate=0.005)
     #     configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
-    configurations_name="f_g_p_r"
+    configurations_name="f_g_p_r200"
     for i in ['AdamW','NAdam']:#,'NAdam','RMSprop']:
         config_morpho_0 = config_factory(loss_function='focalbcel_mse_loss',
                                          dynamic_learning_params=False  # ,optimizer_type='RMSprop'

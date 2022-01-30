@@ -428,6 +428,10 @@ class SomaNetwork(RecursiveNeuronModel):
 
 
     def train_random_subtree(self,number_of_nodes_to_shutdown):
+        if number_of_nodes_to_shutdown==0:
+            while True:
+                yield self
+            return
         levels = self.get_nodes_per_level()
         models = [m for level in levels for m in level]
         while True:
