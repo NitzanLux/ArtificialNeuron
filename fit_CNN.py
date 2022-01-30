@@ -85,7 +85,8 @@ def batch_train(model, optimizer, custom_loss, train_data_iterator, clip_gradien
         #         print('===========\ngradient:{}\n----------\n{}\n*\n{}'.format(n, p.grad.mean(),p.grad.mean()))
         # unscaling and clipping
     scaler.unscale_(optimizer)
-    torch.nn.utils.clip_grad_norm_(model.parameters(), clip_gradient)
+    if clip_gradient is not None:
+        torch.nn.utils.clip_grad_norm_(model.parameters(), clip_gradient)
     if optimizer_scdualer is not None:
         optimizer_scdualer.step(general_loss)
     scaler.step(optimizer)

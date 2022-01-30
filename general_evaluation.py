@@ -271,8 +271,10 @@ class ModelEvaluator():
 if __name__ == '__main__':
     # ModelEvaluator.build_and_save(r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\heavy_AdamW_NMDA_Tree_TCN__2022-01-27__17_58__ID_40048\heavy_AdamW_NMDA_Tree_TCN__2022-01-27__17_58__ID_40048")
     eval = ModelEvaluator.load(
-        r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\heavy_AdamW_NMDA_Tree_TCN__2022-01-25__17_58__ID_97848\heavy_AdamW_NMDA_Tree_TCN__2022-01-25__17_58__ID_97848.eval")
+        r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\heavy_AdamW_NMDA_Tree_TCN__2022-01-27__14_39__ID_26894\heavy_AdamW_NMDA_Tree_TCN__2022-01-27__14_39__ID_26894.eval")
     # eval.data.flatten_batch_dimensions()
     # eval.save()
-    eval.display()
+    a=recursive_neuronal_model.RecursiveNeuronModel.load(eval.config)
+    print(len(a.get_nodes_per_level()))
+    # eval.display()
 #
