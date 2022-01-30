@@ -145,7 +145,7 @@ def train_network(config, model):
     scaler = torch.cuda.amp.GradScaler(enabled=True)
     if DOCUMENT_ON_WANDB and WATCH_MODEL:
         wandb.watch(model, log='all', log_freq=1, log_graph=True)
-    model_level_training_scadualer = model.train_subtree(10)
+    model_level_training_scadualer = model.train_random_subtree(15)
     print("start training...", flush=True)
     for epoch in range(config.num_epochs):
         config.update(dict(epoch_counter=config.epoch_counter + 1), allow_val_change=True)
@@ -153,12 +153,14 @@ def train_network(config, model):
         loss_weights, optimizer, sigma,custom_loss = set_dynamic_learning_parameters(config, dynamic_parameter_loss_genrator,
                                                                          loss_weights, model, optimizer, custom_loss,sigma)
         train_data_iterator = iter(train_data_generator)
+        next(model_level_training_scadualer)
+
         for i in range(config.epoch_size):
             saving_counter += 1
             config.update(dict(batch_counter=config.batch_counter + 1), allow_val_change=True)
             # get the inputs; data is a list of [inputs, labels]
             batch_counter += 1
-            next(model_level_training_scadualer)
+
             train_loss = batch_train(model, optimizer, custom_loss, train_data_iterator, config.clip_gradients_factor,
                                      config.accumulate_loss_batch_factor, optimizer_scheduler, scaler)
             lr = log_lr(config, optimizer)

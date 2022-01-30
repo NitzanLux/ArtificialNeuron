@@ -427,6 +427,18 @@ class SomaNetwork(RecursiveNeuronModel):
         pass  # todo fix it
 
 
+    def train_random_subtree(self,number_of_nodes_to_shutdown):
+        levels = self.get_nodes_per_level()
+        models = [m for level in levels for m in level]
+        while True:
+            models_to_freeze = random.choices(models,k=number_of_nodes_to_shutdown)
+            for m in models_to_freeze:
+                m.freeze_model_gradients()
+
+            yield self
+
+            for m in models_to_freeze:
+                m.reset_requires_grad()
 
     def train_subtree(self, number_of_levels_per_training):
         current_tree_base_level = 0
