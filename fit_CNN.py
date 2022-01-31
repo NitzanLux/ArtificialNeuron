@@ -137,7 +137,8 @@ def plot_grad_flow(model=None):
 def train_network(config, model):
     DVT_PCA_model = None
 
-    model.cuda().train().float()
+    model.cuda().train()
+    model.float()
     train_data_generator, validation_data_generator = get_data_generators(DVT_PCA_model, config)
     validation_data_iterator = iter(validation_data_generator)
     batch_counter = 0
