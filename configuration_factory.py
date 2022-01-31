@@ -226,7 +226,7 @@ if __name__ == '__main__':
                                          accumulate_loss_batch_factor=5, spike_probability=None, prediction_length=1000,
 
                                          batch_size_validation=200, batch_size_train=2, clip_gradients_factor=10.,
-                                         constant_learning_rate=0.005)
+                                         constant_learning_rate=0.0005)
         # configs.append(config_morpho_0)
         configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
     with open(os.path.join(MODELS_DIR, "%s.json"%configurations_name), 'w') as file:
