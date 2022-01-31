@@ -19,7 +19,6 @@ from simulation_data_generator import *
 from datetime import datetime, timedelta
 
 torch.cuda.empty_cache()
-torch.set_default_dtype(torch.float64)
 
 print(torch.cuda.get_device_name(0))
 print(torch.cuda.is_available())
@@ -86,6 +85,7 @@ def batch_train(model, optimizer, custom_loss, train_data_iterator, clip_gradien
             loss_dvt += cur_loss_dvt/accumulate_loss_batch_factor
             loss_gausian_mse += cur_loss_gausian_mse/accumulate_loss_batch_factor
             del cur_loss_gausian_mse,cur_loss_mse,cur_loss_dvt,cur_loss_bcel,cur_general_loss
+            torch.cuda.empty_cache()
 
         # plot_grad_flow(model)
         # plt.show()
