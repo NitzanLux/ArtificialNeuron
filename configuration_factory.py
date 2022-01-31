@@ -52,7 +52,7 @@ def surround_with_default_config_values(**kargs):
                       num_epochs=15000, epoch_size=5, batch_size_train=5, accumulate_loss_batch_factor=4, batch_size_validation=200,
                       train_file_load=0.5, valid_file_load=0.5, spike_probability=0.5,
                       # files_filter_regex=".*exBas_0_1100_inhBasDiff_-1100_600__exApic_0_1100_inhApicDiff_-1100_600_SpTemp[^\\/\.]*\.p",
-                      files_filter_regex=".*",freeze_node_factor=220,
+                      files_filter_regex=".*",freeze_node_factor=None,
                       optimizer_type="AdamW",optimizer_params={},# optimizer_params={'eps':1e-8},
                       clip_gradients_factor=1.5, lr_decay_factor=0.75, lr_patience_factor=200,scheduler_cooldown_factor=200,
                       batch_counter=0, epoch_counter=0,  # default counter
@@ -69,19 +69,19 @@ def surround_with_default_config_values(**kargs):
                                  time_domain_shape=config.input_window_size,
                                  # kernel_size_2d=3,
                                  # kernel_size_1d=9,
-                                 number_of_layers_root=5, number_of_layers_leaf=5, number_of_layers_intersection=5,
-                                 number_of_layers_branch_intersection=5,
+                                 number_of_layers_root=7, number_of_layers_leaf=7, number_of_layers_intersection=7,
+                                 number_of_layers_branch_intersection=7,
                                  david_layers = [55,13,13,13,13,13,13],
                                  skip_connections=True,
                                  inter_module_skip_connections=True,
-                                 kernel_size=51,
+                                 kernel_size=31,
                                  # number_of_layers=2,
                                  stride=1,
                                  padding=0,
                                  dilation=1,
                                  channel_input_number=1278,  # synapse number
-                                 inner_scope_channel_number=31,
-                                 channel_output_number=31,
+                                 inner_scope_channel_number=51,
+                                 channel_output_number=51,
                                  activation_function_name="LeakyReLU",
                                  activation_function_kargs=dict(negative_slope=0.25),
                                  include_dendritic_voltage_tracing=False)
@@ -215,8 +215,8 @@ if __name__ == '__main__':
     #                                      batch_size_validation=200, batch_size_train=5, clip_gradients_factor=2.5,
     #                                      constant_learning_rate=0.005)
     #     configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
-    configurations_name="f_g_p_r220"
-    for i in ['AdamW']:#,'NAdam','RMSprop']:
+    configurations_name="overshot"
+    for i in ['AdamW','NAdam']:#,'RMSprop']:
         config_morpho_0 = config_factory(loss_function='focalbcel_mse_loss',
                                          dynamic_learning_params=False  # ,optimizer_type='RMSprop'
                                          ,
@@ -225,10 +225,10 @@ if __name__ == '__main__':
                                          model_tag="%s%s"%(i,configurations_name), optimizer_type=i,
                                          accumulate_loss_batch_factor=2, spike_probability=None, prediction_length=1000,
 
-                                         batch_size_validation=200, batch_size_train=5, clip_gradients_factor=None,
+                                         batch_size_validation=200, batch_size_train=5, clip_gradients_factor=10.,
                                          constant_learning_rate=0.005)
-        configs.append(config_morpho_0)
-        # configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
+        # configs.append(config_morpho_0)
+        configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
     with open(os.path.join(MODELS_DIR, "%s.json"%configurations_name), 'w') as file:
         file.write(json.dumps(configs))  # use `json.loads` to do the reverse
         # file.write(json.dumps([config_morpho_0]))  # use `json.loads` to do the reverse

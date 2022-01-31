@@ -7,7 +7,7 @@ import dash
 import numpy as np
 import plotly.graph_objects as go
 import torch
-from dash import dcc
+from dash import dcc,callback_context
 from dash import html
 from dash.dependencies import Input, Output
 from plotly.subplots import make_subplots
@@ -171,6 +171,16 @@ class ModelEvaluator():
             ),
             html.Div(id='slider-output-container', style={'height': '2vh'}),
             html.Div([
+            html.Button('-50', id='btn-m50', n_clicks=0, style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',"margin-left": "10px"}),
+            html.Button('-10', id='btn-m10', n_clicks=0,style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',"margin-left": "10px"}),
+            html.Button('-5', id='btn-m5', n_clicks=0,style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',"margin-left": "10px"}),
+            html.Button('-1', id='btn-m1', n_clicks=0,style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',"margin-left": "10px"}),
+            html.Button('+1', id='btn-p1', n_clicks=0,style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',"margin-left": "10px"}),
+            html.Button('+5', id='btn-p5', n_clicks=0,style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',"margin-left": "10px"}),
+            html.Button('+10', id='btn-p10', n_clicks=0,style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',"margin-left": "10px"}),
+            html.Button('+50', id='btn-p50', n_clicks=0,style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',"margin-left": "10px"}),
+            ], style={'width':'100vw','margin': '1', 'border-style': 'solid', 'align': 'center', 'vertical-align': 'middle'}),
+            html.Div([
                 dcc.Graph(id='evaluation-graph', figure=go.Figure(),
                           style={'height': '95vh', 'margin': '0', 'border-style': 'solid', 'align': 'center'})],
                 style={'height': '95vh', 'margin': '0', 'border-style': 'solid', 'align': 'center'}),
@@ -180,13 +190,31 @@ class ModelEvaluator():
         ])
 
         @app.callback(
-            Output('slider-output-container', 'children'),
+            Output('my-slider', 'value'),
+            Output('slider-output-container', 'value'),
             Output('evaluation-graph', 'figure'),
-            [Input('my-slider', 'value')])
-        def update_output(value):
-            index = int(value)
-            fig = self.display_window(index)
-            return 'You have selected "{}"'.format(value), fig
+            [Input('my-slider', 'value'),
+             Input('btn-m50','n_clicks'),
+             Input('btn-m10','n_clicks'),
+             Input('btn-m5','n_clicks'),
+             Input('btn-m1','n_clicks'),
+             Input('btn-p1','n_clicks'),
+             Input('btn-p5','n_clicks'),
+             Input('btn-p10','n_clicks'),
+             Input('btn-p50','n_clicks')
+             ])
+        def update_output(value,btnm50,btnm10,btnm5,btnm1,btnp1,btnp5,btnp10,btnp50):
+            changed_id = [p['prop_id'] for p in callback_context.triggered][0][:-len(".n_clicks")]
+            value=int(value)
+
+            if 'btn-m' in changed_id:
+                value-=int(changed_id[len('btn-m'):])
+            elif 'btn-p' in changed_id:
+                value +=int(changed_id[len('btn-m'):])
+            value= max(0,value)
+            value=min(value,len(self.data))
+            fig = self.display_window(value)
+            return value,'You have selected "{}"'.format(value), fig
 
         app.run_server(debug=True, use_reloader=False)
 
@@ -274,9 +302,5 @@ if __name__ == '__main__':
         r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\heavy_AdamW_NMDA_Tree_TCN__2022-01-27__14_39__ID_26894\heavy_AdamW_NMDA_Tree_TCN__2022-01-27__14_39__ID_26894.eval")
     # eval.data.flatten_batch_dimensions()
     # eval.save()
-    a=recursive_neuronal_model.RecursiveNeuronModel.load(eval.config)
-    out= a.get_nodes_per_level()
-    out=[m for level in out for m in level]
-    print(len(out))
-    # eval.display()
+    eval.display()
 #
