@@ -81,7 +81,7 @@ def batch_train(model, optimizer, custom_loss, train_data_iterator, clip_gradien
             cur_general_loss, cur_loss_bcel, cur_loss_mse, cur_loss_dvt, cur_loss_gausian_mse = custom_loss(outputs,
                                                                                                             labels)
             scaler.scale(cur_general_loss/accumulate_loss_batch_factor).backward()
-            general_loss += cur_general_loss.item()/accumulate_loss_batch_factor
+            general_loss += cur_general_loss/accumulate_loss_batch_factor
             loss_bcel += cur_loss_bcel/accumulate_loss_batch_factor
             loss_mse += cur_loss_mse/accumulate_loss_batch_factor
             loss_dvt += cur_loss_dvt/accumulate_loss_batch_factor
