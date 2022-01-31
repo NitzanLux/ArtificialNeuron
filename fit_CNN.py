@@ -70,7 +70,7 @@ def batch_train(model, optimizer, custom_loss, train_data_iterator, clip_gradien
     general_loss, loss_bcel, loss_mse, loss_dvt, loss_gausian_mse = 0, 0, 0, 0, 0
     for _, data in zip(range(accumulate_loss_batch_factor), train_data_iterator):
         inputs, labels = data
-        inputs = inputs.cuda()
+        inputs = inputs.cuda().type(torch.cuda.FloatTensor)
         with torch.cuda.amp.autocast():
             labels = [l.cuda().flatten() for l in labels]
             # forward + backward + optimize
