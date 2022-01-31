@@ -68,6 +68,7 @@ def batch_train(model, optimizer, custom_loss, train_data_iterator, clip_gradien
     # zero the parameter gradients
     torch.cuda.empty_cache()
     model.train()
+    general_loss, loss_bcel, loss_mse, loss_dvt, loss_gausian_mse = 0, 0, 0, 0, 0
     for _, data in zip(range(accumulate_loss_batch_factor), train_data_iterator):
         inputs, labels = data
         inputs = inputs.cuda().type(torch.cuda.DoubleTensor)
@@ -76,18 +77,20 @@ def batch_train(model, optimizer, custom_loss, train_data_iterator, clip_gradien
         with torch.cuda.amp.autocast():
             outputs = model(inputs)
             outputs = [i.flatten() for i in outputs]
-            general_loss, loss_bcel, loss_mse, loss_dvt, loss_gausian_mse = custom_loss(outputs, labels)
-        scaler.scale(general_loss / accumulate_loss_batch_factor).backward()
-        general_loss/=accumulate_loss_batch_factor
-        loss_bcel/=accumulate_loss_batch_factor
-        loss_mse/=accumulate_loss_batch_factor
-        loss_gausian_mse/=accumulate_loss_batch_factor
+            cur_general_loss, cur_loss_bcel, cur_loss_mse, cur_loss_dvt, cur_loss_gausian_mse = custom_loss(outputs,
+                                                                                                            labels)
+        general_loss += cur_general_loss/accumulate_loss_batch_factor
+        loss_bcel += cur_loss_bcel/accumulate_loss_batch_factor
+        loss_mse += cur_loss_mse/accumulate_loss_batch_factor
+        loss_dvt += cur_loss_dvt/accumulate_loss_batch_factor
+        loss_gausian_mse += cur_loss_gausian_mse/accumulate_loss_batch_factor
         # plot_grad_flow(model)
         # plt.show()
         # for n,p in model.named_parameters():
         #     if 'weight' in n:
         #         print('===========\ngradient:{}\n----------\n{}\n*\n{}'.format(n, p.grad.mean(),p.grad.mean()))
         # unscaling and clipping
+    scaler.scale(general_loss).backward()
     scaler.unscale_(optimizer)
     if clip_gradient is not None:
         torch.nn.utils.clip_grad_norm_(model.parameters(), clip_gradient)
@@ -100,31 +103,34 @@ def batch_train(model, optimizer, custom_loss, train_data_iterator, clip_gradien
 
     return out
 
+
 def plot_grad_flow(model=None):
-        '''Plots the gradients flowing through different layers in the net during training.
-        Can be used for checking for possible gradient vanishing / exploding problems.
+    '''Plots the gradients flowing through different layers in the net during training.
+    Can be used for checking for possible gradient vanishing / exploding problems.
 
-        Usage: Plug this function in Trainer class after loss.backwards() as
-        "plot_grad_flow(self.model.named_parameters())" to visualize the gradient flow'''
+    Usage: Plug this function in Trainer class after loss.backwards() as
+    "plot_grad_flow(self.model.named_parameters())" to visualize the gradient flow'''
 
-        model.cuda().eval()
-        ave_grads = []
-        max_grads = []
-        layers = []
-        for n, p in model.named_parameters():
-            if (p.requires_grad) and ("bias" not in n):
-                layers.append(n)
-                ave_grads.append(p.grad.abs().mean().cpu().numpy())
-                max_grads.append(p.grad.abs().max().cpu().numpy())
-        plt.bar(np.arange(len(max_grads)), max_grads, alpha=0.1, lw=1, color="c")
-        plt.bar(np.arange(len(max_grads)), ave_grads, alpha=0.1, lw=1, color="b")
-        plt.hlines(0, 0, len(ave_grads) + 1, lw=2, color="k")
-        plt.xticks(range(0, len(ave_grads), 1), layers, rotation="vertical")
-        plt.xlim(left=0, right=len(ave_grads))
-        plt.ylim(bottom=-0.001, top=0.02)  # zoom in on the lower gradient regions
-        plt.xlabel("Layers")
-        plt.ylabel("average gradient")
-        plt.show()
+    model.cuda().eval()
+    ave_grads = []
+    max_grads = []
+    layers = []
+    for n, p in model.named_parameters():
+        if (p.requires_grad) and ("bias" not in n):
+            layers.append(n)
+            ave_grads.append(p.grad.abs().mean().cpu().numpy())
+            max_grads.append(p.grad.abs().max().cpu().numpy())
+    plt.bar(np.arange(len(max_grads)), max_grads, alpha=0.1, lw=1, color="c")
+    plt.bar(np.arange(len(max_grads)), ave_grads, alpha=0.1, lw=1, color="b")
+    plt.hlines(0, 0, len(ave_grads) + 1, lw=2, color="k")
+    plt.xticks(range(0, len(ave_grads), 1), layers, rotation="vertical")
+    plt.xlim(left=0, right=len(ave_grads))
+    plt.ylim(bottom=-0.001, top=0.02)  # zoom in on the lower gradient regions
+    plt.xlabel("Layers")
+    plt.ylabel("average gradient")
+    plt.show()
+
+
 def train_network(config, model):
     DVT_PCA_model = None
 
@@ -150,13 +156,16 @@ def train_network(config, model):
     scaler = torch.cuda.amp.GradScaler(enabled=True)
     if DOCUMENT_ON_WANDB and WATCH_MODEL:
         wandb.watch(model, log='all', log_freq=1, log_graph=True)
-    model_level_training_scadualer = model.train_random_subtree(config.freeze_node_factor if config.freeze_node_factor is not None else 0)
+    model_level_training_scadualer = model.train_random_subtree(
+        config.freeze_node_factor if config.freeze_node_factor is not None else 0)
     print("start training...", flush=True)
     for epoch in range(config.num_epochs):
         config.update(dict(epoch_counter=config.epoch_counter + 1), allow_val_change=True)
         # epoch_start_time = time.time()
-        loss_weights, optimizer, sigma,custom_loss = set_dynamic_learning_parameters(config, dynamic_parameter_loss_genrator,
-                                                                         loss_weights, model, optimizer, custom_loss,sigma)
+        loss_weights, optimizer, sigma, custom_loss = set_dynamic_learning_parameters(config,
+                                                                                      dynamic_parameter_loss_genrator,
+                                                                                      loss_weights, model, optimizer,
+                                                                                      custom_loss, sigma)
         train_data_iterator = iter(train_data_generator)
         next(model_level_training_scadualer)
 
@@ -199,7 +208,8 @@ def log_lr(config, optimizer):
     return lr
 
 
-def set_dynamic_learning_parameters(config, dynamic_parameter_loss_genrator, loss_weights, model, optimizer,custom_loss, sigma):
+def set_dynamic_learning_parameters(config, dynamic_parameter_loss_genrator, loss_weights, model, optimizer,
+                                    custom_loss, sigma):
     if config.dynamic_learning_params:
         learning_rate, loss_weights, sigma = next(dynamic_parameter_loss_genrator)
         if "loss_function" in config:
@@ -210,7 +220,7 @@ def set_dynamic_learning_parameters(config, dynamic_parameter_loss_genrator, los
         config.optimizer_params["lr"] = learning_rate
         optimizer = getattr(optim, config.optimizer_type)(model.parameters(),
                                                           **config.optimizer_params)
-    return loss_weights, optimizer, sigma,custom_loss
+    return loss_weights, optimizer, sigma, custom_loss
 
 
 def evaluate_validation(config, custom_loss, model, validation_data_iterator):
@@ -302,7 +312,7 @@ class SavingAndEvaluationScheduler():
             self.last_time_saving = datetime.now()
 
     @staticmethod
-    def flush_all( config,model):
+    def flush_all(config, model):
         ModelEvaluator.build_and_save(config=config, model=model)
         SavingAndEvaluationScheduler.save_model(model, config)
 
@@ -388,9 +398,6 @@ def train_log(loss, step, epoch=None, learning_rate=None, sigma=None, weights=No
     print("mse loss ", loss_mse)
     print("bcel loss ", loss_bcel)
     print("dvt loss ", loss_dvt)
-
-
-
 
 
 def display_accuracy(target, output, step, additional_str=''):
