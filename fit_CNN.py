@@ -78,6 +78,10 @@ def batch_train(model, optimizer, custom_loss, train_data_iterator, clip_gradien
             outputs = [i.flatten() for i in outputs]
             general_loss, loss_bcel, loss_mse, loss_dvt, loss_gausian_mse = custom_loss(outputs, labels)
         scaler.scale(general_loss / accumulate_loss_batch_factor).backward()
+        general_loss/=accumulate_loss_batch_factor
+        loss_bcel/=accumulate_loss_batch_factor
+        loss_mse/=accumulate_loss_batch_factor
+        loss_gausian_mse/=accumulate_loss_batch_factor
         # plot_grad_flow(model)
         # plt.show()
         # for n,p in model.named_parameters():
