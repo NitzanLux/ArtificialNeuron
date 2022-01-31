@@ -75,6 +75,7 @@ def batch_train(model, optimizer, custom_loss, train_data_iterator, clip_gradien
             inputs = inputs.cuda().type(torch.cuda.DoubleTensor)
             labels = [l.cuda().flatten() for l in labels]
             # forward + backward + optimize
+            print(_,"*****")
             outputs = model(inputs)
             outputs = [i.flatten() for i in outputs]
             cur_general_loss, cur_loss_bcel, cur_loss_mse, cur_loss_dvt, cur_loss_gausian_mse = custom_loss(outputs,
