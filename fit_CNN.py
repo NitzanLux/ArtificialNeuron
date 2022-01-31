@@ -84,6 +84,7 @@ def batch_train(model, optimizer, custom_loss, train_data_iterator, clip_gradien
             loss_mse += cur_loss_mse/accumulate_loss_batch_factor
             loss_dvt += cur_loss_dvt/accumulate_loss_batch_factor
             loss_gausian_mse += cur_loss_gausian_mse/accumulate_loss_batch_factor
+            del cur_loss_gausian_mse,cur_loss_mse,cur_loss_dvt,cur_loss_bcel,cur_general_loss
 
         # plot_grad_flow(model)
         # plt.show()
