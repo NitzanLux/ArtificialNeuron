@@ -73,7 +73,7 @@ def batch_train(model, optimizer, custom_loss, train_data_iterator, clip_gradien
         inputs = inputs.cuda().type(torch.cuda.FloatTensor)
         with torch.cuda.amp.autocast():
 
-            labels = [l.cuda().flatten() for l in labels]
+            labels = [l.cuda().flatten().type(torch.cuda.FloatTensor) for l in labels]
             # forward + backward + optimize
             print(_,"*****")
             outputs = model(inputs)
