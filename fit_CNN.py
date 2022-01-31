@@ -69,21 +69,21 @@ def batch_train(model, optimizer, custom_loss, train_data_iterator, clip_gradien
     torch.cuda.empty_cache()
     model.train()
     general_loss, loss_bcel, loss_mse, loss_dvt, loss_gausian_mse = 0, 0, 0, 0, 0
-    for _, data in zip(range(accumulate_loss_batch_factor), train_data_iterator):
-        inputs, labels = data
-        inputs = inputs.cuda().type(torch.cuda.DoubleTensor)
-        labels = [l.cuda().flatten() for l in labels]
-        # forward + backward + optimize
-        with torch.cuda.amp.autocast():
+    with torch.cuda.amp.autocast():
+        for _, data in zip(range(accumulate_loss_batch_factor), train_data_iterator):
+            inputs, labels = data
+            inputs = inputs.cuda().type(torch.cuda.DoubleTensor)
+            labels = [l.cuda().flatten() for l in labels]
+            # forward + backward + optimize
             outputs = model(inputs)
             outputs = [i.flatten() for i in outputs]
             cur_general_loss, cur_loss_bcel, cur_loss_mse, cur_loss_dvt, cur_loss_gausian_mse = custom_loss(outputs,
                                                                                                             labels)
-        general_loss += cur_general_loss/accumulate_loss_batch_factor
-        loss_bcel += cur_loss_bcel/accumulate_loss_batch_factor
-        loss_mse += cur_loss_mse/accumulate_loss_batch_factor
-        loss_dvt += cur_loss_dvt/accumulate_loss_batch_factor
-        loss_gausian_mse += cur_loss_gausian_mse/accumulate_loss_batch_factor
+            general_loss += cur_general_loss/accumulate_loss_batch_factor
+            loss_bcel += cur_loss_bcel/accumulate_loss_batch_factor
+            loss_mse += cur_loss_mse/accumulate_loss_batch_factor
+            loss_dvt += cur_loss_dvt/accumulate_loss_batch_factor
+            loss_gausian_mse += cur_loss_gausian_mse/accumulate_loss_batch_factor
 
         # plot_grad_flow(model)
         # plt.show()
