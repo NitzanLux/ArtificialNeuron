@@ -138,7 +138,10 @@ def train_network(config, model):
     DVT_PCA_model = None
 
     model.cuda().train()
-    model.float()
+    if DATA_TYPE == torch.cuda.FloatTensor:
+        model.float()
+    elif DATA_TYPE==torch.cuda.DoubleTensor :
+        model.double()
     train_data_generator, validation_data_generator = get_data_generators(DVT_PCA_model, config)
     validation_data_iterator = iter(validation_data_generator)
     batch_counter = 0
