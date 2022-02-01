@@ -290,7 +290,7 @@ class LeafNetwork(RecursiveNeuronModel):
                                                     activation_function=self.get_activation_function()))
         if self.is_inter_module_skip_connections:
             self.register_model(SKIP_CONNECTIONS_INTER,
-                                nn.Conv1d(len(self.input_indexes), self.channel_output_number, 1))
+                                nn.Sequential(nn.Conv1d(len(self.input_indexes), self.channel_output_number, 1),nn.BatchNorm1d(self.channel_output_number)))
 
 
 class IntersectionNetwork(RecursiveNeuronModel):
@@ -317,9 +317,9 @@ class IntersectionNetwork(RecursiveNeuronModel):
              network_kwargs["input_window_size"]), **network_kwargs,
             activation_function=self.get_activation_function()))
         if self.is_inter_module_skip_connections:
-            self.register_model(SKIP_CONNECTIONS_INTER, nn.Conv1d(
+            self.register_model(SKIP_CONNECTIONS_INTER, nn.Sequential(nn.Conv1d(
                 self.intersection_a.channel_output_number + self.intersection_b.channel_output_number,
-                self.channel_output_number, (1,)))
+                self.channel_output_number, (1,)),nn.BatchNorm1d(self.channel_output_number)))
 
     def forward(self, x):
         input_a = self.intersection_a(x)
@@ -363,9 +363,9 @@ class BranchNetwork(RecursiveNeuronModel):
                 network_kwargs["input_window_size"]), **network_kwargs,
             activation_function=self.get_activation_function()))
         if self.is_inter_module_skip_connections:
-            self.register_model(SKIP_CONNECTIONS_INTER, nn.Conv1d(
+            self.register_model(SKIP_CONNECTIONS_INTER, nn.Sequential(nn.Conv1d(
                 len(self.input_indexes) + self.upstream_model.channel_output_number,
-                self.channel_output_number, 1))
+                self.channel_output_number, 1),nn.BatchNorm1d(self.channel_output_number)))
 
     def __repr__(self):
         return super(BranchNetwork, self).__repr__() + ' #syn %d' % len(self.input_indexes)
