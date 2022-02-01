@@ -53,7 +53,7 @@ print('-----------------------------------------------')
 print('finding data')
 print('-----------------------------------------------', flush=True)
 
-
+DATA_TYPE = torch.cuda.FloatTensor
 # ------------------------------------------------------------------
 # basic configurations and directories
 # ------------------------------------------------------------------
@@ -70,10 +70,10 @@ def batch_train(model, optimizer, custom_loss, train_data_iterator, clip_gradien
     general_loss, loss_bcel, loss_mse, loss_dvt, loss_gausian_mse = 0, 0, 0, 0, 0
     for _, data in zip(range(accumulate_loss_batch_factor), train_data_iterator):
         inputs, labels = data
-        inputs = inputs.cuda().type(torch.cuda.FloatTensor)
+        inputs = inputs.cuda().type(DATA_TYPE)
         with torch.cuda.amp.autocast():
 
-            labels = [l.cuda().flatten().type(torch.cuda.FloatTensor) for l in labels]
+            labels = [l.cuda().flatten().type(DATA_TYPE) for l in labels]
             # forward + backward + optimize
             print(_,"*****")
             outputs = model(inputs)
@@ -235,8 +235,8 @@ def evaluate_validation(config, custom_loss, model, validation_data_iterator):
     valid_input, valid_labels = next(validation_data_iterator)
     model.eval()
     with torch.no_grad():
-        valid_input = valid_input.cuda().type(torch.cuda.FloatTensor)
-        valid_labels = [l.cuda().type(torch.cuda.FloatTensor) for l in valid_labels]
+        valid_input = valid_input.cuda().type(DATA_TYPE)
+        valid_labels = [l.cuda().type(DATA_TYPE) for l in valid_labels]
         output = model(valid_input)
         target_s = valid_labels[0].cpu().detach().numpy().astype(bool).squeeze().flatten()
         output_s = torch.nn.Sigmoid()(output[0])
