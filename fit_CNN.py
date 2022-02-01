@@ -235,8 +235,8 @@ def evaluate_validation(config, custom_loss, model, validation_data_iterator):
     valid_input, valid_labels = next(validation_data_iterator)
     model.eval()
     with torch.no_grad():
-        valid_input = valid_input.cuda().type(torch.cuda.DoubleTensor)
-        valid_labels = [l.cuda() for l in valid_labels]
+        valid_input = valid_input.cuda().type(torch.cuda.FloatTensor)
+        valid_labels = [l.cuda().type(torch.cuda.FloatTensor) for l in valid_labels]
         output = model(valid_input)
         target_s = valid_labels[0].cpu().detach().numpy().astype(bool).squeeze().flatten()
         output_s = torch.nn.Sigmoid()(output[0])
