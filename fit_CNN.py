@@ -53,7 +53,7 @@ print('-----------------------------------------------')
 print('finding data')
 print('-----------------------------------------------', flush=True)
 
-DATA_TYPE = torch.cuda.FloatTensor
+DATA_TYPE = torch.cuda.DoubleTensor
 # ------------------------------------------------------------------
 # basic configurations and directories
 # ------------------------------------------------------------------
