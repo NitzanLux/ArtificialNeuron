@@ -58,7 +58,7 @@ def surround_with_default_config_values(**kargs):
                       batch_counter=0, epoch_counter=0,  # default counter
                       torch_seed=42, numpy_seed=21, random_seed=12, init_weights_sd=0.05,
                       dynamic_learning_params=True,
-                      constant_loss_weights=[100., 1., 0., 0], constant_sigma=1.2, constant_learning_rate=0.0001,
+                      constant_loss_weights=[100., 1., 0., 0], constant_sigma=1.2, constant_learning_rate=0.001,
                       dynamic_learning_params_function="learning_parameters_iter_per_batch",
                       config_path="", model_tag="complex_constant_model", model_path=None,
                       loss_function="bcel_mse_dvt_loss")
@@ -215,7 +215,7 @@ if __name__ == '__main__':
     #                                      batch_size_validation=200, batch_size_train=5, clip_gradients_factor=2.5,
     #                                      constant_learning_rate=0.005)
     #     configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
-    configurations_name="overshot"
+    configurations_name="residual_with_normalization"
     for i in ['AdamW','NAdam']:#,'RMSprop']:
         config_morpho_0 = config_factory(loss_function='focalbcel_mse_loss',
                                          dynamic_learning_params=False  # ,optimizer_type='RMSprop'
@@ -225,10 +225,10 @@ if __name__ == '__main__':
                                          model_tag="%s%s"%(i,configurations_name), optimizer_type=i,
                                          accumulate_loss_batch_factor=5, spike_probability=None, prediction_length=1000,
 
-                                         batch_size_validation=200, batch_size_train=5, clip_gradients_factor=10.,
-                                         constant_learning_rate=0.0005)
-        # configs.append(config_morpho_0)
-        configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
+                                         batch_size_validation=200, batch_size_train=5, clip_gradients_factor=5.,
+                                         constant_learning_rate=0.005)
+        configs.append(config_morpho_0)
+        # configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
     with open(os.path.join(MODELS_DIR, "%s.json"%configurations_name), 'w') as file:
         file.write(json.dumps(configs))  # use `json.loads` to do the reverse
         # file.write(json.dumps([config_morpho_0]))  # use `json.loads` to do the reverse
