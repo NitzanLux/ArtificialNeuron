@@ -218,7 +218,7 @@ def focalbcel_mse_mae_loss(loss_weights, window_size, sigma):
             general_loss = general_loss + loss_weights[1] *loss_mse if general_loss else loss_weights[1] *loss_mse
 
         if loss_weights[2] > 0:
-            loss_mae =  mae_loss(output[2], target[2])
+            loss_mae =  mae_loss(output[1], target[1])
             loss_mae_item = loss_mae.item()
             general_loss = general_loss + loss_weights[2] *loss_mae if general_loss else loss_weights[2] *loss_mae
 
