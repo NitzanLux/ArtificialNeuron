@@ -438,7 +438,7 @@ class NeuronalView():
 
 if __name__ == '__main__':
     config = configuration_factory.load_config_file(
-        r"models/NMDA/heavy_AdamW_NMDA_Tree_TCN__2022-01-27__17_58__ID_40048/heavy_AdamW_NMDA_Tree_TCN__2022-01-27__17_58__ID_40048.config")
+        r"models/NMDA/AdamWresidual_with_normalization_NMDA_Tree_TCN__2022-02-02__11_59__ID_46128/AdamWresidual_with_normalization_NMDA_Tree_TCN__2022-02-02__11_59__ID_46128.config")
     nv=NeuronalView()
     nv.create_graph(config)
     nv.show_view()

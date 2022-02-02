@@ -240,6 +240,7 @@ class ModelEvaluator():
                             vertical_spacing=0.1, start_cell='top-left',
                             subplot_titles=("voltage", "spike probability"), row_heights=[0.7, 0.3])
         x_axis = np.arange(v.shape[0])
+        # fig.add_trace(go.Scatter(x=x_axis, y=np.convolve(v,np.full((self.config.input_window_size//2,),1./(self.config.input_window_size//2))), name="avg_voltage"), row=1, col=1)
         fig.add_trace(go.Scatter(x=x_axis, y=v, name="voltage"), row=1, col=1)
         fig.add_trace(go.Scatter(x=x_axis, y=v_p, name="predicted voltage"), row=1, col=1)
         fig.add_trace(go.Scatter(x=x_axis, y=s, name="spike"), row=2, col=1)
