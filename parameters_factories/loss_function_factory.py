@@ -130,7 +130,7 @@ def loss_zero_mse_on_spikes(loss_weights, window_size, sigma):
             general_loss = general_loss + loss_mse if general_loss else loss_mse
 
         if loss_weights[2] > 0:
-            loss_dvt = loss_weights[2] * mse_loss(output[2], target[2])
+            loss_dvt = loss_weights[2] * mse_loss(output[1], target[1])
             loss_dvt_item = loss_dvt.item()
             general_loss = general_loss + loss_dvt if general_loss else loss_dvt
 
