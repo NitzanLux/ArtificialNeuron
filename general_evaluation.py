@@ -280,7 +280,7 @@ class ModelEvaluator():
                                                             window_size_ms=config.time_domain_shape,
                                                             file_load=config.train_file_load,
                                                             sample_ratio_to_shuffle=1,
-                                                            number_of_files=1,number_of_traces_from_file=2,# todo for debugging
+                                                            # number_of_files=1,number_of_traces_from_file=2,# todo for debugging
                                                             ).eval()
         return validation_data_generator
 
@@ -300,7 +300,7 @@ class ModelEvaluator():
 if __name__ == '__main__':
     # ModelEvaluator.build_and_save(r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\heavy_AdamW_NMDA_Tree_TCN__2022-01-27__17_58__ID_40048\heavy_AdamW_NMDA_Tree_TCN__2022-01-27__17_58__ID_40048")
     eval = ModelEvaluator.load(
-        r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\heavy_AdamW_NMDA_Tree_TCN__2022-01-27__14_39__ID_26894\heavy_AdamW_NMDA_Tree_TCN__2022-01-27__14_39__ID_26894.eval")
+        r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\AdamWovershot_NMDA_Tree_TCN__2022-02-01__10_25__ID_10353\AdamWovershot_NMDA_Tree_TCN__2022-02-01__10_25__ID_10353.eval")
     # eval.data.flatten_batch_dimensions()
     # eval.save()
     eval.display()
