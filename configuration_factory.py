@@ -56,7 +56,7 @@ def surround_with_default_config_values(**kargs):
                       # files_filter_regex=".*exBas_0_1100_inhBasDiff_-1100_600__exApic_0_1100_inhApicDiff_-1100_600_SpTemp[^\\/\.]*\.p",
                       files_filter_regex=".*", freeze_node_factor=None,
                       optimizer_type="AdamW", optimizer_params={},  # optimizer_params={'eps':1e-8},
-                      clip_gradients_factor=1.5, lr_decay_factor=0.75, lr_patience_factor=400,
+                      clip_gradients_factor=1.5, lr_decay_factor=0.5, lr_patience_factor=400,
                       scheduler_cooldown_factor=200,
                       batch_counter=0, epoch_counter=0,  # default counter
                       torch_seed=42, numpy_seed=21, random_seed=12, init_weights_sd=0.05,
@@ -217,7 +217,7 @@ if __name__ == '__main__':
     #                                      batch_size_validation=200, batch_size_train=5, clip_gradients_factor=2.5,
     #                                      constant_learning_rate=0.005)
     #     configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
-    configurations_name = "overshot_1"
+    configurations_name = "overshot_2"
     for i in ['AdamW', 'NAdam']:  # ,'RMSprop']:
         config_morpho_0 = config_factory(loss_function='focalbcel_mse_mae_loss',
                                          dynamic_learning_params=False  # ,optimizer_type='RMSprop'
@@ -228,7 +228,7 @@ if __name__ == '__main__':
                                          accumulate_loss_batch_factor=5, spike_probability=None, prediction_length=1000,
 
                                          batch_size_validation=200, batch_size_train=5, clip_gradients_factor=5.,
-                                         constant_learning_rate=0.005)
+                                         constant_learning_rate=0.003)
         # configs.append(config_morpho_0)
         configs.extend(generate_config_files_multiple_seeds(config_morpho_0, 2))
     with open(os.path.join(MODELS_DIR, "%s.json" % configurations_name), 'w') as file:
