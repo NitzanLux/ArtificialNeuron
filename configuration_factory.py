@@ -57,7 +57,7 @@ def surround_with_default_config_values(**kargs):
                       files_filter_regex=".*", freeze_node_factor=None,
                       optimizer_type="AdamW", optimizer_params={},  # optimizer_params={'eps':1e-8},
                       clip_gradients_factor=1.5, lr_decay_factor=0.5, lr_patience_factor=50,
-                      scheduler_cooldown_factor=100,
+                      scheduler_cooldown_factor=150,
                       batch_counter=0, epoch_counter=0,  # default counter
                       torch_seed=42, numpy_seed=21, random_seed=12, init_weights_sd=0.05,
                       dynamic_learning_params=True,
