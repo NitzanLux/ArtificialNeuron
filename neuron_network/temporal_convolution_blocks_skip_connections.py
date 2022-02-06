@@ -21,7 +21,7 @@ class BranchLeafBlockSkipConnections(BranchLeafBlock):
                          channel_output_number, kernel_size, stride, dilation, **kwargs)
         self.skip_connections = SkipConnections(input_shape[0],channel_output_number)
     def forward(self, x):
-        out = BranchLeafBlock.forward(self,x)+self.skip_connections.forward(x)
+        out = super().__call__(x)+self.skip_connections.forward(x)
         return out
 
 
@@ -33,7 +33,7 @@ class IntersectionBlockSkipConnections(IntersectionBlock):
         self.skip_connections = SkipConnections(input_shape[0],channel_output_number)
 
     def forward(self, x):
-        out = IntersectionBlock.forward(self,x)+self.skip_connections.forward(x)
+        out =super().__call__(x)+self.skip_connections.forward(x)
         return out
 
 
@@ -47,7 +47,7 @@ class BranchBlockSkipConnections(BranchBlock):
         self.skip_connections = SkipConnections(input_shape_integration[0],channel_output_number)
 
     def forward(self, x,prev_segment):
-        out = BranchBlock.forward(self,x,prev_segment)+self.skip_connections(torch.cat([prev_segment, x], dim=SYNAPSE_DIMENTION_POSITION))
+        out = super().__call__(x,prev_segment)+self.skip_connections(torch.cat([prev_segment, x], dim=SYNAPSE_DIMENTION_POSITION))
         return out
 
 
@@ -58,4 +58,4 @@ class RootBlockSkipConnections(RootBlock):
                          inner_scope_channel_number, kernel_size, stride, dilation, **kwargs)
 
     def forward(self, x):
-        return super().forward(x)
+        return super().__call__(x)
