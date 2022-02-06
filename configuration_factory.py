@@ -227,7 +227,7 @@ if __name__ == '__main__':
                                          model_tag="%s%s" % (i, configurations_name), optimizer_type=i,
                                          accumulate_loss_batch_factor=5, spike_probability=None, prediction_length=1000,
 
-                                         batch_size_validation=200, batch_size_train=5, clip_gradients_factor=5.,
+                                         batch_size_validation=200, batch_size_train=2, clip_gradients_factor=5.,
                                          constant_learning_rate=0.001)
         # configs.append(config_morpho_0)
         configs.extend(generate_config_files_multiple_seeds(config_morpho_0, 2))
