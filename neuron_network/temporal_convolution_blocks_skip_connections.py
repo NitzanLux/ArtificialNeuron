@@ -58,4 +58,4 @@ class RootBlockSkipConnections(RootBlock):
                          inner_scope_channel_number, kernel_size, stride, dilation, **kwargs)
 
     def forward(self, x):
-        return super.forward(x)
+        return super().forward(x)
