@@ -10,7 +10,7 @@ from synapse_tree import SectionNode, SectionType
 import os
 from enum import Enum
 import neuron_network.basic_convolution_blocks as basic_convolution_blocks
-import neuron_network.temporal_convolution_blocks as temporal_convolution_blocks
+
 import torch.nn as nn
 import copy
 from synapse_tree import NUMBER_OF_PREVIUSE_SEGMENTS_IN_BRANCH
@@ -70,12 +70,10 @@ class Base1DConvolutionBlock(nn.Module):
 
 
 class BranchLeafBlock(nn.Module):
-    def __init__(self, input_shape: Tuple[int, int], number_of_layers_leaf: int, activation_function
-                 , inner_scope_channel_number
-                 , channel_output_number, kernel_size, stride=1,
-                 dilation=1, **kwargs):
-        super(BranchLeafBlock, self).__init__()
+    def __init__(self, input_shape: Tuple[int, int], number_of_layers_leaf: int, activation_function,
+                 inner_scope_channel_number, channel_output_number, kernel_size, stride=1, dilation=1, **kwargs):
 
+        super().__init__()
         self.base_conv_1d = Base1DConvolutionBlock(number_of_layers_leaf, input_shape, activation_function,
                                                    inner_scope_channel_number, channel_output_number, kernel_size,
                                                    stride, dilation,skip_connections=kwargs['skip_connections'])

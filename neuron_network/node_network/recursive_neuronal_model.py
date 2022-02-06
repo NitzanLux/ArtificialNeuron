@@ -15,6 +15,7 @@ import torch.nn as nn
 import neuron_network.basic_convolution_blocks as basic_convolution_blocks
 import neuron_network.linear_convolution_blocks as linear_convolution_blocks
 import neuron_network.temporal_convolution_blocks as temporal_convolution_blocks
+import neuron_network.temporal_convolution_blocks_skip_connections as temporal_convolution_blocks_skip_connections
 from get_neuron_modle import get_L5PC
 from project_path import MODELS_DIR
 from synapse_tree import SectionType
@@ -36,50 +37,53 @@ class ArchitectureType(Enum):
     BASIC_CONV = "BASIC_CONV"
     LAYERED_TEMPORAL_CONV = "LAYERED_TEMPORAL_CONV"
     LINEAR = 'LINEAR'
+    TEMPORAL_SKIP = "TEMPORAL_SKIP_CONNECTIONS"
 
 
 SYNAPSE_DIMENTION_POSITION = 1
 
 
 class RecursiveNeuronModel(nn.Module):
-    def __init__(self, model_type,
+    def __init__(self, model_type, activation_function_kargs=None, activation_function_name=None,
                  is_cuda=False, include_dendritic_voltage_tracing=False, **network_kwargs):
         super(RecursiveNeuronModel, self).__init__()
         self.model_type = model_type
         self.include_dendritic_voltage_tracing = include_dendritic_voltage_tracing
         self.is_cuda = is_cuda
-        self.activation_function_name = network_kwargs["activation_function_name"]
-        self.activation_function_kargs = network_kwargs["activation_function_kargs"]
+        self.activation_function_name = activation_function_name
+        self.activation_function_kargs = activation_function_kargs
         self.models = nn.ModuleDict()
-        # self.get_model_block(**network_kwargs)
-        self.is_inter_module_skip_connections = network_kwargs['inter_module_skip_connections']
-        # self.model_skip_connections_inter = None
         self.__id = ID_NULL_VALUE
         self.__depth = ID_NULL_VALUE
-        self.internal_models = []
+        self.main_model = None
         self.named_internal_parameters_that_has_gradients = dict()
 
     def get_activation_function(self):
         activation_function_base_function = getattr(nn, self.activation_function_name)
         return lambda: activation_function_base_function(**self.activation_function_kargs)
 
-    def get_model_block(self, **config):
-        if config["architecture_type"] == ArchitectureType.BASIC_CONV.value:
+    def get_model_block(self, architecture_type, inter_module_skip_connections, **config):
+        if architecture_type == ArchitectureType.BASIC_CONV.value:
             # probability wont work because synapse became channels
             branch_class = basic_convolution_blocks.BranchBlock
             branch_leaf_class = basic_convolution_blocks.BranchLeafBlock
             intersection_class = basic_convolution_blocks.IntersectionBlock
             root_class = basic_convolution_blocks.RootBlock
-        elif config["architecture_type"] == ArchitectureType.LAYERED_TEMPORAL_CONV.value:
+        elif architecture_type == ArchitectureType.LAYERED_TEMPORAL_CONV.value and not inter_module_skip_connections:
             branch_class = temporal_convolution_blocks.BranchBlock
             branch_leaf_class = temporal_convolution_blocks.BranchLeafBlock
             intersection_class = temporal_convolution_blocks.IntersectionBlock
             root_class = temporal_convolution_blocks.RootBlock
-        elif config["architecture_type"] == ArchitectureType.LINEAR.value:
+        elif architecture_type == ArchitectureType.LINEAR.value:
             branch_class = linear_convolution_blocks.BranchBlock
             branch_leaf_class = linear_convolution_blocks.BranchLeafBlock
             intersection_class = linear_convolution_blocks.IntersectionBlock
             root_class = linear_convolution_blocks.RootBlock
+        elif architecture_type == ArchitectureType.LAYERED_TEMPORAL_CONV.value and inter_module_skip_connections:
+            branch_class = temporal_convolution_blocks_skip_connections.BranchBlockSkipConnections
+            branch_leaf_class = temporal_convolution_blocks_skip_connections.BranchLeafBlockSkipConnections
+            intersection_class = temporal_convolution_blocks_skip_connections.IntersectionBlockSkipConnections
+            root_class = temporal_convolution_blocks_skip_connections.RootBlockSkipConnections
         else:
             assert False, "type is not known"
 
@@ -95,17 +99,18 @@ class RecursiveNeuronModel(nn.Module):
         else:
             assert False, "Type not found"
 
-    def register_model(self, attribute, model):
-        assert attribute not in self.models, "attribute already exists"
-        # self.models[attribute]=model
-        if attribute not in [INTERSECTION_A, INTERSECTION_B, BRANCHES, UPSTREAM_MODEL]:
-            self.internal_models.append(model)
-        setattr(self, attribute, model)
-        for n, p in model.named_parameters():
-            self.named_internal_parameters_that_has_gradients[n] = [p,p.requires_grad]
+    # def register_model(self, attribute, model):
+    #     assert attribute not in self.models, "attribute already exists"
+    #     # self.models[attribute]=model
+    #     if attribute not in [INTERSECTION_A, INTERSECTION_B, BRANCHES, UPSTREAM_MODEL]:
+    #         self.internal_models.append(model)
+    #     setattr(self, attribute, model)
 
     def freeze_model_gradients(self):
-        for m in self.internal_models:
+        if len(self.named_internal_parameters_that_has_gradients) == 0:
+            for n, p in model.named_parameters():
+                self.named_internal_parameters_that_has_gradients[n] = [p, p.requires_grad]
+        for m in self.main_model:
             for n, p in m.named_parameters():
                 p.requires_grad = False
 
@@ -184,7 +189,6 @@ class RecursiveNeuronModel(nn.Module):
         for m in self:
             m.freeze_all_subtree_parameters()
 
-
     def save(self, path):  # todo fix
         state_dict = self.state_dict()
         with open('%s.pkl' % path, 'wb') as outp:
@@ -243,11 +247,11 @@ class RecursiveNeuronModel(nn.Module):
         assert self.__depth == ID_NULL_VALUE, "ID for current node already inserted"
         self.__depth = depth
 
-    def get_nodes_per_level(self,max_depth=None):
+    def get_nodes_per_level(self, max_depth=None):
         node_stack = [self]
         level_stack = [[self]]
         while (len(node_stack) > 0):
-            if max_depth is not None and len(node_stack)>=max_depth:
+            if max_depth is not None and len(node_stack) >= max_depth:
                 break
             childrens_on_level = []
             for node in node_stack:
@@ -258,13 +262,16 @@ class RecursiveNeuronModel(nn.Module):
 
 
 class LeafNetwork(RecursiveNeuronModel):
-    def __init__(self, input_indexes, is_cuda=False, include_dendritic_voltage_tracing=False
-                 , **network_kwargs):
-        super().__init__(SectionType.BRANCH_LEAF, is_cuda,
-                         include_dendritic_voltage_tracing,
+    def __init__(self, input_indexes, channel_output_number, is_cuda=False, include_dendritic_voltage_tracing=False,
+                 activation_function_kargs=None, activation_function_name=None,
+                 **network_kwargs):
+        super().__init__(SectionType.BRANCH_LEAF, is_cuda=is_cuda,
+                         include_dendritic_voltage_tracing=include_dendritic_voltage_tracing,
+                         activation_function_name=activation_function_name,
+                         activation_function_kargs=activation_function_kargs,
                          **network_kwargs)
         self.input_indexes = input_indexes
-        self.channel_output_number = min(len(self.input_indexes), network_kwargs["channel_output_number"])
+        self.channel_output_number = min(len(self.input_indexes), channel_output_number)
         self.__name__ = "LeafNetwork"
 
     def __iter__(self):
@@ -276,50 +283,43 @@ class LeafNetwork(RecursiveNeuronModel):
 
     def forward(self, x):
         out = self.main_model(x[:, self.input_indexes, ...])
-        if self.is_inter_module_skip_connections:
-            out = out + self.model_skip_connections_inter(x[:, self.input_indexes, ...])
         return out
 
-    def set_inputs_to_model(self, **network_kwargs):
-        network_kwargs = deepcopy(network_kwargs)
-        network_kwargs["channel_output_number"] = min(len(self.input_indexes), network_kwargs["channel_output_number"])
-        model_block_constructor = self.get_model_block(**network_kwargs)
-        self.register_model(MAIN_MODEL,
-                            model_block_constructor((len(self.input_indexes), network_kwargs["input_window_size"]),
-                                                    **network_kwargs,
-                                                    activation_function=self.get_activation_function()))
-        if self.is_inter_module_skip_connections:
-            self.register_model(SKIP_CONNECTIONS_INTER,
-                                nn.Sequential(nn.Conv1d(len(self.input_indexes), self.channel_output_number, 1),nn.BatchNorm1d(self.channel_output_number)))
+    def set_inputs_to_model(self, channel_output_number, input_window_size, inter_module_skip_connections,
+                            architecture_type, **network_kwargs):
+        channel_output_number = min(len(self.input_indexes), channel_output_number)
+        model_block_constructor = self.get_model_block(architecture_type, inter_module_skip_connections,
+                                                       **network_kwargs)
+        self.main_model = model_block_constructor(input_shape=(len(self.input_indexes), input_window_size),
+                                                  channel_output_number=channel_output_number, **network_kwargs,
+                                                  activation_function=self.get_activation_function())
+        self.channel_output_number = channel_output_number
 
 
 class IntersectionNetwork(RecursiveNeuronModel):
-    def __init__(self, is_cuda=False,
+    def __init__(self, is_cuda=False, activation_function_kargs=None, activation_function_name=None,
                  include_dendritic_voltage_tracing=False, **network_kwargs):
-        super().__init__(SectionType.BRANCH_INTERSECTION, is_cuda,
-                         include_dendritic_voltage_tracing, **network_kwargs)
+        super().__init__(SectionType.BRANCH_INTERSECTION, is_cuda=is_cuda,
+                         activation_function_kargs=activation_function_kargs,
+                         activation_function_name=activation_function_name,
+                         include_dendritic_voltage_tracing=include_dendritic_voltage_tracing, **network_kwargs)
         self.channel_output_number = None
         self.__name__ = "IntersectionNetwork"
 
     def set_inputs_to_model(self, intersection_a: [LeafNetwork, 'BranchNetwork'],
-                            intersection_b: [LeafNetwork, 'BranchNetwork'], **network_kwargs):
-        self.register_model(INTERSECTION_A, intersection_a)
-        self.register_model(INTERSECTION_B, intersection_b)
-
-        network_kwargs = deepcopy(network_kwargs)
-        network_kwargs["channel_output_number"] = min(
+                            intersection_b: [LeafNetwork, 'BranchNetwork'], input_window_size, channel_output_number,
+                            **network_kwargs):
+        self.intersection_a = intersection_a
+        self.intersection_b = intersection_b
+        channel_output_number = min(
             self.intersection_a.channel_output_number + self.intersection_b.channel_output_number,
-            network_kwargs["channel_output_number"])
-        self.channel_output_number = network_kwargs["channel_output_number"]
+            channel_output_number)
         model_block_constructor = self.get_model_block(**network_kwargs)
-        self.register_model(MAIN_MODEL, model_block_constructor(
+        self.main_model = model_block_constructor(
             (self.intersection_a.channel_output_number + self.intersection_b.channel_output_number,
-             network_kwargs["input_window_size"]), **network_kwargs,
-            activation_function=self.get_activation_function()))
-        if self.is_inter_module_skip_connections:
-            self.register_model(SKIP_CONNECTIONS_INTER, nn.Sequential(nn.Conv1d(
-                self.intersection_a.channel_output_number + self.intersection_b.channel_output_number,
-                self.channel_output_number, (1,)),nn.BatchNorm1d(self.channel_output_number)))
+             input_window_size), channel_output_number=channel_output_number, **network_kwargs,
+            activation_function=self.get_activation_function())
+        self.channel_output_number = channel_output_number
 
     def forward(self, x):
         input_a = self.intersection_a(x)
@@ -329,8 +329,6 @@ class IntersectionNetwork(RecursiveNeuronModel):
         del input_a
         gc.collect()
         out = self.main_model(input)
-        if self.is_inter_module_skip_connections:
-            out = out + self.model_skip_connections_inter(input)
         return out
 
     def __iter__(self):
@@ -340,32 +338,31 @@ class IntersectionNetwork(RecursiveNeuronModel):
 
 class BranchNetwork(RecursiveNeuronModel):
     def __init__(self, input_indexes, is_cuda=False,
-                 include_dendritic_voltage_tracing=False, **network_kwargs):
-        super().__init__(SectionType.BRANCH, is_cuda,
-                         include_dendritic_voltage_tracing, **network_kwargs)
+                 include_dendritic_voltage_tracing=False, activation_function_kargs=None, activation_function_name=None,
+                 **network_kwargs):
+        super().__init__(SectionType.BRANCH, is_cuda=is_cuda,
+                         include_dendritic_voltage_tracing=include_dendritic_voltage_tracing,
+                         activation_function_name=activation_function_name,
+                         activation_function_kargs=activation_function_kargs, **network_kwargs)
         self.input_indexes = input_indexes
         self.upstream_model: [IntersectionNetwork, None] = None
 
         self.__name__ = "BranchNetwork"
 
-    def set_inputs_to_model(self, upstream_model: [IntersectionNetwork], **network_kwargs):
-        self.register_model(UPSTREAM_MODEL, upstream_model)
-        network_kwargs = deepcopy(network_kwargs)
-        network_kwargs["channel_output_number"] = min(
+    def set_inputs_to_model(self, upstream_model: [IntersectionNetwork], input_window_size, channel_output_number,
+                            **network_kwargs):
+        self.upstream_model = upstream_model
+        channel_output_number = min(
             self.upstream_model.channel_output_number + len(self.input_indexes),
-            network_kwargs["channel_output_number"])
-        self.channel_output_number = network_kwargs["channel_output_number"]
+            channel_output_number)
+        self.channel_output_number = channel_output_number
         model_block_constructor = self.get_model_block(**network_kwargs)
-        self.register_model(MAIN_MODEL, model_block_constructor(
-            input_shape_leaf=(len(self.input_indexes), network_kwargs["input_window_size"]),
+        self.main_model = model_block_constructor(
+            input_shape_leaf=(len(self.input_indexes), input_window_size),
             input_shape_integration=(
                 len(self.input_indexes) + self.upstream_model.channel_output_number,
-                network_kwargs["input_window_size"]), **network_kwargs,
-            activation_function=self.get_activation_function()))
-        if self.is_inter_module_skip_connections:
-            self.register_model(SKIP_CONNECTIONS_INTER, nn.Sequential(nn.Conv1d(
-                len(self.input_indexes) + self.upstream_model.channel_output_number,
-                self.channel_output_number, 1),nn.BatchNorm1d(self.channel_output_number)))
+                input_window_size), channel_output_number=channel_output_number, **network_kwargs,
+            activation_function=self.get_activation_function())
 
     def __repr__(self):
         return super(BranchNetwork, self).__repr__() + ' #syn %d' % len(self.input_indexes)
@@ -373,9 +370,6 @@ class BranchNetwork(RecursiveNeuronModel):
     def forward(self, x):
         upstream_data = self.upstream_model(x)
         out = self.main_model(x[:, self.input_indexes, ...], upstream_data)
-        if self.is_inter_module_skip_connections:
-            out = out + self.model_skip_connections_inter(
-                torch.cat([upstream_data, x[:, self.input_indexes, ...]], dim=SYNAPSE_DIMENTION_POSITION))
         return out
 
     def __iter__(self):
@@ -383,22 +377,23 @@ class BranchNetwork(RecursiveNeuronModel):
 
 
 class SomaNetwork(RecursiveNeuronModel):
-    def __init__(self, is_cuda=False, include_dendritic_voltage_tracing=False,
+    def __init__(self, input_window_size, is_cuda=False, include_dendritic_voltage_tracing=False,
                  **network_kwargs):
-        super().__init__(SectionType.SOMA, is_cuda,
-                         include_dendritic_voltage_tracing, **network_kwargs)
-        self.register_model(BRANCHES, nn.ModuleList())
-        self.time_domain_shape = network_kwargs["input_window_size"]
+        super().__init__(SectionType.SOMA, is_cuda=is_cuda,
+                         include_dendritic_voltage_tracing=include_dendritic_voltage_tracing, **network_kwargs)
+        self.branches = nn.ModuleList()
+        self.time_domain_shape = input_window_size
         self.__name__ = 'SomaNetwork'
         self.named_parameters_that_has_gradients = dict()
 
-    def set_inputs_to_model(self, *branches: [IntersectionNetwork, BranchNetwork], **network_kwargs):
+    def set_inputs_to_model(self, *branches: [IntersectionNetwork, BranchNetwork], input_window_size, **network_kwargs):
         self.branches.extend(branches)
         number_of_inputs = sum([branch.channel_output_number for branch in self.branches])
         model_block_constructor = self.get_model_block(**network_kwargs)
-        self.register_model(MAIN_MODEL, model_block_constructor((number_of_inputs, network_kwargs["input_window_size"]),
-                                                                **network_kwargs,
-                                                                activation_function=self.get_activation_function()))
+        self.main_model = model_block_constructor((number_of_inputs, input_window_size),
+                                                  input_window_size=input_window_size,
+                                                  **network_kwargs,
+                                                  activation_function=self.get_activation_function())
         self.set_id_and_depth_for_tree()
 
     def __iter__(self):
@@ -426,16 +421,15 @@ class SomaNetwork(RecursiveNeuronModel):
     def keep_gradients_on_level(self, layer_height):
         pass  # todo fix it
 
-
-    def train_random_subtree(self,number_of_nodes_to_shutdown):
-        if number_of_nodes_to_shutdown==0:
+    def train_random_subtree(self, number_of_nodes_to_shutdown):
+        if number_of_nodes_to_shutdown == 0:
             while True:
                 yield self
             return
         levels = self.get_nodes_per_level()
         models = [m for level in levels for m in level]
         while True:
-            models_to_freeze = random.choices(models,k=number_of_nodes_to_shutdown)
+            models_to_freeze = random.choices(models, k=number_of_nodes_to_shutdown)
             for m in models_to_freeze:
                 m.freeze_model_gradients()
 
@@ -448,20 +442,20 @@ class SomaNetwork(RecursiveNeuronModel):
         current_tree_base_level = 0
         models_to_freeze = []
         levels = self.get_nodes_per_level()
-        number_of_levels=len(levels)
+        number_of_levels = len(levels)
         self.freeze_all_subtree_parameters()
         while True:
             for m in models_to_freeze:
                 m.freeze_model_gradients()
             models_to_freeze = []
-            if number_of_levels<current_tree_base_level+number_of_levels_per_training:
-                cur_levels=levels[number_of_levels:]+levels[:(current_tree_base_level+number_of_levels_per_training)%number_of_levels]
+            if number_of_levels < current_tree_base_level + number_of_levels_per_training:
+                cur_levels = levels[number_of_levels:] + levels[:(
+                                                                         current_tree_base_level + number_of_levels_per_training) % number_of_levels]
             else:
-                cur_levels = levels[current_tree_base_level:current_tree_base_level+number_of_levels_per_training]
+                cur_levels = levels[current_tree_base_level:current_tree_base_level + number_of_levels_per_training]
             nodes = [m for level in cur_levels for m in level]
             for m in nodes:
                 m.reset_requires_grad()
                 models_to_freeze.append(m)
-            current_tree_base_level=(current_tree_base_level+number_of_levels_per_training)%number_of_levels
+            current_tree_base_level = (current_tree_base_level + number_of_levels_per_training) % number_of_levels
             yield self
-
