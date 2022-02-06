@@ -47,7 +47,7 @@ class BranchBlockSkipConnections(BranchBlock):
         self.skip_connections = SkipConnections(input_shape_leaf[0]+input_shape_integration[0],channel_output_number)
 
     def forward(self, x,prev_segment):
-        out = BranchBlock.forward(self,x,prev_segment)+self.skip_connections(torch.cat([prev_segment, x[:, self.input_indexes, ...]], dim=SYNAPSE_DIMENTION_POSITION))
+        out = BranchBlock.forward(self,x,prev_segment)+self.skip_connections(torch.cat([prev_segment, x], dim=SYNAPSE_DIMENTION_POSITION))
         return out
 
 
