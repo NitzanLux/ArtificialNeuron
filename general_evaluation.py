@@ -17,8 +17,11 @@ import neuron_network.node_network.recursive_neuronal_model as recursive_neurona
 from general_aid_function import *
 from neuron_network import neuronal_model
 import plotly.express as px
-BUFFER_SIZE_IN_FILES_VALID = 1
 import datetime
+import argparse
+
+BUFFER_SIZE_IN_FILES_VALID = 1
+
 
 class EvaluationData():
     def __init__(self, recoreded_data=None):
@@ -296,12 +299,24 @@ class ModelEvaluator():
         end_time=datetime.datetime.now()
         print("evaluation took %0.1f minutes"%((end_time-start_time).total_seconds()/60.))
 
+parser = argparse.ArgumentParser(description='Add configuration file')
+parser.add_argument(dest="configs_path", type=str,
+                    help='configuration file for path')
+parser.add_argument(dest="job_id", help="the job id", type=str)
+args = parser.parse_args()
+print(args)
+with open(os.path.join(MODELS_DIR, "%s.json" % args.configs_path), 'r') as file:
+    configs = json.load(file)
+for i, conf in enumerate(configs):
+    ModelEvaluator.build_and_save(config=conf)
 
-if __name__ == '__main__':
-    # ModelEvaluator.build_and_save(r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\heavy_AdamW_NMDA_Tree_TCN__2022-01-27__17_58__ID_40048\heavy_AdamW_NMDA_Tree_TCN__2022-01-27__17_58__ID_40048")
-    eval = ModelEvaluator.load(
-        r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\AdamWovershot_NMDA_Tree_TCN__2022-02-01__10_25__ID_10353\AdamWovershot_NMDA_Tree_TCN__2022-02-01__10_25__ID_10353.eval")
-    # eval.data.flatten_batch_dimensions()
-    # eval.save()
-    eval.display()
+
+
+# if __name__ == '__main__':
+#     # ModelEvaluator.build_and_save(r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\heavy_AdamW_NMDA_Tree_TCN__2022-01-27__17_58__ID_40048\heavy_AdamW_NMDA_Tree_TCN__2022-01-27__17_58__ID_40048")
+#     eval = ModelEvaluator.load(
+#         r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\NAdamshort_and_wide_1_NMDA_Tree_TCN__2022-02-06__15_47__ID_70819\NAdamshort_and_wide_1_NMDA_Tree_TCN__2022-02-06__15_47__ID_70819.eval")
+#     # eval.data.flatten_batch_dimensions()
+#     # eval.save()
+#     eval.display()
 #
