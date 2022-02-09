@@ -141,7 +141,7 @@ class ModelEvaluator():
             s, v = d_labels
             with torch.cuda.amp.autocast():
                 with torch.no_grad():
-                    output_s, output_v = model(d_input.cuda().type(torch.cuda.DoubleTensor))
+                    output_s, output_v = model(d_input.cuda().type(torch.cuda.FloatTensor))
                     # output_s, output_v = model(d_input.cuda().type(torch.cuda.FloatTensor))
                     output_s = torch.nn.Sigmoid()(output_s)
             self.data.append(v.cpu().detach().numpy().squeeze(), output_v.cpu().detach().numpy().squeeze(),
