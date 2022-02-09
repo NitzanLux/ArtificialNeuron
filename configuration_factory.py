@@ -72,8 +72,8 @@ def surround_with_default_config_values(**kargs):
                                  time_domain_shape=config.input_window_size,
                                  # kernel_size_2d=3,
                                  # kernel_size_1d=9,
-                                 number_of_layers_root=7, number_of_layers_leaf=7, number_of_layers_intersection=7,
-                                 number_of_layers_branch_intersection=7,
+                                 number_of_layers_root=3, number_of_layers_leaf=3, number_of_layers_intersection=3,
+                                 number_of_layers_branch_intersection=3,
                                  david_layers=[55, 13, 13, 13, 13, 13, 13],
                                  skip_connections=True,
                                  inter_module_skip_connections=True,
@@ -83,8 +83,8 @@ def surround_with_default_config_values(**kargs):
                                  padding=0,
                                  dilation=1,
                                  channel_input_number=1278,  # synapse number
-                                 inner_scope_channel_number=51,
-                                 channel_output_number=51,
+                                 inner_scope_channel_number=0,
+                                 channel_output_number=31,
                                  activation_function_name="LeakyReLU",
                                  activation_function_kargs=dict(negative_slope=0.25),
                                  include_dendritic_voltage_tracing=False)
@@ -217,7 +217,7 @@ if __name__ == '__main__':
     #                                      batch_size_validation=200, batch_size_train=5, clip_gradients_factor=2.5,
     #                                      constant_learning_rate=0.005)
     #     configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
-    configurations_name = "overshot_3"
+    configurations_name = "short_and_wide_2"
     for i in ['AdamW']:#, 'NAdam']:  # ,'RMSprop']:
         config_morpho_0 = config_factory(loss_function='focalbcel_mse_mae_loss',
                                          dynamic_learning_params=False  # ,optimizer_type='RMSprop'
@@ -225,9 +225,9 @@ if __name__ == '__main__':
                                          dynamic_learning_params_function="learning_parameters_iter_with_constant_weights",
                                          architecture_type="LAYERED_TEMPORAL_CONV",
                                          model_tag="%s%s" % (i, configurations_name), optimizer_type=i,
-                                         accumulate_loss_batch_factor=5, spike_probability=None, prediction_length=1000,
+                                         accumulate_loss_batch_factor=2, spike_probability=None, prediction_length=1000,
 
-                                         batch_size_validation=200, batch_size_train=2, clip_gradients_factor=5.,
+                                         batch_size_validation=200, batch_size_train=10, clip_gradients_factor=5.,
                                          constant_learning_rate=0.001)
         # configs.append(config_morpho_0)
         configs.extend(generate_config_files_multiple_seeds(config_morpho_0, 2))
