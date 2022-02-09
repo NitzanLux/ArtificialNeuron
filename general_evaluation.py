@@ -19,6 +19,7 @@ from neuron_network import neuronal_model
 import plotly.express as px
 import datetime
 import argparse
+import json
 
 BUFFER_SIZE_IN_FILES_VALID = 1
 
