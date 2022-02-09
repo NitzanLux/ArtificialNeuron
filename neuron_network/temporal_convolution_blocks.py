@@ -148,6 +148,8 @@ class RootBlock(nn.Module):
                                                   stride, dilation,skip_connections=kwargs['skip_connections'])
         self.model = nn.Sequential(self.conv1d_root, activation_function())
 
+        if inner_scope_channel_number is None:
+            inner_scope_channel_number = input_shape[0]
         self.spike_prediction = nn.Conv1d(inner_scope_channel_number
                                           , 1, kernel_size=input_shape[1])
         self.voltage_prediction = nn.Conv1d(inner_scope_channel_number
