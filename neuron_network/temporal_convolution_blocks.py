@@ -54,7 +54,6 @@ class Base1DConvolutionBlock(nn.Module):
 
         for i in range(number_of_layers):
             in_channels, out_channels = self.channel_input_number, self.inner_scope_channel_number
-            print(in_channels)
             if i >= 1:
                 in_channels = self.inner_scope_channel_number
             if i == number_of_layers - 1:
