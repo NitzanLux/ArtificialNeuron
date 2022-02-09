@@ -43,9 +43,9 @@ class Base1DConvolutionBlock(nn.Module):
         self.skip_connections = skip_connections
         if inner_scope_channel_number is None:
             self.inner_scope_channel_number=input_shape[0]
-            print("hhhh")
+            print("hhhh",flush=True)
         else:
-            print("iner scope")
+            print("iner scope",flush=True)
             self.inner_scope_channel_number = inner_scope_channel_number
         self.channel_output_number = channel_output_number
         self.channel_input_number = input_shape[0]
