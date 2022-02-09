@@ -308,8 +308,8 @@ args = parser.parse_args()
 print(args)
 with open(os.path.join(MODELS_DIR, "%s.json" % args.configs_path), 'r') as file:
     configs = json.load(file)
-for i, conf in enumerate(configs):
-    ModelEvaluator.build_and_save(config=conf)
+for i, conf in enumerate(conf):
+    ModelEvaluator.build_and_save(conf)
 
 
 
