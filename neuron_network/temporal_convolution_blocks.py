@@ -41,7 +41,7 @@ class Base1DConvolutionBlock(nn.Module):
         padding = keep_dimensions_by_padding_claculator(input_shape[1], kernel_size, stride, dilation)
         self.layers_list = nn.ModuleList()
         self.skip_connections = skip_connections
-        if inner_scope_channel_number==None:
+        if inner_scope_channel_number is None:
             self.inner_scope_channel_number=input_shape[0]
         else:
             self.inner_scope_channel_number = inner_scope_channel_number
