@@ -309,7 +309,7 @@ print(args)
 with open(os.path.join(MODELS_DIR, "%s.json" % args.configs_path), 'r') as file:
     configs = json.load(file)
 for i, conf in enumerate(configs):
-    ModelEvaluator.build_and_save(conf)
+    ModelEvaluator.build_and_save(os.path.join(MODELS_DIR, *conf))
 
 
 
