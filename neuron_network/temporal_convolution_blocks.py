@@ -50,11 +50,11 @@ class Base1DConvolutionBlock(nn.Module):
         # self.batch_norm = nn.BatchNorm1d(input_shape[0])#todo debugging
 
         for i in range(number_of_layers):
-            in_channels, out_channels = self.channel_input_number, inner_scope_channel_number
+            in_channels, out_channels = self.channel_input_number, self.inner_scope_channel_number
             if i >= 1:
-                in_channels = inner_scope_channel_number
+                in_channels = self.inner_scope_channel_number
             if i == number_of_layers - 1:
-                out_channels = channel_output_number
+                out_channels = self.channel_output_number
             model = Base1DConvolutionBlockLayer(in_channels, out_channels, kernel_size, stride, padding, dilation,activation_function)
             self.layers_list.append(model)
 
