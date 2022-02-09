@@ -9,7 +9,6 @@ from slurm_job import *
 parser = argparse.ArgumentParser(description='Add configuration file')
 parser.add_argument(dest="config_path_or_json", type=str,
                     help='configuration file for path')
-parser.add_argument(dest="job_id", help="the job id", type=str)
 args = parser.parse_args()
 print(args)
 config = configuration_factory.load_config_file(args.config_path)
