@@ -7,8 +7,8 @@ import json
 from slurm_job import *
 
 parser = argparse.ArgumentParser(description='Add configuration file')
-parser.add_argument(dest="config_path_or_json", type=str, nargs='+',
-                    help='configuration file for path', required=True)
+parser.add_argument(dest="config_path_or_json", type=str,
+                    help='configuration file for path')
 parser.add_argument(dest="job_id", help="the job id", type=str)
 args = parser.parse_args()
 print(args)
