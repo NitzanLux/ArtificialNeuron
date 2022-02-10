@@ -180,7 +180,6 @@ def train_network(config, model):
             saving_counter += 1
             config.update(dict(batch_counter=config.batch_counter + 1), allow_val_change=True)
             # get the inputs; data is a list of [inputs, labels]
-            batch_counter += 1
 
             train_loss = batch_train(model, optimizer, custom_loss, train_data_iterator, config.clip_gradients_factor,
                                      config.accumulate_loss_batch_factor, optimizer_scheduler, scaler)
@@ -419,7 +418,6 @@ def display_accuracy(target, output, step, additional_str=''):
                "roc %s" % additional_str: wandb.plot.roc_curve(target, output, labels=None, classes_to_plot=None),
                "AUC %s" % additional_str: auc}, commit=True)
 
-    # todo add fp tp
 
 
 def run_fit_cnn():
