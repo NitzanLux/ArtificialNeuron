@@ -415,7 +415,7 @@ def display_accuracy(target, output, step, additional_str=''):
     wandb.log({"pr %s" % additional_str: wandb.plot.pr_curve(target, output,
                                                              labels=None, classes_to_plot=None),
                "roc %s" % additional_str: wandb.plot.roc_curve(target, output, labels=None, classes_to_plot=None),
-               "AUC %s" % additional_str: auc}, commit=True)
+               "AUC %s" % additional_str: auc}, commit=False)
 
 
 
