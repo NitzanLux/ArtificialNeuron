@@ -16,7 +16,7 @@ from synapse_tree import SectionNode
 synapse_type = 'NMDA'
 include_DVT = False
 num_DVT_components = 20 if synapse_type == 'NMDA' else 30
-CURRENT_VERSION = 1.3
+CURRENT_VERSION = 1.4
 
 
 def generate_model_name(additional_str: str = ''):

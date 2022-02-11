@@ -154,7 +154,7 @@ def train_network(config, model):
         learning_rate, loss_weights, optimizer, sigma, custom_loss = generate_constant_learning_parameters(config,
                                                                                                            model)
         if config.lr_scheduler is not None:
-            optimizer_scheduler = getattr(lr_scheduler,config.lr_scheduler)(optimizer, **config.lr_scheduler_param)
+            optimizer_scheduler = getattr(lr_scheduler,config.lr_scheduler)(optimizer, **config.lr_scheduler_params)
         dynamic_parameter_loss_genrator = None
     else:
         learning_rate, loss_weights, sigma = 0.001, [1] * 3, 0.1  # default values
