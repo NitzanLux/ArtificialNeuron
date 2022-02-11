@@ -302,26 +302,26 @@ class ModelEvaluator():
         end_time=datetime.datetime.now()
         print("evaluation took %0.1f minutes"%((end_time-start_time).total_seconds()/60.))
 
-parser = argparse.ArgumentParser(description='Add configuration file')
-parser.add_argument(dest="configs_path", type=str,
-                    help='configuration file for path')
-parser.add_argument(dest="job_id", help="the job id", type=str)
-args = parser.parse_args()
-print(args)
-with open(os.path.join(MODELS_DIR, "%s.json" % args.configs_path), 'r') as file:
-    configs = json.load(file)
-for i, conf in enumerate(configs):
-    ModelEvaluator.build_and_save(os.path.join(MODELS_DIR, *conf))
+# parser = argparse.ArgumentParser(description='Add configuration file')
+# parser.add_argument(dest="configs_path", type=str,
+#                     help='configuration file for path')
+# parser.add_argument(dest="job_id", help="the job id", type=str)
+# args = parser.parse_args()
+# print(args)
+# with open(os.path.join(MODELS_DIR, "%s.json" % args.configs_path), 'r') as file:
+#     configs = json.load(file)
+# for i, conf in enumerate(configs):
+#     ModelEvaluator.build_and_save(os.path.join(MODELS_DIR, *conf))
+#
 
 
-
-# if __name__ == '__main__':
-#     # model_name='AdamWshort_and_wide_1_NMDA_Tree_TCN__2022-02-06__15_47__ID_54572'
-#     model_name='NAdamshort_and_wide_1_NMDA_Tree_TCN__2022-02-06__15_47__ID_70819'
-#     # ModelEvaluator.build_and_save(r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\heavy_AdamW_NMDA_Tree_TCN__2022-01-27__17_58__ID_40048\heavy_AdamW_NMDA_Tree_TCN__2022-01-27__17_58__ID_40048")
-#     eval = ModelEvaluator.load(
-#         r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\%s\%s.eval"%(model_name,model_name))
-#     # eval.data.flatten_batch_dimensions()
-#     # eval.save()
-#     eval.display()
-# #
+if __name__ == '__main__':
+    # model_name='AdamWshort_and_wide_1_NMDA_Tree_TCN__2022-02-06__15_47__ID_54572'
+    model_name='AdamWshort_and_wide_2_NMDA_Tree_TCN__2022-02-09__17_06__ID_7668'
+    # ModelEvaluator.build_and_save(r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\heavy_AdamW_NMDA_Tree_TCN__2022-01-27__17_58__ID_40048\heavy_AdamW_NMDA_Tree_TCN__2022-01-27__17_58__ID_40048")
+    eval = ModelEvaluator.load(
+        r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\%s\%s.eval"%(model_name,model_name))
+    # eval.data.flatten_batch_dimensions()
+    # eval.save()
+    eval.display()
+#

@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import sklearn.metrics as skm
 import torch
 import torch.optim as optim
-from torch.optim.lr_scheduler import ReduceLROnPlateau
+import torch.optim.lr_scheduler as lr_scheduler
 from general_evaluation import ModelEvaluator
 import time
 import configuration_factory
@@ -153,9 +153,8 @@ def train_network(config, model):
     if not config.dynamic_learning_params:
         learning_rate, loss_weights, optimizer, sigma, custom_loss = generate_constant_learning_parameters(config,
                                                                                                            model)
-        optimizer_scheduler = ReduceLROnPlateau(optimizer, 'min',
-                                                patience=config.lr_patience_factor * config.accumulate_loss_batch_factor,
-                                                factor=config.lr_decay_factor, cooldown=10, min_lr=1e-6)
+        if config.lr_optimizer is not None:
+            optimizer_scheduler = getattr(lr_scheduler,config.lr_optimizer)(optimizer, **config.lr_scheduler_param)
         dynamic_parameter_loss_genrator = None
     else:
         learning_rate, loss_weights, sigma = 0.001, [1] * 3, 0.1  # default values
@@ -253,7 +252,7 @@ def evaluate_validation(config, custom_loss, model, validation_data_iterator):
             output_v = output[1].cpu().detach().numpy().squeeze().flatten()
             log_dict = {"brier score(s) validation": skm.brier_score_loss(target_s, output_s),
                         "R squared score(v) validation": skm.r2_score(target_v, output_v)}
-            wandb.log(log_dict, step=config.batch_counter, commit=True)  # add training parameters per step
+            wandb.log(log_dict, step=config.batch_counter, commit=False)  # add training parameters per step
 
         if config.batch_counter % ACCURACY_EVALUATION_FREQUENCY == 0:
             display_accuracy(target_s, output_s, config.batch_counter,
