@@ -177,6 +177,7 @@ def train_network(config, model):
 
         for i in range(config.epoch_size):
             saving_counter += 1
+            wandb.log({},step=config.batch_counter, commit=True)
             config.update(dict(batch_counter=config.batch_counter + 1), allow_val_change=True)
             # get the inputs; data is a list of [inputs, labels]
 
