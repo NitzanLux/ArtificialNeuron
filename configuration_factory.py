@@ -56,8 +56,8 @@ def surround_with_default_config_values(**kargs):
                       # files_filter_regex=".*exBas_0_1100_inhBasDiff_-1100_600__exApic_0_1100_inhApicDiff_-1100_600_SpTemp[^\\/\.]*\.p",
                       files_filter_regex=".*", freeze_node_factor=None,
                       optimizer_type="AdamW", optimizer_params=dict(cycle_momentum=False),clip_gradients_factor=1.5,  # optimizer_params={'eps':1e-8},
-                      # lr_scheduler='CyclicLR',lr_scheduler_params=dict(max_lr=0.001,step_size_up=1000,base_lr=0.00003),
-                      lr_scheduler='ReduceLROnPlateau',lr_scheduler_params=dict(lr_decay_factor=0.5, lr_patience_factor=200),
+                      lr_scheduler='CyclicLR',lr_scheduler_params=dict(max_lr=0.001,step_size_up=1000,base_lr=0.00003),
+                      # lr_scheduler='ReduceLROnPlateau',lr_scheduler_params=dict(lr_decay_factor=0.5, lr_patience_factor=200),
                       scheduler_cooldown_factor=150,
                       batch_counter=0, epoch_counter=0,  # default counter
                       torch_seed=42, numpy_seed=21, random_seed=12, init_weights_sd=0.05,
