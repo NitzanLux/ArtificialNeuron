@@ -320,8 +320,8 @@ class SavingAndEvaluationScheduler():
 
     @staticmethod
     def flush_all(config, model):
-        ModelEvaluator.build_and_save(config=config, model=model)
         SavingAndEvaluationScheduler.save_model(model, config)
+        # ModelEvaluator.build_and_save(config=config, model=model)
 
     @staticmethod
     def save_model(model, config):
@@ -378,8 +378,8 @@ def load_and_train(config):
     try:
         train_network(config, model)
     finally:
-        pass
-        # SavingAndEvaluationScheduler.flush_all(config,model)
+        # pass
+        SavingAndEvaluationScheduler.flush_all(config,model)
 
 
 def train_log(loss, step, epoch=None, learning_rate=None, sigma=None, weights=None, additional_str='', commit=False):

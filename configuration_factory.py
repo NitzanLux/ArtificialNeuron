@@ -103,10 +103,10 @@ def load_config_file(path: str) -> AttrDict:
     with open(path, 'r') as file:
         config = json.load(file)
     config = AttrDict(config)
-    if config.config_version < CURRENT_VERSION or True:
-        config.constant_learning_rate=0.0007
-        config.optimizer_params['lr']=config.constant_learning_rate
-        config.lr_scheduler=None
+    if config.config_version < CURRENT_VERSION :
+        # config.constant_learning_rate=0.0007
+        # config.optimizer_params['lr']=config.constant_learning_rate
+        # config.lr_scheduler=None
         config = surround_with_default_config_values(**config)
     return config
 
