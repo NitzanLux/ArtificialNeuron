@@ -36,9 +36,9 @@ class Base1DConvolutionBlockLayer(nn.Module):
         return out
 
 class GLUBlock(nn.Module):
-    def __init__(self,input_shape, activation_function,
-                                                   inner_scope_channel_number, channel_output_number, kernel_size,
-                                                   stride, dilation,skip_connections):
+    def __init__(self, input_shape, activation_function, inner_scope_channel_number, channel_output_number, kernel_size,
+                 stride, dilation, skip_connections):
+        super().__init__()
         self.glu_net = Base1DConvolutionBlock(3, input_shape, activation_function,
                                inner_scope_channel_number, channel_output_number, kernel_size,
                                stride, dilation, skip_connections=skip_connections)

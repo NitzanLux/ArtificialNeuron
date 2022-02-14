@@ -64,31 +64,34 @@ class RecursiveNeuronModel(nn.Module):
         activation_function_base_function = getattr(nn, self.activation_function_name)
         return lambda: activation_function_base_function(**self.activation_function_kargs)
 
-    @staticmethod
-    def get_four_blocks(model_class):
-        branch_class = getattr(model_class,BranchBlock)
-        branch_leaf_class = getattr(model_class,BranchLeafBlock)
-        intersection_class = getattr(model_class,IntersectionBlock)
-        root_class = getattr(model_class,RootBlock)
-        return branch_class,branch_leaf_class,intersection_class,root_class
-
     def get_model_block(self, architecture_type, inter_module_skip_connections, **config):
         if architecture_type == ArchitectureType.BASIC_CONV.value:
             # probability wont work because synapse became channels
-            branch_class, branch_leaf_class, intersection_class, root_class = get_four_blocks(basic_convolution_blocks)
-
-        elif architecture_type == ArchitectureType.LAYERED_TEMPORAL_CONV.value and not inter_module_skip_connections:
+            branch_class = basic_convolution_blocks.BranchBlock
+            branch_leaf_class = basic_convolution_blocks.BranchLeafBlock
+            intersection_class = basic_convolution_blocks.IntersectionBlock
+            root_class = basic_convolution_blocks.RootBlock
+        elif architecture_type == ArchitectureType.LAYERED_TEMPORAL_CONV.value :
             if inter_module_skip_connections:
-                branch_class, branch_leaf_class, intersection_class, root_class = get_four_blocks(
-                    temporal_convolution_blocks_skip_connections)
+                branch_class = temporal_convolution_blocks_skip_connections.BranchBlockSkipConnections
+                branch_leaf_class = temporal_convolution_blocks_skip_connections.BranchLeafBlockSkipConnections
+                intersection_class = temporal_convolution_blocks_skip_connections.IntersectionBlockSkipConnections
+                root_class = temporal_convolution_blocks_skip_connections.RootBlockSkipConnections
             else:
-                branch_class, branch_leaf_class, intersection_class, root_class = get_four_blocks(
-                    temporal_convolution_blocks)
+                branch_class = temporal_convolution_blocks.BranchBlock
+                branch_leaf_class = temporal_convolution_blocks.BranchLeafBlock
+                intersection_class = temporal_convolution_blocks.IntersectionBlock
+                root_class = temporal_convolution_blocks.RootBlock
         elif architecture_type == ArchitectureType.LINEAR.value:
-            branch_class, branch_leaf_class, intersection_class, root_class = get_four_blocks(
-                linear_convolution_blocks)
+            branch_class = linear_convolution_blocks.BranchBlock
+            branch_leaf_class = linear_convolution_blocks.BranchLeafBlock
+            intersection_class = linear_convolution_blocks.IntersectionBlock
+            root_class = linear_convolution_blocks.RootBlock
         elif architecture_type == ArchitectureType.GLU_NET.value :
-            branch_class, branch_leaf_class, intersection_class, root_class = get_four_blocks(glu_net_skip)
+            branch_class = glu_net_skip.BranchBlockSkipConnections
+            branch_leaf_class = glu_net_skip.BranchLeafBlockSkipConnections
+            intersection_class = glu_net_skip.IntersectionBlockSkipConnections
+            root_class = glu_net_skip.RootBlockSkipConnections
         else:
             assert False, "type is not known"
 
