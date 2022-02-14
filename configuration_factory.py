@@ -13,9 +13,9 @@ from neuron_network.node_network import recursive_neuronal_model
 from simulation_data_generator import *
 from synapse_tree import SectionNode
 
-synapse_type = 'NMDA'
+synapse_type = ''
 include_DVT = False
-num_DVT_components = 20 if synapse_type == 'NMDA' else 30
+# num_DVT_components = 20 if synapse_type == 'NMDA' else 30
 CURRENT_VERSION = 1.4
 
 
@@ -25,9 +25,9 @@ def generate_model_name(additional_str: str = ''):
     # train_string = 'samples_%d' % (batch_counter)
     current_datetime = str(datetime.now())[:-10].replace(':', '_').replace(' ', '__')
     if len(additional_str) > 0:
-        model_prefix = '%s_%s_Tree_TCN' % (additional_str, synapse_type)
+        model_prefix = '%s_%s' % (additional_str, synapse_type)
     else:
-        model_prefix = '%s_Tree_TCN' % (synapse_type)
+        model_prefix = '%s' % (synapse_type)
 
     model_filename = '%s__%s__%s' % (
         model_prefix, current_datetime, modelID_str)
