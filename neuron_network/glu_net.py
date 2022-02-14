@@ -35,10 +35,10 @@ class Base1DConvolutionBlockLayer(nn.Module):
         # out = self.batch_norm(out)#todo debugging
         return out
 
-class GLUBLOCK(nn.Module):
+class GLUBlock(nn.Module):
     def __init__(self,input_shape, activation_function,
                                                    inner_scope_channel_number, channel_output_number, kernel_size,
-                                                   stride, dilation,skip_connections=skip_connections):
+                                                   stride, dilation,skip_connections):
         self.glu_net = Base1DConvolutionBlock(3, input_shape, activation_function,
                                inner_scope_channel_number, channel_output_number, kernel_size,
                                stride, dilation, skip_connections=skip_connections)
