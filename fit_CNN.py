@@ -54,6 +54,8 @@ print('finding data')
 print('-----------------------------------------------', flush=True)
 
 DATA_TYPE = torch.cuda.DoubleTensor
+
+
 # ------------------------------------------------------------------
 # basic configurations and directories
 # ------------------------------------------------------------------
@@ -72,20 +74,19 @@ def batch_train(model, optimizer, custom_loss, train_data_iterator, clip_gradien
         inputs, labels = data
         inputs = inputs.cuda().type(DATA_TYPE)
         with torch.cuda.amp.autocast():
-
             labels = [l.cuda().flatten().type(DATA_TYPE) for l in labels]
             # forward + backward + optimize
-            print(_,"*****")
+            print(_, "*****")
             outputs = model(inputs)
             outputs = [i.flatten() for i in outputs]
             cur_general_loss, cur_loss_bcel, cur_loss_mse, cur_loss_dvt, cur_loss_gausian_mse = custom_loss(outputs,
                                                                                                             labels)
-            scaler.scale(cur_general_loss/accumulate_loss_batch_factor).backward()
-            general_loss += cur_general_loss/accumulate_loss_batch_factor
-            loss_bcel += cur_loss_bcel/accumulate_loss_batch_factor
-            loss_mse += cur_loss_mse/accumulate_loss_batch_factor
-            loss_dvt += cur_loss_dvt/accumulate_loss_batch_factor
-            loss_gausian_mse += cur_loss_gausian_mse/accumulate_loss_batch_factor
+            scaler.scale(cur_general_loss / accumulate_loss_batch_factor).backward()
+            general_loss += cur_general_loss / accumulate_loss_batch_factor
+            loss_bcel += cur_loss_bcel / accumulate_loss_batch_factor
+            loss_mse += cur_loss_mse / accumulate_loss_batch_factor
+            loss_dvt += cur_loss_dvt / accumulate_loss_batch_factor
+            loss_gausian_mse += cur_loss_gausian_mse / accumulate_loss_batch_factor
 
         # plot_grad_flow(model)
         # plt.show()
@@ -140,7 +141,7 @@ def train_network(config, model):
     model.cuda().train()
     if DATA_TYPE == torch.cuda.FloatTensor:
         model.float()
-    elif DATA_TYPE==torch.cuda.DoubleTensor :
+    elif DATA_TYPE == torch.cuda.DoubleTensor:
         model.double()
     train_data_generator, validation_data_generator = get_data_generators(DVT_PCA_model, config)
     validation_data_iterator = iter(validation_data_generator)
@@ -154,7 +155,7 @@ def train_network(config, model):
         learning_rate, loss_weights, optimizer, sigma, custom_loss = generate_constant_learning_parameters(config,
                                                                                                            model)
         if config.lr_scheduler is not None:
-            optimizer_scheduler = getattr(lr_scheduler,config.lr_scheduler)(optimizer, **config.lr_scheduler_params)
+            optimizer_scheduler = getattr(lr_scheduler, config.lr_scheduler)(optimizer, **config.lr_scheduler_params)
         dynamic_parameter_loss_genrator = None
     else:
         learning_rate, loss_weights, sigma = 0.001, [1] * 3, 0.1  # default values
@@ -177,7 +178,7 @@ def train_network(config, model):
 
         for i in range(config.epoch_size):
             saving_counter += 1
-            wandb.log({},step=config.batch_counter, commit=True)
+            wandb.log({}, step=config.batch_counter, commit=True)
             config.update(dict(batch_counter=config.batch_counter + 1), allow_val_change=True)
             # get the inputs; data is a list of [inputs, labels]
 
@@ -363,7 +364,8 @@ def generate_constant_learning_parameters(config, model):
 def model_pipline(hyperparameters):
     if DOCUMENT_ON_WANDB:
         wandb.login()
-        with wandb.init(project=(WANDB_PROJECT_NAME), config=hyperparameters, entity='nilu', allow_val_change=True):
+        with wandb.init(project=(WANDB_PROJECT_NAME), config=hyperparameters, entity='nilu', allow_val_change=True,
+                        id=hyperparameters.model_filename):
             config = wandb.config
             load_and_train(config)
     else:
@@ -417,7 +419,6 @@ def display_accuracy(target, output, step, additional_str=''):
                                                              labels=None, classes_to_plot=None),
                "roc %s" % additional_str: wandb.plot.roc_curve(target, output, labels=None, classes_to_plot=None),
                "AUC %s" % additional_str: auc}, commit=False)
-
 
 
 def run_fit_cnn():

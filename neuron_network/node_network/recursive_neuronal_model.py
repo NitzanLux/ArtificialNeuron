@@ -15,6 +15,7 @@ import torch.nn as nn
 import neuron_network.basic_convolution_blocks as basic_convolution_blocks
 import neuron_network.linear_convolution_blocks as linear_convolution_blocks
 import neuron_network.temporal_convolution_blocks as temporal_convolution_blocks
+import neuron_network.glu_net_skip as glu_net_skip
 import neuron_network.temporal_convolution_blocks_skip_connections as temporal_convolution_blocks_skip_connections
 from get_neuron_modle import get_L5PC
 from project_path import MODELS_DIR
@@ -38,6 +39,7 @@ class ArchitectureType(Enum):
     LAYERED_TEMPORAL_CONV = "LAYERED_TEMPORAL_CONV"
     LINEAR = 'LINEAR'
     TEMPORAL_SKIP = "TEMPORAL_SKIP_CONNECTIONS"
+    GLU_NET = 'GLU_NET'
 
 
 SYNAPSE_DIMENTION_POSITION = 1
@@ -62,28 +64,31 @@ class RecursiveNeuronModel(nn.Module):
         activation_function_base_function = getattr(nn, self.activation_function_name)
         return lambda: activation_function_base_function(**self.activation_function_kargs)
 
+    @staticmethod
+    def get_four_blocks(model_class):
+        branch_class = getattr(model_class,BranchBlock)
+        branch_leaf_class = getattr(model_class,BranchLeafBlock)
+        intersection_class = getattr(model_class,IntersectionBlock)
+        root_class = getattr(model_class,RootBlock)
+        return branch_class,branch_leaf_class,intersection_class,root_class
+
     def get_model_block(self, architecture_type, inter_module_skip_connections, **config):
         if architecture_type == ArchitectureType.BASIC_CONV.value:
             # probability wont work because synapse became channels
-            branch_class = basic_convolution_blocks.BranchBlock
-            branch_leaf_class = basic_convolution_blocks.BranchLeafBlock
-            intersection_class = basic_convolution_blocks.IntersectionBlock
-            root_class = basic_convolution_blocks.RootBlock
+            branch_class, branch_leaf_class, intersection_class, root_class = get_four_blocks(basic_convolution_blocks)
+
         elif architecture_type == ArchitectureType.LAYERED_TEMPORAL_CONV.value and not inter_module_skip_connections:
-            branch_class = temporal_convolution_blocks.BranchBlock
-            branch_leaf_class = temporal_convolution_blocks.BranchLeafBlock
-            intersection_class = temporal_convolution_blocks.IntersectionBlock
-            root_class = temporal_convolution_blocks.RootBlock
+            if inter_module_skip_connections:
+                branch_class, branch_leaf_class, intersection_class, root_class = get_four_blocks(
+                    temporal_convolution_blocks_skip_connections)
+            else:
+                branch_class, branch_leaf_class, intersection_class, root_class = get_four_blocks(
+                    temporal_convolution_blocks)
         elif architecture_type == ArchitectureType.LINEAR.value:
-            branch_class = linear_convolution_blocks.BranchBlock
-            branch_leaf_class = linear_convolution_blocks.BranchLeafBlock
-            intersection_class = linear_convolution_blocks.IntersectionBlock
-            root_class = linear_convolution_blocks.RootBlock
-        elif architecture_type == ArchitectureType.LAYERED_TEMPORAL_CONV.value and inter_module_skip_connections:
-            branch_class = temporal_convolution_blocks_skip_connections.BranchBlockSkipConnections
-            branch_leaf_class = temporal_convolution_blocks_skip_connections.BranchLeafBlockSkipConnections
-            intersection_class = temporal_convolution_blocks_skip_connections.IntersectionBlockSkipConnections
-            root_class = temporal_convolution_blocks_skip_connections.RootBlockSkipConnections
+            branch_class, branch_leaf_class, intersection_class, root_class = get_four_blocks(
+                linear_convolution_blocks)
+        elif architecture_type == ArchitectureType.GLU_NET.value :
+            branch_class, branch_leaf_class, intersection_class, root_class = get_four_blocks(glu_net_skip)
         else:
             assert False, "type is not known"
 
