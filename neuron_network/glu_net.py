@@ -101,10 +101,12 @@ class BranchLeafBlock(nn.Module):
         self.base_conv_1d = Base1DConvolutionBlock(number_of_layers_leaf, input_shape, activation_function,
                                                    inner_scope_channel_number, channel_output_number, kernel_size,
                                                    stride, dilation,skip_connections=skip_connections)
-
+        self.glu=GLUBlock(input_shape, activation_function,
+                                                   inner_scope_channel_number, channel_output_number, kernel_size,
+                                                   stride, dilation,skip_connections=skip_connections)
     def forward(self, x):
         out = self.base_conv_1d(x)
-
+        out=self.glu(x,out)
         return out
 
 
@@ -119,9 +121,12 @@ class IntersectionBlock(nn.Module):
                                                    activation_function,
                                                    inner_scope_channel_number,
                                                    channel_output_number, kernel_size, stride, dilation,skip_connections=skip_connections)
-
+        self.glu=GLUBlock(input_shape, activation_function,
+                                                   inner_scope_channel_number, channel_output_number, kernel_size,
+                                                   stride, dilation,skip_connections=skip_connections)
     def forward(self, x):
         out = self.base_conv_1d(x)
+        out = self.glu(x, out)
         return out
 
 
@@ -146,13 +151,17 @@ class BranchBlock(nn.Module):
                                                    inner_scope_channel_number,
                                                    channel_output_number, kernel_size, stride, dilation,skip_connections=skip_connections)
 
+        self.glu=GLUBlock(input_shape_integration, activation_function,
+                                                   inner_scope_channel_number, channel_output_number, kernel_size,
+                                                   stride, dilation,skip_connections=skip_connections)
 
 
     def forward(self, x,prev_segment):
         out = self.synapse_model(x)
         out = self.activation_function(out)
-        out = torch.cat((out, prev_segment), dim=SYNAPSE_DIMENTION_POSITION)
-        out = self.intersection_block(out)
+        out_x = torch.cat((out, prev_segment), dim=SYNAPSE_DIMENTION_POSITION)
+        out = self.intersection_block(out_x)
+        out = self.glu(out_x,out)
         return out
 
 
