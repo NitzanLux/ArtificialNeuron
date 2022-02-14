@@ -46,7 +46,7 @@ class GLUBlock(nn.Module):
 
     def forward(self,x,out):
         out_glu = self.glu_net(x)
-        out = cat((out,out_glu),dim=SYNAPSE_DIMENTION_POSITION)
+        out = torch.cat((out,out_glu),dim=SYNAPSE_DIMENTION_POSITION)
         return self.glu(out)
 
 
