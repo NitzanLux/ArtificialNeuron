@@ -42,11 +42,11 @@ class GLUBlock(nn.Module):
         self.glu_net = Base1DConvolutionBlock(3, input_shape, activation_function,
                                inner_scope_channel_number, channel_output_number, kernel_size,
                                stride, dilation, skip_connections=skip_connections)
-        self.glu = nn.GLU()
+        self.glu = nn.GLU(SYNAPSE_DIMENTION_POSITION)
 
     def forward(self,x,out):
         out_glu = self.glu_net(x)
-        return self.glu(torch.cat(out,out_glu),dim=SYNAPSE_DIMENTION_POSITION)
+        return self.glu(cat((out,out_glu),dim=SYNAPSE_DIMENTION_POSITION))
 
 
 
