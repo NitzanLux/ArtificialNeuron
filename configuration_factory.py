@@ -79,7 +79,7 @@ def surround_with_default_config_values(**kargs):
                                  david_layers=[55, 13, 13, 13, 13, 13, 13],
                                  skip_connections=True,
                                  inter_module_skip_connections=True,
-                                 kernel_size=41,
+                                 kernel_size=81,
                                  # number_of_layers=2,
                                  stride=1,
                                  padding=0,
