@@ -56,8 +56,8 @@ def surround_with_default_config_values(**kargs):
                       # files_filter_regex=".*exBas_0_1100_inhBasDiff_-1100_600__exApic_0_1100_inhApicDiff_-1100_600_SpTemp[^\\/\.]*\.p",
                       files_filter_regex=".*", freeze_node_factor=None,
                       optimizer_type="Adagrad", optimizer_params=dict(),clip_gradients_factor=1.5,  # optimizer_params={'eps':1e-8},
-                      # lr_scheduler='CyclicLR',lr_scheduler_params=dict(max_lr=0.001,step_size_up=1000,base_lr=0.00003,cycle_momentum=False),
-                      lr_scheduler='ReduceLROnPlateau',lr_scheduler_params=dict(factor=0.5, patience =300,eps=1e-5),
+                      lr_scheduler='CyclicLR',lr_scheduler_params=dict(max_lr=0.001,step_size_up=1000,base_lr=0.00003,cycle_momentum=False),
+                      # lr_scheduler='ReduceLROnPlateau',lr_scheduler_params=dict(factor=0.5, patience =300,eps=1e-5),
                       scheduler_cooldown_factor=150,
                       batch_counter=0, epoch_counter=0,  # default counter
                       torch_seed=42, numpy_seed=21, random_seed=12, init_weights_sd=0.05,
@@ -69,8 +69,8 @@ def surround_with_default_config_values(**kargs):
 
     architecture_dict = AttrDict(segment_tree_path="tree.pkl",
                                  network_architecture_structure="recursive",
-                                 # architecture_type="LAYERED_TEMPORAL_CONV",
-                                 architecture_type="GLU_NET",
+                                 architecture_type="LAYERED_TEMPORAL_CONV",
+                                 # architecture_type="GLU_NET",
                                  time_domain_shape=config.input_window_size,
                                  # kernel_size_2d=3,
                                  # kernel_size_1d=9,
@@ -104,13 +104,13 @@ def load_config_file(path: str) -> AttrDict:
         config = json.load(file)
     config = AttrDict(config)
     if config.config_version < CURRENT_VERSION :
-        config.constant_learning_rate=0.0003
-        config.optimizer_params['lr']=config.constant_learning_rate
+        # config.constant_learning_rate=0.0003
+        # config.optimizer_params['lr']=config.constant_learning_rate
         # config.lr_scheduler=None
-        config.lr_scheduler = 'CyclicLR'
-        config.lr_scheduler_params = dict(max_lr=0.001, step_size_up=1000, base_lr=0.00003,
-                                                              cycle_momentum=False)
-        config.constant_loss_weights = [1000., 1., 0., 0]
+        # config.lr_scheduler = 'CyclicLR'
+        # config.lr_scheduler_params = dict(max_lr=0.001, step_size_up=1000, base_lr=0.00003,
+        #                                                       cycle_momentum=False)
+        # config.constant_loss_weights = [1000., 1., 0., 0]
         config = surround_with_default_config_values(**config)
     return config
 
@@ -226,17 +226,17 @@ if __name__ == '__main__':
     #                                      batch_size_validation=200, batch_size_train=5, clip_gradients_factor=2.5,
     #                                      constant_learning_rate=0.005)
     #     configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
-    configurations_name = "glu"
-    for i in ['AdamW','NAdam']:  # ,'RMSprop']:
+    configurations_name = "Adamax"
+    for i in ['Adamax']:  # ,'RMSprop']:
         config_morpho_0 = config_factory(loss_function='focalbcel_mse_mae_loss',
                                          dynamic_learning_params=False  # ,optimizer_type='RMSprop'
                                          ,
                                          dynamic_learning_params_function="learning_parameters_iter_with_constant_weights",
-                                         model_tag="%s%s" % (i, configurations_name), optimizer_type=i,
+                                         model_tag="%s" % (configurations_name), optimizer_type=i,
                                          accumulate_loss_batch_factor=2, spike_probability=None, prediction_length=1000,
 
-                                         batch_size_validation=200, batch_size_train=10, clip_gradients_factor=5.,
-                                         constant_learning_rate=0.001)
+                                         batch_size_validation=200, batch_size_train=10, clip_gradients_factor=2.,
+                                         constant_learning_rate=0.002)
         configs.append(config_morpho_0)
         # configs.extend(generate_config_files_multiple_seeds(config_morpho_0, 2))
     with open(os.path.join(MODELS_DIR, "%s.json" % configurations_name), 'w') as file:
