@@ -110,7 +110,7 @@ def load_config_file(path: str) -> AttrDict:
         config.lr_scheduler = 'CyclicLR'
         config.lr_scheduler_params = dict(max_lr=0.001, step_size_up=1000, base_lr=0.00003,
                                                               cycle_momentum=False)
-        constant_loss_weights = [1000., 1., 0., 0]
+        config.constant_loss_weights = [1000., 1., 0., 0]
         config = surround_with_default_config_values(**config)
     return config
 
