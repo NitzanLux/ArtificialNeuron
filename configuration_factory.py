@@ -103,8 +103,8 @@ def load_config_file(path: str) -> AttrDict:
     with open(path, 'r') as file:
         config = json.loads(file.read())
     config = AttrDict(config)
-    # config.lr_scheduler='CyclicLR'
-    # config.lr_scheduler_params=dict(max_lr=0.001,step_size_up=1000,base_lr=0.00003,cycle_momentum=False)
+    config.lr_scheduler='CyclicLR'
+    config.lr_scheduler_params=dict(max_lr=0.001,step_size_up=1000,base_lr=0.00003,cycle_momentum=False)
     if config.config_version < CURRENT_VERSION :
         # config.constant_learning_rate=0.0003
         # config.optimizer_params['lr']=config.constant_learning_rate
