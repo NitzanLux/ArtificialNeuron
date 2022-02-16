@@ -101,7 +101,7 @@ def load_config_file(path: str) -> AttrDict:
     if path[-len('.config'):] != '.config':
         path += '.config'
     with open(path, 'r') as file:
-        config = json.load(file)
+        config = json.loads(file.read())
     config = AttrDict(config)
     if config.config_version < CURRENT_VERSION :
         # config.constant_learning_rate=0.0003
