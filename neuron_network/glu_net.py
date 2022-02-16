@@ -37,9 +37,9 @@ class Base1DConvolutionBlockLayer(nn.Module):
 
 class GLUBlock(nn.Module):
     def __init__(self, input_shape, activation_function, inner_scope_channel_number, channel_output_number, kernel_size,
-                 stride, dilation, skip_connections):
+                 stride, dilation, skip_connections,glu_number_of_layers=3,**kwargs):
         super().__init__()
-        self.glu_net = Base1DConvolutionBlock(3, input_shape, activation_function,
+        self.glu_net = Base1DConvolutionBlock(glu_number_of_layers, input_shape, activation_function,
                                inner_scope_channel_number, channel_output_number, kernel_size,
                                stride, dilation, skip_connections=skip_connections)
         self.glu = nn.GLU(SYNAPSE_DIMENTION_POSITION)
@@ -104,7 +104,7 @@ class BranchLeafBlock(nn.Module):
                                                    stride, dilation,skip_connections=skip_connections)
         self.glu=GLUBlock(input_shape, activation_function,
                                                    inner_scope_channel_number, channel_output_number, kernel_size,
-                                                   stride, dilation,skip_connections=skip_connections)
+                                                   stride, dilation,skip_connections=skip_connections,**kwargs)
     def forward(self, x):
         out = self.base_conv_1d(x)
         out=self.glu(x,out)
@@ -124,7 +124,7 @@ class IntersectionBlock(nn.Module):
                                                    channel_output_number, kernel_size, stride, dilation,skip_connections=skip_connections)
         self.glu=GLUBlock(input_shape, activation_function,
                                                    inner_scope_channel_number, channel_output_number, kernel_size,
-                                                   stride, dilation,skip_connections=skip_connections)
+                                                   stride, dilation,skip_connections=skip_connections,**kwargs)
     def forward(self, x):
         out = self.base_conv_1d(x)
         out = self.glu(x, out)
@@ -154,7 +154,7 @@ class BranchBlock(nn.Module):
 
         self.glu=GLUBlock(input_shape_integration, activation_function,
                                                    inner_scope_channel_number, channel_output_number, kernel_size,
-                                                   stride, dilation,skip_connections=skip_connections)
+                                                   stride, dilation,skip_connections=skip_connections,**kwargs)
 
 
     def forward(self, x,prev_segment):
