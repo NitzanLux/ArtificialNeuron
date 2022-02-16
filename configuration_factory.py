@@ -200,7 +200,7 @@ def load_config_file_from_wandb_yml(configs_names):
         with open(os.path.join("wandb",config_name,'files','config.yaml')) as file:
             cur_config = yaml.load(file,Loader=yaml.FullLoader)
         new_config=dict()
-        for k,v in cur_config.ite:
+        for k,v in cur_config.items():
             if 'wandb' in k:
                 continue
             new_config[k]=v['value']
