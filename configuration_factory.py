@@ -2,7 +2,7 @@ import json
 import os
 import os.path
 from typing import Dict
-
+import yaml
 import pandas as pd
 from datetime import datetime
 from general_aid_function import *
@@ -42,7 +42,7 @@ def load_tree_from_path(path: str) -> SectionNode:
 
 def save_config(config, path: [str, None] = None):
     with open(os.path.join(MODELS_DIR, *config.config_path) if path is None else path, 'w') as file:
-        file.write(json.dumps(config))  # use `json.loads` to do the reverse
+        json.dump(config, file)  # use `json.loads` to do the reverse
     return config
 
 
@@ -191,6 +191,20 @@ def generate_config_files_multiple_seeds(config_path: [str, Dict], number_of_con
         configs.append(
             config_factory(save_model_to_config_dir=True, generate_random_seeds=True, is_new_name=True, **base_config))
     return configs
+def load_config_file_from_wandb_yml(configs_names):
+    if isinstance(configs_names,str):
+        configs_names=[configs_names]
+    for config_name in configs_names:
+        with open(os.path.join("wandb",config_name,'files','config.yaml')) as file:
+            cur_config = yaml.load(file,Loader=yaml.FullLoader)
+        new_config=dict()
+        for k,v in cur_config:
+            if 'wandb' in k:
+                continue
+            new_config[k]=v['value']
+        save_config(AttrDict(new_config))
+
+
 
 
 if __name__ == '__main__':
@@ -222,7 +236,7 @@ if __name__ == '__main__':
     #                                      constant_learning_rate=0.005)
     #     configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
     configurations_name = "Adamax"
-    for i in ['Adamax']:  # ,'RMSprop']:
+    for i in ['NAdam,']:  # ,'RMSprop']:
         config_morpho_0 = config_factory(loss_function='focalbcel_mse_mae_loss',
                                          dynamic_learning_params=False  # ,optimizer_type='RMSprop'
                                          ,
@@ -237,3 +251,4 @@ if __name__ == '__main__':
     with open(os.path.join(MODELS_DIR, "%s.json" % configurations_name), 'w') as file:
         file.write(json.dumps(configs))  # use `json.loads` to do the reverse
         # file.write(json.dumps([config_morpho_0]))  # use `json.loads` to do the reverse
+
