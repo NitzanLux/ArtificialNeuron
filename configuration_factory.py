@@ -12,6 +12,7 @@ from neuron_network import neuronal_model
 from neuron_network.node_network import recursive_neuronal_model
 from simulation_data_generator import *
 from synapse_tree import SectionNode
+import glob
 
 synapse_type = ''
 include_DVT = False
@@ -204,7 +205,15 @@ def load_config_file_from_wandb_yml(configs_names):
             new_config[k]=v['value']
         save_config(AttrDict(new_config))
 
-
+def restore_last_n_configs(n=10):
+    search_dir = "wandb"
+    search_dir = os.path.abspath(search_dir)
+    list_dirs = [os.path.join(search_dir,path)for path in os.listdir(search_dir)]
+    files = list(filter(os.path.isdir, list_dirs))
+    files.sort(key=lambda x: os.path.getmtime(x))
+    files =files[-n:]
+    files = [ os.path.basename(os.path.normpath(f)) for f in files]
+    load_config_file_from_wandb_yml(files)
 
 
 if __name__ == '__main__':
