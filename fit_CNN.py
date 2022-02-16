@@ -43,11 +43,11 @@ synapse_type = 'NMDA'
 include_DVT = False
 
 # for dibugging
-BATCH_LOG_UPDATE_FREQ = 1
-VALIDATION_EVALUATION_FREQUENCY=1
-ACCURACY_EVALUATION_FREQUENCY = 1
-BUFFER_SIZE_IN_FILES_VALID = 1
-BUFFER_SIZE_IN_FILES_TRAINING = 1
+# BATCH_LOG_UPDATE_FREQ = 1
+# VALIDATION_EVALUATION_FREQUENCY=1
+# ACCURACY_EVALUATION_FREQUENCY = 1
+# BUFFER_SIZE_IN_FILES_VALID = 1
+# BUFFER_SIZE_IN_FILES_TRAINING = 1
 
 print('-----------------------------------------------')
 print('finding data')
@@ -256,7 +256,7 @@ def evaluate_validation(config, custom_loss, model, validation_data_iterator):
                         "R squared score(v) validation": skm.r2_score(target_v, output_v)}
             wandb.log(log_dict, step=config.batch_counter, commit=False)  # add training parameters per step
 
-        if config.batch_counter % ACCURACY_EVALUATION_FREQUENCY == 1:
+        if config.batch_counter % ACCURACY_EVALUATION_FREQUENCY == 0:
             display_accuracy(target_s, output_s, config.batch_counter,
                              additional_str="validation")
     model.train()
