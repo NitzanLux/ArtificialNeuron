@@ -80,7 +80,8 @@ def surround_with_default_config_values(**kargs):
                                  david_layers=[55, 13, 13, 13, 13, 13, 13],
                                  skip_connections=True,
                                  inter_module_skip_connections=True,
-                                 kernel_size=81,
+                                 kernel_size=5,
+                                 # kernel_size=81,
                                  # number_of_layers=2,
                                  stride=1,
                                  padding=0,
@@ -199,7 +200,7 @@ def load_config_file_from_wandb_yml(configs_names):
         with open(os.path.join("wandb",config_name,'files','config.yaml')) as file:
             cur_config = yaml.load(file,Loader=yaml.FullLoader)
         new_config=dict()
-        for k,v in cur_config.items():
+        for k,v in cur_config.ite:
             if 'wandb' in k:
                 continue
             new_config[k]=v['value']
@@ -245,7 +246,7 @@ if __name__ == '__main__':
     #                                      constant_learning_rate=0.005)
     #     configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
     configurations_name = "Adamax"
-    for i in ['NAdam,']:  # ,'RMSprop']:
+    for i in ['NAdam']:  # ,'RMSprop']:
         config_morpho_0 = config_factory(loss_function='focalbcel_mse_mae_loss',
                                          dynamic_learning_params=False  # ,optimizer_type='RMSprop'
                                          ,

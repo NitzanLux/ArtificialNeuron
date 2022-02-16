@@ -43,11 +43,11 @@ synapse_type = 'NMDA'
 include_DVT = False
 
 # for dibugging
-# BATCH_LOG_UPDATE_FREQ = 1
-# VALIDATION_EVALUATION_FREQUENCY=1
-# ACCURACY_EVALUATION_FREQUENCY = 1
-# BUFFER_SIZE_IN_FILES_VALID = 1
-# BUFFER_SIZE_IN_FILES_TRAINING = 1
+BATCH_LOG_UPDATE_FREQ = 1
+VALIDATION_EVALUATION_FREQUENCY=1
+ACCURACY_EVALUATION_FREQUENCY = 1
+BUFFER_SIZE_IN_FILES_VALID = 1
+BUFFER_SIZE_IN_FILES_TRAINING = 1
 
 print('-----------------------------------------------')
 print('finding data')
@@ -207,7 +207,7 @@ def load_model(config):
 
 
 def log_lr(config, optimizer):
-    lr = optimizer.param_groups[0]['lr']
+    lr = float(optimizer.param_groups[0]['lr'])
     if lr != config.optimizer_params['lr']:
         optim_params = config.optimizer_params
         optim_params['lr'] = lr
@@ -324,7 +324,7 @@ class SavingAndEvaluationScheduler():
         # ModelEvaluator.build_and_save(config=config, model=model)
 
     @staticmethod
-    def save_model(model, config):
+    def save_model(model, config:AttrDict):
         print('-----------------------------------------------------------------------------------------')
         print('finished epoch %d saving...\n     "%s"\n"' % (
             config.epoch_counter, config.model_filename.split('/')[-1]))
@@ -353,7 +353,7 @@ def generate_constant_learning_parameters(config, model):
         config.update(dict(constant_learning_rate=config.optimizer_params["lr"]), allow_val_change=True)
     else:
         optimizer_params = copy(config.optimizer_params)
-        optimizer_params["lr"] = config.constant_learning_rate
+        optimizer_params["lr"] = float(config.constant_learning_rate)
         config.update(dict(optimizer_params=optimizer_params), allow_val_change=True)
 
     optimizer = getattr(optim, config.optimizer_type)(model.parameters(),
