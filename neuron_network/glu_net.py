@@ -145,9 +145,9 @@ class BranchBlock(nn.Module):
 
         self.activation_function = activation_function()
         self.synapse_model = nn.Sequential(self.branch_leaf, activation_function())
-        self.glu_synapse = GLUBlock(input_shape_leaf, activation_function,
-                                                   input_shape_leaf[0], input_shape_leaf[0], kernel_size,
-                                                   stride, dilation,skip_connections=skip_connections,**kwargs) #todo remove
+        # self.glu_synapse = GLUBlock(input_shape_leaf, activation_function,
+        #                                            input_shape_leaf[0], input_shape_leaf[0], kernel_size,
+        #                                            stride, dilation,skip_connections=skip_connections,**kwargs) #todo remove
 
         self.intersection_block =Base1DConvolutionBlock(number_of_layers_branch_intersection,
                                                    input_shape_integration,
@@ -163,8 +163,8 @@ class BranchBlock(nn.Module):
     def forward(self, x,prev_segment):
 
         out = self.synapse_model(x)
-        out = self.glu_synapse(x,out) #todo remove
-        # out = self.activation_function(out) #todo reverse
+        # out = self.glu_synapse(x,out) #todo remove
+        out = self.activation_function(out) #todo reverse
         out_x = torch.cat((out, prev_segment), dim=SYNAPSE_DIMENTION_POSITION)
         out = self.intersection_block(out_x)
         out = self.glu(out_x,out)
@@ -185,9 +185,9 @@ class RootBlock(nn.Module):
         if inner_scope_channel_number is None:
             inner_scope_channel_number = input_shape[0]
 
-        self.glu = GLUBlock(input_shape, activation_function,
-                            inner_scope_channel_number, inner_scope_channel_number, kernel_size,
-                            stride, dilation, skip_connections=skip_connections, **kwargs) #todo remove
+        # self.glu = GLUBlock(input_shape, activation_function,
+        #                     inner_scope_channel_number, inner_scope_channel_number, kernel_size,
+        #                     stride, dilation, skip_connections=skip_connections, **kwargs) #todo remove
 
         self.spike_prediction = nn.Conv1d(inner_scope_channel_number
                                           , 1, kernel_size=input_shape[1])
