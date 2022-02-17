@@ -163,7 +163,7 @@ class BranchBlock(nn.Module):
     def forward(self, x,prev_segment):
 
         out = self.synapse_model(x)
-        out = self.glu(x,out) #todo remove
+        out = self.glu_synapse(x,out) #todo remove
         # out = self.activation_function(out) #todo reverse
         out_x = torch.cat((out, prev_segment), dim=SYNAPSE_DIMENTION_POSITION)
         out = self.intersection_block(out_x)
