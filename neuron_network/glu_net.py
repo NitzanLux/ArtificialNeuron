@@ -186,7 +186,7 @@ class RootBlock(nn.Module):
             inner_scope_channel_number = input_shape[0]
 
         self.glu = GLUBlock(input_shape, activation_function,
-                            inner_scope_channel_number, channel_output_number, kernel_size,
+                            inner_scope_channel_number, inner_scope_channel_number, kernel_size,
                             stride, dilation, skip_connections=skip_connections, **kwargs) #todo remove
 
         self.spike_prediction = nn.Conv1d(inner_scope_channel_number
