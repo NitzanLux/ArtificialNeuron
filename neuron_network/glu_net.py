@@ -185,7 +185,7 @@ class RootBlock(nn.Module):
         if inner_scope_channel_number is None:
             inner_scope_channel_number = input_shape[0]
 
-        self.glu = GLUBlock(input_shape_integration, activation_function,
+        self.glu = GLUBlock(input_shape, activation_function,
                             inner_scope_channel_number, channel_output_number, kernel_size,
                             stride, dilation, skip_connections=skip_connections, **kwargs) #todo remove
 
