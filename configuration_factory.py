@@ -253,9 +253,9 @@ if __name__ == '__main__':
                                          ,
                                          dynamic_learning_params_function="learning_parameters_iter_with_constant_weights",
                                          model_tag="%s_%s" % (configurations_name,i), optimizer_type=i,
-                                         accumulate_loss_batch_factor=2, spike_probability=None, prediction_length=1000,
+                                         accumulate_loss_batch_factor=5, spike_probability=None, prediction_length=1000,
 
-                                         batch_size_validation=200, batch_size_train=10, clip_gradients_factor=2.,
+                                         batch_size_validation=200, batch_size_train=4, clip_gradients_factor=2.,
                                          constant_learning_rate=0.002)
         # configs.append(config_morpho_0)
         configs.extend(generate_config_files_multiple_seeds(config_morpho_0, 2))
