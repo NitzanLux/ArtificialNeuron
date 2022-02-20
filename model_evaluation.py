@@ -1,4 +1,4 @@
-from ... import configuration_factory
+import configuration_factory
 from neuron_network import neuronal_model
 import pickle
 from typing import Iterable
