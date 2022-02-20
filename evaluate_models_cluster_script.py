@@ -2,6 +2,7 @@ import argparse
 import os
 import json
 from model_evaluation import ModelEvaluator
+from project_path import *
 
 parser = argparse.ArgumentParser(description='Add configuration file')
 parser.add_argument(dest="configs_path", type=str,
