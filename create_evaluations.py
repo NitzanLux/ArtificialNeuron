@@ -13,5 +13,5 @@ args = parser.parse_args()
 print(args)
 job_factory = SlurmJobFactory("cluster_logs")
 job_factory.send_job("%s_evaluation" % (args.config_path_or_json),
-                     'python3 $(dirname "$path")/general_evaluation.py %s $SLURM_JOB_ID' % str(
+                     'python3 $(dirname "$path")/model_evaluation.py %s $SLURM_JOB_ID' % str(
                       args.config_path_or_json), True)

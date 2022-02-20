@@ -5,7 +5,7 @@ import sklearn.metrics as skm
 import torch
 import torch.optim as optim
 import torch.optim.lr_scheduler as lr_scheduler
-from general_evaluation import ModelEvaluator
+from model_evaluation import ModelEvaluator
 import time
 import configuration_factory
 import wandb
@@ -17,6 +17,8 @@ from parameters_factories import dynamic_learning_parameters_factory as dlpf, lo
 from project_path import *
 from simulation_data_generator import *
 from datetime import datetime, timedelta
+from general_variables import *
+
 
 torch.cuda.empty_cache()
 
@@ -52,8 +54,6 @@ include_DVT = False
 print('-----------------------------------------------')
 print('finding data')
 print('-----------------------------------------------', flush=True)
-
-DATA_TYPE = torch.cuda.DoubleTensor
 
 
 # ------------------------------------------------------------------

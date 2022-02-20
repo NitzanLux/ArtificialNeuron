@@ -20,7 +20,8 @@ import plotly.express as px
 import datetime
 import argparse
 import json
-from fit_CNN import DATA_TYPE
+from general_variables import *
+
 BUFFER_SIZE_IN_FILES_VALID = 1
 
 
