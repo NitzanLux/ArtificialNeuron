@@ -133,7 +133,7 @@ class ModelEvaluator():
         assert not self.data.is_recording(), "evaluation had been done in this object"
         if model is None:
             model = self.load_model()
-        model.cuda().eval()
+        model.cuda().eval().float()
 
         data_generator = self.load_data_generator(self.config, self.is_validation)
         for i, data in enumerate(data_generator):
@@ -142,8 +142,8 @@ class ModelEvaluator():
             s, v = d_labels
             with torch.cuda.amp.autocast():
                 with torch.no_grad():
-                    output_s, output_v = model(d_input.cuda().type(DATA_TYPE))
-                    # output_s, output_v = model(d_input.cuda().type(torch.cuda.FloatTensor))
+                    # output_s, output_v = model(d_input.cuda().type(DATA_TYPE))
+                    output_s, output_v = model(d_input.cuda().type(torch.cuda.FloatTensor))
                     output_s = torch.nn.Sigmoid()(output_s)
             self.data.append(v.cpu().detach().numpy().squeeze(), output_v.cpu().detach().numpy().squeeze(),
                              s.cpu().detach().numpy().squeeze(), output_s.cpu().detach().numpy().squeeze())

@@ -16,6 +16,7 @@ from neuron_network.node_network import recursive_neuronal_model
 from parameters_factories import dynamic_learning_parameters_factory as dlpf, loss_function_factory
 from project_path import *
 from simulation_data_generator import *
+from simulation_data_generator import *
 from datetime import datetime, timedelta
 from general_variables import *
 
