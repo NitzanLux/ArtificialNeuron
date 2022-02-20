@@ -20,7 +20,7 @@ import plotly.express as px
 import datetime
 import argparse
 import json
-
+from fit_CNN import DATA_TYPE
 BUFFER_SIZE_IN_FILES_VALID = 1
 
 
@@ -142,7 +142,7 @@ class ModelEvaluator():
             s, v = d_labels
             with torch.cuda.amp.autocast():
                 with torch.no_grad():
-                    output_s, output_v = model(d_input.cuda().type(torch.cuda.FloatTensor))
+                    output_s, output_v = model(d_input.cuda().type(DATA_TYPE))
                     # output_s, output_v = model(d_input.cuda().type(torch.cuda.FloatTensor))
                     output_s = torch.nn.Sigmoid()(output_s)
             self.data.append(v.cpu().detach().numpy().squeeze(), output_v.cpu().detach().numpy().squeeze(),
@@ -325,4 +325,4 @@ class ModelEvaluator():
 #     # eval.data.flatten_batch_dimensions()
 #     # eval.save()
 #     eval.display()
-# #
+#
