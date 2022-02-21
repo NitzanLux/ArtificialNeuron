@@ -57,8 +57,8 @@ def surround_with_default_config_values(**kargs):
                       # files_filter_regex=".*exBas_0_1100_inhBasDiff_-1100_600__exApic_0_1100_inhApicDiff_-1100_600_SpTemp[^\\/\.]*\.p",
                       files_filter_regex=".*", freeze_node_factor=None,
                       optimizer_type="Adagrad", optimizer_params=dict(),clip_gradients_factor=1.5,  # optimizer_params={'eps':1e-8},
-                      lr_scheduler='CyclicLR',lr_scheduler_params=dict(max_lr=0.001,step_size_up=1000,base_lr=0.00003,cycle_momentum=False),
-                      # lr_scheduler='ReduceLROnPlateau',lr_scheduler_params=dict(factor=0.5, patience =300,eps=1e-5),
+                      # lr_scheduler='CyclicLR',lr_scheduler_params=dict(max_lr=0.001,step_size_up=1000,base_lr=0.00003,cycle_momentum=False),
+                      lr_scheduler='ReduceLROnPlateau',lr_scheduler_params=dict(factor=0.5, patience =300,eps=1e-5),
                       scheduler_cooldown_factor=150,
                       batch_counter=0, epoch_counter=0,  # default counter
                       torch_seed=42, numpy_seed=21, random_seed=12, init_weights_sd=0.05,
@@ -75,10 +75,10 @@ def surround_with_default_config_values(**kargs):
                                  time_domain_shape=config.input_window_size,
                                  # kernel_size_2d=3,
                                  # kernel_size_1d=9,
-                                 number_of_layers_root=5, number_of_layers_leaf=5, number_of_layers_intersection=5,
-                                 number_of_layers_branch_intersection=5,
+                                 number_of_layers_root=7, number_of_layers_leaf=7, number_of_layers_intersection=7,
+                                 number_of_layers_branch_intersection=7,
                                  # david_layers=[55, 13, 13, 13, 13, 13, 13],
-                                 glu_number_of_layers=5,
+                                 glu_number_of_layers=7,
                                  skip_connections=True,
                                  inter_module_skip_connections=True,
                                  kernel_size=49,
@@ -89,7 +89,7 @@ def surround_with_default_config_values(**kargs):
                                  dilation=1,
                                  channel_input_number=1278,  # synapse number
                                  inner_scope_channel_number=None,
-                                 channel_output_number=15,
+                                 channel_output_number=1,
                                  activation_function_name="LeakyReLU",
                                  activation_function_kargs=dict(negative_slope=0.25),
                                  include_dendritic_voltage_tracing=False)
@@ -246,8 +246,8 @@ if __name__ == '__main__':
     #                                      batch_size_validation=200, batch_size_train=5, clip_gradients_factor=2.5,
     #                                      constant_learning_rate=0.005)
     #     configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
-    configurations_name = "glu_3"
-    for i in ['AdamW','NAdam','Adamax']:
+    configurations_name = "single"
+    for i in ['AdamW','NAdam']:
         config_morpho_0 = config_factory(loss_function='focalbcel_mse_mae_loss',
                                          dynamic_learning_params=False  # ,optimizer_type='RMSprop'
                                          ,

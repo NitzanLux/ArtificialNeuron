@@ -7,7 +7,7 @@ import dash
 import numpy as np
 import plotly.graph_objects as go
 import torch
-from dash import dcc,callback_context
+from dash import dcc, callback_context
 from dash import html
 from dash.dependencies import Input, Output
 from plotly.subplots import make_subplots
@@ -20,6 +20,7 @@ import plotly.express as px
 import datetime
 import json
 from general_variables import *
+from get_neuron_modle import get_L5PC
 
 BUFFER_SIZE_IN_FILES_VALID = 1
 
@@ -54,10 +55,10 @@ class EvaluationData():
             self.append(*i)
 
     def append(self, v, v_pred, s, s_pred):
-        input_data=[]
-        if len(v.shape)>1:
+        input_data = []
+        if len(v.shape) > 1:
             for i in range(v.shape[0]):
-                input_data.append([[v[i,:],v_pred[i,:]],[s[i,:],s_pred[i,:]]])
+                input_data.append([[v[i, :], v_pred[i, :]], [s[i, :], s_pred[i, :]]])
             self.data_per_recording.extend(input_data)
         else:
             input_data = [[v, v_pred], [s, s_pred]]
@@ -70,19 +71,18 @@ class EvaluationData():
         return value
 
     def flatten_batch_dimensions(self):
-        new_data=EvaluationData()
-        for i,d in enumerate(self):
-            v,vp,s,sp=d
-            if len(v.shape)>1:
-                if v.shape[0]>1:
+        new_data = EvaluationData()
+        for i, d in enumerate(self):
+            v, vp, s, sp = d
+            if len(v.shape) > 1:
+                if v.shape[0] > 1:
                     for j in range(v.shape[0]):
-                        new_data.append(v[j,:],vp[j,:],s[j,:],sp[j,:])
+                        new_data.append(v[j, :], vp[j, :], s[j, :], sp[j, :])
                 else:
-                    new_data.append(v[0,:],vp[0,:],s[0,:],sp[0,:])
+                    new_data.append(v[0, :], vp[0, :], s[0, :], sp[0, :])
             else:
-                new_data.append(v,vp,s,sp)
-        self.data_per_recording=new_data.data_per_recording
-
+                new_data.append(v, vp, s, sp)
+        self.data_per_recording = new_data.data_per_recording
 
     def __len__(self):
         return len(self.data_per_recording)
@@ -90,15 +90,14 @@ class EvaluationData():
     def __iter__(self):
         for i in range(len(self)):
             yield self[i]
+
     def get_spikes_for_ROC(self):
-        output=[]
+        output = []
         for i in self:
-            _,__,s_arr, s_p_arr=i
-            for s,s_p in zip(s_arr,s_p_arr):
-                output.append((s,s_p ))
+            _, __, s_arr, s_p_arr = i
+            for s, s_p in zip(s_arr, s_p_arr):
+                output.append((s, s_p))
         return np.array(output)
-
-
 
     @staticmethod
     def __cast_indexing(is_predicted, is_spike):
@@ -129,7 +128,7 @@ class ModelEvaluator():
         self.config = config
         self.is_validation = is_validation
 
-    def evaluate_model(self,model=None):
+    def evaluate_model(self, model=None):
         assert not self.data.is_recording(), "evaluation had been done in this object"
         if model is None:
             model = self.load_model()
@@ -176,22 +175,41 @@ class ModelEvaluator():
             ),
             html.Div(id='slider-output-container', style={'height': '2vh'}),
             html.Div([
-            html.Button('-50', id='btn-m50', n_clicks=0, style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',"margin-left": "10px"}),
-            html.Button('-10', id='btn-m10', n_clicks=0,style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',"margin-left": "10px"}),
-            html.Button('-5', id='btn-m5', n_clicks=0,style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',"margin-left": "10px"}),
-            html.Button('-1', id='btn-m1', n_clicks=0,style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',"margin-left": "10px"}),
-            html.Button('+1', id='btn-p1', n_clicks=0,style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',"margin-left": "10px"}),
-            html.Button('+5', id='btn-p5', n_clicks=0,style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',"margin-left": "10px"}),
-            html.Button('+10', id='btn-p10', n_clicks=0,style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',"margin-left": "10px"}),
-            html.Button('+50', id='btn-p50', n_clicks=0,style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',"margin-left": "10px"}),
-            ], style={'width':'100vw','margin': '1', 'border-style': 'solid', 'align': 'center', 'vertical-align': 'middle'}),
+                html.Button('-50', id='btn-m50', n_clicks=0,
+                            style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',
+                                   "margin-left": "10px"}),
+                html.Button('-10', id='btn-m10', n_clicks=0,
+                            style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',
+                                   "margin-left": "10px"}),
+                html.Button('-5', id='btn-m5', n_clicks=0,
+                            style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',
+                                   "margin-left": "10px"}),
+                html.Button('-1', id='btn-m1', n_clicks=0,
+                            style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',
+                                   "margin-left": "10px"}),
+                html.Button('+1', id='btn-p1', n_clicks=0,
+                            style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',
+                                   "margin-left": "10px"}),
+                html.Button('+5', id='btn-p5', n_clicks=0,
+                            style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',
+                                   "margin-left": "10px"}),
+                html.Button('+10', id='btn-p10', n_clicks=0,
+                            style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',
+                                   "margin-left": "10px"}),
+                html.Button('+50', id='btn-p50', n_clicks=0,
+                            style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',
+                                   "margin-left": "10px"}),
+            ], style={'width': '100vw', 'margin': '1', 'border-style': 'solid', 'align': 'center',
+                      'vertical-align': 'middle'}),
             html.Div([
                 dcc.Graph(id='evaluation-graph', figure=go.Figure(),
                           style={'height': '95vh', 'margin': '0', 'border-style': 'solid', 'align': 'center'})],
                 style={'height': '95vh', 'margin': '0', 'border-style': 'solid', 'align': 'center'}),
-           html.Div([dcc.Markdown('AUC: %0.5f'%auc)]),
-           html.Div([dcc.Graph(id='eval-roc',figure=fig,style={'height': '95vh', 'margin': '0', 'border-style': 'solid', 'align': 'center'})],
-           )
+            html.Div([dcc.Markdown('AUC: %0.5f' % auc)]),
+            html.Div([dcc.Graph(id='eval-roc', figure=fig,
+                                style={'height': '95vh', 'margin': '0', 'border-style': 'solid', 'align': 'center'})],
+                     ),
+
         ])
 
         @app.callback(
@@ -199,33 +217,33 @@ class ModelEvaluator():
             Output('slider-output-container', 'value'),
             Output('evaluation-graph', 'figure'),
             [Input('my-slider', 'value'),
-             Input('btn-m50','n_clicks'),
-             Input('btn-m10','n_clicks'),
-             Input('btn-m5','n_clicks'),
-             Input('btn-m1','n_clicks'),
-             Input('btn-p1','n_clicks'),
-             Input('btn-p5','n_clicks'),
-             Input('btn-p10','n_clicks'),
-             Input('btn-p50','n_clicks')
+             Input('btn-m50', 'n_clicks'),
+             Input('btn-m10', 'n_clicks'),
+             Input('btn-m5', 'n_clicks'),
+             Input('btn-m1', 'n_clicks'),
+             Input('btn-p1', 'n_clicks'),
+             Input('btn-p5', 'n_clicks'),
+             Input('btn-p10', 'n_clicks'),
+             Input('btn-p50', 'n_clicks')
              ])
-        def update_output(value,btnm50,btnm10,btnm5,btnm1,btnp1,btnp5,btnp10,btnp50):
+        def update_output(value, btnm50, btnm10, btnm5, btnm1, btnp1, btnp5, btnp10, btnp50):
             changed_id = [p['prop_id'] for p in callback_context.triggered][0][:-len(".n_clicks")]
-            value=int(value)
+            value = int(value)
 
             if 'btn-m' in changed_id:
-                value-=int(changed_id[len('btn-m'):])
+                value -= int(changed_id[len('btn-m'):])
             elif 'btn-p' in changed_id:
-                value +=int(changed_id[len('btn-m'):])
-            value= max(0,value)
-            value=min(value,len(self.data))
+                value += int(changed_id[len('btn-m'):])
+            value = max(0, value)
+            value = min(value, len(self.data))
             fig = self.display_window(value)
-            return value,'You have selected "{}"'.format(value), fig
+            return value, 'You have selected "{}"'.format(value), fig
 
         app.run_server(debug=True, use_reloader=False)
 
     def create_ROC_curve(self):
-        if len(self.data)==0:
-            return 0.5,go.Figure()
+        if len(self.data) == 0:
+            return 0.5, go.Figure()
         labels_predictions = self.data.get_spikes_for_ROC()
         labels, prediction = labels_predictions[:, 0], labels_predictions[:, 1]
         labels = labels.squeeze().flatten()
@@ -237,7 +255,6 @@ class ModelEvaluator():
         fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1], name='chance'))
         return auc, fig
 
-
     def display_window(self, index):
         v, v_p, s, s_p = self[index]
         fig = make_subplots(rows=2, cols=1,
@@ -245,7 +262,7 @@ class ModelEvaluator():
                             vertical_spacing=0.1, start_cell='top-left',
                             subplot_titles=("voltage", "spike probability"), row_heights=[0.7, 0.3])
         x_axis = np.arange(v.shape[0])
-        s*=np.max(s_p)*1.1
+        s *= np.max(s_p) * 1.1
         # fig.add_trace(go.Scatter(x=x_axis, y=np.convolve(v,np.full((self.config.input_window_size//2,),1./(self.config.input_window_size//2))), name="avg_voltage"), row=1, col=1)
         fig.add_trace(go.Scatter(x=x_axis, y=v, name="voltage"), row=1, col=1)
         fig.add_trace(go.Scatter(x=x_axis, y=v_p, name="predicted voltage"), row=1, col=1)
@@ -255,6 +272,9 @@ class ModelEvaluator():
         fig.update_layout(  # height=600, width=600,
             title_text="model %s index %d" % (self.config.model_path[-1], index))
         return fig
+
+
+
 
     def save(self):
         data = self.data.data_per_recording
@@ -292,26 +312,24 @@ class ModelEvaluator():
         return validation_data_generator
 
     @staticmethod
-    def build_and_save(config_path='',config=None,model=None):
-        print("start create evaluation",flush=True)
-        start_time= datetime.datetime.now()
+    def build_and_save(config_path='', config=None, model=None):
+        print("start create evaluation", flush=True)
+        start_time = datetime.datetime.now()
         if config is None:
             config = configuration_factory.load_config_file(config_path)
         evaluation_engine = ModelEvaluator(config)
         evaluation_engine.evaluate_model(model)
         evaluation_engine.save()
-        end_time=datetime.datetime.now()
-        print("evaluation took %0.1f minutes"%((end_time-start_time).total_seconds()/60.))
+        end_time = datetime.datetime.now()
+        print("evaluation took %0.1f minutes" % ((end_time - start_time).total_seconds() / 60.))
 
+if __name__ == '__main__':
+    # model_name='AdamWshort_and_wide_1_NMDA_Tree_TCN__2022-02-06__15_47__ID_54572'
+    model_name='glu_3_AdamW___2022-02-17__14_33__ID_2250'
+    # ModelEvaluator.build_and_save(r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\heavy_AdamW_NMDA_Tree_TCN__2022-01-27__17_58__ID_40048\heavy_AdamW_NMDA_Tree_TCN__2022-01-27__17_58__ID_40048")
+    eval = ModelEvaluator.load(
+        r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\%s\%s.eval"%(model_name,model_name))
+    # eval.data.flatten_batch_dimensions()
+    # eval.save()
+    eval.display()
 
-
-# if __name__ == '__main__':
-#     # model_name='AdamWshort_and_wide_1_NMDA_Tree_TCN__2022-02-06__15_47__ID_54572'
-#     model_name='AdamWshort_and_wide_2_NMDA_Tree_TCN__2022-02-09__17_06__ID_7668'
-#     # ModelEvaluator.build_and_save(r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\heavy_AdamW_NMDA_Tree_TCN__2022-01-27__17_58__ID_40048\heavy_AdamW_NMDA_Tree_TCN__2022-01-27__17_58__ID_40048")
-#     eval = ModelEvaluator.load(
-#         r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\%s\%s.eval"%(model_name,model_name))
-#     # eval.data.flatten_batch_dimensions()
-#     # eval.save()
-#     eval.display()
-#

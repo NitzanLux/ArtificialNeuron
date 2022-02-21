@@ -357,13 +357,13 @@ morphology_path = "neuron_as_deep_net-master/L5PC_NEURON_simulation/morphologies
 biophysical_model_path = "neuron_as_deep_net-master/L5PC_NEURON_simulation/L5PCbiophys5b.hoc"
 biophysical_model_tamplate_path = "neuron_as_deep_net-master/L5PC_NEURON_simulation/L5PCtemplate_2.hoc"
 
-L5PC=get_neuron_model(morphology_path,biophysical_model_path,biophysical_model_tamplate_path)
+__L5PC=get_neuron_model(morphology_path, biophysical_model_path, biophysical_model_tamplate_path)
 
 #%% collect everything we need about the model
 
 # Get a list of all sections
-listOfBasalSections  = [L5PC.dend[x] for x in range(len(L5PC.dend))]
-listOfApicalSections = [L5PC.apic[x] for x in range(len(L5PC.apic))]
+listOfBasalSections  = [__L5PC.dend[x] for x in range(len(__L5PC.dend))]
+listOfApicalSections = [__L5PC.apic[x] for x in range(len(__L5PC.apic))]
 allSections = listOfBasalSections + listOfApicalSections
 allSectionsType = ['basal' for x in listOfBasalSections] + ['apical' for x in listOfApicalSections]
 allSectionsLength = []
@@ -378,23 +378,23 @@ allSegments_SectionInd = []
 # get a list of all segments
 for k, section in enumerate(allSections):
     allSectionsLength.append(section.L)
-    allSections_DistFromSoma.append(GetDistanceBetweenSections(L5PC.soma[0], section))
+    allSections_DistFromSoma.append(GetDistanceBetweenSections(__L5PC.soma[0], section))
     for currSegment in section:
         allSegments.append(currSegment)
         allSegmentsLength.append(float(section.L) / section.nseg)
         allSegmentsType.append(allSectionsType[k])
-        allSegments_DistFromSoma.append(GetDistanceBetweenSections(L5PC.soma[0], section) + float(section.L) * currSegment.x)
-        allSegments_SectionDistFromSoma.append(GetDistanceBetweenSections(L5PC.soma[0], section))
+        allSegments_DistFromSoma.append(GetDistanceBetweenSections(__L5PC.soma[0], section) + float(section.L) * currSegment.x)
+        allSegments_SectionDistFromSoma.append(GetDistanceBetweenSections(__L5PC.soma[0], section))
         allSegments_SectionInd.append(k)
 
 
 # set Ih vshift value and SK multiplicative factor
 for section in allSections:
     section.vshift_Ih = IH_VSHIFT
-L5PC.soma[0].vshift_Ih = IH_VSHIFT
+__L5PC.soma[0].vshift_Ih = IH_VSHIFT
 
-list_of_axonal_sections = [L5PC.axon[x] for x in range(len(L5PC.axon))]
-list_of_somatic_sections = [L5PC.soma[x] for x in range(len(L5PC.soma))]
+list_of_axonal_sections = [__L5PC.axon[x] for x in range(len(__L5PC.axon))]
+list_of_somatic_sections = [__L5PC.soma[x] for x in range(len(__L5PC.soma))]
 all_sections_with_SKE2 = list_of_somatic_sections + list_of_axonal_sections + listOfApicalSections
 
 for section in all_sections_with_SKE2:
@@ -559,12 +559,12 @@ for simInd in range(NUM_SIMULATIONS):
 
     # record soma voltage
     recVoltageSoma = h.Vector()
-    recVoltageSoma.record(L5PC.soma[0](0.5)._ref_v)
+    recVoltageSoma.record(__L5PC.soma[0](0.5)._ref_v)
 
     # record nexus voltage
     nexusSectionInd = 50
     recVoltageNexus = h.Vector()
-    recVoltageNexus.record(L5PC.apic[nexusSectionInd](0.9)._ref_v)
+    recVoltageNexus.record(__L5PC.apic[nexusSectionInd](0.9)._ref_v)
 
     # record all segments voltage
     if COLLECT_AND_SAVE_D_V_TS:
@@ -573,12 +573,12 @@ for simInd in range(NUM_SIMULATIONS):
             voltageRecSegment = h.Vector()
             voltageRecSegment.record(segment._ref_v)
             recVoltage_allSegments.append(voltageRecSegment)
-    recVoltageSoma.record(L5PC.soma[0](0.5)._ref_v)
+    recVoltageSoma.record(__L5PC.soma[0](0.5)._ref_v)
 
     # record nexus voltage
     nexusSectionInd = 50
     recVoltageNexus = h.Vector()
-    recVoltageNexus.record(L5PC.apic[nexusSectionInd](0.9)._ref_v)
+    recVoltageNexus.record(__L5PC.apic[nexusSectionInd](0.9)._ref_v)
 
     # record all segments voltage
     if COLLECT_AND_SAVE_D_V_TS:
