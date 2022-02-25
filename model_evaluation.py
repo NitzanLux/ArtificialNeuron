@@ -132,7 +132,11 @@ class ModelEvaluator():
         assert not self.data.is_recording(), "evaluation had been done in this object"
         if model is None:
             model = self.load_model()
-        model.cuda().eval().float()
+        model.cuda().eval()
+        if DATA_TYPE == torch.cuda.FloatTensor:
+            model.float()
+        elif DATA_TYPE == torch.cuda.DoubleTensor:
+            model.double()
 
         data_generator = self.load_data_generator(self.config, self.is_validation)
         for i, data in enumerate(data_generator):
@@ -141,8 +145,8 @@ class ModelEvaluator():
             s, v = d_labels
             with torch.cuda.amp.autocast():
                 with torch.no_grad():
-                    # output_s, output_v = model(d_input.cuda().type(DATA_TYPE))
-                    output_s, output_v = model(d_input.cuda().type(torch.cuda.FloatTensor))
+                    output_s, output_v = model(d_input.cuda().type(DATA_TYPE))
+                    # output_s, output_v = model(d_input.cuda().type(torch.cuda.FloatTensor))
                     output_s = torch.nn.Sigmoid()(output_s)
             self.data.append(v.cpu().detach().numpy().squeeze(), output_v.cpu().detach().numpy().squeeze(),
                              s.cpu().detach().numpy().squeeze(), output_s.cpu().detach().numpy().squeeze())
@@ -262,7 +266,8 @@ class ModelEvaluator():
                             vertical_spacing=0.1, start_cell='top-left',
                             subplot_titles=("voltage", "spike probability"), row_heights=[0.7, 0.3])
         x_axis = np.arange(v.shape[0])
-        s *= np.max(s_p) * 1.1
+        s *= (np.max(s_p) * 1.1)
+        print(np.max(s_p) * 1.1)
         # fig.add_trace(go.Scatter(x=x_axis, y=np.convolve(v,np.full((self.config.input_window_size//2,),1./(self.config.input_window_size//2))), name="avg_voltage"), row=1, col=1)
         fig.add_trace(go.Scatter(x=x_axis, y=v, name="voltage"), row=1, col=1)
         fig.add_trace(go.Scatter(x=x_axis, y=v_p, name="predicted voltage"), row=1, col=1)
@@ -271,6 +276,7 @@ class ModelEvaluator():
 
         fig.update_layout(  # height=600, width=600,
             title_text="model %s index %d" % (self.config.model_path[-1], index))
+        fig.update_layout(yaxis_range=[-83, -56])
         return fig
 
 

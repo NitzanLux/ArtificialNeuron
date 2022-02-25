@@ -179,7 +179,7 @@ class NeuronalView():
 
         app.layout = html.Div([
             html.Div([
-                dcc.Graph(id='graph', figure=self.graph_fig, style={'width': '100vw', 'height': '50vh'})
+                dcc.Graph(id='graph', figure=self.graph_fig, style={'width': '100vw', 'height': '100vh'})
             ]),
             html.Div(children="please load nodes first", id="nodes_id"),
             html.Label('Dropdown'),
@@ -438,7 +438,7 @@ class NeuronalView():
 
 if __name__ == '__main__':
     config = configuration_factory.load_config_file(
-        r"models/NMDA/AdamWresidual_with_normalization_NMDA_Tree_TCN__2022-02-02__11_59__ID_46128/AdamWresidual_with_normalization_NMDA_Tree_TCN__2022-02-02__11_59__ID_46128.config")
+        r"models/NMDA/glu_3_AdamW___2022-02-17__14_33__ID_2250/glu_3_AdamW___2022-02-17__14_33__ID_2250.config")
     nv=NeuronalView()
     nv.create_graph(config)
     nv.show_view()
