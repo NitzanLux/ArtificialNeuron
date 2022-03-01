@@ -21,6 +21,7 @@ import datetime
 import json
 from general_variables import *
 from get_neuron_modle import get_L5PC
+from scipy.ndimage.filters import uniform_filter1d
 
 BUFFER_SIZE_IN_FILES_VALID = 1
 
@@ -203,6 +204,16 @@ class ModelEvaluator():
                 html.Button('+50', id='btn-p50', n_clicks=0,
                             style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',
                                    "margin-left": "10px"}),
+                dcc.Input(
+                    id="mse_window_input",
+                    type="number",
+                    value=100,
+                    step=10,
+                    min=1,
+                    max=self[0][0].shape[0],
+                    placeholder="Running mse window size".format("number"),style={'margin': '10', 'align': 'center', 'vertical-align': 'middle',
+                                   "margin-left": "10px"}
+                )
             ], style={'width': '100vw', 'margin': '1', 'border-style': 'solid', 'align': 'center',
                       'vertical-align': 'middle'}),
             html.Div([
@@ -211,6 +222,18 @@ class ModelEvaluator():
                 style={'height': '95vh', 'margin': '0', 'border-style': 'solid', 'align': 'center'}),
             html.Div([dcc.Markdown('AUC: %0.5f' % auc)]),
             html.Div([dcc.Graph(id='eval-roc', figure=fig,
+                                style={'height': '95vh', 'margin': '0', 'border-style': 'solid', 'align': 'center'})],
+                     ),
+            html.Div([dcc.Input(
+                    id="mse_window_input_good_and_bad",
+                    type="number",
+                    value=100,
+                    step=10,
+                    max=self[0][0].shape[0],
+                    min=1,
+                    placeholder="Running mse window size".format("number"),style={'margin': '10', 'align': 'center', 'vertical-align': 'middle',
+                                   "margin-left": "10px"}
+                ),dcc.Graph(id='good_and_bad_examples', figure=go.Figure(),
                                 style={'height': '95vh', 'margin': '0', 'border-style': 'solid', 'align': 'center'})],
                      ),
 
@@ -228,9 +251,10 @@ class ModelEvaluator():
              Input('btn-p1', 'n_clicks'),
              Input('btn-p5', 'n_clicks'),
              Input('btn-p10', 'n_clicks'),
-             Input('btn-p50', 'n_clicks')
+             Input('btn-p50', 'n_clicks'),
+             Input("mse_window_input", "value")
              ])
-        def update_output(value, btnm50, btnm10, btnm5, btnm1, btnp1, btnp5, btnp10, btnp50):
+        def update_output(value, btnm50, btnm10, btnm5, btnm1, btnp1, btnp5, btnp10, btnp50,mse_window_size):
             changed_id = [p['prop_id'] for p in callback_context.triggered][0][:-len(".n_clicks")]
             value = int(value)
 
@@ -240,7 +264,7 @@ class ModelEvaluator():
                 value += int(changed_id[len('btn-m'):])
             value = max(0, value)
             value = min(value, len(self.data))
-            fig = self.display_window(value)
+            fig = self.display_window(value,mse_window_size)
             return value, 'You have selected "{}"'.format(value), fig
 
         app.run_server(debug=True, use_reloader=False)
@@ -259,29 +283,34 @@ class ModelEvaluator():
         fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1], name='chance'))
         return auc, fig
 
-    def display_window(self, index):
+    def display_window(self, index, mse_window_size=100):
         v, v_p, s, s_p = self[index]
-        fig = make_subplots(rows=2, cols=1,
-                            shared_xaxes=True,
-                            vertical_spacing=0.1, start_cell='top-left',
-                            subplot_titles=("voltage", "spike probability"), row_heights=[0.7, 0.3])
+        running_mse,general_mse = self.running_mse(v,v_p,mse_window_size)
+
+        fig = make_subplots(rows=3, cols=1,
+                            shared_xaxes=True, #specs = [{}, {},{}],
+                            vertical_spacing=0.05, start_cell='top-left',
+                            subplot_titles=("voltage",'running mse w=%d mse=%0.2f'%(mse_window_size,general_mse), "spike probability"), row_heights=[0.6, 0.03, 0.37])
         x_axis = np.arange(v.shape[0])
-        s *= (np.max(s_p) * 1.1)
-        print(np.max(s_p) * 1.1)
+        # s *= (np.max(s_p) * 1.1)
         # fig.add_trace(go.Scatter(x=x_axis, y=np.convolve(v,np.full((self.config.input_window_size//2,),1./(self.config.input_window_size//2))), name="avg_voltage"), row=1, col=1)
         fig.add_trace(go.Scatter(x=x_axis, y=v, name="voltage"), row=1, col=1)
         fig.add_trace(go.Scatter(x=x_axis, y=v_p, name="predicted voltage"), row=1, col=1)
-        fig.add_trace(go.Scatter(x=x_axis, y=s, name="spike"), row=2, col=1)
-        fig.add_trace(go.Scatter(x=x_axis, y=s_p, name="probability of spike"), row=2, col=1)
+        fig.add_heatmap(z=running_mse, row=2, col=1)
+        fig.add_trace(go.Scatter(x=x_axis, y=s, name="spike"), row=3, col=1)
+        fig.add_trace(go.Scatter(x=x_axis, y=s_p, name="probability of spike"), row=3, col=1)
 
         fig.update_layout(  # height=600, width=600,
-            title_text="model %s index %d" % (self.config.model_path[-1], index))
-        fig.update_layout(yaxis_range=[-83, -56])
+            title_text="model %s index %d" % (self.config.model_path[-1], index),
+            yaxis_range=[-83, -55], yaxis3_range=[0, 1]
+            ,legend_orientation="h")
         return fig
-
-
-
-
+    def generate_good_and_bad_examples(self,number_of_good_examples,number_of_bad_examples,window_size_mse):
+        fig = make_subplots(rows=3, cols=1,
+                            shared_xaxes=True,  # specs = [{}, {},{}],
+                            vertical_spacing=0.05, start_cell='top-left',
+                            subplot_titles=("voltage", 'running mse w=%d' % mse_window_size, "spike probability"),
+                            row_heights=[0.6, 0.03, 0.37])
     def save(self):
         data = self.data.data_per_recording
         config_path = self.config.config_path
@@ -289,7 +318,16 @@ class ModelEvaluator():
         path = os.path.join(MODELS_DIR, *self.config.config_path)[:-len(".config")]
         with open(path + ".eval", 'wb') as pfile:
             pickle.dump((data, config_path, is_validation), pfile)
-
+    @staticmethod
+    def running_mse(v,v_p,mse_window_size):
+        mse_window_size = min(v.shape[0], mse_window_size)
+        running_mse = np.power(v - v_p,2)[np.newaxis,:]
+        total_mse=np.mean(running_mse)
+        if mse_window_size > 2:
+            running_mse=uniform_filter1d(running_mse, size=mse_window_size, mode='constant')
+            running_mse[:,:(mse_window_size // 2)] = 0
+            running_mse[:,-(mse_window_size // 2 - 1):] = 0
+        return running_mse,total_mse
     @staticmethod
     def load(path: str):
         if not path.endswith('.eval'):
@@ -329,13 +367,14 @@ class ModelEvaluator():
         end_time = datetime.datetime.now()
         print("evaluation took %0.1f minutes" % ((end_time - start_time).total_seconds() / 60.))
 
-if __name__ == '__main__':
-    # model_name='AdamWshort_and_wide_1_NMDA_Tree_TCN__2022-02-06__15_47__ID_54572'
-    model_name='glu_3_AdamW___2022-02-17__14_33__ID_2250'
-    # ModelEvaluator.build_and_save(r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\heavy_AdamW_NMDA_Tree_TCN__2022-01-27__17_58__ID_40048\heavy_AdamW_NMDA_Tree_TCN__2022-01-27__17_58__ID_40048")
-    eval = ModelEvaluator.load(
-        r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\%s\%s.eval"%(model_name,model_name))
-    # eval.data.flatten_batch_dimensions()
-    # eval.save()
-    eval.display()
 
+# if __name__ == '__main__':
+#     # model_name='AdamWshort_and_wide_1_NMDA_Tree_TCN__2022-02-06__15_47__ID_54572'
+#     model_name = 'glu_3_AdamW___2022-02-17__14_33__ID_58573'
+#     # ModelEvaluator.build_and_save(r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\heavy_AdamW_NMDA_Tree_TCN__2022-01-27__17_58__ID_40048\heavy_AdamW_NMDA_Tree_TCN__2022-01-27__17_58__ID_40048")
+#     eval = ModelEvaluator.load(
+#         r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\%s\%s.eval" % (
+#         model_name, model_name))
+#     # eval.data.flatten_batch_dimensions()
+#     # eval.save()
+#     eval.display()
