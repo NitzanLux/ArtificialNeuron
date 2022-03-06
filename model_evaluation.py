@@ -22,7 +22,12 @@ import json
 from general_variables import *
 from get_neuron_modle import get_L5PC
 from scipy.ndimage.filters import uniform_filter1d
+from scipy.signal import find_peaks
+import dash_bootstrap_components as dbc
 
+GOOD_AND_BAD_SIZE = 8
+
+I = 8
 BUFFER_SIZE_IN_FILES_VALID = 1
 
 
@@ -162,7 +167,8 @@ class ModelEvaluator():
             model = neuronal_model.NeuronConvNet.build_model_from_self.config(self.config)
         print("model parmeters: %d" % model.count_parameters())
         return model
-
+    def __len__(self):
+        return len(self.data)
     def __getitem__(self, index):
         return self.data[index]
 
@@ -180,6 +186,7 @@ class ModelEvaluator():
             ),
             html.Div(id='slider-output-container', style={'height': '2vh'}),
             html.Div([
+
                 html.Button('-50', id='btn-m50', n_clicks=0,
                             style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',
                                    "margin-left": "10px"}),
@@ -211,7 +218,7 @@ class ModelEvaluator():
                     step=10,
                     min=1,
                     max=self[0][0].shape[0],
-                    placeholder="Running mse window size".format("number"),style={'margin': '10', 'align': 'center', 'vertical-align': 'middle',
+                    placeholder="Running mse window size",style={'margin': '10', 'align': 'center', 'vertical-align': 'middle',
                                    "margin-left": "10px"}
                 )
             ], style={'width': '100vw', 'margin': '1', 'border-style': 'solid', 'align': 'center',
@@ -233,12 +240,16 @@ class ModelEvaluator():
                     min=1,
                     placeholder="Running mse window size".format("number"),style={'margin': '10', 'align': 'center', 'vertical-align': 'middle',
                                    "margin-left": "10px"}
-                ),dcc.Graph(id='good_and_bad_examples', figure=go.Figure(),
-                                style={'height': '95vh', 'margin': '0', 'border-style': 'solid', 'align': 'center'})],
+                ),html.Div(id="good_and_bad",children=[self.display_good_and_bad()])],
                      ),
 
         ])
-
+        @app.callback(
+            Output('good_and_bad','children'),
+            Input("mse_window_input_good_and_bad", "value")
+        )
+        def update_good_and_bad(window_size):
+            return self.display_good_and_bad(mse_window_size=window_size)
         @app.callback(
             Output('my-slider', 'value'),
             Output('slider-output-container', 'value'),
@@ -283,6 +294,7 @@ class ModelEvaluator():
         fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1], name='chance'))
         return auc, fig
 
+
     def display_window(self, index, mse_window_size=100):
         v, v_p, s, s_p = self[index]
         running_mse,general_mse = self.running_mse(v,v_p,mse_window_size)
@@ -303,14 +315,96 @@ class ModelEvaluator():
         fig.update_layout(  # height=600, width=600,
             title_text="model %s index %d" % (self.config.model_path[-1], index),
             yaxis_range=[-83, -55], yaxis3_range=[0, 1]
-            ,legend_orientation="h")
+            ,legend_orientation="h",yaxis2=dict(ticks="",showticklabels=False))
         return fig
-    def generate_good_and_bad_examples(self,number_of_good_examples,number_of_bad_examples,window_size_mse):
-        fig = make_subplots(rows=3, cols=1,
+
+    def display_good_and_bad(self, number_of_good_and_bad_examples=GOOD_AND_BAD_SIZE, mse_window_size=100):
+        good_examples,bad_examples=self.find_good_and_bad_examples(number_of_good_and_bad_examples,mse_window_size)
+        ncols= 3 if number_of_good_and_bad_examples%3==0 else 4
+        nrows=number_of_good_and_bad_examples//ncols+(number_of_good_and_bad_examples%ncols>0)
+        nrows*=2
+        row_stayle={ 'width': '24vw','margin': '0', 'align': 'center', 'display': 'inline-block', "margin-left": "0px"}
+        dives=[]
+        h_box=[]
+        v_box=[]
+        current_row=0
+        h_box.append(html.Div(children='bad examples'))
+
+        for i in range(bad_examples.shape[0]):
+            if i // ncols != current_row:
+                h_box.append(html.Div(v_box, style={'width': '100vw', 'margin': '1', 'align': 'center',
+                                                    'vertical-align': 'middle'}))
+                v_box = []
+                current_row += 1
+            v_box.append(dcc.Graph(
+                                   figure=self.generate_figure_good_or_bad(bad_examples[i, 0], bad_examples[i, 2],
+                                                                           bad_examples[i, 1], mse_window_size),
+                                   style=row_stayle))
+        if len(v_box)>0:
+            h_box.append(html.Div(v_box, style={'width': '100vw', 'margin': '1', 'align': 'center',
+                                                'vertical-align': 'middle'}))
+        dives.append(html.Div(h_box, style={'width': '100vw', 'margin': '1', 'align': 'center','border-style': 'solid'}))
+
+        h_box = []
+        v_box = []
+        current_row = 0
+        h_box.append(html.Div(children='good examples'))
+        for i in range(good_examples.shape[0]):
+            if i // ncols != current_row:
+                h_box.append(dbc.Row(v_box))
+                v_box = []
+                current_row += 1
+            v_box.append(dcc.Graph(
+                figure=self.generate_figure_good_or_bad(good_examples[i, 0], good_examples[i, 2], good_examples[i, 1],
+                                                        mse_window_size),
+                style=row_stayle))
+        if len(v_box) > 0:
+            h_box.append(html.Div(v_box, style={'width': '100vw', 'margin': '1', 'align': 'center',
+                                                'vertical-align': 'middle', "margin-left": "10px"}))
+        dives.append(
+            html.Div(h_box, style={'width': '100vw', 'margin': '1', 'align': 'center', 'border-style': 'solid'}))
+        return html.Div(dives)
+
+
+    def find_good_and_bad_examples(self,number_of_good_and_bad_examples,mse_window_size=100):
+        good_examples=[]
+        bad_examples=[]
+        for i in range(len(self)):
+            v, v_p, s, s_p = self[i]
+            running_mse,general_mse = self.running_mse(v, v_p, mse_window_size)
+            running_mse=running_mse[:,(mse_window_size // 2):-(mse_window_size // 2 - 1)][0,:]
+            peaks, _ = find_peaks((-running_mse),distance=(mse_window_size // 2)+(mse_window_size % 2))
+            for peak in peaks:
+                bad_examples.append((running_mse[peak],i,peak))
+            peaks, _ = find_peaks(running_mse, distance=(mse_window_size // 2) + (mse_window_size % 2))
+            for peak in peaks:
+                good_examples.append((running_mse[peak],i,peak))
+        good_examples = np.array(good_examples)
+        g_ind = np.argpartition(-good_examples[:,0], -number_of_good_and_bad_examples)[-number_of_good_and_bad_examples:]
+        bad_examples=np.array(bad_examples)
+        b_ind = np.argpartition(bad_examples[:,0], -number_of_good_and_bad_examples)[-number_of_good_and_bad_examples:]
+        return good_examples[g_ind,:],bad_examples[b_ind,:]
+
+    def generate_figure_good_or_bad(self, mse, first_time_point, sim_index, window_size):
+        v, v_p, s, s_p = self[int(sim_index)]
+        first_time_point=int(first_time_point)
+
+        fig = make_subplots(rows=2, cols=1,
                             shared_xaxes=True,  # specs = [{}, {},{}],
                             vertical_spacing=0.05, start_cell='top-left',
-                            subplot_titles=("voltage", 'running mse w=%d' % mse_window_size, "spike probability"),
-                            row_heights=[0.6, 0.03, 0.37])
+                            subplot_titles=("voltage mse %0.3f" % mse, "spike probability"),
+                            row_heights=[0.6, 0.4])
+        x_axis = np.arange(v.shape[0])
+        fig.add_trace(go.Scatter(x=x_axis, y=v, name="voltage"), row=1, col=1)
+        fig.add_trace(go.Scatter(x=x_axis, y=v_p, name="predicted voltage"), row=1, col=1)
+        fig.add_trace(go.Scatter(x=x_axis, y=s, name="spike"), row=2, col=1)
+        fig.add_trace(go.Scatter(x=x_axis, y=s_p, name="probability of spike"), row=2, col=1)
+
+        fig.update_layout(  # height=600, width=600,
+            title_text="index %d time %d" % (sim_index, first_time_point),
+            yaxis_range=[-83, -55],xaxis_range=[first_time_point,first_time_point + window_size], legend_orientation="h")
+        return fig
+
     def save(self):
         data = self.data.data_per_recording
         config_path = self.config.config_path
@@ -368,13 +462,15 @@ class ModelEvaluator():
         print("evaluation took %0.1f minutes" % ((end_time - start_time).total_seconds() / 60.))
 
 
-# if __name__ == '__main__':
-#     # model_name='AdamWshort_and_wide_1_NMDA_Tree_TCN__2022-02-06__15_47__ID_54572'
-#     model_name = 'glu_3_AdamW___2022-02-17__14_33__ID_58573'
-#     # ModelEvaluator.build_and_save(r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\heavy_AdamW_NMDA_Tree_TCN__2022-01-27__17_58__ID_40048\heavy_AdamW_NMDA_Tree_TCN__2022-01-27__17_58__ID_40048")
-#     eval = ModelEvaluator.load(
-#         r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\%s\%s.eval" % (
-#         model_name, model_name))
-#     # eval.data.flatten_batch_dimensions()
-#     # eval.save()
-#     eval.display()
+if __name__ == '__main__':
+    # model_name='AdamWshort_and_wide_1_NMDA_Tree_TCN__2022-02-06__15_47__ID_54572'
+    # model_name = 'glu_3_AdamW___2022-02-17__14_33__ID_58573'
+    # model_name = 'glu_3_AdamW___2022-02-17__14_33__ID_2250'
+    model_name = 'glu_3_NAdam___2022-02-17__14_33__ID_60416'
+    # ModelEvaluator.build_and_save(r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\heavy_AdamW_NMDA_Tree_TCN__2022-01-27__17_58__ID_40048\heavy_AdamW_NMDA_Tree_TCN__2022-01-27__17_58__ID_40048")
+    eval = ModelEvaluator.load(
+        r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\%s\%s.eval" % (
+        model_name, model_name))
+    # eval.data.flatten_batch_dimensions()
+    # eval.save()
+    eval.display()

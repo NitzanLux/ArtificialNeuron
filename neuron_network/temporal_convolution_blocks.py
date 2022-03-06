@@ -16,21 +16,25 @@ import copy
 from synapse_tree import NUMBER_OF_PREVIUSE_SEGMENTS_IN_BRANCH
 from neuron_network.block_aid_functions import *
 import gc
+
 SYNAPSE_DIMENTION_POSITION = 1
 
+
 class Base1DConvolutionBlockLayer(nn.Module):
-    def __init__(self,in_channels, out_channels, kernel_size, stride, padding, dilation,activation_function):
+    def __init__(self, in_channels, out_channels, kernel_size, stride, padding, dilation, activation_function):
         super(Base1DConvolutionBlockLayer, self).__init__()
         self.conv1d = nn.Conv1d(in_channels, out_channels, kernel_size, stride, padding, dilation)
-        self.activation_function=activation_function()
-        self.batch_norm = nn.BatchNorm1d(in_channels)#todo debugging
-    def forward(self,x):
-        out = self.batch_norm(x)#todo debugging
+        self.activation_function = activation_function()
+        self.batch_norm = nn.BatchNorm1d(in_channels)  # todo debugging
+
+    def forward(self, x):
+        out = self.batch_norm(x)  # todo debugging
 
         out = self.conv1d(out)
-        out=self.activation_function(out)
+        out = self.activation_function(out)
         # out = self.batch_norm(out)#todo debugging
         return out
+
 
 class Base1DConvolutionBlock(nn.Module):
     def __init__(self, number_of_layers, input_shape: Tuple[int, int], activation_function
@@ -42,11 +46,11 @@ class Base1DConvolutionBlock(nn.Module):
         self.layers_list = nn.ModuleList()
         self.skip_connections = skip_connections
         if inner_scope_channel_number is None:
-            self.inner_scope_channel_number=input_shape[0]
+            self.inner_scope_channel_number = input_shape[0]
         else:
             self.inner_scope_channel_number = inner_scope_channel_number
         if channel_output_number is None:
-            self.channel_output_number=input_shape[0]
+            self.channel_output_number = input_shape[0]
         else:
             self.channel_output_number = channel_output_number
         self.channel_input_number = input_shape[0]
@@ -58,7 +62,8 @@ class Base1DConvolutionBlock(nn.Module):
                 in_channels = self.inner_scope_channel_number
             if i == number_of_layers - 1:
                 out_channels = self.channel_output_number
-            model = Base1DConvolutionBlockLayer(in_channels, out_channels, kernel_size, stride, padding, dilation,activation_function)
+            model = Base1DConvolutionBlockLayer(in_channels, out_channels, kernel_size, stride, padding, dilation,
+                                                activation_function)
             self.layers_list.append(model)
 
     def forward(self, x):
@@ -78,11 +83,10 @@ class Base1DConvolutionBlock(nn.Module):
 class BranchLeafBlock(nn.Module):
     def __init__(self, input_shape: Tuple[int, int], number_of_layers_leaf: int, activation_function,
                  inner_scope_channel_number, channel_output_number, kernel_size, stride=1, dilation=1, **kwargs):
-
         super().__init__()
         self.base_conv_1d = Base1DConvolutionBlock(number_of_layers_leaf, input_shape, activation_function,
                                                    inner_scope_channel_number, channel_output_number, kernel_size,
-                                                   stride, dilation,skip_connections=kwargs['skip_connections'])
+                                                   stride, dilation, skip_connections=kwargs['skip_connections'])
 
     def forward(self, x):
         out = self.base_conv_1d(x)
@@ -93,13 +97,14 @@ class IntersectionBlock(nn.Module):
     def __init__(self, input_shape: Tuple[int, int], number_of_layers_intersection: int, activation_function
                  , inner_scope_channel_number
                  , channel_output_number, kernel_size, stride=1,
-                 dilation=1, **kwargs):
+                 dilation=1,kernel_size_intersection=None, **kwargs):
         super(IntersectionBlock, self).__init__()
         self.base_conv_1d = Base1DConvolutionBlock(number_of_layers_intersection,
                                                    input_shape,
                                                    activation_function,
                                                    inner_scope_channel_number,
-                                                   channel_output_number, kernel_size, stride, dilation,skip_connections=kwargs['skip_connections'])
+                                                   channel_output_number, kernel_size if kernel_size_intersection is None else kernel_size_intersection, stride, dilation,
+                                                   skip_connections=kwargs['skip_connections'])
 
     def forward(self, x):
         out = self.base_conv_1d(x)
@@ -107,29 +112,30 @@ class IntersectionBlock(nn.Module):
 
 
 class BranchBlock(nn.Module):
-    def __init__(self, input_shape_leaf : Tuple[int, int], input_shape_integration : Tuple[int, int], number_of_layers_branch_intersection: int,
+    def __init__(self, input_shape_leaf: Tuple[int, int], input_shape_integration: Tuple[int, int],
+                 number_of_layers_branch_intersection: int,
                  number_of_layers_leaf: int, activation_function
                  , inner_scope_channel_number
                  , channel_output_number, kernel_size, stride=1,
-                 dilation=1, **kwargs):
+                 dilation=1, kernel_size_branch=None ** kwargs):
         super(BranchBlock, self).__init__()
         self.branch_leaf = BranchLeafBlock(input_shape_leaf, number_of_layers_leaf, activation_function
                                            , input_shape_leaf[0]
                                            , input_shape_leaf[0], kernel_size, stride,
-                                           dilation,**kwargs)
+                                           dilation, **kwargs)
 
         self.activation_function = activation_function()
         self.synapse_model = nn.Sequential(self.branch_leaf, activation_function())
 
-        self.intersection_block =Base1DConvolutionBlock(number_of_layers_branch_intersection,
-                                                   input_shape_integration,
-                                                   activation_function,
-                                                   inner_scope_channel_number,
-                                                   channel_output_number, kernel_size, stride, dilation,skip_connections=kwargs['skip_connections'])
+        self.intersection_block = Base1DConvolutionBlock(number_of_layers_branch_intersection,
+                                                         input_shape_integration,
+                                                         activation_function,
+                                                         inner_scope_channel_number,
+                                                         channel_output_number,
+                                                         kernel_size if kernel_size_branch is None else kernel_size_branch,
+                                                         stride, dilation, skip_connections=kwargs['skip_connections'])
 
-
-
-    def forward(self, x,prev_segment):
+    def forward(self, x, prev_segment):
         out = self.synapse_model(x)
         out = self.activation_function(out)
         out = torch.cat((out, prev_segment), dim=SYNAPSE_DIMENTION_POSITION)
@@ -139,13 +145,13 @@ class BranchBlock(nn.Module):
 
 class RootBlock(nn.Module):
     def __init__(self, input_shape: Tuple[int, int], number_of_layers_root: int, activation_function
-                 ,channel_output_number, inner_scope_channel_number
+                 , channel_output_number, inner_scope_channel_number
                  , kernel_size, stride=1,
                  dilation=1, **kwargs):
         super(RootBlock, self).__init__()
         self.conv1d_root = Base1DConvolutionBlock(number_of_layers_root, input_shape, activation_function,
                                                   inner_scope_channel_number, inner_scope_channel_number, kernel_size,
-                                                  stride, dilation,skip_connections=kwargs['skip_connections'])
+                                                  stride, dilation, skip_connections=kwargs['skip_connections'])
         self.model = nn.Sequential(self.conv1d_root, activation_function())
 
         if inner_scope_channel_number is None:
