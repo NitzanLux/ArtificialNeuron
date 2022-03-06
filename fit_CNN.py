@@ -420,13 +420,13 @@ def display_accuracy(target, output, step, additional_str=''):
                                                              labels=None, classes_to_plot=None),
                "roc %s" % additional_str: wandb.plot.roc_curve(target, output, labels=None, classes_to_plot=None),
                "AUC %s" % additional_str: auc}, commit=False)
-    if "best_accuracy" in wandb.run.summary:
-        best_accuracy = wandb.run.summary["best_accuracy"]
-        if best_accuracy is None: best_accuracy=0
-    else:
-        best_accuracy = 0
-    wandb.run.summary["best_accuracy"] = max(best_accuracy, auc)
-    wandb.run.summary.update()
+    # if "best_accuracy" in wandb.run.summary:
+    #     best_accuracy = wandb.run.summary["best_accuracy"]
+    #     if best_accuracy is None: best_accuracy=0
+    # else:
+    #     best_accuracy = 0
+    # wandb.run.summary["best_accuracy"] = max(best_accuracy, auc)
+    # wandb.run.summary.update()
 
 
 def run_fit_cnn():
