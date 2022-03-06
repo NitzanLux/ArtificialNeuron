@@ -248,7 +248,7 @@ if __name__ == '__main__':
     #                                      batch_size_validation=200, batch_size_train=5, clip_gradients_factor=2.5,
     #                                      constant_learning_rate=0.005)
     #     configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
-    configurations_name = "recptive_adj_1"
+    configurations_name = "trimmed_kernel"
     for i in ['AdamW','NAdam']:
         config_morpho_0 = config_factory(loss_function='focalbcel_mse_mae_loss',
                                          dynamic_learning_params=False  # ,optimizer_type='RMSprop'
