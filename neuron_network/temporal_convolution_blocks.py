@@ -117,7 +117,7 @@ class BranchBlock(nn.Module):
                  number_of_layers_leaf: int, activation_function
                  , inner_scope_channel_number
                  , channel_output_number, kernel_size, stride=1,
-                 dilation=1, kernel_size_branch=None ** kwargs):
+                 dilation=1, kernel_size_branch=None ,**kwargs):
         super(BranchBlock, self).__init__()
         self.branch_leaf = BranchLeafBlock(input_shape_leaf, number_of_layers_leaf, activation_function
                                            , input_shape_leaf[0]
