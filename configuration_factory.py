@@ -78,7 +78,7 @@ def surround_with_default_config_values(**kargs):
                                  number_of_layers_root=4, number_of_layers_leaf=4, number_of_layers_intersection=1,
                                  number_of_layers_branch_intersection=1,
                                  # david_layers=[55, 13, 13, 13, 13, 13, 13],
-                                 glu_number_of_layers=7,
+                                 glu_number_of_layers=0,
                                  skip_connections=True,
                                  inter_module_skip_connections=True,
                                  kernel_size=49,
@@ -91,7 +91,7 @@ def surround_with_default_config_values(**kargs):
                                  dilation=1,
                                  channel_input_number=1278,  # synapse number
                                  inner_scope_channel_number=None,
-                                 channel_output_number=64,
+                                 channel_output_number=15,
                                  activation_function_name="LeakyReLU",
                                  activation_function_kargs=dict(negative_slope=0.025),
                                  include_dendritic_voltage_tracing=False)
@@ -248,7 +248,7 @@ if __name__ == '__main__':
     #                                      batch_size_validation=200, batch_size_train=5, clip_gradients_factor=2.5,
     #                                      constant_learning_rate=0.005)
     #     configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
-    configurations_name = "recptive_adj"
+    configurations_name = "recptive_adj_1"
     for i in ['AdamW','NAdam']:
         config_morpho_0 = config_factory(loss_function='focalbcel_mse_mae_loss',
                                          dynamic_learning_params=False  # ,optimizer_type='RMSprop'
