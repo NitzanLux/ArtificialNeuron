@@ -34,7 +34,6 @@ BUFFER_SIZE_IN_FILES_VALID = 1
 class EvaluationData():
     def __init__(self, recoreded_data=None):
         self.data_per_recording = [] if recoreded_data is None else recoreded_data
-
     def clear(self):
         self.data_per_recording = []
 
@@ -133,6 +132,8 @@ class ModelEvaluator():
         self.data = EvaluationData()
         self.config = config
         self.is_validation = is_validation
+        self.current_good_and_bad_div=None
+
 
     def evaluate_model(self, model=None):
         assert not self.data.is_recording(), "evaluation had been done in this object"
@@ -211,12 +212,14 @@ class ModelEvaluator():
                 html.Button('+50', id='btn-p50', n_clicks=0,
                             style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',
                                    "margin-left": "10px"}),
+                ' mse window size:',
                 dcc.Input(
                     id="mse_window_input",
                     type="number",
                     value=100,
-                    step=10,
+                    step=1,
                     min=1,
+                    debounce=True,
                     max=self[0][0].shape[0],
                     placeholder="Running mse window size",style={'margin': '10', 'align': 'center', 'vertical-align': 'middle',
                                    "margin-left": "10px"}
@@ -231,13 +234,24 @@ class ModelEvaluator():
             html.Div([dcc.Graph(id='eval-roc', figure=fig,
                                 style={'height': '95vh', 'margin': '0', 'border-style': 'solid', 'align': 'center'})],
                      ),
-            html.Div([dcc.Input(
+            html.Div([' mse window size:',dcc.Input(
                     id="mse_window_input_good_and_bad",
                     type="number",
                     value=100,
-                    step=10,
+                    step=1,
                     max=self[0][0].shape[0],
                     min=1,
+                    debounce=True,
+                    placeholder="Running mse window size".format("number"),style={'margin': '10', 'align': 'center', 'vertical-align': 'middle',
+                                   "margin-left": "10px"}
+                ),' margin size:',dcc.Input(
+                    id="margin_good_and_bad",
+                    type="number",
+                    value=100,
+                    step=1,
+                    max=1000,
+                    min=1,
+                    debounce=True,
                     placeholder="Running mse window size".format("number"),style={'margin': '10', 'align': 'center', 'vertical-align': 'middle',
                                    "margin-left": "10px"}
                 ),html.Div(id="good_and_bad",children=[self.display_good_and_bad()])],
@@ -246,13 +260,14 @@ class ModelEvaluator():
         ])
         @app.callback(
             Output('good_and_bad','children'),
-            Input("mse_window_input_good_and_bad", "value")
+            Input("mse_window_input_good_and_bad", "value"),
+            Input("margin_good_and_bad", "value")
         )
-        def update_good_and_bad(window_size):
-            return self.display_good_and_bad(mse_window_size=window_size)
+        def update_good_and_bad(window_size,margin):
+            return self.display_good_and_bad(mse_window_size=window_size,margin=margin)
         @app.callback(
             Output('my-slider', 'value'),
-            Output('slider-output-container', 'value'),
+            Output('slider-output-container', "children"),
             Output('evaluation-graph', 'figure'),
             [Input('my-slider', 'value'),
              Input('btn-m50', 'n_clicks'),
@@ -314,11 +329,13 @@ class ModelEvaluator():
 
         fig.update_layout(  # height=600, width=600,
             title_text="model %s index %d" % (self.config.model_path[-1], index),
-            yaxis_range=[-83, -55], yaxis3_range=[0, 1]
+            yaxis_range=[-83, -52], yaxis3_range=[0, 1]
             ,legend_orientation="h",yaxis2=dict(ticks="",showticklabels=False))
         return fig
 
-    def display_good_and_bad(self, number_of_good_and_bad_examples=GOOD_AND_BAD_SIZE, mse_window_size=100):
+    def display_good_and_bad(self, number_of_good_and_bad_examples=GOOD_AND_BAD_SIZE, mse_window_size=100,margin=20):
+        if mse_window_size is None:
+            return self.current_good_and_bad_div
         good_examples,bad_examples=self.find_good_and_bad_examples(number_of_good_and_bad_examples,mse_window_size)
         ncols= 3 if number_of_good_and_bad_examples%3==0 else 4
         nrows=number_of_good_and_bad_examples//ncols+(number_of_good_and_bad_examples%ncols>0)
@@ -338,7 +355,7 @@ class ModelEvaluator():
                 current_row += 1
             v_box.append(dcc.Graph(
                                    figure=self.generate_figure_good_or_bad(bad_examples[i, 0], bad_examples[i, 2],
-                                                                           bad_examples[i, 1], mse_window_size),
+                                                                           bad_examples[i, 1], mse_window_size,margin=margin),
                                    style=row_stayle))
         if len(v_box)>0:
             h_box.append(html.Div(v_box, style={'width': '100vw', 'margin': '1', 'align': 'center',
@@ -356,14 +373,15 @@ class ModelEvaluator():
                 current_row += 1
             v_box.append(dcc.Graph(
                 figure=self.generate_figure_good_or_bad(good_examples[i, 0], good_examples[i, 2], good_examples[i, 1],
-                                                        mse_window_size),
+                                                        mse_window_size,margin=margin),
                 style=row_stayle))
         if len(v_box) > 0:
             h_box.append(html.Div(v_box, style={'width': '100vw', 'margin': '1', 'align': 'center',
                                                 'vertical-align': 'middle', "margin-left": "10px"}))
         dives.append(
             html.Div(h_box, style={'width': '100vw', 'margin': '1', 'align': 'center', 'border-style': 'solid'}))
-        return html.Div(dives)
+        self.current_good_and_bad_div =  html.Div(dives)
+        return self.current_good_and_bad_div
 
 
     def find_good_and_bad_examples(self,number_of_good_and_bad_examples,mse_window_size=100):
@@ -385,7 +403,7 @@ class ModelEvaluator():
         b_ind = np.argpartition(bad_examples[:,0], -number_of_good_and_bad_examples)[-number_of_good_and_bad_examples:]
         return good_examples[g_ind,:],bad_examples[b_ind,:]
 
-    def generate_figure_good_or_bad(self, mse, first_time_point, sim_index, window_size):
+    def generate_figure_good_or_bad(self, mse, first_time_point, sim_index, window_size,margin=0):
         v, v_p, s, s_p = self[int(sim_index)]
         first_time_point=int(first_time_point)
 
@@ -399,10 +417,15 @@ class ModelEvaluator():
         fig.add_trace(go.Scatter(x=x_axis, y=v_p, name="predicted voltage"), row=1, col=1)
         fig.add_trace(go.Scatter(x=x_axis, y=s, name="spike"), row=2, col=1)
         fig.add_trace(go.Scatter(x=x_axis, y=s_p, name="probability of spike"), row=2, col=1)
-
+        fig.add_trace(go.Scatter(
+            x=[first_time_point, first_time_point, first_time_point+window_size, first_time_point+window_size,first_time_point],
+            y=[-90, -45, -45, -90,-90], fill="toself",opacity=0.3,fillcolor='orange',hoverinfo='skip',line=dict(width=0),mode='lines',showlegend=False),row=1,col=1)
+        fig.add_trace(go.Scatter(
+            x=[first_time_point, first_time_point, first_time_point+window_size, first_time_point+window_size,first_time_point],
+            y=[0, 1, 1, 0,0], fill="toself",opacity=0.3,fillcolor='orange',hoverinfo='skip',line=dict(width=0),mode='lines',showlegend=False),row=2,col=1)
         fig.update_layout(  # height=600, width=600,
             title_text="index %d time %d" % (sim_index, first_time_point),
-            yaxis_range=[-83, -55],xaxis_range=[first_time_point,first_time_point + window_size], legend_orientation="h")
+            yaxis_range=[-83, -52],yaxis2_range=[0,1],xaxis_range=[max(first_time_point-margin,0),min(first_time_point + window_size+margin,v.shape[0])], legend_orientation="h")
         return fig
 
     def save(self):
@@ -464,9 +487,9 @@ class ModelEvaluator():
 
 if __name__ == '__main__':
     # model_name='AdamWshort_and_wide_1_NMDA_Tree_TCN__2022-02-06__15_47__ID_54572'
-    # model_name = 'glu_3_AdamW___2022-02-17__14_33__ID_58573'
+    model_name = 'glu_3_AdamW___2022-02-17__14_33__ID_58573'
     # model_name = 'glu_3_AdamW___2022-02-17__14_33__ID_2250'
-    model_name = 'glu_3_NAdam___2022-02-17__14_33__ID_60416'
+    # model_name = 'glu_3_NAdam___2022-02-17__14_33__ID_60416'
     # ModelEvaluator.build_and_save(r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\heavy_AdamW_NMDA_Tree_TCN__2022-01-27__17_58__ID_40048\heavy_AdamW_NMDA_Tree_TCN__2022-01-27__17_58__ID_40048")
     eval = ModelEvaluator.load(
         r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\%s\%s.eval" % (

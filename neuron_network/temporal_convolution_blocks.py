@@ -97,13 +97,15 @@ class IntersectionBlock(nn.Module):
     def __init__(self, input_shape: Tuple[int, int], number_of_layers_intersection: int, activation_function
                  , inner_scope_channel_number
                  , channel_output_number, kernel_size, stride=1,
-                 dilation=1,kernel_size_intersection=None, **kwargs):
+                 dilation=1, kernel_size_intersection=None, **kwargs):
         super(IntersectionBlock, self).__init__()
         self.base_conv_1d = Base1DConvolutionBlock(number_of_layers_intersection,
                                                    input_shape,
                                                    activation_function,
                                                    inner_scope_channel_number,
-                                                   channel_output_number, kernel_size if kernel_size_intersection is None else kernel_size_intersection, stride, dilation,
+                                                   channel_output_number,
+                                                   kernel_size if kernel_size_intersection is None else kernel_size_intersection,
+                                                   stride, dilation,
                                                    skip_connections=kwargs['skip_connections'])
 
     def forward(self, x):
@@ -117,7 +119,7 @@ class BranchBlock(nn.Module):
                  number_of_layers_leaf: int, activation_function
                  , inner_scope_channel_number
                  , channel_output_number, kernel_size, stride=1,
-                 dilation=1, kernel_size_branch=None ,**kwargs):
+                 dilation=1, kernel_size_branch=None, **kwargs):
         super(BranchBlock, self).__init__()
         self.branch_leaf = BranchLeafBlock(input_shape_leaf, number_of_layers_leaf, activation_function
                                            , input_shape_leaf[0]
@@ -146,12 +148,14 @@ class BranchBlock(nn.Module):
 class RootBlock(nn.Module):
     def __init__(self, input_shape: Tuple[int, int], number_of_layers_root: int, activation_function
                  , channel_output_number, inner_scope_channel_number
-                 , kernel_size, stride=1,
+                 , kernel_size, kernel_size_soma=None, stride=1,
                  dilation=1, **kwargs):
         super(RootBlock, self).__init__()
         self.conv1d_root = Base1DConvolutionBlock(number_of_layers_root, input_shape, activation_function,
-                                                  inner_scope_channel_number, inner_scope_channel_number, kernel_size,
-                                                  stride, dilation, skip_connections=kwargs['skip_connections'])
+                                                  inner_scope_channel_number, inner_scope_channel_number,
+                                                  kernel_size=kernel_size_soma if kernel_size_soma is None else kernel_size,
+                                                  stride=stride, dilation=dilation,
+                                                  skip_connections=kwargs['skip_connections'])
         self.model = nn.Sequential(self.conv1d_root, activation_function())
 
         if inner_scope_channel_number is None:
