@@ -110,8 +110,8 @@ def load_config_file(path: str) -> AttrDict:
     with open(path, 'r') as file:
         config = json.loads(file.read())
     config = AttrDict(config)
-    config.lr_scheduler='CyclicLR'
-    config.lr_scheduler_params=dict(max_lr=0.001,base_lr=0.00003,cycle_momentum=False)
+    # config.lr_scheduler='CyclicLR'
+    # config.lr_scheduler_params=dict(max_lr=0.001,base_lr=0.00003,cycle_momentum=False)
     if config.config_version < CURRENT_VERSION :
         config = surround_with_default_config_values(**config)
     return config
