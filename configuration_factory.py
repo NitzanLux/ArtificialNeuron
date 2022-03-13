@@ -76,7 +76,7 @@ def surround_with_default_config_values(**kargs):
                                  time_domain_shape=config.input_window_size,
                                  # kernel_size_2d=3,
                                  # kernel_size_1d=9,
-                                 number_of_layers_root=4, number_of_layers_leaf=4, number_of_layers_intersection=1,
+                                 number_of_layers_root=2, number_of_layers_leaf=4, number_of_layers_intersection=1,
                                  number_of_layers_branch_intersection=1,
                                  # david_layers=[55, 13, 13, 13, 13, 13, 13],
                                  glu_number_of_layers=0,
@@ -250,7 +250,7 @@ if __name__ == '__main__':
     #                                      batch_size_validation=200, batch_size_train=5, clip_gradients_factor=2.5,
     #                                      constant_learning_rate=0.005)
     #     configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
-    configurations_name = "trimmed_kernel_1"
+    configurations_name = "trimmed_kernel_2"
     for i in ['AdamW','NAdam']:
         config_morpho_0 = config_factory(loss_function='focalbcel_mse_mae_loss',
                                          dynamic_learning_params=False  # ,optimizer_type='RMSprop'
