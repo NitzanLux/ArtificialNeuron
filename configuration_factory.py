@@ -58,7 +58,8 @@ def surround_with_default_config_values(**kargs):
                       files_filter_regex=".*", freeze_node_factor=None,
                       optimizer_type="Adagrad", optimizer_params=dict(),clip_gradients_factor=1.5,  # optimizer_params={'eps':1e-8},
                       # lr_scheduler='CyclicLR',lr_scheduler_params=dict(max_lr=0.001,step_size_up=1000,base_lr=0.00003,cycle_momentum=False),
-                      lr_scheduler='ReduceLROnPlateau',lr_scheduler_params=dict(factor=0.5,cooldown=200, patience =25,eps=1e-5),
+                      # lr_scheduler='ReduceLROnPlateau',lr_scheduler_params=dict(factor=0.5,cooldown=200, patience =25,eps=1e-5),
+                      lr_scheduler=None,
                       scheduler_cooldown_factor=150,
                       batch_counter=0, epoch_counter=0,  # default counter
                       torch_seed=42, numpy_seed=21, random_seed=12, init_weights_sd=0.05,
@@ -75,8 +76,8 @@ def surround_with_default_config_values(**kargs):
                                  time_domain_shape=config.input_window_size,
                                  # kernel_size_2d=3,
                                  # kernel_size_1d=9,
-                                 number_of_layers_root=4, number_of_layers_leaf=4, number_of_layers_intersection=2,
-                                 number_of_layers_branch_intersection=2,
+                                 number_of_layers_root=4, number_of_layers_leaf=4, number_of_layers_intersection=1,
+                                 number_of_layers_branch_intersection=1,
                                  # david_layers=[55, 13, 13, 13, 13, 13, 13],
                                  glu_number_of_layers=0,
                                  skip_connections=True,
@@ -256,9 +257,9 @@ if __name__ == '__main__':
                                          ,
                                          dynamic_learning_params_function="learning_parameters_iter_with_constant_weights",
                                          model_tag="%s_%s" % (configurations_name,i), optimizer_type=i,
-                                         accumulate_loss_batch_factor=5, spike_probability=None, prediction_length=1000,
+                                         accumulate_loss_batch_factor=4, spike_probability=None, prediction_length=1000,
 
-                                         batch_size_validation=200, batch_size_train=4, clip_gradients_factor=2.,
+                                         batch_size_validation=200, batch_size_train=32, clip_gradients_factor=2.,
                                          constant_learning_rate=0.0007)
         # configs.append(config_morpho_0)
         configs.extend(generate_config_files_multiple_seeds(config_morpho_0, 2))
