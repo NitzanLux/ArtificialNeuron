@@ -110,6 +110,7 @@ def load_config_file(path: str) -> AttrDict:
     with open(path, 'r') as file:
         config = json.loads(file.read())
     config = AttrDict(config)
+    config.accumulate_loss_batch_factor=8
     # config.lr_scheduler='CyclicLR'
     # config.lr_scheduler_params=dict(max_lr=0.001,base_lr=0.00003,cycle_momentum=False)
     if config.config_version < CURRENT_VERSION :
