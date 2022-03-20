@@ -82,10 +82,10 @@ def surround_with_default_config_values(**kargs):
                                  glu_number_of_layers=0,
                                  skip_connections=True,
                                  inter_module_skip_connections=True,
-                                 kernel_size=17,
-                                 kernel_size_soma=17,
-                                 kernel_size_intersection=3,
-                                 kernel_size_branch=3,
+                                 kernel_size=31,
+                                 kernel_size_soma=31,
+                                 kernel_size_intersection=1,
+                                 kernel_size_branch=1,
                                  # kernel_size=81,
                                  # number_of_layers=2,
                                  stride=1,
@@ -252,8 +252,8 @@ if __name__ == '__main__':
     #                                      batch_size_validation=200, batch_size_train=5, clip_gradients_factor=2.5,
     #                                      constant_learning_rate=0.005)
     #     configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
-    configurations_name = "trimmed_kernel_3"
-    for i in ['SGD']:
+    configurations_name = "trimmed_kernel_4"
+    for i in ['AdamW']:
         config_morpho_0 = config_factory(loss_function='focalbcel_mse_mae_loss',
                                          dynamic_learning_params=False  # ,optimizer_type='RMSprop'
                                          ,
