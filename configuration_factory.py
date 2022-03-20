@@ -57,7 +57,7 @@ def surround_with_default_config_values(**kargs):
                       # files_filter_regex=".*exBas_0_1100_inhBasDiff_-1100_600__exApic_0_1100_inhApicDiff_-1100_600_SpTemp[^\\/\.]*\.p",
                       files_filter_regex=".*", freeze_node_factor=None,
                       optimizer_type="Adagrad", optimizer_params=dict(),clip_gradients_factor=1.5,  # optimizer_params={'eps':1e-8},
-                      lr_scheduler='CyclicLR',lr_scheduler_params=dict(max_lr=0.001,step_size_up=1000,base_lr=0.00003,cycle_momentum=False),
+                      lr_scheduler='CyclicLR',lr_scheduler_params=dict(max_lr=0.05,step_size_up=1000,base_lr=0.00003,cycle_momentum=True),
                       # lr_scheduler='ReduceLROnPlateau',lr_scheduler_params=dict(factor=0.5,cooldown=200, patience =25,eps=1e-5),
                       # lr_scheduler=None,
                       scheduler_cooldown_factor=150,
@@ -76,16 +76,16 @@ def surround_with_default_config_values(**kargs):
                                  time_domain_shape=config.input_window_size,
                                  # kernel_size_2d=3,
                                  # kernel_size_1d=9,
-                                 number_of_layers_root=4, number_of_layers_leaf=4, number_of_layers_intersection=4,
-                                 number_of_layers_branch_intersection=4,
+                                 number_of_layers_root=7, number_of_layers_leaf=7, number_of_layers_intersection=7,
+                                 number_of_layers_branch_intersection=7,
                                  # david_layers=[55, 13, 13, 13, 13, 13, 13],
                                  glu_number_of_layers=0,
                                  skip_connections=True,
                                  inter_module_skip_connections=True,
-                                 kernel_size=31,
-                                 kernel_size_soma=31,
-                                 kernel_size_intersection=5,
-                                 kernel_size_branch=5,
+                                 kernel_size=17,
+                                 kernel_size_soma=17,
+                                 kernel_size_intersection=3,
+                                 kernel_size_branch=3,
                                  # kernel_size=81,
                                  # number_of_layers=2,
                                  stride=1,
@@ -93,7 +93,7 @@ def surround_with_default_config_values(**kargs):
                                  dilation=1,
                                  channel_input_number=1278,  # synapse number
                                  inner_scope_channel_number=None,
-                                 channel_output_number=64,
+                                 channel_output_number=21,
                                  activation_function_name="LeakyReLU",
                                  activation_function_kargs=dict(negative_slope=0.025),
                                  include_dendritic_voltage_tracing=False)
@@ -110,8 +110,8 @@ def load_config_file(path: str) -> AttrDict:
     with open(path, 'r') as file:
         config = json.loads(file.read())
     config = AttrDict(config)
-    config.accumulate_loss_batch_factor=8
-    config.constant_learning_rate=0.0003
+    # config.accumulate_loss_batch_factor=8
+    # config.constant_learning_rate=0.0003
     # config.lr_scheduler='CyclicLR'
     # config.lr_scheduler_params=dict(max_lr=0.001,base_lr=0.00003,cycle_momentum=False)
     if config.config_version < CURRENT_VERSION :
@@ -253,16 +253,16 @@ if __name__ == '__main__':
     #                                      constant_learning_rate=0.005)
     #     configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
     configurations_name = "trimmed_kernel_2"
-    for i in ['AdamW','NAdam']:
+    for i in ['AdamW','SGD']:
         config_morpho_0 = config_factory(loss_function='focalbcel_mse_mae_loss',
                                          dynamic_learning_params=False  # ,optimizer_type='RMSprop'
                                          ,
                                          dynamic_learning_params_function="learning_parameters_iter_with_constant_weights",
                                          model_tag="%s_%s" % (configurations_name,i), optimizer_type=i,
-                                         accumulate_loss_batch_factor=16, spike_probability=None, prediction_length=1000,
+                                         accumulate_loss_batch_factor=8, spike_probability=None, prediction_length=1000,
 
                                          batch_size_validation=200, batch_size_train=8, clip_gradients_factor=2.,
-                                         constant_learning_rate=0.0007)
+                                         constant_learning_rate=0.0003)
         # configs.append(config_morpho_0)
         configs.extend(generate_config_files_multiple_seeds(config_morpho_0, 2))
     with open(os.path.join(MODELS_DIR, "%s.json" % configurations_name), 'w') as file:
