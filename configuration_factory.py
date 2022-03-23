@@ -64,7 +64,7 @@ def surround_with_default_config_values(**kargs):
                       batch_counter=0, epoch_counter=0,  # default counter
                       torch_seed=42, numpy_seed=21, random_seed=12, init_weights_sd=0.05,
                       dynamic_learning_params=True,
-                      constant_loss_weights=[1000., 1., 0., 0], constant_sigma=1.2, constant_learning_rate=0.001,
+                      constant_loss_weights=[10000., 1., 0., 0], constant_sigma=1.2, constant_learning_rate=0.001,
                       dynamic_learning_params_function="learning_parameters_iter_per_batch",
                       config_path="", model_tag="complex_constant_model", model_path=None,
                       loss_function="bcel_mse_dvt_loss")
@@ -76,14 +76,14 @@ def surround_with_default_config_values(**kargs):
                                  time_domain_shape=config.input_window_size,
                                  # kernel_size_2d=3,
                                  # kernel_size_1d=9,
-                                 number_of_layers_root=7, number_of_layers_leaf=7, number_of_layers_intersection=7,
-                                 number_of_layers_branch_intersection=7,
+                                 number_of_layers_root=4, number_of_layers_leaf=10, number_of_layers_intersection=2,
+                                 number_of_layers_branch_intersection=2,
                                  # david_layers=[55, 13, 13, 13, 13, 13, 13],
                                  glu_number_of_layers=0,
                                  skip_connections=True,
                                  inter_module_skip_connections=True,
-                                 kernel_size=31,
-                                 kernel_size_soma=31,
+                                 kernel_size=25,
+                                 kernel_size_soma=1,
                                  kernel_size_intersection=1,
                                  kernel_size_branch=1,
                                  # kernel_size=81,
@@ -110,6 +110,7 @@ def load_config_file(path: str) -> AttrDict:
     with open(path, 'r') as file:
         config = json.loads(file.read())
     config = AttrDict(config)
+    config.constant_loss_weights=[10000., 1., 0., 0]
     # config.accumulate_loss_batch_factor=8
     # config.constant_learning_rate=0.0003
     # config.lr_scheduler='CyclicLR'
@@ -252,16 +253,16 @@ if __name__ == '__main__':
     #                                      batch_size_validation=200, batch_size_train=5, clip_gradients_factor=2.5,
     #                                      constant_learning_rate=0.005)
     #     configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
-    configurations_name = "trimmed_kernel_4"
+    configurations_name = "leaf_Rfiled"
     for i in ['AdamW']:
         config_morpho_0 = config_factory(loss_function='focalbcel_mse_mae_loss',
                                          dynamic_learning_params=False  # ,optimizer_type='RMSprop'
                                          ,
                                          dynamic_learning_params_function="learning_parameters_iter_with_constant_weights",
                                          model_tag="%s_%s" % (configurations_name,i), optimizer_type=i,
-                                         accumulate_loss_batch_factor=8, spike_probability=None, prediction_length=1000,
+                                         accumulate_loss_batch_factor=4, spike_probability=None, prediction_length=1000,
 
-                                         batch_size_validation=200, batch_size_train=8, clip_gradients_factor=2.,
+                                         batch_size_validation=200, batch_size_train=8, clip_gradients_factor=1.,
                                          constant_learning_rate=0.0003)
         # configs.append(config_morpho_0)
         configs.extend(generate_config_files_multiple_seeds(config_morpho_0, 2))
