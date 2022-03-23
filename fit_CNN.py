@@ -40,7 +40,8 @@ VALIDATION_EVALUATION_FREQUENCY = 20
 ACCURACY_EVALUATION_FREQUENCY = 40
 BATCH_LOG_UPDATE_FREQ = 20
 BUFFER_SIZE_IN_FILES_VALID = 6
-BUFFER_SIZE_IN_FILES_TRAINING = 20
+BUFFER_SIZE_IN_FILES_TRAINING = 10
+SAMPLE_RATIO_TO_SHUFFLE_TRAINING = 4.
 
 synapse_type = 'NMDA'
 include_DVT = False
@@ -274,7 +275,7 @@ def get_data_generators(DVT_PCA_model, config):
                                                    batch_size=config.batch_size_train,
                                                    epoch_size=config.epoch_size * config.accumulate_loss_batch_factor,
                                                    window_size_ms=config.time_domain_shape,
-                                                   file_load=config.train_file_load, sample_ratio_to_shuffle=1.,
+                                                   file_load=config.train_file_load, sample_ratio_to_shuffle=SAMPLE_RATIO_TO_SHUFFLE_TRAINING,
                                                    DVT_PCA_model=DVT_PCA_model)
     print("loading data...validation", flush=True)
 
