@@ -274,7 +274,7 @@ def get_data_generators(DVT_PCA_model, config):
                                                    batch_size=config.batch_size_train,
                                                    epoch_size=config.epoch_size * config.accumulate_loss_batch_factor,
                                                    window_size_ms=config.time_domain_shape,
-                                                   file_load=config.train_file_load, sample_ratio_to_shuffle=1.75,
+                                                   file_load=config.train_file_load, sample_ratio_to_shuffle=1.,
                                                    DVT_PCA_model=DVT_PCA_model)
     print("loading data...validation", flush=True)
 
