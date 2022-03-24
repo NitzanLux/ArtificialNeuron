@@ -275,7 +275,7 @@ class SimulationDataGenerator():
             return
         # load the file
         for f in self.curr_files_to_use:
-            print("loaded %s"%f)
+            print()
             if self.include_DVT:
                 X, y_spike, y_soma, y_DVT = parse_sim_experiment_file_with_DVT(f, DVT_PCA_model=self.DVT_PCA_model)
                 y_DVT = np.transpose(y_DVT, axes=[2, 0, 1])
