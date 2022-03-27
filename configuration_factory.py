@@ -86,7 +86,7 @@ def surround_with_default_config_values(**kargs):
                                  kernel_size_soma=1,
                                  kernel_size_intersection=1,
                                  kernel_size_branch=1,
-                                 dropout_factor=0.2,
+                                 dropout_factor=0.05,
                                  # kernel_size=81,
                                  # number_of_layers=2,
                                  stride=1,
@@ -254,7 +254,7 @@ if __name__ == '__main__':
     #                                      batch_size_validation=200, batch_size_train=5, clip_gradients_factor=2.5,
     #                                      constant_learning_rate=0.005)
     #     configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
-    configurations_name = "d_out"
+    configurations_name = "d_out_1"
     for i in ['AdamW']:
         config_morpho_0 = config_factory(loss_function='focalbcel_mse_mae_loss',
                                          dynamic_learning_params=False  # ,optimizer_type='RMSprop'
