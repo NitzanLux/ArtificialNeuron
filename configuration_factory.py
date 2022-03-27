@@ -17,7 +17,7 @@ import glob
 synapse_type = ''
 include_DVT = False
 # num_DVT_components = 20 if synapse_type == 'NMDA' else 30
-CURRENT_VERSION = 1.4
+CURRENT_VERSION = 1.5
 
 
 def generate_model_name(additional_str: str = ''):
@@ -86,6 +86,7 @@ def surround_with_default_config_values(**kargs):
                                  kernel_size_soma=1,
                                  kernel_size_intersection=1,
                                  kernel_size_branch=1,
+                                 dropout_factor=0.2,
                                  # kernel_size=81,
                                  # number_of_layers=2,
                                  stride=1,

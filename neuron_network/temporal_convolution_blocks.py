@@ -21,18 +21,20 @@ SYNAPSE_DIMENTION_POSITION = 1
 
 
 class Base1DConvolutionBlockLayer(nn.Module):
-    def __init__(self, in_channels, out_channels, kernel_size, stride, padding, dilation, activation_function):
+    def __init__(self, in_channels, out_channels, kernel_size, stride, padding, dilation, activation_function,dropout_factor):
         super(Base1DConvolutionBlockLayer, self).__init__()
         self.conv1d = nn.Conv1d(in_channels, out_channels, kernel_size, stride, padding, dilation)
         self.activation_function = activation_function()
-        self.batch_norm = nn.BatchNorm1d(in_channels)  # todo debugging
-
+        self.batch_norm = nn.BatchNorm1d(in_channels)
+        if dropout_factor is not None:
+            self.dropout=nn.Dropout(p=dropout_factor)
+        else:
+            self.dropout = lambda x:x
     def forward(self, x):
-        out = self.batch_norm(x)  # todo debugging
-
-        out = self.conv1d(out)
+        out = self.conv1d(x)
+        out = self.batch_norm(out)
         out = self.activation_function(out)
-        # out = self.batch_norm(out)#todo debugging
+        out = self.dropout(out)
         return out
 
 
@@ -40,11 +42,12 @@ class Base1DConvolutionBlock(nn.Module):
     def __init__(self, number_of_layers, input_shape: Tuple[int, int], activation_function
                  , inner_scope_channel_number
                  , channel_output_number, kernel_size, stride=1,
-                 dilation=1, skip_connections=False):
+                 dilation=1,dropout_factor=None, skip_connections=False):
         super(Base1DConvolutionBlock, self).__init__()
         padding = keep_dimensions_by_padding_claculator(input_shape[1], kernel_size, stride, dilation)
         self.layers_list = nn.ModuleList()
         self.skip_connections = skip_connections
+        print("dropout_factor " ,dropout_factor,"skip_connections ", skip_connections)
         if inner_scope_channel_number is None:
             self.inner_scope_channel_number = input_shape[0]
         else:
@@ -63,7 +66,7 @@ class Base1DConvolutionBlock(nn.Module):
             if i == number_of_layers - 1:
                 out_channels = self.channel_output_number
             model = Base1DConvolutionBlockLayer(in_channels, out_channels, kernel_size, stride, padding, dilation,
-                                                activation_function)
+                                                activation_function,dropout_factor)
             self.layers_list.append(model)
 
     def forward(self, x):
