@@ -25,7 +25,7 @@ class Base1DConvolutionBlockLayer(nn.Module):
         super(Base1DConvolutionBlockLayer, self).__init__()
         self.conv1d = nn.Conv1d(in_channels, out_channels, kernel_size, stride, padding, dilation)
         self.activation_function = activation_function()
-        self.batch_norm = nn.BatchNorm1d(in_channels)
+        self.batch_norm = nn.BatchNorm1d(out_channels)
         if dropout_factor is not None:
             self.dropout=nn.Dropout(p=dropout_factor)
         else:
