@@ -89,7 +89,7 @@ class BranchLeafBlock(nn.Module):
         super().__init__()
         self.base_conv_1d = Base1DConvolutionBlock(number_of_layers_leaf, input_shape, activation_function,
                                                    inner_scope_channel_number, channel_output_number, kernel_size,
-                                                   stride, dilation, skip_connections=kwargs['skip_connections'])
+                                                   stride, dilation,dropout_factor=dropout_factor, skip_connections=kwargs['skip_connections'])
 
     def forward(self, x):
         out = self.base_conv_1d(x)
@@ -109,7 +109,7 @@ class IntersectionBlock(nn.Module):
                                                    channel_output_number,
                                                    kernel_size if kernel_size_intersection is None else kernel_size_intersection,
                                                    stride, dilation,
-                                                   skip_connections=kwargs['skip_connections'])
+                                                   dropout_factor=dropout_factor,skip_connections=kwargs['skip_connections'])
 
     def forward(self, x):
         out = self.base_conv_1d(x)
@@ -138,7 +138,7 @@ class BranchBlock(nn.Module):
                                                          inner_scope_channel_number,
                                                          channel_output_number,
                                                          kernel_size if kernel_size_branch is None else kernel_size_branch,
-                                                         stride, dilation, skip_connections=kwargs['skip_connections'])
+                                                         stride, dilation,dropout_factor=dropout_factor, skip_connections=kwargs['skip_connections'])
 
     def forward(self, x, prev_segment):
         out = self.synapse_model(x)
@@ -156,6 +156,7 @@ class RootBlock(nn.Module):
         super(RootBlock, self).__init__()
         self.conv1d_root = Base1DConvolutionBlock(number_of_layers_root, input_shape, activation_function,
                                                   inner_scope_channel_number, inner_scope_channel_number,
+                                                  dropout_factor=dropout_factor,
                                                   kernel_size=kernel_size_soma if kernel_size_soma is None else kernel_size,
                                                   stride=stride, dilation=dilation,
                                                   skip_connections=kwargs['skip_connections'])
