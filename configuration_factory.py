@@ -113,8 +113,8 @@ def load_config_file(path: str) -> AttrDict:
     config = AttrDict(config)
     # config.constant_loss_weights=[10000., 1., 0., 0]
     # config.accumulate_loss_batch_factor=8
-    # config.constant_learning_rate=0.0003
-    # config.lr_scheduler='CyclicLR'
+    config.constant_learning_rate=0.0003
+    config.lr_scheduler=None
     # config.lr_scheduler_params=dict(max_lr=0.001,base_lr=0.00003,cycle_momentum=False)
     if config.config_version < CURRENT_VERSION :
         config = surround_with_default_config_values(**config)
