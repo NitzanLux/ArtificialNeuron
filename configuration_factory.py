@@ -82,7 +82,7 @@ def surround_with_default_config_values(**kargs):
                                  glu_number_of_layers=0,
                                  skip_connections=True,
                                  inter_module_skip_connections=True,
-                                 kernel_size=25,
+                                 kernel_size=31,
                                  kernel_size_soma=1,
                                  kernel_size_intersection=1,
                                  kernel_size_branch=1,
