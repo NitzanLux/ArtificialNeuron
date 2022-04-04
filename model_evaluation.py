@@ -487,7 +487,7 @@ class ModelEvaluator():
 
 if __name__ == '__main__':
     # model_name='AdamWshort_and_wide_1_NMDA_Tree_TCN__2022-02-06__15_47__ID_54572'
-    model_name = 'glu_3_AdamW___2022-02-17__14_33__ID_58573'
+    model_name = 'd_out_AdamW___2022-03-27__19_52__ID_52394'
     # model_name = 'glu_3_AdamW___2022-02-17__14_33__ID_2250'
     # model_name = 'glu_3_NAdam___2022-02-17__14_33__ID_60416'
     # ModelEvaluator.build_and_save(r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\heavy_AdamW_NMDA_Tree_TCN__2022-01-27__17_58__ID_40048\heavy_AdamW_NMDA_Tree_TCN__2022-01-27__17_58__ID_40048")
