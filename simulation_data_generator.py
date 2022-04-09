@@ -254,6 +254,7 @@ class SimulationDataGenerator():
             last_index=  ((self.files_counter + 1) * self.buffer_size_in_files) % len(
                                          self.sim_experiment_files)
             if first_index<last_index:
+                print(first_index,last_index,self.sim_experiment_files)
                 self.curr_files_to_use = self.sim_experiment_files[first_index:last_index]
 
             elif not self.reload_files_once:
