@@ -16,7 +16,7 @@ class FocalLossWithLogitsLoss(nn.Module):
         ce_loss  = F.binary_cross_entropy_with_logits(input, target, reduction='none', pos_weight=self.pos_weight)
         # pt = torch.exp(-ce_loss ) # prevents nans when probability 0
         pt = p*target+(1-p)*(1-target)
-        loss = ce_loss*((1-pt)**gamma)
+        loss = ce_loss*((1-pt)**self.gamma)
 
         if self.alpha >= 0:
             alpha_t = self.alpha * targets + (1 - self.alpha) * (1 - targets)
