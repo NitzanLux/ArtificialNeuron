@@ -113,7 +113,7 @@ def load_config_file(path: str) -> AttrDict:
     config = AttrDict(config)
     # config.constant_loss_weights=[10000., 1., 0., 0]
     # config.accumulate_loss_batch_factor=3
-    config.clip_gradients_factor=2
+    # config.clip_gradients_factor=2
     # accumulate_loss_batch_factor = 2
     # config.constant_learning_rate=0.0003
     # config.optimizer_params['lr']=config.constant_learning_rate

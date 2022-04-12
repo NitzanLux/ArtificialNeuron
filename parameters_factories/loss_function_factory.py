@@ -11,9 +11,12 @@ class FocalLossWithLogitsLoss(nn.Module):
         self.register_buffer('pos_weight', pos_weight)
 
     def forward(self, input, target):
-        bce_loss = F.binary_cross_entropy_with_logits(input, target, reduction='none', pos_weight=self.pos_weight)
-        pt = torch.exp(-bce_loss) # prevents nans when probability 0
-        focal_loss = self.alpha * (1-pt)**self.gamma * bce_loss
+        p=torch.sigmoid(input)
+        ce_loss  = F.binary_cross_entropy_with_logits(input, target, reduction='none', pos_weight=self.pos_weight)
+        # pt = torch.exp(-ce_loss ) # prevents nans when probability 0
+        pt = p*target+(1-p)*(1-target)
+        # focal_loss = self.alpha * (1-pt)**self.gamma * bce_loss
+        focal_loss = ce_loss*((1-pt)**gamma)
         return focal_loss.mean()
 
 def bcel_mse_dvt_loss(loss_weights, window_size, sigma):
