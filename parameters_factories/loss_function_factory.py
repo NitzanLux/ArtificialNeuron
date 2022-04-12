@@ -19,7 +19,7 @@ class FocalLossWithLogitsLoss(nn.Module):
         loss = ce_loss*((1-pt)**self.gamma)
 
         if self.alpha >= 0:
-            alpha_t = self.alpha * targets + (1 - self.alpha) * (1 - targets)
+            alpha_t = self.alpha * target + (1 - self.alpha) * (1 - target)
             loss = alpha_t * loss
         if reduction == "mean":
             loss = loss.mean()
