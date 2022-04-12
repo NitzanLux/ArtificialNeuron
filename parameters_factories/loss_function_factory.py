@@ -4,20 +4,28 @@ from trash.spike_blur import SpikeSmoothing
 import torch
 
 class FocalLossWithLogitsLoss(nn.Module):
-    def __init__(self, gamma=1.0, alpha=0.25, pos_weight=None):
+    def __init__(self, gamma=1.0, alpha=0.25, pos_weight=None,  reduction: str = "mean"):
         super(FocalLossWithLogitsLoss, self).__init__()
         self.register_buffer('gamma', torch.tensor(gamma))
         self.register_buffer('alpha', torch.tensor(alpha))
         self.register_buffer('pos_weight', pos_weight)
+        self.reduction =reduction
 
     def forward(self, input, target):
         p=torch.sigmoid(input)
         ce_loss  = F.binary_cross_entropy_with_logits(input, target, reduction='none', pos_weight=self.pos_weight)
         # pt = torch.exp(-ce_loss ) # prevents nans when probability 0
         pt = p*target+(1-p)*(1-target)
-        # focal_loss = self.alpha * (1-pt)**self.gamma * bce_loss
-        focal_loss = ce_loss*((1-pt)**gamma)
-        return focal_loss.mean()
+        loss = ce_loss*((1-pt)**gamma)
+
+        if self.alpha >= 0:
+            alpha_t = self.alpha * targets + (1 - self.alpha) * (1 - targets)
+            loss = alpha_t * loss
+        if reduction == "mean":
+            loss = loss.mean()
+        elif reduction == "sum":
+            loss = loss.sum()
+        return loss
 
 def bcel_mse_dvt_loss(loss_weights, window_size, sigma):
     def custom_loss(output, target):
