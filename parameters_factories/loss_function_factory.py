@@ -21,9 +21,9 @@ class FocalLossWithLogitsLoss(nn.Module):
         if self.alpha >= 0:
             alpha_t = self.alpha * target + (1 - self.alpha) * (1 - target)
             loss = alpha_t * loss
-        if reduction == "mean":
+        if self.reduction == "mean":
             loss = loss.mean()
-        elif reduction == "sum":
+        elif self.reduction == "sum":
             loss = loss.sum()
         return loss
 
