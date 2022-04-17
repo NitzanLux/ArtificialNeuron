@@ -118,7 +118,7 @@ def load_config_file(path: str) -> AttrDict:
     config.constant_learning_rate=0.0003
     config.optimizer_params['lr']=config.constant_learning_rate
     # config.lr_scheduler=None
-    config.lr_scheduler_params=dict(max_lr=0.001,base_lr=0.00003,cycle_momentum=False)
+    config.lr_scheduler_params=dict(factor=0.5,cooldown=40, threshold=1e-5,patience =100,eps=7e-5)
     if config.config_version < CURRENT_VERSION :
         config = surround_with_default_config_values(**config)
     return config
