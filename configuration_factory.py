@@ -115,10 +115,10 @@ def load_config_file(path: str) -> AttrDict:
     # config.accumulate_loss_batch_factor=3
     # config.clip_gradients_factor=2
     # accumulate_loss_batch_factor = 2
-    # config.constant_learning_rate=0.0003
-    # config.optimizer_params['lr']=config.constant_learning_rate
+    config.constant_learning_rate=0.0003
+    config.optimizer_params['lr']=config.constant_learning_rate
     # config.lr_scheduler=None
-    # config.lr_scheduler_params=dict(max_lr=0.001,base_lr=0.00003,cycle_momentum=False)
+    config.lr_scheduler_params=dict(max_lr=0.001,base_lr=0.00003,cycle_momentum=False)
     if config.config_version < CURRENT_VERSION :
         config = surround_with_default_config_values(**config)
     return config
