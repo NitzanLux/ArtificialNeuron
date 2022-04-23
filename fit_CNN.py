@@ -441,8 +441,8 @@ def run_fit_cnn():
     config = configuration_factory.load_config_file(args.config_path)
     # set SEED
     torch.manual_seed(int(config.torch_seed))
-    np.random.seed(int(config.numpy_seed))
-    random.seed(int(config.random_seed))
+    # np.random.seed(int(config.numpy_seed))
+    # random.seed(int(config.random_seed))
     # try:
     model_pipline(config)
     # configuration_factory.
