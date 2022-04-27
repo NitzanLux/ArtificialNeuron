@@ -58,9 +58,9 @@ def surround_with_default_config_values(**kargs):
                       files_filter_regex=".*", freeze_node_factor=None,
                       optimizer_type="Adagrad", optimizer_params=dict(),clip_gradients_factor=1.5,  # optimizer_params={'eps':1e-8},
                       # lr_scheduler='CyclicLR',lr_scheduler_params=dict(max_lr=0.05,step_size_up=1000,base_lr=0.00003,cycle_momentum=True),
-                      lr_scheduler='ReduceLROnPlateau',lr_scheduler_params=dict(factor=0.5,cooldown=40, threshold=1e-5,patience =100,eps=7e-5),
+                      lr_scheduler='ReduceLROnPlateau',lr_scheduler_params=dict(factor=0.5,cooldown=40, threshold=1e-5,patience =100,eps=8e-5),
                       # lr_scheduler=None,
-                      scheduler_cooldown_factor=150,
+                      # scheduler_cooldown_factor=150,
                       batch_counter=0, epoch_counter=0,  # default counter
                       torch_seed=42, numpy_seed=21, random_seed=12, init_weights_sd=0.05,
                       dynamic_learning_params=True,
@@ -72,14 +72,15 @@ def surround_with_default_config_values(**kargs):
     architecture_dict = AttrDict(#segment_tree_path="tree.pkl",
                                  network_architecture_structure="recursive",
                                  # architecture_type="LAYERED_TEMPORAL_CONV",
-                                 architecture_type="LAYERED_TEMPORAL_CONV",
+                                 # architecture_type="LAYERED_TEMPORAL_CONV",
+                                 architecture_type="GLU_NET",
                                  time_domain_shape=config.input_window_size,
                                  # kernel_size_2d=3,
                                  # kernel_size_1d=9,
                                  number_of_layers_root=4, number_of_layers_leaf=10, number_of_layers_intersection=3,
                                  number_of_layers_branch_intersection=3,
                                  # david_layers=[55, 13, 13, 13, 13, 13, 13],
-                                 glu_number_of_layers=0,
+                                 glu_number_of_layers=3,
                                  skip_connections=True,
                                  inter_module_skip_connections=True,
                                  kernel_size=31,
@@ -94,7 +95,7 @@ def surround_with_default_config_values(**kargs):
                                  dilation=1,
                                  channel_input_number=1278,  # synapse number
                                  inner_scope_channel_number=None,
-                                 channel_output_number=8,
+                                 channel_output_number=32,
                                  activation_function_name="LeakyReLU",
                                  activation_function_kargs=dict(negative_slope=0.025),
                                  include_dendritic_voltage_tracing=False)
@@ -139,7 +140,7 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
         config.torch_seed, config.numpy_seed, config.random_seed = np.random.randint(0, max_seed_number - 1, 3,
                                                                                      np.uint32)
         config.torch_seed, config.numpy_seed, config.random_seed = float(config.torch_seed), float(
-            config.numpy_seed), float(config.random_seed)
+            config.numpy_seed), float(config.random_squeue)
     if config_new_path is None:
         try:
             os.mkdir(os.path.join(MODELS_DIR, config.model_filename))
@@ -257,7 +258,7 @@ if __name__ == '__main__':
     #                                      batch_size_validation=200, batch_size_train=5, clip_gradients_factor=2.5,
     #                                      constant_learning_rate=0.005)
     #     configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
-    configurations_name = "d_out_5"
+    configurations_name = "glu_out"
     for i in ['AdamW']:
         config_morpho_0 = config_factory(loss_function='focalbcel_mse_mae_loss',
                                          dynamic_learning_params=False  # ,optimizer_type='RMSprop'
