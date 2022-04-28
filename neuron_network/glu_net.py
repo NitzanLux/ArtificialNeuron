@@ -171,8 +171,8 @@ class BranchBlock(nn.Module):
 
         out = self.synapse_model(x)
         out = self.activation_function(out)
-        out = torch.cat((out, prev_segment), dim=SYNAPSE_DIMENTION_POSITION)
-        out = self.intersection_block(out)
+        out_x = torch.cat((out, prev_segment), dim=SYNAPSE_DIMENTION_POSITION)
+        out = self.intersection_block(out_x)
         out = self.glu(out_x, out)
         return out
 
