@@ -140,7 +140,7 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
         config.torch_seed, config.numpy_seed, config.random_seed = np.random.randint(0, max_seed_number - 1, 3,
                                                                                      np.uint32)
         config.torch_seed, config.numpy_seed, config.random_seed = float(config.torch_seed), float(
-            config.numpy_seed), float(config.random_squeue)
+            config.numpy_seed), float(config.random_seed)
     if config_new_path is None:
         try:
             os.mkdir(os.path.join(MODELS_DIR, config.model_filename))

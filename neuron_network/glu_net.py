@@ -107,7 +107,7 @@ class BranchLeafBlock(nn.Module):
                                                    stride, dilation, skip_connections=kwargs['skip_connections'],dropout_factor=dropout_factor)
         self.glu=GLUBlock(input_shape, activation_function,
                                                    inner_scope_channel_number, channel_output_number, kernel_size,
-                                                   stride, dilation,skip_connections=kwargs['skip_connections'],**kwargs)
+                                                   stride, dilation,**kwargs)
     def forward(self, x):
         out = self.base_conv_1d(x)
         out=self.glu(x,out)
@@ -131,7 +131,7 @@ class IntersectionBlock(nn.Module):
 
         self.glu = GLUBlock(input_shape, activation_function,
                         inner_scope_channel_number, channel_output_number, kernel_size,
-                        stride, dilation, skip_connections=kwargs['skip_connections'], **kwargs)
+                        stride, dilation, **kwargs)
     def forward(self, x):
         out = self.base_conv_1d(x)
         out = self.glu(x, out)
@@ -155,7 +155,7 @@ class BranchBlock(nn.Module):
         self.synapse_model = nn.Sequential(self.branch_leaf, activation_function())
         self.glu_synapse = GLUBlock(input_shape_leaf, activation_function,
                                                    input_shape_leaf[0], input_shape_leaf[0], kernel_size,
-                                                   stride, dilation,skip_connections=kwargs['skip_connections'],**kwargs) #todo remove
+                                                   stride, dilation,**kwargs) #todo remove
 
         self.intersection_block = Base1DConvolutionBlock(number_of_layers_branch_intersection,
                                                          input_shape_integration,
@@ -166,7 +166,7 @@ class BranchBlock(nn.Module):
                                                          stride, dilation, skip_connections=kwargs['skip_connections'],dropout_factor=dropout_factor)
         self.glu = GLUBlock(input_shape_integration, activation_function,
                             inner_scope_channel_number, channel_output_number, kernel_size,
-                            stride, dilation, skip_connections=kwargs['skip_connections'], **kwargs)
+                            stride, dilation, **kwargs)
     def forward(self, x,prev_segment):
 
         out = self.synapse_model(x)
@@ -196,7 +196,7 @@ class RootBlock(nn.Module):
 
         self.glu = GLUBlock(input_shape, activation_function,
                             inner_scope_channel_number, inner_scope_channel_number, kernel_size,
-                            stride, dilation, skip_connections=kwargs['skip_connections'], **kwargs) #todo remove
+                            stride, dilation, **kwargs) #todo remove
 
         self.spike_prediction = nn.Conv1d(inner_scope_channel_number
                                           , 1, kernel_size=input_shape[1])
