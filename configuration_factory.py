@@ -72,15 +72,14 @@ def surround_with_default_config_values(**kargs):
     architecture_dict = AttrDict(#segment_tree_path="tree.pkl",
                                  network_architecture_structure="recursive",
                                  # architecture_type="LAYERED_TEMPORAL_CONV",
-                                 # architecture_type="LAYERED_TEMPORAL_CONV",
-                                 architecture_type="GLU_NET",
+                                 architecture_type="LAYERED_TEMPORAL_CONV",
                                  time_domain_shape=config.input_window_size,
                                  # kernel_size_2d=3,
                                  # kernel_size_1d=9,
                                  number_of_layers_root=4, number_of_layers_leaf=10, number_of_layers_intersection=3,
                                  number_of_layers_branch_intersection=3,
                                  # david_layers=[55, 13, 13, 13, 13, 13, 13],
-                                 glu_number_of_layers=3,
+                                 glu_number_of_layers=0,
                                  skip_connections=True,
                                  inter_module_skip_connections=True,
                                  kernel_size=31,
@@ -96,8 +95,9 @@ def surround_with_default_config_values(**kargs):
                                  channel_input_number=1278,  # synapse number
                                  inner_scope_channel_number=None,
                                  channel_output_number=32,
-                                 activation_function_name="LeakyReLU",
-                                 activation_function_kargs=dict(negative_slope=0.025),
+                                 activation_function_name="SiLU",
+                                 activation_function_kargs=dict(),
+                                 # activation_function_kargs=dict(negative_slope=0.025),
                                  include_dendritic_voltage_tracing=False)
 
     # config.architecture_dict = architecture_dict

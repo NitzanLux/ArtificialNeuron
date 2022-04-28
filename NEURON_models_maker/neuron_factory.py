@@ -2,68 +2,72 @@ from neuron import h
 # from NEURON_models_maker.section import Dendrite,Soma,NeuronSection,NeuronSectionType
 
 # import NEURON_models_maker.section as section
-from NEURON_models_maker.synapse import SynapseType,Synapse
+from NEURON_models_maker.synapse import SynapseType,SegmentSynapses
 import numpy as np
 from typing import List,Dict
 import pandas as pd
 from project_path import *
 import argparse
+
+
+
 def get_L5PC():
     MORPHOLOGY_PATH_L5PC = r'L5PC_NEURON_simulation/morphologies/cell1.asc'
     L5PC = h.L5PCtemplate(MORPHOLOGY_PATH_L5PC)
     return L5PC
 class NeuronEnvironment():
-    def __init__(self, environment_name, dt=None, celsius=None):
+    def __init__(self, environment_name, segment_map, soma, dt=None, celsius=None):
         self.environment_name = environment_name
         self.environment_path = os.path.join(SIMULATIONS_ENVIRONMENT_PATH,environment_name)
-        self.soma = None
+        self.section_map = segment_map
+        self.soma=soma
         if dt is not None:
             h.dt = dt
         if celsius is not None:
             h.celsius = celsius
-        self.synapse_mapping = {}
+        self.synapse_mapping = [SegmentSynapses(seg) for seg in segment_map]
 
 
+    def add_events(self):
+        pass
+    # def add_synapse(self,segment,synapse_type:SynapseType):
+    #     syn= Synapse(segment)
+    #     syn.define_synapse(synapse_type)
+    #     syn.connect_synapse()
+    #     self.synapse_mapping[segment]=syn
 
-    def add_synapse(self,segment,synapse_type:SynapseType):
-        syn= Synapse(segment)
-        syn.define_synapse(synapse_type)
-        syn.connect_synapse()
-        self.synapse_mapping[segment]=syn
-
-    @staticmethod
-    def create_section(section_name,length, diam, axial_resistance, g_pas=0.):
-        section = h.Section(section_name)
-        section.L=length
-        section.diam=diam
-        section.axial_resistance=axial_resistance
-        section.g_pas = g_pas
-        return section
-
-
-
-    def create_soma(self, length, diam, axial_resistance, g_pas=0.):
-        self.soma = self.create_section('soma', length, diam, axial_resistance,g_pas)
-        return soma
+    # @staticmethod
+    # def create_section(section_name,length, diam, axial_resistance, g_pas=0.):
+    #     section = h.Section(section_name)
+    #     section.L=length
+    #     section.diam=diam
+    #     section.axial_resistance=axial_resistance
+    #     section.g_pas = g_pas
+    #     return section
 
 
-    def create_connect_dendrite(self,parent, length, diam, axial_resistance, g_pas=0.):
-        dendrite = Dendrite(length,diam,axial_resistance, g_pas)
-        dendrite = h.ref(dendrite)
-        dendrite.connect(self,parent,length,axial_resistance)
+    # def create_soma(self, length, diam, axial_resistance, g_pas=0.):
+    #     self.soma = self.create_section('soma', length, diam, axial_resistance,g_pas)
+    #     return soma
 
 
-    def add_segments(self, by_formula=True, numeric_parameter=None, functional_parameter=lambda section: section.L):
-        if by_formula:
-            h("forall { nseg = int((L/(0.1*lambda_f(100))+0.9)/2)*2 + 1 }")
-        elif numeric_parameter is not None:
-            section_map = self.create_section_map()
-            for section in section_map:
-                section.nseg = numeric_parameter
-        else:
-            section_map = self.create_section_map()
-            for section in section_map:
-                section.nseg = int(functional_parameter(section))
+    # def create_connect_dendrite(self,parent, length, diam, axial_resistance, g_pas=0.):
+    #     dendrite = Dendrite(length,diam,axial_resistance, g_pas)
+    #     dendrite = h.ref(dendrite)
+    #     dendrite.connect(self,parent,length,axial_resistance)
+
+
+    # def add_segments(self, by_formula=True, numeric_parameter=None, functional_parameter=lambda section: section.L):
+    #     if by_formula:
+    #         h("forall { nseg = int((L/(0.1*lambda_f(100))+0.9)/2)*2 + 1 }")
+    #     elif numeric_parameter is not None:
+    #         section_map = self.create_section_map()
+    #         for section in section_map:
+    #             section.nseg = numeric_parameter
+    #     else:
+    #         section_map = self.create_section_map()
+    #         for section in section_map:
+    #             section.nseg = int(functional_parameter(section))
 
     @staticmethod
     def set_CVode(useCvode=True):
@@ -79,7 +83,7 @@ class NeuronEnvironment():
         # record soma voltage
         rec_voltage_soma = h.Vector()
         rec_voltage_soma.record(self.soma[0](0.5)._ref_v)
-        segment_map = self.create_section_map()
+        segment_map = self.segment_map
         # record all segments voltage
         if collect_and_save_DVTs:
             rec_voltage_all_segments = []
@@ -304,34 +308,34 @@ class NeuronEnvironment():
         return ex_spikes_bin, inh_spikes_bin
 
 
-def build_toy_model_and_save(depth=4):
-    environment = NeuronEnvironment("toy_model_whole_binary_tree_depth_%i"%depth)
-    stack = [environment.create_soma(10,10,100,1e-4)]
-    counter = 0
-    for i in range(depth+1):
-        new_stack = []
-        while len(stack)>0:
-            counter+=1
-            current_section = stack.pop(0)
-            right_side = Dendrite(50,10,100,1e-4)
-            left_side = Dendrite(50,10,100,1e-4)
-            print(counter)
-            left_side.connect_section(current_section)
-            right_side.connect_section(current_section)
-            new_stack.append(left_side)
-            new_stack.append(right_side)
-        stack=new_stack
-    section_map = environment.create_section_map()
-    print(len(section_map))
-    environment.set_CVode()
-    environment.add_segments()
-
-    for sec in section_map:
-        if isinstance(sec,Soma):
-            continue
-        sec.set_SKE2(1)
-        sec.add_synapses_for_all_segments([GABA_A,NMDA],every_n_segment=2)
-    environment.save_environment()
+# def build_toy_model_and_save(depth=4):
+#     environment = NeuronEnvironment("toy_model_whole_binary_tree_depth_%i"%depth)
+#     stack = [environment.create_soma(10,10,100,1e-4)]
+#     counter = 0
+#     for i in range(depth+1):
+#         new_stack = []
+#         while len(stack)>0:
+#             counter+=1
+#             current_section = stack.pop(0)
+#             right_side = Dendrite(50,10,100,1e-4)
+#             left_side = Dendrite(50,10,100,1e-4)
+#             print(counter)
+#             left_side.connect_section(current_section)
+#             right_side.connect_section(current_section)
+#             new_stack.append(left_side)
+#             new_stack.append(right_side)
+#         stack=new_stack
+#     section_map = environment.create_section_map()
+#     print(len(section_map))
+#     environment.set_CVode()
+#     environment.add_segments()
+#
+#     for sec in section_map:
+#         if isinstance(sec,Soma):
+#             continue
+#         sec.set_SKE2(1)
+#         sec.add_synapses_for_all_segments([GABA_A,NMDA],every_n_segment=2)
+#     environment.save_environment()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='simulate data')
