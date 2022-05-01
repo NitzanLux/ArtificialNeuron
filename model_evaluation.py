@@ -492,7 +492,7 @@ if __name__ == '__main__':
     # model_name = 'd_out_1_AdamW___2022-03-27__19_25__ID_12056'
     # model_name = 'd_out_1_AdamW___2022-03-27__19_25__ID_26687' # 0.975
     model_name = 'd_out_5_AdamW___2022-04-09__20_08__ID_4486' # 0.97918
-    model_name = 'd_out_5_AdamW___2022-04-09__20_08__ID_55904' #0.97762
+    # model_name = 'd_out_5_AdamW___2022-04-09__20_08__ID_55904' #0.97762
 
 
     # model_name = 'glu_3_AdamW___2022-02-17__14_33__ID_2250'

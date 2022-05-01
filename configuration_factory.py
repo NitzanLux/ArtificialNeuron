@@ -76,16 +76,16 @@ def surround_with_default_config_values(**kargs):
                                  time_domain_shape=config.input_window_size,
                                  # kernel_size_2d=3,
                                  # kernel_size_1d=9,
-                                 number_of_layers_root=4, number_of_layers_leaf=10, number_of_layers_intersection=3,
-                                 number_of_layers_branch_intersection=3,
+                                 number_of_layers_root=4, number_of_layers_leaf=6, number_of_layers_intersection=2,
+                                 number_of_layers_branch_intersection=2,
                                  # david_layers=[55, 13, 13, 13, 13, 13, 13],
                                  glu_number_of_layers=0,
                                  skip_connections=True,
                                  inter_module_skip_connections=True,
-                                 kernel_size=31,
+                                 kernel_size=33,
                                  kernel_size_soma=1,
-                                 kernel_size_intersection=1,
-                                 kernel_size_branch=1,
+                                 kernel_size_intersection=3,
+                                 kernel_size_branch=3,
                                  dropout_factor=0.2,
                                  # kernel_size=81,
                                  # number_of_layers=2,
@@ -94,8 +94,8 @@ def surround_with_default_config_values(**kargs):
                                  dilation=1,
                                  channel_input_number=1278,  # synapse number
                                  inner_scope_channel_number=None,
-                                 channel_output_number=32,
-                                 activation_function_name="SiLU",
+                                 channel_output_number=128,
+                                 activation_function_name="LeakyReLU",
                                  activation_function_kargs=dict(),
                                  # activation_function_kargs=dict(negative_slope=0.025),
                                  include_dendritic_voltage_tracing=False)
@@ -258,7 +258,7 @@ if __name__ == '__main__':
     #                                      batch_size_validation=200, batch_size_train=5, clip_gradients_factor=2.5,
     #                                      constant_learning_rate=0.005)
     #     configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
-    configurations_name = "swish"
+    configurations_name = "ker_3_inner"
     for i in ['AdamW']:
         config_morpho_0 = config_factory(loss_function='focalbcel_mse_mae_loss',
                                          dynamic_learning_params=False  # ,optimizer_type='RMSprop'
