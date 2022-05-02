@@ -243,8 +243,8 @@ def evaluate_validation(config, custom_loss, model, validation_data_iterator):
         valid_input = valid_input.cuda().type(DATA_TYPE)
         valid_labels = [l.cuda().type(DATA_TYPE) for l in valid_labels]
         output = model(valid_input)
+        target_s = valid_labels[0].cpu().detach().numpy().astype(bool).squeeze().flatten()
         if config.include_spikes:
-            target_s = valid_labels[0].cpu().detach().numpy().astype(bool).squeeze().flatten()
             output_s = torch.nn.Sigmoid()(output[0])
             output_s = output_s.cpu().detach().numpy().squeeze().flatten()
         else:
