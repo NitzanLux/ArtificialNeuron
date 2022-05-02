@@ -248,8 +248,6 @@ def evaluate_validation(config, custom_loss, model, validation_data_iterator):
             output_s = torch.nn.Sigmoid()(output[0])
             output_s = output_s.cpu().detach().numpy().squeeze().flatten()
         else:
-            target_s = valid_labels[1].cpu().detach().numpy().astype(bool).squeeze().flatten()
-            target_s = target_s>-50
             output_s = torch.nn.Sigmoid()(output[1]+50)
             output_s = output_s.cpu().detach().numpy().squeeze().flatten()
         if config.batch_counter % VALIDATION_EVALUATION_FREQUENCY == 0 or config.batch_counter % ACCURACY_EVALUATION_FREQUENCY == 0:
