@@ -80,7 +80,7 @@ def weighted_mse_loss_derivative(loss_weights, window_size, sigma):
         mse_loss = nn.MSELoss(reduction='none')
         weights = torch.ones_like(target[1])
         # weights[1:] = torch.pow(target[1][1:] - target[:-1], 2) + 1
-        weights[1:] = torch.abs(target[1][1:] - target[:-1]) + 1
+        weights[1:] = torch.abs(target[1][1:] - target[1][:-1]) + 1
         loss_mse = mse_loss(output[1].squeeze(1), target[1].squeeze(1))
         loss_mse = loss_mse * weights
         loss_mse = torch.mean(loss_mse)
