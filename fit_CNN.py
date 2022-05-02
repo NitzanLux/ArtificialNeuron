@@ -243,10 +243,15 @@ def evaluate_validation(config, custom_loss, model, validation_data_iterator):
         valid_input = valid_input.cuda().type(DATA_TYPE)
         valid_labels = [l.cuda().type(DATA_TYPE) for l in valid_labels]
         output = model(valid_input)
-        target_s = valid_labels[0].cpu().detach().numpy().astype(bool).squeeze().flatten()
-        output_s = torch.nn.Sigmoid()(output[0])
-        output_s = output_s.cpu().detach().numpy().squeeze().flatten()
-
+        if config.include_spikes:
+            target_s = valid_labels[0].cpu().detach().numpy().astype(bool).squeeze().flatten()
+            output_s = torch.nn.Sigmoid()(output[0])
+            output_s = output_s.cpu().detach().numpy().squeeze().flatten()
+        else:
+            target_s = valid_labels[1].cpu().detach().numpy().astype(bool).squeeze().flatten()
+            target_s = target_s>-50
+            output_s = torch.nn.Sigmoid()(output[1])
+            output_s = output_s.cpu().detach().numpy().squeeze().flatten()
         if config.batch_counter % VALIDATION_EVALUATION_FREQUENCY == 0 or config.batch_counter % ACCURACY_EVALUATION_FREQUENCY == 0:
             validation_loss = custom_loss(output, valid_labels)
             train_log(validation_loss, config.batch_counter, None,

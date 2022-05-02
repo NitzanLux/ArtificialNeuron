@@ -17,7 +17,7 @@ import glob
 synapse_type = ''
 include_DVT = False
 # num_DVT_components = 20 if synapse_type == 'NMDA' else 30
-CURRENT_VERSION = 1.5
+CURRENT_VERSION = 1.6
 
 
 def generate_model_name(additional_str: str = ''):
@@ -51,6 +51,7 @@ def surround_with_default_config_values(**kargs):
     ##default values can be overridden by kargs
     config = AttrDict(config_version=CURRENT_VERSION, input_window_size=300, prediction_length=1, num_segments=2 * 639,
                       num_syn_types=1,
+                      include_spikes=True,
                       num_epochs=15000, epoch_size=5, batch_size_train=5, accumulate_loss_batch_factor=4,
                       batch_size_validation=300,
                       train_file_load=0.5, valid_file_load=0.5, spike_probability=0.5,
