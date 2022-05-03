@@ -70,6 +70,27 @@ def bcel_mse_dvt_loss(loss_weights, window_size, sigma):
 
     return custom_loss
 
+def weighted_mse_loss(loss_weights, window_size, sigma):
+    def custom_loss(output, target):
+        if output[0].device != target[0].device:
+            min_len = min(len(target), len(output))
+            for i in range(min_len):  # same processor for comperison
+                target[i] = target[i].to(output[i].device)
+        mse_loss = nn.MSELoss(reduction='none')
+        weights = target[0]
+        weights[1:]+=target[0][:-1]
+        weights[:-1]+=target[0][1:]
+        weights *=999
+        weights+=1
+        # weights[1:] = torch.pow(target[1][1:] - target[:-1], 2) + 1
+        loss_mse = mse_loss(output[1], target[1])
+        loss_mse = loss_mse * weights
+        loss_mse = torch.mean(loss_mse)
+        loss_mse_item = loss_mse.item()
+        general_loss = loss_mse
+        return general_loss, 0, loss_mse_item, 0, 0
+
+    return custom_loss
 
 def weighted_mse_loss_derivative(loss_weights, window_size, sigma):
     def custom_loss(output, target):
