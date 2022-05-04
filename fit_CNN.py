@@ -283,7 +283,7 @@ def get_data_generators(DVT_PCA_model, config):
     print("loading data...validation", flush=True)
 
     validation_data_generator = SimulationDataGenerator(valid_files, buffer_size_in_files=BUFFER_SIZE_IN_FILES_VALID,
-                                                        prediction_length=750,
+                                                        prediction_length=1000,
                                                         batch_size=config.batch_size_validation,
                                                         window_size_ms=config.time_domain_shape,
                                                         file_load=config.train_file_load, sample_ratio_to_shuffle=1.5,
@@ -414,7 +414,7 @@ def train_log(loss, step, epoch=None, learning_rate=None, sigma=None, weights=No
 
 
 def display_accuracy(target, output, step, additional_str=''):
-    if True or not DOCUMENT_ON_WANDB or step == 0:
+    if not DOCUMENT_ON_WANDB or step == 0:
         return
     output = np.vstack([np.abs(1 - output), output]).T
     # fpr, tpr, thresholds = skm.roc_curve(target, output[:,1], )  # wandb has now possible to extruct it yet

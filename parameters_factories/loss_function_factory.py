@@ -82,6 +82,7 @@ def weighted_mse_loss(loss_weights, window_size, sigma):
         weights[:-1]+=target[0][1:]
         weights *=999
         weights+=1
+        print(weights.shape)
         # weights[1:] = torch.pow(target[1][1:] - target[:-1], 2) + 1
         loss_mse = mse_loss(output[1], target[1])
         loss_mse = loss_mse * weights
