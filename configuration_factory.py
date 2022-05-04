@@ -266,7 +266,7 @@ if __name__ == '__main__':
                                          ,include_spikes=False,
                                          dynamic_learning_params_function="learning_parameters_iter_with_constant_weights",
                                          model_tag="%s_%s" % (configurations_name,i), optimizer_type=i,
-                                         accumulate_loss_batch_factor=4, spike_probability=None, prediction_length=1000,
+                                         accumulate_loss_batch_factor=8, spike_probability=None, prediction_length=1000,
                                          batch_size_validation=200, batch_size_train=8, clip_gradients_factor=1,
                                          constant_learning_rate=0.003)
         # configs.append(config_morpho_0)

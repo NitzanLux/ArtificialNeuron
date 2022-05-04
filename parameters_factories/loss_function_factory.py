@@ -77,8 +77,8 @@ def weighted_mse_loss(loss_weights, window_size, sigma):
             for i in range(min_len):  # same processor for comperison
                 target[i] = target[i].to(output[i].device)
         mse_loss = nn.MSELoss(reduction='none')
-        weights = target[0]
-        weights[1:]+=target[0][:-1]
+        weights = target[0].clone()
+        weights[1:]=weights[1:] + target[0][:-1]
         weights[:-1]+=target[0][1:]
         weights *=999
         weights+=1
