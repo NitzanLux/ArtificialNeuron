@@ -78,7 +78,7 @@ def batch_train(model, optimizer, custom_loss, train_data_iterator, clip_gradien
         with torch.cuda.amp.autocast():
             labels = [l.cuda().flatten().type(DATA_TYPE) for l in labels]
             # forward + backward + optimize
-            print(_, "*****")
+            print(_, "*****",flush=True)
             outputs = model(inputs)
             outputs = [i.flatten() for i in outputs]
             cur_general_loss, cur_loss_bcel, cur_loss_mse, cur_loss_dvt, cur_loss_gausian_mse = custom_loss(outputs,
@@ -390,7 +390,7 @@ def load_and_train(config):
 def train_log(loss, step, epoch=None, learning_rate=None, sigma=None, weights=None, additional_str='', commit=False):
     general_loss, loss_bcel, loss_mse, loss_dvt, blur_loss = loss
     general_loss = float(general_loss.item())
-    print(train)
+    print("train",flush=True)
 
     if DOCUMENT_ON_WANDB:
         log_dict = {"general loss %s" % additional_str: general_loss,
