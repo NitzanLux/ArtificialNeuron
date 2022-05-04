@@ -414,7 +414,7 @@ def train_log(loss, step, epoch=None, learning_rate=None, sigma=None, weights=No
 
 
 def display_accuracy(target, output, step, additional_str=''):
-    if not DOCUMENT_ON_WANDB or step == 0:
+    if True or not DOCUMENT_ON_WANDB or step == 0:
         return
     output = np.vstack([np.abs(1 - output), output]).T
     # fpr, tpr, thresholds = skm.roc_curve(target, output[:,1], )  # wandb has now possible to extruct it yet
