@@ -283,7 +283,7 @@ def get_data_generators(DVT_PCA_model, config):
     print("loading data...validation", flush=True)
 
     validation_data_generator = SimulationDataGenerator(valid_files, buffer_size_in_files=BUFFER_SIZE_IN_FILES_VALID,
-                                                        prediction_length=1000,
+                                                        prediction_length=750,
                                                         batch_size=config.batch_size_validation,
                                                         window_size_ms=config.time_domain_shape,
                                                         file_load=config.train_file_load, sample_ratio_to_shuffle=1.5,
