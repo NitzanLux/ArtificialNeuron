@@ -390,6 +390,8 @@ def load_and_train(config):
 def train_log(loss, step, epoch=None, learning_rate=None, sigma=None, weights=None, additional_str='', commit=False):
     general_loss, loss_bcel, loss_mse, loss_dvt, blur_loss = loss
     general_loss = float(general_loss.item())
+    print(train)
+
     if DOCUMENT_ON_WANDB:
         log_dict = {"general loss %s" % additional_str: general_loss,
                     "mse loss %s" % additional_str: loss_mse, "bcel loss %s" % additional_str: loss_bcel,
