@@ -243,7 +243,7 @@ class RecursiveNeuronModel(nn.Module):
                 else:
                     m.weight.data.normal_(0, sd)
             if hasattr(m, "bias"):
-                m.bias.data.normal_(0, sd)
+                torch.nn.init.zeros_(m.bias)
 
         self.apply(init_params)
 
