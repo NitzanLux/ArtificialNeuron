@@ -94,7 +94,7 @@ def surround_with_default_config_values(**kargs):
                                  padding=0,
                                  dilation=1,
                                  channel_input_number=1278,  # synapse number
-                                 inner_scope_channel_number=32,
+                                 inner_scope_channel_number=72,
                                  channel_output_number=32,
                                  activation_function_name="LeakyReLU",
                                  activation_function_kargs=dict(),
