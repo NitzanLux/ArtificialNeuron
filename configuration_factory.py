@@ -259,7 +259,7 @@ if __name__ == '__main__':
     #                                      batch_size_validation=200, batch_size_train=5, clip_gradients_factor=2.5,
     #                                      constant_learning_rate=0.005)
     #     configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
-    configurations_name = "prlu"
+    configurations_name = "elu"
     for i in ['AdamW']:
         config_morpho_0 = config_factory(loss_function='weighted_mse_loss_derivative',
                                          dynamic_learning_params=False  # ,optimizer_type='RMSprop'
@@ -268,7 +268,7 @@ if __name__ == '__main__':
                                          model_tag="%s_%s" % (configurations_name,i), optimizer_type=i,
                                          accumulate_loss_batch_factor=8, spike_probability=None, prediction_length=1000,
                                          batch_size_validation=200, batch_size_train=8, clip_gradients_factor=1,
-                                         constant_learning_rate=0.003,activation_function_name='PReLU')
+                                         constant_learning_rate=0.003,activation_function_name='ELU')
         # configs.append(config_morpho_0)
         configs.extend(generate_config_files_multiple_seeds(config_morpho_0, 2))
     with open(os.path.join(MODELS_DIR, "%s.json" % configurations_name), 'w') as file:
