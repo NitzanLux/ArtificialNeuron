@@ -234,10 +234,19 @@ class RecursiveNeuronModel(nn.Module):
 
     def init_weights(self, sd=0.05):
         def init_params(m):
+            linear_flag=False
+            if isinstance(m,torch.nn.Conv1d) or isinstance(m,torch.nn.Conv2d) or isinstance(m,torch.nn.Linear):
+                linear_flag =True
             if hasattr(m, "weight"):
-                m.weight.data.normal_(0, sd)
+                if linear_flag:
+                    torch.nn.init.xavier_uniform(m.weight)
+                else:
+                    m.weight.data.normal_(0, sd)
             if hasattr(m, "bias"):
-                m.bias.data.normal_(0, sd)
+                if linear_flag:
+                    torch.nn.init.xavier_uniform(m.bias)
+                else:
+                    m.bias.data.normal_(0, sd)
 
         self.apply(init_params)
 
