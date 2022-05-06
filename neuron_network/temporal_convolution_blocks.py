@@ -50,7 +50,7 @@ class Base1DConvolutionBlock(nn.Module):
         if inner_scope_channel_number is None:
             self.inner_scope_channel_number = input_shape[0]
         else:
-            self.inner_scope_channel_number = inner_scope_channel_number
+            self.inner_scope_channel_number = max(input_shape[0],inner_scope_channel_number)
         if channel_output_number is None:
             self.channel_output_number = input_shape[0]
         else:
