@@ -268,7 +268,7 @@ if __name__ == '__main__':
                                          model_tag="%s_%s" % (configurations_name,i), optimizer_type=i,
                                          accumulate_loss_batch_factor=8, spike_probability=None, prediction_length=1000,
                                          batch_size_validation=200, batch_size_train=8, clip_gradients_factor=1,
-                                         constant_learning_rate=0.003)
+                                         constant_learning_rate=0.003,activation_function_name='PReLU')
         # configs.append(config_morpho_0)
         configs.extend(generate_config_files_multiple_seeds(config_morpho_0, 2))
     with open(os.path.join(MODELS_DIR, "%s.json" % configurations_name), 'w') as file:
