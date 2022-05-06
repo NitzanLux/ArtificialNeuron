@@ -243,10 +243,7 @@ class RecursiveNeuronModel(nn.Module):
                 else:
                     m.weight.data.normal_(0, sd)
             if hasattr(m, "bias"):
-                if linear_flag:
-                    torch.nn.init.xavier_uniform(m.bias)
-                else:
-                    m.bias.data.normal_(0, sd)
+                m.bias.data.normal_(0, sd)
 
         self.apply(init_params)
 
