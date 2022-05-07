@@ -139,7 +139,7 @@ class SimulationDataGenerator():
         while self.epoch_size is None or counter < self.epoch_size:
             if self.__return_spike_factor == NULL_SPIKE_FACTOR_VALUE:
                 yield self[np.arange(self.sample_counter, self.sample_counter + self.batch_size) % self.X.shape[
-                    SIM_INDEX],0 if self.X.shape[2]//self.window_size_ms<=1 else np.random.choice(range(self.window_size_ms, self.X.shape[2] ,self.window_size_ms),
+                    SIM_INDEX],self.X.shape[2] if self.X.shape[2]//self.window_size_ms==1 else np.random.choice(range(self.window_size_ms, self.X.shape[2] ,self.window_size_ms),
                                                  size=self.batch_size, replace=True)]
             else:
                 number_of_iteration = (self.sample_counter // self.batch_size)
