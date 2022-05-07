@@ -94,8 +94,8 @@ def surround_with_default_config_values(**kargs):
                                  padding=0,
                                  dilation=1,
                                  channel_input_number=1278,  # synapse number
-                                 inner_scope_channel_number=72,
-                                 channel_output_number=32,
+                                 inner_scope_channel_number=32,
+                                 channel_output_number=8,
                                  activation_function_name="LeakyReLU",
                                  # activation_function_kargs=dict(),
                                  activation_function_kargs=dict(negative_slope=0.0025),
@@ -266,7 +266,7 @@ if __name__ == '__main__':
                                          ,include_spikes=False,
                                          dynamic_learning_params_function="learning_parameters_iter_with_constant_weights",
                                          model_tag="%s_%s" % (configurations_name,i), optimizer_type=i,
-                                         accumulate_loss_batch_factor=8, spike_probability=None, prediction_length=1000,
+                                         accumulate_loss_batch_factor=8, spike_probability=None, prediction_length=5800,
                                          batch_size_validation=200, batch_size_train=8, clip_gradients_factor=1,
                                          constant_learning_rate=0.0007)
         # configs.append(config_morpho_0)
