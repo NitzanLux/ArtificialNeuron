@@ -59,7 +59,7 @@ def surround_with_default_config_values(**kargs):
                       files_filter_regex=".*", freeze_node_factor=None,
                       optimizer_type="Adagrad", optimizer_params=dict(),clip_gradients_factor=1.5,  # optimizer_params={'eps':1e-8},
                       # lr_scheduler='CyclicLR',lr_scheduler_params=dict(max_lr=0.05,step_size_up=1000,base_lr=0.00003,cycle_momentum=True),
-                      lr_scheduler='ReduceLROnPlateau',lr_scheduler_params=dict(factor=0.5,cooldown=50, threshold=1e-5,patience =400,eps=8e-5),
+                      lr_scheduler='ReduceLROnPlateau',lr_scheduler_params=dict(factor=0.5,cooldown=50, threshold=1e-5,patience =500,eps=8e-5),
                       # lr_scheduler=None,
                       # scheduler_cooldown_factor=150,
                       batch_counter=0, epoch_counter=0,  # default counter
@@ -77,13 +77,13 @@ def surround_with_default_config_values(**kargs):
                                  time_domain_shape=config.input_window_size,
                                  # kernel_size_2d=3,
                                  # kernel_size_1d=9,
-                                 number_of_layers_root=4, number_of_layers_leaf=6, number_of_layers_intersection=1,
+                                 number_of_layers_root=4, number_of_layers_leaf=10, number_of_layers_intersection=1,
                                  number_of_layers_branch_intersection=1,
                                  # david_layers=[55, 13, 13, 13, 13, 13, 13],
                                  glu_number_of_layers=0,
                                  skip_connections=True,
                                  inter_module_skip_connections=True,
-                                 kernel_size=35,
+                                 kernel_size=31,
                                  kernel_size_soma=1,
                                  kernel_size_intersection=1,
                                  kernel_size_branch=1,
@@ -94,7 +94,7 @@ def surround_with_default_config_values(**kargs):
                                  padding=0,
                                  dilation=1,
                                  channel_input_number=1278,  # synapse number
-                                 inner_scope_channel_number=32,
+                                 inner_scope_channel_number=64,
                                  channel_output_number=8,
                                  activation_function_name="LeakyReLU",
                                  # activation_function_kargs=dict(),
@@ -260,7 +260,7 @@ if __name__ == '__main__':
                                          model_tag="%s_%s" % (configurations_name,i), optimizer_type=i,
                                          accumulate_loss_batch_factor=8, spike_probability=None, prediction_length=5780,
                                          batch_size_validation=128, batch_size_train=2, clip_gradients_factor=1,
-                                         constant_learning_rate=0.0007)
+                                         constant_learning_rate=0.003)
         # configs.append(config_morpho_0)
         configs.extend(generate_config_files_multiple_seeds(config_morpho_0, 2))
     with open(os.path.join(MODELS_DIR, "%s.json" % configurations_name), 'w') as file:
