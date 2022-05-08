@@ -113,6 +113,7 @@ def load_config_file(path: str) -> AttrDict:
     with open(path, 'r') as file:
         config = json.loads(file.read())
     config = AttrDict(config)
+    config.batch_size_validation = 64
     if config.config_version < CURRENT_VERSION :
         config = surround_with_default_config_values(**config)
     return config
@@ -259,7 +260,7 @@ if __name__ == '__main__':
                                          dynamic_learning_params_function="learning_parameters_iter_with_constant_weights",
                                          model_tag="%s_%s" % (configurations_name,i), optimizer_type=i,
                                          accumulate_loss_batch_factor=16, spike_probability=None, prediction_length=5780,
-                                         batch_size_validation=128, batch_size_train=2, clip_gradients_factor=1,
+                                         batch_size_validation=64, batch_size_train=2, clip_gradients_factor=1,
                                          constant_learning_rate=0.001)
         # configs.append(config_morpho_0)
         configs.extend(generate_config_files_multiple_seeds(config_morpho_0, 2))
