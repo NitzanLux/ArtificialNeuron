@@ -56,7 +56,7 @@ def surround_with_default_config_values(**kargs):
                       batch_size_validation=300,
                       train_file_load=0.5, valid_file_load=0.5, spike_probability=0.5,
                       # files_filter_regex=".*exBas_0_1100_inhBasDiff_-1100_600__exApic_0_1100_inhApicDiff_-1100_600_SpTemp[^\\/\.]*\.p",
-                      files_filter_regex=".*", freeze_node_factor=None,
+                      files_filter_regex=".*", freeze_node_factor=0.4,
                       optimizer_type="Adagrad", optimizer_params=dict(),clip_gradients_factor=1.5,  # optimizer_params={'eps':1e-8},
                       # lr_scheduler='CyclicLR',lr_scheduler_params=dict(max_lr=0.05,step_size_up=1000,base_lr=0.00003,cycle_momentum=True),
                       lr_scheduler='ReduceLROnPlateau',lr_scheduler_params=dict(factor=0.5,cooldown=50, threshold=1e-5,patience =500,eps=8e-5),
@@ -260,7 +260,7 @@ if __name__ == '__main__':
                                          model_tag="%s_%s" % (configurations_name,i), optimizer_type=i,
                                          accumulate_loss_batch_factor=8, spike_probability=None, prediction_length=5780,
                                          batch_size_validation=128, batch_size_train=2, clip_gradients_factor=1,
-                                         constant_learning_rate=0.003)
+                                         constant_learning_rate=0.001)
         # configs.append(config_morpho_0)
         configs.extend(generate_config_files_multiple_seeds(config_morpho_0, 2))
     with open(os.path.join(MODELS_DIR, "%s.json" % configurations_name), 'w') as file:

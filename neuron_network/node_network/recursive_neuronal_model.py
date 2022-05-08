@@ -442,6 +442,8 @@ class SomaNetwork(RecursiveNeuronModel):
             return
         levels = self.get_nodes_per_level()
         models = [m for level in levels for m in level]
+        if 0<number_of_nodes_to_shutdown<1:
+            number_of_nodes_to_shutdown=int(len(models)*number_of_nodes_to_shutdown)
         while True:
             models_to_freeze = random.choices(models, k=number_of_nodes_to_shutdown)
             for m in models_to_freeze:
