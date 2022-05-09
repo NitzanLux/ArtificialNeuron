@@ -437,6 +437,7 @@ def display_accuracy(target, output, step, additional_str=''):
 
 def run_fit_cnn():
     global e
+
     parser = argparse.ArgumentParser(description='Add configuration file')
     parser.add_argument(dest="config_path", type=str,
                         help='configuration file for path')
