@@ -113,7 +113,7 @@ def load_config_file(path: str) -> AttrDict:
     with open(path, 'r') as file:
         config = json.loads(file.read())
     config = AttrDict(config)
-    config.batch_size_validation = 64
+    config.accumulate_loss_batch_factor = 2
     if config.config_version < CURRENT_VERSION :
         config = surround_with_default_config_values(**config)
     return config
