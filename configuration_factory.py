@@ -252,15 +252,15 @@ if __name__ == '__main__':
     #                                      batch_size_validation=200, batch_size_train=5, clip_gradients_factor=2.5,
     #                                      constant_learning_rate=0.005)
     #     configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
-    configurations_name = "inter_4_1t"
+    configurations_name = "inter_4_2"
     for i in ['AdamW']:
         config_morpho_0 = config_factory(loss_function='weighted_mse_loss_derivative',
                                          dynamic_learning_params=False  # ,optimizer_type='RMSprop'
                                          ,include_spikes=False,
                                          dynamic_learning_params_function="learning_parameters_iter_with_constant_weights",
                                          model_tag="%s_%s" % (configurations_name,i), optimizer_type=i,
-                                         accumulate_loss_batch_factor=1, spike_probability=None, prediction_length=5780,
-                                         batch_size_validation=64, batch_size_train=4, clip_gradients_factor=2,
+                                         accumulate_loss_batch_factor=2, spike_probability=None, prediction_length=5780,
+                                         batch_size_validation=64, batch_size_train=8, clip_gradients_factor=4,
                                          constant_learning_rate=0.0005)
         # configs.append(config_morpho_0)
         configs.extend(generate_config_files_multiple_seeds(config_morpho_0, 2))
