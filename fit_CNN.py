@@ -19,7 +19,7 @@ from simulation_data_generator import *
 from simulation_data_generator import *
 from datetime import datetime, timedelta
 from general_variables import *
-
+import gc
 
 torch.cuda.empty_cache()
 
@@ -70,6 +70,7 @@ def batch_train(model, optimizer, custom_loss, train_data_iterator, clip_gradien
                 optimizer_scdualer, scaler):
     # zero the parameter gradients
     torch.cuda.empty_cache()
+    gc.collect()
     model.train()
     general_loss, loss_bcel, loss_mse, loss_dvt, loss_gausian_mse = 0, 0, 0, 0, 0
     for _, data in zip(range(accumulate_loss_batch_factor), train_data_iterator):
