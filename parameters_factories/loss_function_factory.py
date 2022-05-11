@@ -103,7 +103,7 @@ def weighted_mse_loss_prob(loss_weights, window_size, sigma):
         # weights[1:] = torch.pow(target[1][1:] - target[:-1], 2) + 1
         weights = torch.round(weights)
         unique_output,invese_indics,count=torch.unique(weights,return_inverse=True,return_counts=True)
-        weights = 1/(unique_output.shape[0]*count[invese_indics])
+        weights = invese_indics.shape[0]/(unique_output.shape[0]*count[invese_indics])
         loss_mse = mse_loss(output[1], target[1])
         loss_mse = loss_mse * weights
         loss_mse = torch.mean(loss_mse)
