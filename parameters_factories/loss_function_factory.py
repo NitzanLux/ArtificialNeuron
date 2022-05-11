@@ -92,6 +92,26 @@ def weighted_mse_loss(loss_weights, window_size, sigma):
         return general_loss, 0, loss_mse_item, 0, 0
 
     return custom_loss
+def weighted_mse_loss_prob(loss_weights, window_size, sigma):
+    def custom_loss(output, target):
+        if output[0].device != target[0].device:
+            min_len = min(len(target), len(output))
+            for i in range(min_len):  # same processor for comperison
+                target[i] = target[i].to(output[i].device)
+        mse_loss = nn.MSELoss(reduction='none')
+        weights = target[1].clone()
+        # weights[1:] = torch.pow(target[1][1:] - target[:-1], 2) + 1
+        weights = torch.round(weights)
+        unique_output,invese_indics,count=torch.unique(weights,return_inverse=True,return_counts=True)
+        weights = 1/(unique_output.shape[0]*count[invese_indics])
+        loss_mse = mse_loss(output[1], target[1])
+        loss_mse = loss_mse * weights
+        loss_mse = torch.mean(loss_mse)
+        loss_mse_item = loss_mse.item()
+        general_loss = loss_mse
+        return general_loss, 0, loss_mse_item, 0, 0
+
+    return custom_loss
 
 def weighted_mse_loss_derivative(loss_weights, window_size, sigma):
     def custom_loss(output, target):
