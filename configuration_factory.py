@@ -59,7 +59,7 @@ def surround_with_default_config_values(**kargs):
                       files_filter_regex=".*", freeze_node_factor=0,
                       optimizer_type="Adagrad", optimizer_params=dict(),clip_gradients_factor=1.5,  # optimizer_params={'eps':1e-8},
                       # lr_scheduler='CyclicLR',lr_scheduler_params=dict(max_lr=0.05,step_size_up=1000,base_lr=0.00003,cycle_momentum=True),
-                      lr_scheduler='ReduceLROnPlateau',lr_scheduler_params=dict(factor=0.5,cooldown=50, threshold=1e-5,patience =500,eps=8e-5),
+                      lr_scheduler='ReduceLROnPlateau',lr_scheduler_params=dict(factor=0.1,cooldown=100, threshold=1e-5,patience =750,eps=8e-9),
                       # lr_scheduler=None,
                       # scheduler_cooldown_factor=150,
                       batch_counter=0, epoch_counter=0,  # default counter
@@ -77,8 +77,8 @@ def surround_with_default_config_values(**kargs):
                                  time_domain_shape=config.input_window_size,
                                  # kernel_size_2d=3,
                                  # kernel_size_1d=9,
-                                 number_of_layers_root=4, number_of_layers_leaf=10, number_of_layers_intersection=4,
-                                 number_of_layers_branch_intersection=4,
+                                 number_of_layers_root=7, number_of_layers_leaf=10, number_of_layers_intersection=7,
+                                 number_of_layers_branch_intersection=7,
                                  # david_layers=[55, 13, 13, 13, 13, 13, 13],
                                  glu_number_of_layers=0,
                                  skip_connections=True,
@@ -95,7 +95,7 @@ def surround_with_default_config_values(**kargs):
                                  dilation=1,
                                  channel_input_number=1278,  # synapse number
                                  inner_scope_channel_number=None,
-                                 channel_output_number=8,
+                                 channel_output_number=32,
                                  activation_function_name="LeakyReLU",
                                  # activation_function_kargs=dict(),
                                  activation_function_kargs=dict(negative_slope=0.01),
@@ -259,7 +259,7 @@ if __name__ == '__main__':
                                          ,include_spikes=False,
                                          dynamic_learning_params_function="learning_parameters_iter_with_constant_weights",
                                          model_tag="%s_%s" % (configurations_name,i), optimizer_type=i,
-                                         accumulate_loss_batch_factor=4, spike_probability=None, prediction_length=(6000-600)//2,
+                                         accumulate_loss_batch_factor=2, spike_probability=None, prediction_length=(6000-600)//2,
                                          batch_size_validation=64, batch_size_train=8, clip_gradients_factor=100,
                                          constant_learning_rate=0.001)
         # configs.append(config_morpho_0)
