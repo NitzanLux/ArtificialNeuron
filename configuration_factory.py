@@ -254,7 +254,7 @@ if __name__ == '__main__':
     #     configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
     configurations_name = "inter_4_2"
     for i in ['AdamW']:
-        config_morpho_0 = config_factory(loss_function='weighted_mse_loss_prob_normelized',
+        config_morpho_0 = config_factory(loss_function='weighted_mse_loss_derivative',
                                          dynamic_learning_params=False  # ,optimizer_type='RMSprop'
                                          ,include_spikes=False,
                                          dynamic_learning_params_function="learning_parameters_iter_with_constant_weights",
