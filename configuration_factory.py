@@ -77,8 +77,8 @@ def surround_with_default_config_values(**kargs):
                                  time_domain_shape=config.input_window_size,
                                  # kernel_size_2d=3,
                                  # kernel_size_1d=9,
-                                 number_of_layers_root=7, number_of_layers_leaf=10, number_of_layers_intersection=7,
-                                 number_of_layers_branch_intersection=7,
+                                 number_of_layers_root=6, number_of_layers_leaf=10, number_of_layers_intersection=5,
+                                 number_of_layers_branch_intersection=5,
                                  # david_layers=[55, 13, 13, 13, 13, 13, 13],
                                  glu_number_of_layers=0,
                                  skip_connections=True,
@@ -98,7 +98,7 @@ def surround_with_default_config_values(**kargs):
                                  channel_output_number=32,
                                  activation_function_name="LeakyReLU",
                                  # activation_function_kargs=dict(),
-                                 activation_function_kargs=dict(negative_slope=0.01),
+                                 activation_function_kargs=dict(negative_slope=0.001),
                                  include_dendritic_voltage_tracing=False)
 
     # config.architecture_dict = architecture_dict
@@ -252,7 +252,7 @@ if __name__ == '__main__':
     #                                      batch_size_validation=200, batch_size_train=5, clip_gradients_factor=2.5,
     #                                      constant_learning_rate=0.005)
     #     configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
-    configurations_name = "inter_4_3"
+    configurations_name = "inter_4_4"
     for i in ['AdamW']:
         config_morpho_0 = config_factory(loss_function='weighted_mse_loss_derivative',
                                          dynamic_learning_params=False  # ,optimizer_type='RMSprop'
