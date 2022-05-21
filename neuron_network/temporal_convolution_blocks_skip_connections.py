@@ -21,7 +21,7 @@ class BranchLeafBlockSkipConnections(BranchLeafBlock):
         super().__init__(input_shape, number_of_layers_leaf, activation_function, inner_scope_channel_number,
                          channel_output_number, kernel_size, stride, dilation, **kwargs)
         self.skip_connections = SkipConnections(input_shape[0], channel_output_number)
-        self.activation_function = activation_function
+        self.activation_function = activation_function()
 
     def forward(self, x):
         out = super(BranchLeafBlockSkipConnections, self).forward(x) + self.skip_connections.forward(x)
@@ -35,7 +35,7 @@ class IntersectionBlockSkipConnections(IntersectionBlock):
         super().__init__(input_shape, number_of_layers_intersection, activation_function, inner_scope_channel_number,
                          channel_output_number, kernel_size, stride, dilation, **kwargs)
         self.skip_connections = SkipConnections(input_shape[0], channel_output_number)
-        self.activation_function = activation_function
+        self.activation_function = activation_function()
 
     def forward(self, x):
         out = super(IntersectionBlockSkipConnections, self).forward(x) + self.skip_connections.forward(x)
@@ -51,7 +51,7 @@ class BranchBlockSkipConnections(BranchBlock):
                          number_of_layers_leaf, activation_function, inner_scope_channel_number, channel_output_number,
                          kernel_size, stride, dilation, **kwargs)
         self.skip_connections = SkipConnections(input_shape_integration[0], channel_output_number)
-        self.activation_function = activation_function
+        self.activation_function = activation_function()
 
     def forward(self, x, prev_segment):
         out = super(BranchBlockSkipConnections, self).forward(x, prev_segment) \
