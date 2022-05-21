@@ -113,7 +113,7 @@ def load_config_file(path: str) -> AttrDict:
     with open(path, 'r') as file:
         config = json.loads(file.read())
     config = AttrDict(config)
-    lr_scheduler_params = dict(factor=0.1, cooldown=100, threshold=1e-5, patience=750, eps=8e-9)
+    lr_scheduler_params = dict(factor=0.1, cooldown=100, threshold=1e-5, patience=750, eps=5e-9)
     if config.config_version < CURRENT_VERSION :
         config = surround_with_default_config_values(**config)
     return config
@@ -252,7 +252,7 @@ if __name__ == '__main__':
     #                                      batch_size_validation=200, batch_size_train=5, clip_gradients_factor=2.5,
     #                                      constant_learning_rate=0.005)
     #     configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
-    configurations_name = "inter_4_4"
+    configurations_name = "inter_4_5"
     for i in ['AdamW']:
         config_morpho_0 = config_factory(loss_function='weighted_mse_loss_derivative',
                                          dynamic_learning_params=False  # ,optimizer_type='RMSprop'
