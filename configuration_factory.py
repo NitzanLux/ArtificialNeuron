@@ -95,7 +95,7 @@ def surround_with_default_config_values(**kargs):
                                  dilation=1,
                                  channel_input_number=1278,  # synapse number
                                  inner_scope_channel_number=None,
-                                 channel_output_number=4,
+                                 channel_output_number=32,
                                  activation_function_name="LeakyReLU",
                                  # activation_function_kargs=dict(),
                                  activation_function_kargs=dict(negative_slope=0.001),
@@ -252,7 +252,7 @@ if __name__ == '__main__':
     #                                      batch_size_validation=200, batch_size_train=5, clip_gradients_factor=2.5,
     #                                      constant_learning_rate=0.005)
     #     configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
-    configurations_name = "inter_4_6"
+    configurations_name = "inter_4_7"
     for i in ['AdamW']:
         config_morpho_0 = config_factory(loss_function='weighted_mse_loss_derivative',
                                          dynamic_learning_params=False  # ,optimizer_type='RMSprop'
