@@ -252,7 +252,7 @@ if __name__ == '__main__':
     #                                      batch_size_validation=200, batch_size_train=5, clip_gradients_factor=2.5,
     #                                      constant_learning_rate=0.005)
     #     configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
-    configurations_name = "in_w"
+    configurations_name = "in_w_freeze"
     for i in ['AdamW']:
         config_morpho_0 = config_factory(loss_function='weighted_mse_loss_derivative',
                                          dynamic_learning_params=False  # ,optimizer_type='RMSprop'
