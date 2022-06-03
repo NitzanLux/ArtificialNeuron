@@ -52,11 +52,11 @@ def surround_with_default_config_values(**kargs):
     config = AttrDict(config_version=CURRENT_VERSION, input_window_size=300, prediction_length=1, num_segments=2 * 639,
                       num_syn_types=1,
                       include_spikes=True,
-                      num_epochs=15000, epoch_size=5, batch_size_train=5, accumulate_loss_batch_factor=4,
+                      num_epochs=15000, epoch_size=20, batch_size_train=5, accumulate_loss_batch_factor=4,
                       batch_size_validation=300,
                       train_file_load=0.5, valid_file_load=0.5, spike_probability=0.5,
                       # files_filter_regex=".*exBas_0_1100_inhBasDiff_-1100_600__exApic_0_1100_inhApicDiff_-1100_600_SpTemp[^\\/\.]*\.p",
-                      files_filter_regex=".*", freeze_node_factor=0,
+                      files_filter_regex=".*", freeze_node_factor=0.75,
                       optimizer_type="Adagrad", optimizer_params=dict(),clip_gradients_factor=1.5,  # optimizer_params={'eps':1e-8},
                       # lr_scheduler='CyclicLR',lr_scheduler_params=dict(max_lr=0.05,step_size_up=1000,base_lr=0.00003,cycle_momentum=True),
                       lr_scheduler='ReduceLROnPlateau',lr_scheduler_params=dict(factor=0.1,cooldown=100, threshold=1e-5,patience =750,eps=8e-9),
@@ -260,7 +260,7 @@ if __name__ == '__main__':
                                          dynamic_learning_params_function="learning_parameters_iter_with_constant_weights",
                                          model_tag="%s_%s" % (configurations_name,i), optimizer_type=i,
                                          accumulate_loss_batch_factor=1, spike_probability=None, prediction_length=(6000-600)//6,
-                                         batch_size_validation=64, batch_size_train=4, clip_gradients_factor=2.5,
+                                         batch_size_validation=64, batch_size_train=2, clip_gradients_factor=2.5,
                                          constant_learning_rate=0.001)
         # configs.append(config_morpho_0)
         configs.extend(generate_config_files_multiple_seeds(config_morpho_0, 2))
