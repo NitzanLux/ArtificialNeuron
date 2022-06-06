@@ -118,9 +118,8 @@ class RecursiveNeuronModel(nn.Module):
         if len(self.named_internal_parameters_that_has_gradients) == 0:
             for n, p in  self.main_model.named_parameters():
                 self.named_internal_parameters_that_has_gradients[n] = [p, p.requires_grad]
-        for m in self.main_model:
-            for n, p in m.named_parameters():
-                p.requires_grad = False
+        for n, p in self.main_model.named_parameters():
+            p.requires_grad = False
 
     def reset_requires_grad(self):
         for n, p in self.named_internal_parameters_that_has_gradients.items():
