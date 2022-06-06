@@ -116,7 +116,7 @@ class RecursiveNeuronModel(nn.Module):
 
     def freeze_model_gradients(self):
         if len(self.named_internal_parameters_that_has_gradients) == 0:
-            for n, p in model.named_parameters():
+            for n, p in  self.main_model.named_parameters():
                 self.named_internal_parameters_that_has_gradients[n] = [p, p.requires_grad]
         for m in self.main_model:
             for n, p in m.named_parameters():
