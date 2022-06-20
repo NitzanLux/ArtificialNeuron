@@ -139,7 +139,7 @@ class SimulationDataGenerator():
         while self.epoch_size is None or counter < self.epoch_size:
             if self.__return_spike_factor == NULL_SPIKE_FACTOR_VALUE:
                 yield self[np.arange(self.sample_counter, self.sample_counter + self.batch_size) % self.X.shape[
-                    SIM_INDEX],self.X.shape[2]-1 if self.X.shape[2]//self.window_size_ms<=1 else np.random.choice(range(self.window_size_ms, self.X.shape[2] ,self.window_size_ms),
+                    SIM_INDEX],self.X.shape[2]-1 if self.X.shape[2]//self.window_size_ms<=1 else np.random.choice(range(int(self.window_size_ms), self.X.shape[2] ,int(self.window_size_ms)),
                                                  size=self.batch_size, replace=True)]
             else:
                 number_of_iteration = (self.sample_counter // self.batch_size)
@@ -222,10 +222,11 @@ class SimulationDataGenerator():
             win_time = np.array([win_time])
         sim_ind_mat, chn_ind, win_ind = np.meshgrid(sim_ind,
                                                     np.arange(self.X.shape[1]), np.arange(self.window_size_ms, 0, -1),
-                                                    indexing='ij')
-        win_ind = win_time[:, np.newaxis, np.newaxis] - win_ind
+                                                    indexing='ij',)
+        win_ind = win_time[:, np.newaxis, np.newaxis].astype(int) - win_ind.astype(int)
+
         X_batch = self.X[sim_ind_mat, chn_ind, win_ind]
-        pred_index = (win_time[:,np.newaxis]-self.prediction_length+1)*np.ones((win_time.shape[0],self.prediction_length))+np.arange(0,self.prediction_length,1)[np.newaxis,:]
+        pred_index = (win_time[:,np.newaxis]-self.prediction_length+1)*np.ones((win_time.shape[0],int(self.prediction_length)))+np.arange(0,int(self.prediction_length),1)[np.newaxis,:]
         pred_index = pred_index.astype(np.int)
         y_spike_batch = self.y_spike[sim_ind[:,np.newaxis], pred_index]
         y_soma_batch = self.y_soma[sim_ind[:,np.newaxis], pred_index]
