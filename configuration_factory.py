@@ -73,7 +73,7 @@ def surround_with_default_config_values(**kargs):
     architecture_dict = AttrDict(#segment_tree_path="tree.pkl",
                                  network_architecture_structure="recursive",
                                  # architecture_type="LAYERED_TEMPORAL_CONV",
-                                 architecture_type="LAYERED_TEMPORAL_CONV",
+                                 architecture_type="LAYERED_TEMPORAL_CONV_N",
                                  time_domain_shape=config.input_window_size,
                                  # kernel_size_2d=3,
                                  # kernel_size_1d=9,
@@ -252,7 +252,7 @@ if __name__ == '__main__':
     #                                      batch_size_validation=200, batch_size_train=5, clip_gradients_factor=2.5,
     #                                      constant_learning_rate=0.005)
     #     configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
-    configurations_name = "in_w_bcel_2"
+    configurations_name = "narrow_last_layer"
     for i in ['AdamW']:
         config_morpho_0 = config_factory(loss_function='focalbcel_mse_loss',
                                          dynamic_learning_params=False  # ,optimizer_type='RMSprop'

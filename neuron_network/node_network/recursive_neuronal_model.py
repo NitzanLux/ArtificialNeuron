@@ -15,8 +15,10 @@ import torch.nn as nn
 import neuron_network.basic_convolution_blocks as basic_convolution_blocks
 import neuron_network.linear_convolution_blocks as linear_convolution_blocks
 import neuron_network.temporal_convolution_blocks as temporal_convolution_blocks
+import neuron_network.temporal_convolution_blocks_narrow as temporal_convolution_blocks_narrow
 import neuron_network.glu_net_skip as glu_net_skip
 import neuron_network.temporal_convolution_blocks_skip_connections as temporal_convolution_blocks_skip_connections
+import neuron_network.temporal_convolution_blocks_narrow_skip_connections as temporal_convolution_blocks_narrow_skip_connections
 from get_neuron_modle import get_L5PC
 from project_path import MODELS_DIR
 from synapse_tree import SectionType
@@ -37,6 +39,7 @@ ID_NULL_VALUE = -1
 class ArchitectureType(Enum):
     BASIC_CONV = "BASIC_CONV"
     LAYERED_TEMPORAL_CONV = "LAYERED_TEMPORAL_CONV"
+    LAYERED_TEMPORAL_CONV_N = "LAYERED_TEMPORAL_CONV_N"
     LINEAR = 'LINEAR'
     TEMPORAL_SKIP = "TEMPORAL_SKIP_CONNECTIONS"
     GLU_NET = 'GLU_NET'
@@ -82,6 +85,17 @@ class RecursiveNeuronModel(nn.Module):
                 branch_leaf_class = temporal_convolution_blocks.BranchLeafBlock
                 intersection_class = temporal_convolution_blocks.IntersectionBlock
                 root_class = temporal_convolution_blocks.RootBlock
+        elif architecture_type == ArchitectureType.LAYERED_TEMPORAL_CONV_N.value :
+            if inter_module_skip_connections:
+                branch_class = temporal_convolution_blocks_narrow_skip_connections.BranchBlockSkipConnections
+                branch_leaf_class = temporal_convolution_blocks_narrow_skip_connections.BranchLeafBlockSkipConnections
+                intersection_class = temporal_convolution_blocks_narrow_skip_connections.IntersectionBlockSkipConnections
+                root_class = temporal_convolution_blocks_narrow_skip_connections.RootBlockSkipConnections
+            else:
+                branch_class = temporal_convolution_blocks_narrow.BranchBlock
+                branch_leaf_class = temporal_convolution_blocks_narrow.BranchLeafBlock
+                intersection_class = temporal_convolution_blocks_narrow.IntersectionBlock
+                root_class = temporal_convolution_blocks_narrow.RootBlock
         elif architecture_type == ArchitectureType.LINEAR.value:
             branch_class = linear_convolution_blocks.BranchBlock
             branch_leaf_class = linear_convolution_blocks.BranchLeafBlock
