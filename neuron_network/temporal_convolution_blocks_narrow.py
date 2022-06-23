@@ -156,11 +156,11 @@ class RootBlock(nn.Module):
         self.conv1d_root = Base1DConvolutionBlock(number_of_layers_root, input_shape, activation_function,
                                                   inner_scope_channel_number, inner_scope_channel_number,
 
-                                                  kernel_size=kernel_size_soma if kernel_size_soma is None else kernel_size,
+                                                  kernel_size=kernel_size if kernel_size_soma is None else kernel_size_soma,
                                                   stride=stride, dilation=dilation,
                                                   skip_connections=kwargs['skip_connections'], dropout_factor=dropout_factor)
         self.model = nn.Sequential(self.conv1d_root, activation_function())
-
+        self.input_shape=input_shape
         if inner_scope_channel_number is None:
             inner_scope_channel_number = input_shape[0]
         self.spike_prediction = nn.Conv1d(inner_scope_channel_number
@@ -171,7 +171,7 @@ class RootBlock(nn.Module):
 
     def forward(self, x):
         out = self.model(x)
-        v = self.voltage_prediction(out)
-        s = self.spike_prediction(out)
+        v = self.voltage_prediction(out[:,:,self.input_shape[1]-1:])
+        s = self.spike_prediction(out[:,:,self.input_shape[1]-1:])
         # s = self.sigmoid(s)
         return s, v
