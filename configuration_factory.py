@@ -59,7 +59,7 @@ def surround_with_default_config_values(**kargs):
                       files_filter_regex=".*", freeze_node_factor=0.4,
                       optimizer_type="Adagrad", optimizer_params=dict(),clip_gradients_factor=1.5,  # optimizer_params={'eps':1e-8},
                       # lr_scheduler='CyclicLR',lr_scheduler_params=dict(max_lr=0.05,step_size_up=1000,base_lr=0.00003,cycle_momentum=True),
-                      lr_scheduler='ReduceLROnPlateau',lr_scheduler_params=dict(factor=0.1,cooldown=100, threshold=1e-5,patience =750,eps=8e-9),
+                      lr_scheduler='ReduceLROnPlateau',lr_scheduler_params=dict(factor=0.1,cooldown=300, threshold=1e-5,patience =1500,eps=6e-9),
                       # lr_scheduler=None,
                       # scheduler_cooldown_factor=150,
                       batch_counter=0, epoch_counter=0,  # default counter
@@ -252,15 +252,15 @@ if __name__ == '__main__':
     #                                      batch_size_validation=200, batch_size_train=5, clip_gradients_factor=2.5,
     #                                      constant_learning_rate=0.005)
     #     configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
-    configurations_name = "narrow_last_layer"
+    configurations_name = "narrow_last_layer_1"
     for i in ['AdamW']:
         config_morpho_0 = config_factory(loss_function='focalbcel_mse_loss',
                                          dynamic_learning_params=False  # ,optimizer_type='RMSprop'
                                          ,include_spikes=False,
                                          dynamic_learning_params_function="learning_parameters_iter_with_constant_weights",
                                          model_tag="%s_%s" % (configurations_name,i), optimizer_type=i,
-                                         accumulate_loss_batch_factor=2, spike_probability=None, prediction_length=(6000-600)/10,
-                                         batch_size_validation=64, batch_size_train=5, clip_gradients_factor=2.5,
+                                         accumulate_loss_batch_factor=2, spike_probability=None, prediction_length=(6000-600),
+                                         batch_size_validation=64, batch_size_train=10, clip_gradients_factor=2.5,
                                          constant_learning_rate=0.001)
         # configs.append(config_morpho_0)
         configs.extend(generate_config_files_multiple_seeds(config_morpho_0, 2))
