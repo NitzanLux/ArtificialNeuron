@@ -94,8 +94,8 @@ def surround_with_default_config_values(**kargs):
                                  padding=0,
                                  dilation=1,
                                  channel_input_number=1278,  # synapse number
-                                 inner_scope_channel_number=None,
-                                 channel_output_number=64,
+                                 inner_scope_channel_number=32,
+                                 channel_output_number=16,
                                  activation_function_name="LeakyReLU",
                                  # activation_function_kargs=dict(),
                                  activation_function_kargs=dict(negative_slope=0.001),
@@ -252,7 +252,7 @@ if __name__ == '__main__':
     #                                      batch_size_validation=200, batch_size_train=5, clip_gradients_factor=2.5,
     #                                      constant_learning_rate=0.005)
     #     configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
-    configurations_name = "narrow_last_layer_1"
+    configurations_name = "narrow_last_layer_2"
     for i in ['AdamW']:
         config_morpho_0 = config_factory(loss_function='focalbcel_mse_loss',
                                          dynamic_learning_params=False  # ,optimizer_type='RMSprop'
@@ -260,7 +260,7 @@ if __name__ == '__main__':
                                          dynamic_learning_params_function="learning_parameters_iter_with_constant_weights",
                                          model_tag="%s_%s" % (configurations_name,i), optimizer_type=i,
                                          accumulate_loss_batch_factor=2, spike_probability=None, prediction_length=(6000-600),
-                                         batch_size_validation=64, batch_size_train=10, clip_gradients_factor=2.5,
+                                         batch_size_validation=64, batch_size_train=4, clip_gradients_factor=2.5,
                                          constant_learning_rate=0.001)
         # configs.append(config_morpho_0)
         configs.extend(generate_config_files_multiple_seeds(config_morpho_0, 2))
