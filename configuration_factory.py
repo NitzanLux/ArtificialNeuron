@@ -77,7 +77,7 @@ def surround_with_default_config_values(**kargs):
                                  time_domain_shape=config.input_window_size,
                                  # kernel_size_2d=3,
                                  # kernel_size_1d=9,
-                                 number_of_layers_root=5, number_of_layers_leaf=10, number_of_layers_intersection=5,
+                                 number_of_layers_root=7, number_of_layers_leaf=10, number_of_layers_intersection=5,
                                  number_of_layers_branch_intersection=5,
                                  # david_layers=[55, 13, 13, 13, 13, 13, 13],
                                  glu_number_of_layers=0,
@@ -94,11 +94,11 @@ def surround_with_default_config_values(**kargs):
                                  padding=0,
                                  dilation=1,
                                  channel_input_number=1278,  # synapse number
-                                 inner_scope_channel_number=32,
+                                 inner_scope_channel_number=None,
                                  channel_output_number=16,
-                                 activation_function_name="LeakyReLU",
-                                 # activation_function_kargs=dict(),
-                                 activation_function_kargs=dict(negative_slope=0.001),
+                                 activation_function_name="ELU",
+                                 activation_function_kargs=dict(),
+                                 # activation_function_kargs=dict(negative_slope=0.001),
                                  include_dendritic_voltage_tracing=False)
 
     # config.architecture_dict = architecture_dict
@@ -113,9 +113,9 @@ def load_config_file(path: str) -> AttrDict:
     with open(path, 'r') as file:
         config = json.loads(file.read())
     config = AttrDict(config)
-    config.lr_scheduler=None
-    config.constant_learning_rate=0.0007
-    config.optimizer_params=dict()
+    # config.lr_scheduler=None
+    # config.constant_learning_rate=0.0007
+    # config.optimizer_params=dict()
     # lr_scheduler_params = dict(factor=0.1, cooldown=100, threshold=1e-5, patience=750, eps=5e-9)
     if config.config_version < CURRENT_VERSION :
         config = surround_with_default_config_values(**config)
@@ -255,15 +255,15 @@ if __name__ == '__main__':
     #                                      batch_size_validation=200, batch_size_train=5, clip_gradients_factor=2.5,
     #                                      constant_learning_rate=0.005)
     #     configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
-    configurations_name = "narrow_last_layer_2"
+    configurations_name = "narrow_last_layer_3"
     for i in ['AdamW']:
         config_morpho_0 = config_factory(loss_function='focalbcel_mse_loss',
                                          dynamic_learning_params=False  # ,optimizer_type='RMSprop'
                                          ,include_spikes=False,
                                          dynamic_learning_params_function="learning_parameters_iter_with_constant_weights",
                                          model_tag="%s_%s" % (configurations_name,i), optimizer_type=i,
-                                         accumulate_loss_batch_factor=4, spike_probability=None, prediction_length=(6000-600)//2,
-                                         batch_size_validation=64, batch_size_train=2, clip_gradients_factor=2.5,
+                                         accumulate_loss_batch_factor=2, spike_probability=None, prediction_length=(6000-600)//2,
+                                         batch_size_validation=64, batch_size_train=4, clip_gradients_factor=2.5,
                                          constant_learning_rate=0.001)
         # configs.append(config_morpho_0)
         configs.extend(generate_config_files_multiple_seeds(config_morpho_0, 2))
