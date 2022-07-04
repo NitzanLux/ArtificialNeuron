@@ -17,7 +17,7 @@ import glob
 synapse_type = ''
 include_DVT = False
 # num_DVT_components = 20 if synapse_type == 'NMDA' else 30
-CURRENT_VERSION = 1.6
+CURRENT_VERSION = 1.7
 
 
 def generate_model_name(additional_str: str = ''):
@@ -50,7 +50,7 @@ def save_config(config, path: [str, None] = None):
 def surround_with_default_config_values(**kargs):
     ##default values can be overridden by kargs
     config = AttrDict(config_version=CURRENT_VERSION, input_window_size=300, prediction_length=1, num_segments=2 * 639,
-                      num_syn_types=1,
+                      num_syn_types=1,use_mixed_precision=False,
                       include_spikes=True,
                       num_epochs=15000, epoch_size=5, batch_size_train=5, accumulate_loss_batch_factor=4,
                       batch_size_validation=300,
@@ -255,7 +255,7 @@ if __name__ == '__main__':
     #                                      batch_size_validation=200, batch_size_train=5, clip_gradients_factor=2.5,
     #                                      constant_learning_rate=0.005)
     #     configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
-    configurations_name = "narrow_last_layer_3"
+    configurations_name = "narrow_last_layer_4"
     for i in ['AdamW']:
         config_morpho_0 = config_factory(loss_function='focalbcel_mse_loss',
                                          dynamic_learning_params=False  # ,optimizer_type='RMSprop'

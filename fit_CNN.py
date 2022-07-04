@@ -73,13 +73,61 @@ def batch_train(model, optimizer, custom_loss, train_data_iterator, clip_gradien
     gc.collect()
     model.train()
     general_loss, loss_bcel, loss_mse, loss_dvt, loss_gausian_mse = 0, 0, 0, 0, 0
+    if scaler is None:
+        out = train_without_mixed_precision(accumulate_loss_batch_factor, clip_gradient, custom_loss, general_loss,
+                                            loss_bcel,
+                                            loss_dvt, loss_gausian_mse, loss_mse, model, optimizer, optimizer_scdualer,
+                                            train_data_iterator)
+    else:
+        out = train_with_mixed_precision(accumulate_loss_batch_factor, clip_gradient, custom_loss, general_loss,
+                                         loss_bcel,
+                                         loss_dvt, loss_gausian_mse, loss_mse, model, optimizer, optimizer_scdualer,
+                                         scaler,
+                                         train_data_iterator)
+
+    return out
+
+
+def train_without_mixed_precision(accumulate_loss_batch_factor, clip_gradient, custom_loss, general_loss, loss_bcel,
+                                  loss_dvt, loss_gausian_mse, loss_mse, model, optimizer, optimizer_scdualer,
+                                  train_data_iterator):
+    for _, data in zip(range(accumulate_loss_batch_factor), train_data_iterator):
+        inputs, labels = data
+        inputs = inputs.cuda().type(DATA_TYPE)
+        labels = [l.cuda().flatten().type(DATA_TYPE) for l in labels]
+        # forward + backward + optimize
+        print(_, "*****", flush=True)
+        outputs = model(inputs)
+        outputs = [i.flatten() for i in outputs]
+        cur_general_loss, cur_loss_bcel, cur_loss_mse, cur_loss_dvt, cur_loss_gausian_mse = custom_loss(outputs, labels)
+        cur_general_loss /= accumulate_loss_batch_factor
+        cur_general_loss.backward()
+        general_loss += cur_general_loss
+        loss_bcel += cur_loss_bcel / accumulate_loss_batch_factor
+        loss_mse += cur_loss_mse / accumulate_loss_batch_factor
+        loss_dvt += cur_loss_dvt / accumulate_loss_batch_factor
+        loss_gausian_mse += cur_loss_gausian_mse / accumulate_loss_batch_factor
+
+    if clip_gradient is not None:
+        torch.nn.utils.clip_grad_norm_(model.parameters(), clip_gradient)
+    if optimizer_scdualer is not None:
+        optimizer_scdualer.step(general_loss)
+    optimizer.step()
+    optimizer.zero_grad()
+    out = general_loss, loss_bcel, loss_mse, loss_dvt, loss_gausian_mse
+    return out
+
+
+def train_with_mixed_precision(accumulate_loss_batch_factor, clip_gradient, custom_loss, general_loss, loss_bcel,
+                               loss_dvt, loss_gausian_mse, loss_mse, model, optimizer, optimizer_scdualer, scaler,
+                               train_data_iterator):
     for _, data in zip(range(accumulate_loss_batch_factor), train_data_iterator):
         inputs, labels = data
         inputs = inputs.cuda().type(DATA_TYPE)
         with torch.cuda.amp.autocast():
             labels = [l.cuda().flatten().type(DATA_TYPE) for l in labels]
             # forward + backward + optimize
-            print(_, "*****",flush=True)
+            print(_, "*****", flush=True)
             outputs = model(inputs)
             outputs = [i.flatten() for i in outputs]
             cur_general_loss, cur_loss_bcel, cur_loss_mse, cur_loss_dvt, cur_loss_gausian_mse = custom_loss(outputs,
@@ -97,7 +145,6 @@ def batch_train(model, optimizer, custom_loss, train_data_iterator, clip_gradien
         #     if 'weight' in n:
         #         print('===========\ngradient:{}\n----------\n{}\n*\n{}'.format(n, p.grad.mean(),p.grad.mean()))
         # unscaling and clipping
-
     scaler.unscale_(optimizer)
     if clip_gradient is not None:
         torch.nn.utils.clip_grad_norm_(model.parameters(), clip_gradient)
@@ -107,7 +154,6 @@ def batch_train(model, optimizer, custom_loss, train_data_iterator, clip_gradien
     scaler.update()
     optimizer.zero_grad()
     out = general_loss, loss_bcel, loss_mse, loss_dvt, loss_gausian_mse
-
     return out
 
 
@@ -163,7 +209,8 @@ def train_network(config, model):
     else:
         learning_rate, loss_weights, sigma = 0.001, [1] * 3, 0.1  # default values
         dynamic_parameter_loss_genrator = getattr(dlpf, config.dynamic_learning_params_function)(config)
-    scaler = torch.cuda.amp.GradScaler(enabled=True)
+
+    scaler = torch.cuda.amp.GradScaler(enabled=True) if config.use_mixed_precision else None
     if DOCUMENT_ON_WANDB and WATCH_MODEL:
         wandb.watch(model, log='all', log_freq=1, log_graph=True)
     model_level_training_scadualer = model.train_random_subtree(
@@ -250,7 +297,7 @@ def evaluate_validation(config, custom_loss, model, validation_data_iterator):
             output_s = torch.nn.Sigmoid()(output[0])
             output_s = output_s.cpu().detach().numpy().squeeze().flatten()
         else:
-            output_s = torch.nn.Sigmoid()(output[1]+50)
+            output_s = torch.nn.Sigmoid()(output[1] + 50)
             output_s = output_s.cpu().detach().numpy().squeeze().flatten()
         if config.batch_counter % VALIDATION_EVALUATION_FREQUENCY == 0 or config.batch_counter % ACCURACY_EVALUATION_FREQUENCY == 0:
             validation_loss = custom_loss(output, valid_labels)
@@ -280,7 +327,8 @@ def get_data_generators(DVT_PCA_model, config):
                                                    batch_size=config.batch_size_train,
                                                    epoch_size=config.epoch_size * config.accumulate_loss_batch_factor,
                                                    window_size_ms=config.time_domain_shape,
-                                                   file_load=config.train_file_load, sample_ratio_to_shuffle=SAMPLE_RATIO_TO_SHUFFLE_TRAINING,
+                                                   file_load=config.train_file_load,
+                                                   sample_ratio_to_shuffle=SAMPLE_RATIO_TO_SHUFFLE_TRAINING,
                                                    DVT_PCA_model=DVT_PCA_model)
     print("loading data...validation", flush=True)
 
@@ -331,7 +379,7 @@ class SavingAndEvaluationScheduler():
         # ModelEvaluator.build_and_save(config=config, model=model)
 
     @staticmethod
-    def save_model(model, config:AttrDict):
+    def save_model(model, config: AttrDict):
         print('-----------------------------------------------------------------------------------------')
         print('finished epoch %d saving...\n     "%s"\n"' % (
             config.epoch_counter, config.model_filename.split('/')[-1]))
@@ -386,13 +434,13 @@ def load_and_train(config):
         train_network(config, model)
     finally:
         # pass
-        SavingAndEvaluationScheduler.flush_all(config,model)
+        SavingAndEvaluationScheduler.flush_all(config, model)
 
 
 def train_log(loss, step, epoch=None, learning_rate=None, sigma=None, weights=None, additional_str='', commit=False):
     general_loss, loss_bcel, loss_mse, loss_dvt, blur_loss = loss
     general_loss = float(general_loss.item())
-    print("train",flush=True)
+    print("train", flush=True)
 
     if DOCUMENT_ON_WANDB:
         log_dict = {"general loss %s" % additional_str: general_loss,
