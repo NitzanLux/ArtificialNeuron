@@ -50,7 +50,7 @@ def save_config(config, path: [str, None] = None):
 def surround_with_default_config_values(**kargs):
     ##default values can be overridden by kargs
     config = AttrDict(config_version=CURRENT_VERSION, input_window_size=300, prediction_length=1, num_segments=2 * 639,
-                      num_syn_types=1,use_mixed_precision=False,
+                      num_syn_types=1,use_mixed_precision=True,
                       include_spikes=True,
                       num_epochs=15000, epoch_size=5, batch_size_train=5, accumulate_loss_batch_factor=4,
                       batch_size_validation=300,
@@ -259,7 +259,7 @@ if __name__ == '__main__':
     for i in ['AdamW']:
         config_morpho_0 = config_factory(loss_function='focalbcel_mse_loss',
                                          dynamic_learning_params=False  # ,optimizer_type='RMSprop'
-                                         ,include_spikes=False,
+                                         ,include_spikes=False,use_mixed_precision=False,
                                          dynamic_learning_params_function="learning_parameters_iter_with_constant_weights",
                                          model_tag="%s_%s" % (configurations_name,i), optimizer_type=i,
                                          accumulate_loss_batch_factor=1, spike_probability=None, prediction_length=(6000-600)//2,
