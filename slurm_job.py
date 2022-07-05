@@ -18,7 +18,7 @@ DEFAULT_MEM = 65000
 # TODO: some time add ss-gpu.q also
 GPU_partition_argument_str = "-p ss-gpu.q,gpu.q"
 # GPU_partition_argument_str = "-p ss-gpu.q"
-# GPU_partition_argument_str = "-p gpu.q"
+GPU_partition_argument_str = "-p gpu.q"
 
 CPU_partition_argument_str = "-p ss.q,elsc.q"
 # CPU_partition_argument_str = "-p elsc.q"
