@@ -42,7 +42,7 @@ class FullNeuronNetwork(nn.Module):
                           self.dilation, groups=config.num_segments))
 
             first_channels_flag = False
-            layers_list.append(nn.BatchNorm1d(config.inner_scope_channel_number))
+            layers_list.append(nn.BatchNorm1d(self.channel_number[i]))
             layers_list.append(activation_function())
 
         first_channels_flag = True
