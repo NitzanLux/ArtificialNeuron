@@ -151,6 +151,8 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
         if config.model_path is None:
             if config.architecture_type == "DavidsNeuronNetwork":
                 model = davids_network.DavidsNeuronNetwork(config)
+            elif config.architecture_type == "FullNeuronNetwork":
+                model = fully_connected_temporal_seperated.FullNeuronNetwork(config)
             elif config.network_architecture_structure == "recursive":
                 L5PC = get_L5PC()
                 model = recursive_neuronal_model.RecursiveNeuronModel.build_david_data_model(config, L5PC)
@@ -161,6 +163,8 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
         else:
             if config.architecture_type == "DavidsNeuronNetwork":
                 model = davids_network.DavidsNeuronNetwork.load(config)
+            elif config.architecture_type == "FullNeuronNetwork":
+                model = fully_connected_temporal_seperated.FullNeuronNetwork(config)
             elif config.network_architecture_structure == "recursive":
                 L5PC = get_L5PC()
                 model = recursive_neuronal_model.RecursiveNeuronModel.build_david_data_model(config, L5PC)
