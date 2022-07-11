@@ -50,14 +50,14 @@ def save_config(config, path: [str, None] = None):
 def surround_with_default_config_values(**kargs):
     ##default values can be overridden by kargs
     config = AttrDict(config_version=CURRENT_VERSION, input_window_size=300, prediction_length=1, num_segments=2 * 639,
-                      num_syn_types=1,use_mixed_precision=True,
+                      num_syn_types=1,use_mixed_precision=False,
                       include_spikes=True,
                       num_epochs=15000, epoch_size=5, batch_size_train=5, accumulate_loss_batch_factor=4,
                       batch_size_validation=300,
-                      train_file_load=0.5, valid_file_load=0.5, spike_probability=0.5,
+                      train_file_load=0.5, valid_file_load=0.5, spike_probability=None,
                       # files_filter_regex=".*exBas_0_1100_inhBasDiff_-1100_600__exApic_0_1100_inhApicDiff_-1100_600_SpTemp[^\\/\.]*\.p",
                       files_filter_regex=".*", freeze_node_factor=0.4,
-                      optimizer_type="Adagrad", optimizer_params=dict(),clip_gradients_factor=1.5,  # optimizer_params={'eps':1e-8},
+                      optimizer_type="Adagrad", optimizer_params=dict(),clip_gradients_factor=2.5,  # optimizer_params={'eps':1e-8},
                       # lr_scheduler='CyclicLR',lr_scheduler_params=dict(max_lr=0.05,step_size_up=1000,base_lr=0.00003,cycle_momentum=True),
                       lr_scheduler='ReduceLROnPlateau',lr_scheduler_params=dict(factor=0.1,cooldown=300, threshold=1e-5,patience =1500,eps=6e-9),
                       # lr_scheduler=None,
@@ -77,6 +77,7 @@ def surround_with_default_config_values(**kargs):
                                  time_domain_shape=config.input_window_size,
                                  # kernel_size_2d=3,
                                  # kernel_size_1d=9,
+                                 kernel_sizes=[35]*7,number_of_layers_temp=7,number_of_layers_space=7,channel_number=[256]*7,
                                  number_of_layers_root=7, number_of_layers_leaf=10, number_of_layers_intersection=5,
                                  number_of_layers_branch_intersection=5,
                                  # david_layers=[55, 13, 13, 13, 13, 13, 13],
@@ -113,9 +114,7 @@ def load_config_file(path: str) -> AttrDict:
     with open(path, 'r') as file:
         config = json.loads(file.read())
     config = AttrDict(config)
-    config.lr_scheduler=None
-    config.constant_learning_rate=0.00007
-    config.optimizer_params=dict()
+    config.include_spikes=True
     # lr_scheduler_params = dict(factor=0.1, cooldown=100, threshold=1e-5, patience=750, eps=5e-9)
     if config.config_version < CURRENT_VERSION :
         config = surround_with_default_config_values(**config)
@@ -229,41 +228,13 @@ def restore_last_n_configs(n=10):
 
 if __name__ == '__main__':
     configs = []
-    # for i in [1,2.5,5,10]:
-    # config_morpho_0 =config_factory(loss_function='focalbcel_mse_loss',
-    #                                 dynamic_learning_params=False#,optimizer_type='RMSprop'
-    #                                 ,dynamic_learning_params_function="learning_parameters_iter_with_constant_weights", architecture_type="LAYERED_TEMPORAL_CONV",
-    #                 model_tag="heavy",optimizer_type='AdamW',
-    #                                  accumulate_loss_batch_factor=4,spike_probability=None,prediction_length=2000,
-    #                     batch_size_validation=200,batch_size_train=5,clip_gradients_factor=2.5,constant_learning_rate=0.005)
-    # config_morpho_1 =config_factory(#loss_function='focalbcel_mse_loss',
-    #                                 dynamic_learning_params=False#,optimizer_type='RMSprop'
-    #                                 ,dynamic_learning_params_function="learning_parameters_iter_with_constant_weights", architecture_type="LAYERED_TEMPORAL_CONV",
-    #                 model_tag="heavy",optimizer_type='AdamW',
-    #                                  accumulate_loss_batch_factor=4,spike_probability=None,prediction_length=1,
-    #                     batch_size_validation=200,batch_size_train=10,clip_gradients_factor=5,constant_learning_rate=0.005)
-    # configs.append(config_morpho_0)
-    # configs.append(config_morpho_1)
-    # for i in ['NAdam']:
-    #     config_morpho_0 = config_factory(loss_function='focalbcel_mse_loss',
-    #                                      dynamic_learning_params=False  # ,optimizer_type='RMSprop'
-    #                                      ,
-    #                                      dynamic_learning_params_function="learning_parameters_iter_with_constant_weights",
-    #                                      architecture_type="LAYERED_TEMPORAL_CONV",
-    #                                      model_tag="heavy", optimizer_type=i,
-    #                                      accumulate_loss_batch_factor=3, spike_probability=None, prediction_length=2000,
-    #                                      batch_size_validation=200, batch_size_train=5, clip_gradients_factor=2.5,
-    #                                      constant_learning_rate=0.005)
-    #     configs.extend(generate_config_files_multiple_seeds(config_morpho_0,2))
-    configurations_name = "narrow_last_layer_4"
+    configurations_name = "davids"
     for i in ['AdamW']:
         config_morpho_0 = config_factory(loss_function='focalbcel_mse_loss',
-                                         dynamic_learning_params=False  # ,optimizer_type='RMSprop'
-                                         ,include_spikes=False,use_mixed_precision=False,
-                                         dynamic_learning_params_function="learning_parameters_iter_with_constant_weights",
+                                         dynamic_learning_params=False,architecture_type='DavidsNeuronNetwork',
                                          model_tag="%s_%s" % (configurations_name,i), optimizer_type=i,
                                          accumulate_loss_batch_factor=1, spike_probability=None, prediction_length=(6000-600)//2,
-                                         batch_size_validation=64, batch_size_train=8, clip_gradients_factor=2.5,
+                                         batch_size_validation=64, batch_size_train=16,
                                          constant_learning_rate=0.001)
         # configs.append(config_morpho_0)
         configs.extend(generate_config_files_multiple_seeds(config_morpho_0, 2))

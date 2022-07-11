@@ -11,6 +11,7 @@ import configuration_factory
 import wandb
 from general_aid_function import *
 from neuron_network import davids_network
+from neuron_network import fully_connected_temporal_seperated
 from neuron_network import neuronal_model
 from neuron_network.node_network import recursive_neuronal_model
 from parameters_factories import dynamic_learning_parameters_factory as dlpf, loss_function_factory
@@ -247,6 +248,8 @@ def load_model(config):
     print("loading model...", flush=True)
     if config.architecture_type == "DavidsNeuronNetwork":
         model = davids_network.DavidsNeuronNetwork(config)
+    elif config.architecture_type == "FullNeuronNetwork":
+        model =fully_connected_temporal_seperated.FullNeuronNetwork(config)
     elif "network_architecture_structure" in config and config.network_architecture_structure == "recursive":
         model = recursive_neuronal_model.RecursiveNeuronModel.load(config)
     else:
