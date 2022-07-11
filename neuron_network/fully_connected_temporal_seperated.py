@@ -45,7 +45,7 @@ class FullNeuronNetwork(nn.Module):
             layers_list.append(activation_function())
 
         first_channels_flag = True
-        for i in range(self.number_of_layers):
+        for i in range(self.number_of_layers_space):
             layers_list.append(
                 nn.Conv1d(config.channel_input_number if first_channels_flag else config.inner_scope_channel_number,
                           config.inner_scope_channel_number, self.kernel_sizes[i] if self.number_of_layers_temp==0 else 1, self.stride, config.padding,
