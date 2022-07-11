@@ -24,7 +24,7 @@ class FullNeuronNetwork(nn.Module):
         self.activation_function_name = config["activation_function_name"]
         self.activation_function_kargs = config["activation_function_kargs"]
         self.channel_number = config.channel_number
-
+        self.input_shape=input_shape
         activation_function_base_function = getattr(nn, config["activation_function_name"])
         layers_list = []
         activation_function = lambda: (activation_function_base_function(
