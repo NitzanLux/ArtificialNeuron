@@ -103,6 +103,17 @@ class FullNeuronNetwork(nn.Module):
                               activation_function_kargs=self.activation_function_kargs),
                          state_dict), outp)
 
+    def cuda(self, **kwargs):
+        super(DavidsNeuronNetwork, self).cuda(**kwargs)
+        torch.cuda.synchronize()
+        self.is_cuda = True
+        return self
+
+    def cpu(self, **kwargs):
+        super(DavidsNeuronNetwork, self).cpu(**kwargs)
+        self.is_cuda = False
+        return self
+
     @staticmethod
     def load(path):
         neuronal_model = None
