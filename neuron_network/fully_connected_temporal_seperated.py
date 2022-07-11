@@ -103,13 +103,13 @@ class FullNeuronNetwork(nn.Module):
                               activation_function_kargs=self.activation_function_kargs),
                          state_dict), outp)
 
-    def cuda(self, **kwargs):
-        self.is_cuda = True
-        return super(FullNeuronNetwork, self).cuda(**kwargs)
-
-    def cpu(self, **kwargs):
-        self.is_cuda = False
-        return super(FullNeuronNetwork, self).cpu(**kwargs)
+    # def cuda(self, **kwargs):
+    #     self.is_cuda = True
+    #     return super(FullNeuronNetwork, self).cuda(**kwargs)
+    #
+    # def cpu(self, **kwargs):
+    #     self.is_cuda = False
+    #     return super(FullNeuronNetwork, self).cpu(**kwargs)
 
 
     @staticmethod
