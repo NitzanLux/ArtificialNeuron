@@ -8,6 +8,8 @@ from datetime import datetime
 from general_aid_function import *
 from get_neuron_modle import get_L5PC
 from neuron_network import davids_network
+from neuron_network import fully_connected_temporal_seperated
+
 from neuron_network import neuronal_model
 from neuron_network.node_network import recursive_neuronal_model
 from simulation_data_generator import *
