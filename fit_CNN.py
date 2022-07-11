@@ -298,7 +298,7 @@ def evaluate_validation(config, custom_loss, model, validation_data_iterator):
         valid_input = valid_input.cuda().type(DATA_TYPE)
         valid_labels = [l.cuda().type(DATA_TYPE) for l in valid_labels]
         output = model(valid_input)
-        target_s = valid_labels[0].cpu()
+        target_s = valid_labels[0].device('cpu')
         target_s=target_s.detach()
         target_s = target_s.numpy()
 
