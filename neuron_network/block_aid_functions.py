@@ -26,7 +26,7 @@ def keep_dimensions_by_padding_claculator(input_shape, kernel_size, stride, dila
         kernel_size = (kernel_size, kernel_size)
 
     kernel_size = np.array(kernel_size)
-    single_dim= isinstance(input_shape,int)
+    single_dim = isinstance(input_shape,int)
     if isinstance(input_shape, int):
         input_shape = (input_shape, input_shape)
     input_shape = np.array(input_shape)
