@@ -48,12 +48,12 @@ synapse_type = 'NMDA'
 include_DVT = False
 
 # for dibugging
-# BATCH_LOG_UPDATE_FREQ = 1
-# VALIDATION_EVALUATION_FREQUENCY=4
-# ACCURACY_EVALUATION_FREQUENCY = 4
-# BUFFER_SIZE_IN_FILES_VALID = 1
-# BUFFER_SIZE_IN_FILES_TRAINING = 1
-# DOCUMENT_ON_WANDB = False
+BATCH_LOG_UPDATE_FREQ = 1
+VALIDATION_EVALUATION_FREQUENCY=4
+ACCURACY_EVALUATION_FREQUENCY = 4
+BUFFER_SIZE_IN_FILES_VALID = 1
+BUFFER_SIZE_IN_FILES_TRAINING = 1
+DOCUMENT_ON_WANDB = False
 print('-----------------------------------------------')
 print('finding data')
 print('-----------------------------------------------', flush=True)
