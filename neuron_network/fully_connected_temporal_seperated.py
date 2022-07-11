@@ -24,7 +24,7 @@ class FullNeuronNetwork(nn.Module):
         self.activation_function_name = config["activation_function_name"]
         self.activation_function_kargs = config["activation_function_kargs"]
         self.channel_number = config.channel_number
-        self.input_shape=input_shape
+        self.input_window_size=self.input_window_size
         activation_function_base_function = getattr(nn, config["activation_function_name"])
         layers_list = []
         activation_function = lambda: (activation_function_base_function(
@@ -87,11 +87,13 @@ class FullNeuronNetwork(nn.Module):
     def save(self, path):  # todo fix
         state_dict = self.state_dict()
         with open('%s.pkl' % path, 'wb') as outp:
-            pickle.dump((dict(number_of_layers=self.number_of_layers, kernel_size=self.kernel_sizes,
+            pickle.dump((dict(number_of_layers_temp=self.number_of_layers_temp,number_of_layers_space=self.number_of_layers_space,
+                              kernel_sizes=self.kernel_sizes,num_segments=self.num_segments,
+                              input_window_size=self.input_window_size,channel_number=self.channel_number,
                               inner_scope_channel_number=self.inner_scope_channel_number,
                               channel_input_number=self.channel_input_number, stride=self.stride,
                               dilation=self.dilation, activation_function_name=self.activation_function_name,
-                              activation_function_kargs=self.activation_function_kargs, num_segments=self.num_segments),
+                              activation_function_kargs=self.activation_function_kargs),
                          state_dict), outp)
 
     def cuda(self, **kwargs):
