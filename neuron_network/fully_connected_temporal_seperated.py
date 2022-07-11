@@ -67,8 +67,8 @@ class FullNeuronNetwork(nn.Module):
         x = x.type(torch.cuda.DoubleTensor)
         out = self.model(x)
         out = self.last_layer(out)
-        out_v = self.v_fc(out)[:,:,self.input_shape[1]-1:]
-        out_s = self.s_fc(out)[:,:,self.input_shape[1]-1:]
+        out_v = self.v_fc(out)[:,:,self.input_window_size-1:]
+        out_s = self.s_fc(out)[:,:,self.input_window_size-1:]
         return out_s.squeeze(1), out_v.squeeze(1)
 
     def init_weights(self, sd=0.05):
