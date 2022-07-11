@@ -19,8 +19,8 @@ class FullNeuronNetwork(nn.Module):
             pass
         self.num_segments = config.num_segments
         self.kernel_sizes, self.stride, self.dilation = config.kernel_sizes, config.stride, config.dilation
-        self.number_of_layers_temp = len(config.temp_layers)
-        self.number_of_layers_space = len(config.space_layers)
+        self.number_of_layers_temp = config.number_of_layers_temp
+        self.number_of_layers_space = config.number_of_layers_space
         self.activation_function_name = config["activation_function_name"]
         self.activation_function_kargs = config["activation_function_kargs"]
         self.channel_number = config.channel_number
