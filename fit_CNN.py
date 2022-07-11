@@ -214,7 +214,8 @@ def train_network(config, model):
     scaler = torch.cuda.amp.GradScaler(enabled=True) if config.use_mixed_precision else None
     if DOCUMENT_ON_WANDB and WATCH_MODEL:
         wandb.watch(model, log='all', log_freq=1, log_graph=True)
-    model_level_training_scadualer = model.train_random_subtree(
+    if isinstance(model,RecursiveNeuronModel):
+        model_level_training_scadualer = model.train_random_subtree(
         config.freeze_node_factor if config.freeze_node_factor is not None else 0)
     print("start training...", flush=True)
     for epoch in range(config.num_epochs):
