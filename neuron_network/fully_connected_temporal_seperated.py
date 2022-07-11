@@ -61,7 +61,6 @@ class FullNeuronNetwork(nn.Module):
         self.model = nn.Sequential(*layers_list)
         self.v_fc = nn.Conv1d(1,1,1)
         self.s_fc = nn.Conv1d(1,1,1)
-        self.sigmoid = nn.Sigmoid()
         self.double()
 
     def forward(self, x):
@@ -90,8 +89,7 @@ class FullNeuronNetwork(nn.Module):
             pickle.dump((dict(number_of_layers_temp=self.number_of_layers_temp,number_of_layers_space=self.number_of_layers_space,
                               kernel_sizes=self.kernel_sizes,num_segments=self.num_segments,
                               input_window_size=self.input_window_size,channel_number=self.channel_number,
-                              inner_scope_channel_number=self.inner_scope_channel_number,
-                              channel_input_number=self.channel_input_number, stride=self.stride,
+                              stride=self.stride,
                               dilation=self.dilation, activation_function_name=self.activation_function_name,
                               activation_function_kargs=self.activation_function_kargs),
                          state_dict), outp)
