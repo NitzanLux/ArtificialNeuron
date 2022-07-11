@@ -36,8 +36,8 @@ class FullNeuronNetwork(nn.Module):
 
         for i in range(self.number_of_layers_temp):
             layers_list.append(
-                nn.Conv1d(config.num_segments,
-                          config.num_segments, self.kernel_sizes[i], self.stride, config.padding,
+                nn.Conv1d(self.num_segments,
+                          self.num_segments, self.kernel_sizes[i], self.stride, config.padding,
                           self.dilation,groups=config.num_segments))
 
             first_channels_flag = False
@@ -47,15 +47,15 @@ class FullNeuronNetwork(nn.Module):
         first_channels_flag = True
         for i in range(self.number_of_layers_space):
             layers_list.append(
-                nn.Conv1d(config.channel_input_number if first_channels_flag else config.inner_scope_channel_number,
-                          config.inner_scope_channel_number, self.kernel_sizes[i] if self.number_of_layers_temp==0 else 1, self.stride, config.padding,
+                nn.Conv1d(self.num_segments if first_channels_flag else self.channel_number[i-1] ,
+                          self.channel_number[i], self.kernel_sizes[i] if self.number_of_layers_temp==0 else 1, self.stride, config.padding,
                           self.dilation))
 
             first_channels_flag = False
-            layers_list.append(nn.BatchNorm1d(config.inner_scope_channel_number))
+            layers_list.append(nn.BatchNorm1d(self.channel_number[i]))
             layers_list.append(activation_function())
 
-        self.last_layer = nn.Conv1d(config.inner_scope_channel_number, 1, self.kernel_sizes[-1], self.stride,
+        self.last_layer = nn.Conv1d(self.channel_number[-1], 1, self.kernel_sizes[-1], self.stride,
                                     config.padding, self.dilation)
         layers_list.append(activation_function())
         self.model = nn.Sequential(*layers_list)
