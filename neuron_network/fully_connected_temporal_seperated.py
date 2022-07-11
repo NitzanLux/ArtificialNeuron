@@ -7,7 +7,7 @@ from project_path import MODELS_DIR
 from synapse_tree import SectionNode, SectionType
 import os
 from enum import Enum
-from neuron_network.block_aid_functions import Conv1dOnNdData,keep_dimensions_by_padding_claculator
+from neuron_network.block_aid_functions import Conv1dOnNdData, keep_dimensions_by_padding_claculator
 import torch.nn as nn
 import copy
 
@@ -24,52 +24,59 @@ class FullNeuronNetwork(nn.Module):
         self.activation_function_name = config["activation_function_name"]
         self.activation_function_kargs = config["activation_function_kargs"]
         self.channel_number = config.channel_number
-        self.input_window_size=config.input_window_size
+        self.input_window_size = config.input_window_size
         activation_function_base_function = getattr(nn, config["activation_function_name"])
         layers_list = []
         activation_function = lambda: (activation_function_base_function(
             **config["activation_function_kargs"]))  # unknown bug
 
-
-        if isinstance(self.channel_number,int):
-            self.channel_number = [self.channel_number]*self.number_of_layers_space
+        if isinstance(self.channel_number, int):
+            self.channel_number = [self.channel_number] * self.number_of_layers_space
 
         for i in range(self.number_of_layers_temp):
+            padding_factor = keep_dimensions_by_padding_claculator(self.input_window_size, self.kernel_sizes[i], self.stride,
+                                                                   self.dilation)
             layers_list.append(
                 nn.Conv1d(self.num_segments,
-                          self.num_segments, self.kernel_sizes[i], self.stride, config.padding,
-                          self.dilation,groups=config.num_segments))
+                          self.num_segments, self.kernel_sizes[i], self.stride, padding_factor,
+                          self.dilation, groups=config.num_segments))
 
             first_channels_flag = False
             layers_list.append(nn.BatchNorm1d(config.inner_scope_channel_number))
             layers_list.append(activation_function())
 
         first_channels_flag = True
-        for i in range(self.number_of_layers_space):
+        for i in range(self.number_of_layers_space-1):
+            padding_factor = keep_dimensions_by_padding_claculator(
+                self.input_window_size,
+                self.kernel_sizes[i] if self.number_of_layers_temp == 0 else 1, self.stride, self.dilation)
+
             layers_list.append(
-                nn.Conv1d(self.num_segments if first_channels_flag else self.channel_number[i-1] ,
-                          self.channel_number[i], self.kernel_sizes[i] if self.number_of_layers_temp==0 else 1, self.stride, config.padding,
+                nn.Conv1d(self.num_segments if first_channels_flag else self.channel_number[i - 1],
+                          self.channel_number[i], self.kernel_sizes[i] if self.number_of_layers_temp == 0 else 1,
+                          self.stride, padding_factor,
                           self.dilation))
 
             first_channels_flag = False
             layers_list.append(nn.BatchNorm1d(self.channel_number[i]))
             layers_list.append(activation_function())
 
+        padding_factor = keep_dimensions_by_padding_claculator(
+            self.input_window_size, self.kernel_sizes[-1], self.stride, self.dilation)
         self.last_layer = nn.Conv1d(self.channel_number[-1], 1, self.kernel_sizes[-1], self.stride,
-                                    config.padding, self.dilation)
+                                    padding_factor, self.dilation)
         layers_list.append(activation_function())
         self.model = nn.Sequential(*layers_list)
-        self.v_fc = nn.Conv1d(1,1,1)
-        self.s_fc = nn.Conv1d(1,1,1)
+        self.v_fc = nn.Conv1d(1, 1, 1)
+        self.s_fc = nn.Conv1d(1, 1, 1)
         self.double()
-
 
     def forward(self, x):
         x = x.type(torch.cuda.DoubleTensor)
         out = self.model(x)
         out = self.last_layer(out)
-        out_v = self.v_fc(out)[:,:,self.input_window_size-1-x.shape[2]+out.shape[2]:]
-        out_s = self.s_fc(out)[:,:,self.input_window_size-1-x.shape[2]+out.shape[2]:]
+        out_v = self.v_fc(out)[:, :, self.input_window_size - 1 :]
+        out_s = self.s_fc(out)[:, :, self.input_window_size - 1:]
         return out_s.squeeze(1), out_v.squeeze(1)
 
     def init_weights(self, sd=0.05):
@@ -87,14 +94,14 @@ class FullNeuronNetwork(nn.Module):
     def save(self, path):  # todo fix
         state_dict = self.state_dict()
         with open('%s.pkl' % path, 'wb') as outp:
-            pickle.dump((dict(number_of_layers_temp=self.number_of_layers_temp,number_of_layers_space=self.number_of_layers_space,
-                              kernel_sizes=self.kernel_sizes,num_segments=self.num_segments,
-                              input_window_size=self.input_window_size,channel_number=self.channel_number,
+            pickle.dump((dict(number_of_layers_temp=self.number_of_layers_temp,
+                              number_of_layers_space=self.number_of_layers_space,
+                              kernel_sizes=self.kernel_sizes, num_segments=self.num_segments,
+                              input_window_size=self.input_window_size, channel_number=self.channel_number,
                               stride=self.stride,
                               dilation=self.dilation, activation_function_name=self.activation_function_name,
                               activation_function_kargs=self.activation_function_kargs),
                          state_dict), outp)
-
 
     @staticmethod
     def load(path):
