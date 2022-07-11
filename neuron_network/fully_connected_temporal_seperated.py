@@ -105,11 +105,11 @@ class FullNeuronNetwork(nn.Module):
 
     def cuda(self, **kwargs):
         self.is_cuda = True
-        return super(DavidsNeuronNetwork, self).cuda(**kwargs)
+        return super(FullNeuronNetwork, self).cuda(**kwargs)
 
     def cpu(self, **kwargs):
         self.is_cuda = False
-        return super(DavidsNeuronNetwork, self).cpu(**kwargs)
+        return super(FullNeuronNetwork, self).cpu(**kwargs)
 
 
     @staticmethod
