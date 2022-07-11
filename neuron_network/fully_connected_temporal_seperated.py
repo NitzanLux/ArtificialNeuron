@@ -64,7 +64,7 @@ class FullNeuronNetwork(nn.Module):
         self.double()
 
     def forward(self, x):
-        x = x.type(torch.cuda.DoubleTensor) if self.is_cuda else x.type(torch.DoubleTensor)
+        x = x.type(torch.cuda.DoubleTensor)
         out = self.model(x)
         out = self.last_layer(out)
         out_v = self.v_fc(out)[:,:,self.input_shape[1]-1:]
@@ -94,14 +94,6 @@ class FullNeuronNetwork(nn.Module):
                               activation_function_kargs=self.activation_function_kargs),
                          state_dict), outp)
 
-    def cuda(self, **kwargs):
-        super(FullNeuronNetwork, self).cuda(**kwargs)
-        torch.cuda.synchronize()
-        self.is_cuda = True
-
-    def cpu(self, **kwargs):
-        super(FullNeuronNetwork, self).cpu(**kwargs)
-        self.is_cuda = False
 
     @staticmethod
     def load(path):
