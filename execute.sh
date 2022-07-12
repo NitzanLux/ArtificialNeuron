@@ -5,8 +5,8 @@
 # Ask for one CPU, one GPU, enter the GPU queue, and limit run to 1 days
 #SBATCH -c 1
 #SBATCH -t 1-0
-#SBATCH -p ss-gpu.q
-#SBATCH --gres=gpu:1
+#SBATCH -p cpu.q
+#SBATCH --gres=cpu:1
 # check if script is started via SLURM or bash
 # if with SLURM: there variable '$SLURM_JOB_ID' will exist
 # `if [ -n $SLURM_JOB_ID ]` checks if $SLURM_JOB_ID is not an empty string
@@ -21,4 +21,4 @@ fi
 path=$(dirname $SCRIPT_PATH)
 
 # put your script here - example script is sitting with this bash script
-python3 $path/fit_CNN.py "models/NMDA/gaussian_train_NMDA_Tree_TCN__2021-10-10__09_32__ID_73440/gaussian_train_NMDA_Tree_TCN__2021-10-10__09_32__ID_73440.config" $SLURM_JOB_ID
+conda update --prefix /ems/elsc-labs/segev-i/nitzan.luxembourg/anaconda3 anaconda
