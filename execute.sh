@@ -21,4 +21,4 @@ fi
 path=$(dirname $SCRIPT_PATH)
 
 # put your script here - example script is sitting with this bash script
-python3 conda update --prefix /ems/elsc-labs/segev-i/nitzan.luxembourg/anaconda3 anaconda 2>&1 | tee "conda_config_update.txt"
+conda update --prefix /ems/elsc-labs/segev-i/nitzan.luxembourg/anaconda3 anaconda 2>&1 | tee "conda_config_update.txt"
