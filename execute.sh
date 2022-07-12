@@ -6,6 +6,7 @@
 #SBATCH -c 1
 #SBATCH -t 1-0
 #SBATCH -p ss.q,elsc.q
+
 # check if script is started via SLURM or bash
 # if with SLURM: there variable '$SLURM_JOB_ID' will exist
 # `if [ -n $SLURM_JOB_ID ]` checks if $SLURM_JOB_ID is not an empty string
@@ -20,4 +21,4 @@ fi
 path=$(dirname $SCRIPT_PATH)
 
 # put your script here - example script is sitting with this bash script
-conda update --prefix /ems/elsc-labs/segev-i/nitzan.luxembourg/anaconda3 anaconda
+python3 conda update --prefix /ems/elsc-labs/segev-i/nitzan.luxembourg/anaconda3 anaconda 2>&1 | tee "conda_config_update.txt"
