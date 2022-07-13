@@ -20,4 +20,4 @@ fi
 path=$(dirname $SCRIPT_PATH)
 
 # put your script here - example script is sitting with this bash script
-conda update --prefix /ems/elsc-labs/segev-i/nitzan.luxembourg/anaconda3 anaconda
+conda update anaconda
