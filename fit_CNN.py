@@ -49,7 +49,7 @@ synapse_type = 'NMDA'
 include_DVT = False
 
 # for dibugging
-os.environ["CUDA_LAUNCH_BLOCKING"] = 1
+os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
 # BATCH_LOG_UPDATE_FREQ = 1
 # VALIDATION_EVALUATION_FREQUENCY=4
 # ACCURACY_EVALUATION_FREQUENCY = 4
