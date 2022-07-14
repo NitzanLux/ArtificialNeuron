@@ -1,4 +1,5 @@
 import argparse
+import os
 from copy import copy
 import matplotlib.pyplot as plt
 import sklearn.metrics as skm
@@ -48,6 +49,7 @@ synapse_type = 'NMDA'
 include_DVT = False
 
 # for dibugging
+os.environ["CUDA_LAUNCH_BLOCKING"] = 1
 # BATCH_LOG_UPDATE_FREQ = 1
 # VALIDATION_EVALUATION_FREQUENCY=4
 # ACCURACY_EVALUATION_FREQUENCY = 4
