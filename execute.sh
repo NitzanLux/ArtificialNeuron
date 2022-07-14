@@ -20,4 +20,5 @@ fi
 path=$(dirname $SCRIPT_PATH)
 
 # put your script here - example script is sitting with this bash script
-pip install -r requirements.txt --upgrade
+pip install wandb --upgrade
+
