@@ -298,24 +298,24 @@ def evaluate_validation(config, custom_loss, model, validation_data_iterator):
         valid_input = valid_input.cuda().type(DATA_TYPE)
         valid_labels = [l.cuda().type(DATA_TYPE) for l in valid_labels]
         output = model(valid_input)
-        target_s = valid_labels[0].cpu()
-        target_s=target_s.detach()
+        target_s = valid_labels[0].detach().cpu()
+        target_s=target_s
         target_s = target_s.numpy()
 
         target_s=target_s.astype(bool).squeeze().flatten()
         if config.include_spikes:
             output_s = torch.nn.Sigmoid()(output[0])
-            output_s = output_s.cpu().detach().numpy().squeeze().flatten()
+            output_s = output_s.detach().cpu().numpy().squeeze().flatten()
         else:
             output_s = torch.nn.Sigmoid()(output[1] + 50)
-            output_s = output_s.cpu().detach().numpy().squeeze().flatten()
+            output_s = output_s.detach().cpu().numpy().squeeze().flatten()
         if config.batch_counter % VALIDATION_EVALUATION_FREQUENCY == 0 or config.batch_counter % ACCURACY_EVALUATION_FREQUENCY == 0:
             validation_loss = custom_loss(output, valid_labels)
             train_log(validation_loss, config.batch_counter, None,
                       additional_str="validation", commit=False)
 
-            target_v = valid_labels[1].cpu().detach().numpy().squeeze().flatten()
-            output_v = output[1].cpu().detach().numpy().squeeze().flatten()
+            target_v = valid_labels[1].detach().cpu().numpy().squeeze().flatten()
+            output_v = output[1].detach().cpu().numpy().squeeze().flatten()
             log_dict = {"brier score(s) validation": skm.brier_score_loss(target_s, output_s),
                         "R squared score(v) validation": skm.r2_score(target_v, output_v)}
             wandb.log(log_dict, step=config.batch_counter, commit=False)  # add training parameters per step
