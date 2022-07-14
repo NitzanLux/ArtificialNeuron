@@ -299,6 +299,7 @@ def evaluate_validation(config, custom_loss, model, validation_data_iterator):
     valid_input = valid_input.cuda().type(DATA_TYPE)
     valid_labels = [l.cuda().type(DATA_TYPE) for l in valid_labels]
     with torch.no_grad():
+        print(valid_input.shape)
         output = model(valid_input)
     target_s = valid_labels[0].detach().cpu()
     target_s=target_s
