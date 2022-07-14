@@ -40,8 +40,6 @@ class FullNeuronNetwork(nn.Module):
                 nn.Conv1d(self.num_segments,
                           self.num_segments, self.kernel_sizes[i], self.stride, padding_factor,
                           self.dilation, groups=config.num_segments))
-
-            first_channels_flag = False
             layers_list.append(nn.BatchNorm1d(self.channel_number[i]))
             layers_list.append(activation_function())
 
@@ -63,8 +61,9 @@ class FullNeuronNetwork(nn.Module):
 
         padding_factor = keep_dimensions_by_padding_claculator(
             self.input_window_size, self.kernel_sizes[-1], self.stride, self.dilation)
-        self.last_layer = nn.Conv1d(self.channel_number[-1], 1, self.kernel_sizes[-1], self.stride,
+        last_layer = nn.Conv1d(self.channel_number[-1], 1, self.kernel_sizes[-1], self.stride,
                                     padding_factor, self.dilation)
+        layers_list.append(last_layer)
         layers_list.append(activation_function())
         self.model = nn.Sequential(*layers_list)
         self.v_fc = nn.Conv1d(1, 1, 1)
@@ -74,7 +73,6 @@ class FullNeuronNetwork(nn.Module):
     def forward(self, x):
         x = x.type(torch.cuda.DoubleTensor)
         out = self.model(x)
-        out = self.last_layer(out)
         out_v = self.v_fc(out)[:, :, self.input_window_size - 1 :]
         out_s = self.s_fc(out)[:, :, self.input_window_size - 1:]
         return out_s.squeeze(1), out_v.squeeze(1)
