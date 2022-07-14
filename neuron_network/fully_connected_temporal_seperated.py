@@ -64,7 +64,7 @@ class FullNeuronNetwork(nn.Module):
         last_layer = nn.Conv1d(self.channel_number[-1], 1, self.kernel_sizes[-1], self.stride,
                                     padding_factor, self.dilation)
         layers_list.append(last_layer)
-        layers_list.append(activation_function())
+        # layers_list.append(activation_function())
         self.model = nn.Sequential(*layers_list)
         self.v_fc = nn.Conv1d(1, 1, 1)
         self.s_fc = nn.Conv1d(1, 1, 1)
