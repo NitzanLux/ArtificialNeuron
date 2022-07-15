@@ -235,7 +235,7 @@ def restore_last_n_configs(n=10):
 
 
 if __name__ == '__main__':
-    restore_last_n_configs()
+    restore_last_n_configs(100)
     # configs = []
     # configurations_name = "davids"
     # for i in ['AdamW']:
