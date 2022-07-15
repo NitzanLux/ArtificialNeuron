@@ -213,6 +213,7 @@ def load_config_file_from_wandb_yml(configs_names):
     if isinstance(configs_names,str):
         configs_names=[configs_names]
     for config_name in configs_names:
+        print(os.path.join("wandb",config_name,'files','config.yaml'))
         with open(os.path.join("wandb",config_name,'files','config.yaml')) as file:
             cur_config = yaml.load(file,Loader=yaml.FullLoader)
         new_config=dict()
