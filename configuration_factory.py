@@ -115,7 +115,7 @@ def load_config_file(path: str) -> AttrDict:
         path += '.config'
     with open(path, 'r') as file:
         file_s=file.read()
-    print(file_s,flush=True)
+    print("*********************************",file_s,flush=True)
     config = json.loads(file_s)
     config = AttrDict(config)
     config.include_spikes=True
