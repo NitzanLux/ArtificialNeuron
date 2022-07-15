@@ -115,7 +115,6 @@ def load_config_file(path: str) -> AttrDict:
         path += '.config'
     with open(path, 'r') as file:
         file_s=file.read()
-    print("*********************************",file_s,flush=True)
     config = json.loads(file_s)
     config = AttrDict(config)
     config.include_spikes=True
@@ -235,18 +234,19 @@ def restore_last_n_configs(n=10):
 
 
 if __name__ == '__main__':
-    configs = []
-    configurations_name = "davids"
-    for i in ['AdamW']:
-        config_morpho_0 = config_factory(loss_function='focalbcel_mse_loss',
-                                         dynamic_learning_params=False,architecture_type='FullNeuronNetwork',
-                                         model_tag="%s_%s" % (configurations_name,i), optimizer_type=i,
-                                         accumulate_loss_batch_factor=1, spike_probability=None, prediction_length=(6000-600)//2,
-                                         batch_size_validation=32, batch_size_train=16,
-                                         constant_learning_rate=0.001)
-        # configs.append(config_morpho_0)
-        configs.extend(generate_config_files_multiple_seeds(config_morpho_0, 2))
-    with open(os.path.join(MODELS_DIR, "%s.json" % configurations_name), 'w') as file:
-        file.write(json.dumps(configs))  # use `json.loads` to do the reverse
-        # file.write(json.dumps([config_morpho_0]))  # use `json.loads` to do the reverse
+    restore_last_n_configs()
+    # configs = []
+    # configurations_name = "davids"
+    # for i in ['AdamW']:
+    #     config_morpho_0 = config_factory(loss_function='focalbcel_mse_loss',
+    #                                      dynamic_learning_params=False,architecture_type='FullNeuronNetwork',
+    #                                      model_tag="%s_%s" % (configurations_name,i), optimizer_type=i,
+    #                                      accumulate_loss_batch_factor=1, spike_probability=None, prediction_length=(6000-600)//2,
+    #                                      batch_size_validation=32, batch_size_train=16,
+    #                                      constant_learning_rate=0.001)
+    #     # configs.append(config_morpho_0)
+    #     configs.extend(generate_config_files_multiple_seeds(config_morpho_0, 2))
+    # with open(os.path.join(MODELS_DIR, "%s.json" % configurations_name), 'w') as file:
+    #     file.write(json.dumps(configs))  # use `json.loads` to do the reverse
+    #     # file.write(json.dumps([config_morpho_0]))  # use `json.loads` to do the reverse
 
