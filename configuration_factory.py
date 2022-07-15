@@ -114,8 +114,9 @@ def load_config_file(path: str) -> AttrDict:
     if path[-len('.config'):] != '.config':
         path += '.config'
     with open(path, 'r') as file:
-        print(file.read(),flush=True)
-        config = json.loads(file.read())
+        file_s=file.read()
+    print(file_s,flush=True)
+    config = json.loads(file_s)
     config = AttrDict(config)
     config.include_spikes=True
     # lr_scheduler_params = dict(factor=0.1, cooldown=100, threshold=1e-5, patience=750, eps=5e-9)
