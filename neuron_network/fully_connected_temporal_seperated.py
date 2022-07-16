@@ -40,7 +40,7 @@ class FullNeuronNetwork(nn.Module):
                 nn.Conv1d(self.num_segments,
                           self.num_segments, self.kernel_sizes[i], self.stride, padding_factor,
                           self.dilation, groups=config.num_segments))
-            layers_list.append(nn.BatchNorm1d(self.channel_number[i]))
+            layers_list.append(nn.BatchNorm1d(self.num_segments))
             layers_list.append(activation_function())
 
         first_channels_flag = True
