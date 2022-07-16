@@ -95,6 +95,7 @@ def train_without_mixed_precision(accumulate_loss_batch_factor, clip_gradient, c
                                   loss_dvt, loss_gausian_mse, loss_mse, model, optimizer, optimizer_scdualer,
                                   train_data_iterator):
     for _, data in zip(range(accumulate_loss_batch_factor), train_data_iterator):
+        torch.cuda.empty_cache()
         inputs, labels = data
         inputs = inputs.cuda().type(DATA_TYPE)
         labels = [l.cuda().flatten().type(DATA_TYPE) for l in labels]
