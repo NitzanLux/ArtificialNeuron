@@ -118,6 +118,8 @@ def load_config_file(path: str) -> AttrDict:
     config = json.loads(file_s)
     config = AttrDict(config)
     config.include_spikes=True
+    config.batch_size_train=8
+    config.accumulate_loss_batch_factor=2
     # lr_scheduler_params = dict(factor=0.1, cooldown=100, threshold=1e-5, patience=750, eps=5e-9)
     if config.config_version < CURRENT_VERSION :
         config = surround_with_default_config_values(**config)
