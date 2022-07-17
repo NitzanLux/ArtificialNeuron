@@ -79,7 +79,7 @@ def surround_with_default_config_values(**kargs):
                                  time_domain_shape=config.input_window_size,
                                  # kernel_size_2d=3,
                                  # kernel_size_1d=9,
-                                 kernel_sizes=[33]*7,number_of_layers_temp=7,number_of_layers_space=7,channel_number=[256]+[52]*7,
+                                 kernel_sizes=[33]*7,number_of_layers_temp=7,number_of_layers_space=8,channel_number=[1024]+[512]+[256]*6,
                                  number_of_layers_root=7, number_of_layers_leaf=10, number_of_layers_intersection=5,
                                  number_of_layers_branch_intersection=5,
                                  # david_layers=[55, 13, 13, 13, 13, 13, 13],
@@ -122,9 +122,9 @@ def load_config_file(path: str) -> AttrDict:
     # config.accumulate_loss_batch_factor=4
     # config.prediction_length = (6000 - 600) // 4
     # lr_scheduler_params = dict(factor=0.1, cooldown=100, threshold=1e-5, patience=750, eps=5e-9)
-    # config.lr_scheduler_params=dict()
-    # config.lr_scheduler=None
-    # config.constant_learning_rate=0.0007
+    config.lr_scheduler_params=dict()
+    config.lr_scheduler=None
+    config.constant_learning_rate=0.0007
     if config.config_version < CURRENT_VERSION :
         config = surround_with_default_config_values(**config)
     return config
