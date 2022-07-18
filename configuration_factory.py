@@ -119,12 +119,13 @@ def load_config_file(path: str) -> AttrDict:
     config = AttrDict(config)
     # config.include_spikes=True
     # config.batch_size_train=4
-    # config.accumulate_loss_batch_factor=4
+    config.accumulate_loss_batch_factor=2
     # config.prediction_length = (6000 - 600) // 4
     # lr_scheduler_params = dict(factor=0.1, cooldown=100, threshold=1e-5, patience=750, eps=5e-9)
-    config.lr_scheduler_params=dict()
-    config.lr_scheduler=None
-    config.constant_learning_rate=0.0007
+    # config.lr_scheduler_params=dict()
+    # config.lr_scheduler=None
+    # config.constant_learning_rate=0.0007
+    config.batch_size_train = 8
     if config.config_version < CURRENT_VERSION :
         config = surround_with_default_config_values(**config)
     return config
