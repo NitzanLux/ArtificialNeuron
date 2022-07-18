@@ -107,7 +107,7 @@ class RecursiveNeuronModel(nn.Module):
             intersection_class = glu_net_skip.IntersectionBlockSkipConnections
             root_class = glu_net_skip.RootBlockSkipConnections
         else:
-            assert False, "type is not known"
+            assert False, "type is not known type: %s"%architecture_type
 
         if self.model_type == SectionType.BRANCH:
             # self.upstream_data = None
