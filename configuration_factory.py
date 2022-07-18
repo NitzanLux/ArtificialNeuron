@@ -122,9 +122,9 @@ def load_config_file(path: str) -> AttrDict:
     # config.accumulate_loss_batch_factor=4
     # config.prediction_length = (6000 - 600) // 4
     # lr_scheduler_params = dict(factor=0.1, cooldown=100, threshold=1e-5, patience=750, eps=5e-9)
-    # config.lr_scheduler_params=dict()
-    # config.lr_scheduler=None
-    # config.constant_learning_rate=0.0007
+    config.lr_scheduler_params=dict()
+    config.lr_scheduler=None
+    config.constant_learning_rate=0.0007
     if config.config_version < CURRENT_VERSION :
         config = surround_with_default_config_values(**config)
     return config
@@ -243,14 +243,14 @@ def restore_last_n_configs(n=10):
 if __name__ == '__main__':
     # restore_last_n_configs(100)
     configs = []
-    configurations_name = "narrow"
+    configurations_name = "tempspace"
     for i in ['AdamW']:
         config_morpho_0 = config_factory(loss_function='focalbcel_mse_loss',
                                          dynamic_learning_params=False,
-                                         # architecture_type='FullNeuronNetwork',
-                                         architecture_type='LAYERED_TEMPORAL_CONV_N',
-                                         model_tag="%s_%s" % (configurations_name,i), optimizer_type=i,
-                                         accumulate_loss_batch_factor=1, spike_probability=None, prediction_length=(6000-600)//8,
+                                         architecture_type='FullNeuronNetwork',
+                                         # architecture_type='LAYERED_TEMPORAL_CONV_N',
+                                         model_tag="%s_%s" % (configurations_name,i), optimizer_type=i,clip_gradients_factor=0.95,
+                                         accumulate_loss_batch_factor=1, spike_probability=None, prediction_length=(6000-600)//2,
                                          batch_size_validation=32, batch_size_train=16,
                                          constant_learning_rate=0.001)
         # configs.append(config_morpho_0)
