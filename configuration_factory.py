@@ -248,7 +248,7 @@ if __name__ == '__main__':
         config_morpho_0 = config_factory(loss_function='focalbcel_mse_loss',
                                          dynamic_learning_params=False,
                                          # architecture_type='FullNeuronNetwork',
-                                         architecture_type='recursive',
+                                         architecture_type='LAYERED_TEMPORAL_CONV_N',
                                          model_tag="%s_%s" % (configurations_name,i), optimizer_type=i,
                                          accumulate_loss_batch_factor=1, spike_probability=None, prediction_length=(6000-600)//2,
                                          batch_size_validation=32, batch_size_train=16,
