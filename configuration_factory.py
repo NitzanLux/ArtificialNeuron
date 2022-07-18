@@ -61,7 +61,7 @@ def surround_with_default_config_values(**kargs):
                       files_filter_regex=".*", freeze_node_factor=0.4,
                       optimizer_type="Adagrad", optimizer_params=dict(),clip_gradients_factor=2.5,  # optimizer_params={'eps':1e-8},
                       # lr_scheduler='CyclicLR',lr_scheduler_params=dict(max_lr=0.05,step_size_up=1000,base_lr=0.00003,cycle_momentum=True),
-                      lr_scheduler='ReduceLROnPlateau',lr_scheduler_params=dict(factor=0.1,cooldown=300, threshold=1e-5,patience =1500,eps=6e-9),
+                      lr_scheduler='ReduceLROnPlateau',lr_scheduler_params=dict(factor=0.1,cooldown=300,patience =3000,eps=1e-6, threshold=1e-2),
                       # lr_scheduler=None,
                       # scheduler_cooldown_factor=150,
                       batch_counter=0, epoch_counter=0,  # default counter
@@ -122,9 +122,9 @@ def load_config_file(path: str) -> AttrDict:
     # config.accumulate_loss_batch_factor=4
     # config.prediction_length = (6000 - 600) // 4
     # lr_scheduler_params = dict(factor=0.1, cooldown=100, threshold=1e-5, patience=750, eps=5e-9)
-    config.lr_scheduler_params=dict()
-    config.lr_scheduler=None
-    config.constant_learning_rate=0.0007
+    # config.lr_scheduler_params=dict()
+    # config.lr_scheduler=None
+    # config.constant_learning_rate=0.0007
     if config.config_version < CURRENT_VERSION :
         config = surround_with_default_config_values(**config)
     return config
