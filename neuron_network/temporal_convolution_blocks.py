@@ -21,7 +21,7 @@ SYNAPSE_DIMENTION_POSITION = 1
 
 
 class Base1DConvolutionBlockLayer(nn.Module):
-    def __init__(self, in_channels, out_channels, kernel_size, stride, padding, dilation, activation_function,dropout_factor):
+    def __init__(self, in_channels, out_channels, kernel_size, stride, dilation, activation_function,dropout_factor):
         super(Base1DConvolutionBlockLayer, self).__init__()
         self.conv1d = CausalConv1d(in_channels, out_channels, kernel_size, stride, padding, dilation)
         self.activation_function = activation_function()
@@ -44,7 +44,6 @@ class Base1DConvolutionBlock(nn.Module):
                  , channel_output_number, kernel_size, stride=1,
                  dilation=1,dropout_factor=None, skip_connections=False):
         super(Base1DConvolutionBlock, self).__init__()
-        padding = keep_dimensions_by_padding_claculator(input_shape[1], kernel_size, stride, dilation)
         self.layers_list = nn.ModuleList()
         self.skip_connections = skip_connections
         if inner_scope_channel_number is None:
@@ -56,7 +55,6 @@ class Base1DConvolutionBlock(nn.Module):
         else:
             self.channel_output_number = channel_output_number
         self.channel_input_number = input_shape[0]
-        # self.batch_norm = nn.BatchNorm1d(input_shape[0])#todo debugging
 
         for i in range(number_of_layers):
             in_channels, out_channels = self.channel_input_number, self.inner_scope_channel_number
@@ -64,7 +62,7 @@ class Base1DConvolutionBlock(nn.Module):
                 in_channels = self.inner_scope_channel_number
             if i == number_of_layers - 1:
                 out_channels = self.channel_output_number
-            model = Base1DConvolutionBlockLayer(in_channels, out_channels, kernel_size, stride, padding, dilation,
+            model = Base1DConvolutionBlockLayer(in_channels, out_channels, kernel_size, stride, dilation,
                                                 activation_function,dropout_factor)
             self.layers_list.append(model)
 
