@@ -79,7 +79,7 @@ def surround_with_default_config_values(**kargs):
                                  time_domain_shape=config.input_window_size,
                                  # kernel_size_2d=3,
                                  # kernel_size_1d=9,
-                                 kernel_sizes=[53]+[11]*6,number_of_layers_temp=0,number_of_layers_space=7,channel_number=[128]*7,
+                                 kernel_sizes=[53]+[11]*6,number_of_layers_temp=7,number_of_layers_space=7,channel_number=[128]*7,
                                  number_of_layers_root=7, number_of_layers_leaf=10, number_of_layers_intersection=5,
                                  number_of_layers_branch_intersection=5,
                                  # david_layers=[55, 13, 13, 13, 13, 13, 13],
@@ -243,12 +243,12 @@ def restore_last_n_configs(n=10):
 if __name__ == '__main__':
     # restore_last_n_configs(100)
     configs = []
-    configurations_name = "narrow"
+    configurations_name = "spactemp"
     for i in ['AdamW']:
         config_morpho_0 = config_factory(loss_function='focalbcel_mse_loss',
                                          dynamic_learning_params=False,
-                                         # architecture_type='FullNeuronNetwork',
-                                         architecture_type='LAYERED_TEMPORAL_CONV_N',
+                                         architecture_type='FullNeuronNetwork',
+                                         # architecture_type='LAYERED_TEMPORAL_CONV_N',
                                          model_tag="%s_%s" % (configurations_name,i), optimizer_type=i,
                                          accumulate_loss_batch_factor=1, spike_probability=None, prediction_length=(6000-600)//2,
                                          batch_size_validation=32, batch_size_train=16,
