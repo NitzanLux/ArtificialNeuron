@@ -7,7 +7,7 @@ from project_path import MODELS_DIR
 from synapse_tree import SectionNode, SectionType
 import os
 from enum import Enum
-from neuron_network.block_aid_functions import Conv1dOnNdData, keep_dimensions_by_padding_claculator
+from neuron_network.block_aid_functions import CausalConv1d, keep_dimensions_by_padding_claculator
 import torch.nn as nn
 import copy
 
@@ -34,40 +34,30 @@ class FullNeuronNetwork(nn.Module):
             self.channel_number = [self.channel_number] * self.number_of_layers_space
 
         for i in range(self.number_of_layers_temp):
-            padding_factor = keep_dimensions_by_padding_claculator(self.input_window_size, self.kernel_sizes[i], self.stride,
-                                                                   self.dilation)
+            # padding_factor = keep_dimensions_by_padding_claculator(self.input_window_size, self.kernel_sizes[i], self.stride,
+            #                                                        self.dilation)
             layers_list.append(
-                nn.Conv1d(self.num_segments,
-                          self.num_segments, self.kernel_sizes[i], self.stride, padding_factor,
+                CausalConv1d(self.num_segments,
+                          self.num_segments, self.kernel_sizes[i], self.stride,
                           self.dilation, groups=config.num_segments))
             layers_list.append(nn.BatchNorm1d(self.num_segments))
             layers_list.append(activation_function())
 
         first_channels_flag = True
-        for i in range(self.number_of_layers_space-1):
-            padding_factor = keep_dimensions_by_padding_claculator(
-                self.input_window_size,
-                self.kernel_sizes[i] if self.number_of_layers_temp == 0 else 1, self.stride, self.dilation)
-
+        for i in range(self.number_of_layers_space):
             layers_list.append(
-                nn.Conv1d(self.num_segments if first_channels_flag else self.channel_number[i - 1],
+                CausalConv1d(self.num_segments if first_channels_flag else self.channel_number[i - 1],
                           self.channel_number[i], self.kernel_sizes[i] if self.number_of_layers_temp == 0 else 1,
-                          self.stride, padding_factor,
+                          self.stride,
                           self.dilation))
 
             first_channels_flag = False
             layers_list.append(nn.BatchNorm1d(self.channel_number[i]))
             layers_list.append(activation_function())
 
-        padding_factor = keep_dimensions_by_padding_claculator(
-            self.input_window_size, self.kernel_sizes[-1], self.stride, self.dilation)
-        last_layer = nn.Conv1d(self.channel_number[-1], 1, self.kernel_sizes[-1], self.stride,
-                                    padding_factor, self.dilation)
-        layers_list.append(last_layer)
-        # layers_list.append(activation_function())
         self.model = nn.Sequential(*layers_list)
-        self.v_fc = nn.Conv1d(1, 1, 1)
-        self.s_fc = nn.Conv1d(1, 1, 1)
+        self.v_fc = nn.Conv1d(self.channel_number[-1], 1, 1)
+        self.s_fc = nn.Conv1d(self.channel_number[-1], 1, 1)
         self.double()
 
     def forward(self, x):

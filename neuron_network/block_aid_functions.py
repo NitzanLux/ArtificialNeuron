@@ -75,8 +75,8 @@ def kernel_2D_in_parts(channel_input_number
     return nn.Sequential(*kernels_arr)
 
 
-class Conv1dOnNdData(torch.nn.Conv1d):
-    def _init_(self,
+class CausalConv1d(torch.nn.Conv1d):
+    def __init__(self,
                in_channels,
                out_channels,
                kernel_size,
@@ -85,7 +85,7 @@ class Conv1dOnNdData(torch.nn.Conv1d):
                groups=1,
                bias=True):
         self.__padding = (kernel_size - 1) * dilation
-        super(Conv1dOnNdData, self)._init_(
+        super().__init__(
             in_channels,
             out_channels,
             kernel_size=kernel_size,
