@@ -24,6 +24,7 @@ from get_neuron_modle import get_L5PC
 from scipy.ndimage.filters import uniform_filter1d
 from scipy.signal import find_peaks
 import dash_bootstrap_components as dbc
+from neuron_network import fully_connected_temporal_seperated
 
 GOOD_AND_BAD_SIZE = 8
 
@@ -162,6 +163,8 @@ class ModelEvaluator():
         print("loading model...", flush=True)
         if self.config.architecture_type == "DavidsNeuronNetwork":
             model = davids_network.DavidsNeuronNetwork(self.config)
+        elif config.architecture_type == "FullNeuronNetwork":
+            model = fully_connected_temporal_seperated.FullNeuronNetwork(config)
         elif "network_architecture_structure" in self.config and self.config.network_architecture_structure == "recursive":
             model = recursive_neuronal_model.RecursiveNeuronModel.load(self.config)
         else:
