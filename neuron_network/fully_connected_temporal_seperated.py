@@ -82,14 +82,7 @@ class FullNeuronNetwork(nn.Module):
     def save(self, path):  # todo fix
         state_dict = self.state_dict()
         with open('%s.pkl' % path, 'wb') as outp:
-            pickle.dump((dict(number_of_layers_temp=self.number_of_layers_temp,
-                              number_of_layers_space=self.number_of_layers_space,
-                              kernel_sizes=self.kernel_sizes, num_segments=self.num_segments,
-                              input_window_size=self.input_window_size, channel_number=self.channel_number,
-                              stride=self.stride,
-                              dilation=self.dilation, activation_function_name=self.activation_function_name,
-                              activation_function_kargs=self.activation_function_kargs),
-                         state_dict), outp)
+            pickle.dump(state_dict, outp)
 
     # def cuda(self, **kwargs):
     #     self.is_cuda = True
@@ -101,10 +94,14 @@ class FullNeuronNetwork(nn.Module):
 
 
     @staticmethod
-    def load(path):
-        neuronal_model = None
-        with open('%s.pkl' % path if path[-len(".pkl"):] != ".pkl" else path, 'rb') as outp:
+    def load(config):
+        path = os.path.join(MODELS_DIR, *config.model_path)
+        path = '%s.pkl' % path if path[-len(".pkl"):] != ".pkl" else path
+        with open(path, 'rb') as outp:
             neuronal_model_data = pickle.load(outp)
-        neuronal_model = NeuronConvNet(**neuronal_model_data[0])
-        neuronal_model.load_state_dict(neuronal_model_data[1])  # fixme this this should
-        return neuronal_model
+            if isinstance(neuronal_model_data,tuple):
+                neuronal_model_data=neuronal_model_data[1]
+        model = FullNeuronNetwork(config)
+        model.load_state_dict(neuronal_model_data)
+        return model
+

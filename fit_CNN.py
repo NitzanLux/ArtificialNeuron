@@ -49,13 +49,13 @@ synapse_type = 'NMDA'
 include_DVT = False
 
 # for dibugging
-# os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
-# BATCH_LOG_UPDATE_FREQ = 1
-# VALIDATION_EVALUATION_FREQUENCY=4
-# ACCURACY_EVALUATION_FREQUENCY = 4
-# BUFFER_SIZE_IN_FILES_VALID = 1
-# BUFFER_SIZE_IN_FILES_TRAINING = 1
-# DOCUMENT_ON_WANDB = False
+os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
+BATCH_LOG_UPDATE_FREQ = 1
+VALIDATION_EVALUATION_FREQUENCY=4
+ACCURACY_EVALUATION_FREQUENCY = 4
+BUFFER_SIZE_IN_FILES_VALID = 1
+BUFFER_SIZE_IN_FILES_TRAINING = 1
+DOCUMENT_ON_WANDB = False
 print('-----------------------------------------------')
 print('finding data')
 print('-----------------------------------------------', flush=True)
@@ -253,9 +253,9 @@ def train_network(config, model):
 def load_model(config):
     print("loading model...", flush=True)
     if config.architecture_type == "DavidsNeuronNetwork":
-        model = davids_network.DavidsNeuronNetwork(config)
+        model = davids_network.DavidsNeuronNetwork.load(config)
     elif config.architecture_type == "FullNeuronNetwork":
-        model =fully_connected_temporal_seperated.FullNeuronNetwork(config)
+        model =fully_connected_temporal_seperated.FullNeuronNetwork.load(config)
     elif "network_architecture_structure" in config and config.network_architecture_structure == "recursive":
         model = recursive_neuronal_model.RecursiveNeuronModel.load(config)
     else:
