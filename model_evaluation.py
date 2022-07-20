@@ -163,7 +163,7 @@ class ModelEvaluator():
         print("loading model...", flush=True)
         if self.config.architecture_type == "DavidsNeuronNetwork":
             model = davids_network.DavidsNeuronNetwork(self.config)
-        elif config.architecture_type == "FullNeuronNetwork":
+        elif self.config.architecture_type == "FullNeuronNetwork":
             model = fully_connected_temporal_seperated.FullNeuronNetwork(config)
         elif "network_architecture_structure" in self.config and self.config.network_architecture_structure == "recursive":
             model = recursive_neuronal_model.RecursiveNeuronModel.load(self.config)
