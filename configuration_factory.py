@@ -121,7 +121,7 @@ def load_config_file(path: str) -> AttrDict:
     # config.batch_size_train=4
     # config.accumulate_loss_batch_factor=2
     # config.prediction_length = (6000 - 600) // 4
-    lr_scheduler_params = dict(factor=0.1, cooldown=500, threshold=1e-5, patience=1000, eps=5e-9)
+    lr_scheduler_params = dict(factor=0.5, cooldown=500, threshold=1e-2, patience=1000, eps=1e-5)
     config.lr_scheduler_params=dict()
     # config.lr_scheduler=None
     # config.constant_learning_rate=0.0007

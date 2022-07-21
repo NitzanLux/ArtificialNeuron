@@ -487,36 +487,36 @@ class ModelEvaluator():
         end_time = datetime.datetime.now()
         print("evaluation took %0.1f minutes" % ((end_time - start_time).total_seconds() / 60.))
 
-
-if __name__ == '__main__':
-    # model_name='AdamWshort_and_wide_1_NMDA_Tree_TCN__2022-02-06__15_47__ID_54572'
-    # model_name = 'd_out_AdamW___2022-03-27__19_52__ID_52394'
-    # model_name = 'd_out_AdamW___2022-03-27__19_52__ID_36974'
-    # model_name = 'd_out_1_AdamW___2022-03-27__19_25__ID_12056'
-    # model_name = 'd_out_1_AdamW___2022-03-27__19_25__ID_26687' # 0.975
-    # model_name = 'd_out_5_AdamW___2022-04-09__20_08__ID_4486' # 0.97918
-    # model_name = 'narrow_last_layer_3_AdamW___2022-06-28__12_07__ID_44880' # 0.0.96779
-    # model_name = 'narrow_last_layer_3_AdamW___2022-06-28__12_07__ID_74982' # 0.97033
-    # model_name = 'narrow_last_layer_4_AdamW___2022-07-04__11_05__ID_65095' # 0.96937
-    # model_name = 'narrow_last_layer_4_AdamW___2022-07-04__11_05__ID_5433' # 0.96765
-    # model_name = 'tempspace_AdamW___2022-07-18__15_54__ID_39553' # 0.97332
-    # model_name = 'tempspace_AdamW___2022-07-18__15_54__ID_63486' # 0.97317
-    # model_name = 'davids_AdamW___2022-07-18__12_52__ID_61236' # 0.98047
-    model_name = 'davids_AdamW___2022-07-18__12_52__ID_70365' # 0.98120
-
-
-
-
-    # model_name = 'd_out_5_AdamW___2022-04-09__20_08__ID_55904' #0.97762
-
-
-    # model_name = 'glu_3_AdamW___2022-02-17__14_33__ID_2250'
-    # model_name = 'glu_3_NAdam___2022-02-17__14_33__ID_60416'
-    # ModelEvaluator.build_and_save(r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\heavy_AdamW_NMDA_Tree_TCN__2022-01-27__17_58__ID_40048\heavy_AdamW_NMDA_Tree_TCN__2022-01-27__17_58__ID_40048")
-    eval = ModelEvaluator.load(
-        r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\%s\%s.eval" % (
-        model_name, model_name))
-    # eval.data.flatten_batch_dimensions()
-    # eval.save()
-    eval.display()
-
+#
+# if __name__ == '__main__':
+#     # model_name='AdamWshort_and_wide_1_NMDA_Tree_TCN__2022-02-06__15_47__ID_54572'
+#     # model_name = 'd_out_AdamW___2022-03-27__19_52__ID_52394'
+#     # model_name = 'd_out_AdamW___2022-03-27__19_52__ID_36974'
+#     # model_name = 'd_out_1_AdamW___2022-03-27__19_25__ID_12056'
+#     # model_name = 'd_out_1_AdamW___2022-03-27__19_25__ID_26687' # 0.975
+#     # model_name = 'd_out_5_AdamW___2022-04-09__20_08__ID_4486' # 0.97918
+#     # model_name = 'narrow_last_layer_3_AdamW___2022-06-28__12_07__ID_44880' # 0.0.96779
+#     # model_name = 'narrow_last_layer_3_AdamW___2022-06-28__12_07__ID_74982' # 0.97033
+#     # model_name = 'narrow_last_layer_4_AdamW___2022-07-04__11_05__ID_65095' # 0.96937
+#     # model_name = 'narrow_last_layer_4_AdamW___2022-07-04__11_05__ID_5433' # 0.96765
+#     # model_name = 'tempspace_AdamW___2022-07-18__15_54__ID_39553' # 0.97332
+#     # model_name = 'tempspace_AdamW___2022-07-18__15_54__ID_63486' # 0.97317
+#     # model_name = 'davids_AdamW___2022-07-18__12_52__ID_61236' # 0.98047
+#     model_name = 'davids_AdamW___2022-07-18__12_52__ID_70365' # 0.98120
+#
+#
+#
+#
+#     # model_name = 'd_out_5_AdamW___2022-04-09__20_08__ID_55904' #0.97762
+#
+#
+#     # model_name = 'glu_3_AdamW___2022-02-17__14_33__ID_2250'
+#     # model_name = 'glu_3_NAdam___2022-02-17__14_33__ID_60416'
+#     # ModelEvaluator.build_and_save(r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\heavy_AdamW_NMDA_Tree_TCN__2022-01-27__17_58__ID_40048\heavy_AdamW_NMDA_Tree_TCN__2022-01-27__17_58__ID_40048")
+#     eval = ModelEvaluator.load(
+#         r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\%s\%s.eval" % (
+#         model_name, model_name))
+#     # eval.data.flatten_batch_dimensions()
+#     # eval.save()
+#     eval.display()
+#
