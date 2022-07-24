@@ -23,7 +23,7 @@ SYNAPSE_DIMENTION_POSITION = 1
 class Base1DConvolutionBlockLayer(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, stride, dilation, activation_function,dropout_factor):
         super(Base1DConvolutionBlockLayer, self).__init__()
-        self.conv1d = CausalConv1d(in_channels, out_channels, kernel_size, stride, padding, dilation)
+        self.conv1d = CausalConv1d(in_channels, out_channels, kernel_size, stride, dilation)
         self.activation_function = activation_function()
         self.batch_norm = nn.BatchNorm1d(out_channels)
         if dropout_factor is not None:

@@ -75,21 +75,21 @@ def surround_with_default_config_values(**kargs):
     architecture_dict = AttrDict(#segment_tree_path="tree.pkl",
                                  network_architecture_structure="recursive",
                                  # architecture_type="LAYERED_TEMPORAL_CONV",
-                                 architecture_type="LAYERED_TEMPORAL_CONV_N",
+                                 architecture_type="LAYERED_TEMPORAL_CONV",
                                  time_domain_shape=config.input_window_size,
                                  # kernel_size_2d=3,
                                  # kernel_size_1d=9,
                                  kernel_sizes=[53]+[11]*6,number_of_layers_temp=7,number_of_layers_space=7,channel_number=[128]*7,
-                                 number_of_layers_root=7, number_of_layers_leaf=10, number_of_layers_intersection=5,
+                                 number_of_layers_root=5, number_of_layers_leaf=7, number_of_layers_intersection=5,
                                  number_of_layers_branch_intersection=5,
                                  # david_layers=[55, 13, 13, 13, 13, 13, 13],
                                  glu_number_of_layers=0,
                                  skip_connections=True,
                                  inter_module_skip_connections=True,
-                                 kernel_size=21,
-                                 kernel_size_soma=1,
-                                 kernel_size_intersection=1,
-                                 kernel_size_branch=1,
+                                 kernel_size=31,
+                                 kernel_size_soma=10,
+                                 kernel_size_intersection=10,
+                                 kernel_size_branch=10,
                                  dropout_factor=0.5,
                                  # kernel_size=81,
                                  # number_of_layers=2,
@@ -244,13 +244,13 @@ def restore_last_n_configs(n=10):
 if __name__ == '__main__':
     # restore_last_n_configs(100)
     configs = []
-    configurations_name = "tempspace"
+    configurations_name = "wide"
     for i in ['AdamW']:
         config_morpho_0 = config_factory(loss_function='focalbcel_mse_loss',
                                          dynamic_learning_params=False,
-                                         architecture_type='FullNeuronNetwork',
+                                         # architecture_type='FullNeuronNetwork',
                                          # architecture_type='LAYERED_TEMPORAL_CONV_N',
-                                         model_tag="%s_%s" % (configurations_name,i), optimizer_type=i,clip_gradients_factor=0.95,
+                                         model_tag="%s_%s" % (configurations_name,i), optimizer_type=i,clip_gradients_factor=2.5,
                                          accumulate_loss_batch_factor=1, spike_probability=None, prediction_length=(6000-600)//2,
                                          batch_size_validation=32, batch_size_train=16,
                                          constant_learning_rate=0.001)
