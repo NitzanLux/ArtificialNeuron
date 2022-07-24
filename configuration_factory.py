@@ -79,7 +79,8 @@ def surround_with_default_config_values(**kargs):
                                  time_domain_shape=config.input_window_size,
                                  # kernel_size_2d=3,
                                  # kernel_size_1d=9,
-                                 kernel_sizes=[53]+[11]*5,number_of_layers_temp=6,number_of_layers_space=7,channel_number=[128]*7,space_kernel_sizes=[5]*7,
+                                 kernel_sizes=[51]*3+[12]*4,number_of_layers_temp=0,number_of_layers_space=7,
+                                 channel_number=[128]*7,space_kernel_sizes=[1]*7,
                                  number_of_layers_root=5, number_of_layers_leaf=7, number_of_layers_intersection=5,
                                  number_of_layers_branch_intersection=5,
                                  # david_layers=[55, 13, 13, 13, 13, 13, 13],
@@ -125,7 +126,7 @@ def load_config_file(path: str) -> AttrDict:
     config.lr_scheduler_params=dict()
     # config.lr_scheduler=None
     # config.constant_learning_rate=0.0007
-    config.batch_size_train = 8
+    # config.batch_size_train = 8
     if config.config_version < CURRENT_VERSION :
         config = surround_with_default_config_values(**config)
     return config
@@ -244,7 +245,7 @@ def restore_last_n_configs(n=10):
 if __name__ == '__main__':
     # restore_last_n_configs(100)
     configs = []
-    configurations_name = "wide"
+    configurations_name = "davids"
     for i in ['AdamW']:
         config_morpho_0 = config_factory(loss_function='focalbcel_mse_loss',
                                          dynamic_learning_params=False,
@@ -252,7 +253,7 @@ if __name__ == '__main__':
                                          # architecture_type='LAYERED_TEMPORAL_CONV_N',
                                          model_tag="%s_%s" % (configurations_name,i), optimizer_type=i,clip_gradients_factor=2.5,
                                          accumulate_loss_batch_factor=1, spike_probability=None, prediction_length=(6000-600)//2,
-                                         batch_size_validation=32, batch_size_train=8,
+                                         batch_size_validation=32, batch_size_train=16,
                                          constant_learning_rate=0.001)
         # configs.append(config_morpho_0)
         configs.extend(generate_config_files_multiple_seeds(config_morpho_0, 2))
