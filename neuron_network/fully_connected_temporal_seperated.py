@@ -19,6 +19,7 @@ class FullNeuronNetwork(nn.Module):
             pass
         self.num_segments = config.num_segments
         self.kernel_sizes, self.stride, self.dilation = config.kernel_sizes, config.stride, config.dilation
+        self.space_kernel_sizes=config.space_kernel_sizes
         self.number_of_layers_temp = config.number_of_layers_temp
         self.number_of_layers_space = config.number_of_layers_space
         self.activation_function_name = config["activation_function_name"]
@@ -44,10 +45,11 @@ class FullNeuronNetwork(nn.Module):
             layers_list.append(activation_function())
 
         first_channels_flag = True
+
         for i in range(self.number_of_layers_space):
             layers_list.append(
                 CausalConv1d(self.num_segments if first_channels_flag else self.channel_number[i - 1],
-                          self.channel_number[i], self.kernel_sizes[i] if self.number_of_layers_temp == 0 else 1,
+                          self.channel_number[i], self.kernel_sizes[i] if self.number_of_layers_temp == 0 else self.space_kernel_sizes[i],
                           self.stride,
                           self.dilation))
 
