@@ -255,7 +255,7 @@ if __name__ == '__main__':
                                          # architecture_type='LAYERED_TEMPORAL_CONV_N',
                                          model_tag="%s_%s" % (configurations_name,i), optimizer_type=i,clip_gradients_factor=None,
                                          accumulate_loss_batch_factor=1, spike_probability=None, prediction_length=(6000-600),
-                                         batch_size_validation=128, batch_size_train=64,
+                                         batch_size_validation=64, batch_size_train=32,
                                          constant_learning_rate=0.005)
         # configs.append(config_morpho_0)
         configs.extend(generate_config_files_multiple_seeds(config_morpho_0, 2))
