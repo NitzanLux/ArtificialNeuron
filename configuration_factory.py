@@ -79,10 +79,10 @@ def surround_with_default_config_values(**kargs):
                                  time_domain_shape=config.input_window_size,
                                  # kernel_size_2d=3,
                                  # kernel_size_1d=9,
-                                 # kernel_sizes=[50]+[8]*6,number_of_layers_temp=7,number_of_layers_space=7,
-                                 kernel_sizes=[54]+[12]*6,number_of_layers_temp=0,number_of_layers_space=7,
-                                 # channel_number=[128]*7,space_kernel_sizes=[6]*7,
-                                 channel_number=[128]*7,space_kernel_sizes=[54]+[12]*6,
+                                 kernel_sizes=[50]+[8]*6,number_of_layers_temp=7,number_of_layers_space=7,
+                                 # kernel_sizes=[54]+[12]*6,number_of_layers_temp=0,number_of_layers_space=7,
+                                 channel_number=[128]*7,space_kernel_sizes=[6]*7,
+                                 # channel_number=[128]*7,space_kernel_sizes=[54]+[12]*6,
                                  number_of_layers_root=5, number_of_layers_leaf=7, number_of_layers_intersection=5,
                                  number_of_layers_branch_intersection=5,
                                  # david_layers=[55, 13, 13, 13, 13, 13, 13],
@@ -247,7 +247,7 @@ def restore_last_n_configs(n=10):
 if __name__ == '__main__':
     # restore_last_n_configs(100)
     configs = []
-    configurations_name = "davids"
+    configurations_name = "spectemp_k5"
     for i in ['AdamW']:
         config_morpho_0 = config_factory(loss_function='focalbcel_mse_loss',
                                          dynamic_learning_params=False,
