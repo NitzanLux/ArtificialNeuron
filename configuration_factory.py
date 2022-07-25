@@ -250,7 +250,7 @@ if __name__ == '__main__':
     configurations_name = "spectemp_k5"
     for i in ['AdamW']:
         config_morpho_0 = config_factory(loss_function='focalbcel_mse_loss',
-                                         dynamic_learning_params=False,
+                                         dynamic_learning_params=False,use_mixed_precision=True,
                                          architecture_type='FullNeuronNetwork',
                                          # architecture_type='LAYERED_TEMPORAL_CONV_N',
                                          model_tag="%s_%s" % (configurations_name,i), optimizer_type=i,clip_gradients_factor=None,
