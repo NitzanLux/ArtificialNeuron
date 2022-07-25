@@ -125,7 +125,7 @@ def load_config_file(path: str) -> AttrDict:
     # config.accumulate_loss_batch_factor=2
     # config.prediction_length = (6000 - 600) // 4
     # config.lr_scheduler_params = dict(factor=0.5, cooldown=500, threshold=1e-2, patience=1000, eps=1e-5)
-    config.lr_scheduler_params=dict()
+    # config.lr_scheduler_params=dict()
     # config.lr_scheduler=None
     # config.constant_learning_rate=0.0007
     # config.batch_size_train = 8
@@ -253,9 +253,9 @@ if __name__ == '__main__':
                                          dynamic_learning_params=False,
                                          architecture_type='FullNeuronNetwork',
                                          # architecture_type='LAYERED_TEMPORAL_CONV_N',
-                                         model_tag="%s_%s" % (configurations_name,i), optimizer_type=i,clip_gradients_factor=2.5,
-                                         accumulate_loss_batch_factor=1, spike_probability=None, prediction_length=(6000-600)//2,
-                                         batch_size_validation=32, batch_size_train=16,
+                                         model_tag="%s_%s" % (configurations_name,i), optimizer_type=i,clip_gradients_factor=None,
+                                         accumulate_loss_batch_factor=1, spike_probability=None, prediction_length=(6000-600),
+                                         batch_size_validation=32, batch_size_train=32,
                                          constant_learning_rate=0.001)
         # configs.append(config_morpho_0)
         configs.extend(generate_config_files_multiple_seeds(config_morpho_0, 2))
