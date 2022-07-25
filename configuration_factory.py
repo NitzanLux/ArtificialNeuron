@@ -79,7 +79,7 @@ def surround_with_default_config_values(**kargs):
                                  time_domain_shape=config.input_window_size,
                                  # kernel_size_2d=3,
                                  # kernel_size_1d=9,
-                                 kernel_sizes=[51]*2+[35]+[11]*4,number_of_layers_temp=7,number_of_layers_space=7,
+                                 kernel_sizes=[51]+[35]+[25]+[19]+[15]*3,number_of_layers_temp=7,number_of_layers_space=7,
                                  channel_number=[128]*7,space_kernel_sizes=[5]*7,
                                  number_of_layers_root=5, number_of_layers_leaf=7, number_of_layers_intersection=5,
                                  number_of_layers_branch_intersection=5,
@@ -122,7 +122,7 @@ def load_config_file(path: str) -> AttrDict:
     # config.batch_size_train=4
     # config.accumulate_loss_batch_factor=2
     # config.prediction_length = (6000 - 600) // 4
-    lr_scheduler_params = dict(factor=0.5, cooldown=500, threshold=1e-2, patience=1000, eps=1e-5)
+    # config.lr_scheduler_params = dict(factor=0.5, cooldown=500, threshold=1e-2, patience=1000, eps=1e-5)
     config.lr_scheduler_params=dict()
     # config.lr_scheduler=None
     # config.constant_learning_rate=0.0007
@@ -245,11 +245,11 @@ def restore_last_n_configs(n=10):
 if __name__ == '__main__':
     # restore_last_n_configs(100)
     configs = []
-    configurations_name = "tempspace_0"
+    configurations_name = "davids"
     for i in ['AdamW']:
         config_morpho_0 = config_factory(loss_function='focalbcel_mse_loss',
                                          dynamic_learning_params=False,
-                                         # architecture_type='FullNeuronNetwork',
+                                         architecture_type='FullNeuronNetwork',
                                          # architecture_type='LAYERED_TEMPORAL_CONV_N',
                                          model_tag="%s_%s" % (configurations_name,i), optimizer_type=i,clip_gradients_factor=2.5,
                                          accumulate_loss_batch_factor=1, spike_probability=None, prediction_length=(6000-600)//2,
