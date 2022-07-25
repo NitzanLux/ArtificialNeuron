@@ -79,10 +79,10 @@ def surround_with_default_config_values(**kargs):
                                  time_domain_shape=config.input_window_size,
                                  # kernel_size_2d=3,
                                  # kernel_size_1d=9,
-                                 kernel_sizes=[50]+[8]*6,number_of_layers_temp=7,number_of_layers_space=7,
-                                 # kernel_sizes=[54]+[12]*6,number_of_layers_temp=0,number_of_layers_space=7,
-                                 channel_number=[128]*7,space_kernel_sizes=[6]*7,
-                                 # channel_number=[128]*7,space_kernel_sizes=[54]+[12]*6,
+                                 # kernel_sizes=[50]+[8]*6,number_of_layers_temp=7,number_of_layers_space=7,
+                                 kernel_sizes=[54]+[12]*6,number_of_layers_temp=0,number_of_layers_space=7,
+                                 # channel_number=[128]*7,space_kernel_sizes=[6]*7,
+                                 channel_number=[128]*7,space_kernel_sizes=[54]+[12]*6,
                                  number_of_layers_root=5, number_of_layers_leaf=7, number_of_layers_intersection=5,
                                  number_of_layers_branch_intersection=5,
                                  # david_layers=[55, 13, 13, 13, 13, 13, 13],
@@ -254,7 +254,7 @@ if __name__ == '__main__':
                                          architecture_type='FullNeuronNetwork',
                                          # architecture_type='LAYERED_TEMPORAL_CONV_N',
                                          model_tag="%s_%s" % (configurations_name,i), optimizer_type=i,clip_gradients_factor=None,
-                                         accumulate_loss_batch_factor=4, spike_probability=None, prediction_length=(6000-600)//2,
+                                         accumulate_loss_batch_factor=2, spike_probability=None, prediction_length=(6000-600)//2,
                                          batch_size_validation=32, batch_size_train=32,
                                          constant_learning_rate=0.01)
         # configs.append(config_morpho_0)
