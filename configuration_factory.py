@@ -79,10 +79,10 @@ def surround_with_default_config_values(**kargs):
                                  time_domain_shape=config.input_window_size,
                                  # kernel_size_2d=3,
                                  # kernel_size_1d=9,
-                                 # kernel_sizes=[51]+[35]+[25]+[19]+[15]*3,number_of_layers_temp=7,number_of_layers_space=7,
-                                 kernel_sizes=[51]+[35]+[25]+[19]+[15]*3,number_of_layers_temp=0,number_of_layers_space=7,
-                                 # channel_number=[128]*7,space_kernel_sizes=[5]*7,
-                                 channel_number=[128]*7,space_kernel_sizes=[51]*2+[25]*2+[15]*3,
+                                 # kernel_sizes=[50]+[8]*6,number_of_layers_temp=7,number_of_layers_space=7,
+                                 kernel_sizes=[54]+[12]*6,number_of_layers_temp=0,number_of_layers_space=7,
+                                 # channel_number=[128]*7,space_kernel_sizes=[6]*7,
+                                 channel_number=[128]*7,space_kernel_sizes=[54]+[12]*6,
                                  number_of_layers_root=5, number_of_layers_leaf=7, number_of_layers_intersection=5,
                                  number_of_layers_branch_intersection=5,
                                  # david_layers=[55, 13, 13, 13, 13, 13, 13],
@@ -259,6 +259,7 @@ if __name__ == '__main__':
                                          constant_learning_rate=0.001)
         # configs.append(config_morpho_0)
         configs.extend(generate_config_files_multiple_seeds(config_morpho_0, 2))
+
     with open(os.path.join(MODELS_DIR, "%s.json" % configurations_name), 'w') as file:
         file.write(json.dumps(configs))  # use `json.loads` to do the reverse
         # file.write(json.dumps([config_morpho_0]))  # use `json.loads` to do the reverse
