@@ -51,7 +51,7 @@ def save_config(config, path: [str, None] = None):
 
 def surround_with_default_config_values(**kargs):
     ##default values can be overridden by kargs
-    config = AttrDict(config_version=CURRENT_VERSION, input_window_size=200, prediction_length=1, num_segments=2 * 639,
+    config = AttrDict(config_version=CURRENT_VERSION, input_window_size=120, prediction_length=1, num_segments=2 * 639,
                       num_syn_types=1,use_mixed_precision=False,
                       include_spikes=True,
                       num_epochs=15000, epoch_size=5, batch_size_train=5, accumulate_loss_batch_factor=4,
@@ -250,15 +250,15 @@ if __name__ == '__main__':
     configurations_name = "davids"
     for i in ['AdamW']:
         config_morpho_0 = config_factory(loss_function='focalbcel_mse_loss',
-                                         dynamic_learning_params=False,use_mixed_precision=True,
+                                         dynamic_learning_params=False,use_mixed_precision=False,
                                          architecture_type='FullNeuronNetwork',
                                          # architecture_type='LAYERED_TEMPORAL_CONV_N',
                                          model_tag="%s_%s" % (configurations_name,i), optimizer_type=i,clip_gradients_factor=None,
-                                         accumulate_loss_batch_factor=2, spike_probability=None, prediction_length=(6000-600)//2,
-                                         batch_size_validation=32, batch_size_train=32,
+                                         accumulate_loss_batch_factor=1, spike_probability=None, prediction_length=1000,
+                                         batch_size_validation=512, batch_size_train=256,
                                          constant_learning_rate=0.01)
-        # configs.append(config_morpho_0)
-        configs.extend(generate_config_files_multiple_seeds(config_morpho_0, 2))
+        configs.append(config_morpho_0)
+        # configs.extend(generate_config_files_multiple_seeds(config_morpho_0, 2))
 
     with open(os.path.join(MODELS_DIR, "%s.json" % configurations_name), 'w') as file:
         file.write(json.dumps(configs))  # use `json.loads` to do the reverse

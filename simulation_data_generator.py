@@ -245,9 +245,7 @@ class SimulationDataGenerator():
         if len(self.sim_experiment_files) <= self.buffer_size_in_files and not self.reload_files_once:
             self.curr_files_to_use = self.sim_experiment_files
         else:
-            if self.shuffle_files and \
-                    self.files_counter * self.buffer_size_in_files >= len(self.sim_experiment_files):
-                random.shuffle(self.sim_experiment_files)
+
             # self.curr_files_to_use = np.random.choice(self.sim_experiment_files, size=self.buffer_size_in_files,
             #                                           replace=False)
             # else:
@@ -260,6 +258,7 @@ class SimulationDataGenerator():
 
             elif not self.reload_files_once:
                 self.curr_files_to_use= self.sim_experiment_files[:last_index]+self.sim_experiment_files[first_index:]
+                random.shuffle(self.curr_files_to_use)
             else:
                 self.curr_files_to_use=[]
             self.files_counter += 1

@@ -65,8 +65,8 @@ class FullNeuronNetwork(nn.Module):
     def forward(self, x):
         x = x.type(torch.cuda.DoubleTensor)
         out = self.model(x)
-        out_v = self.v_fc(out)[:, :, self.input_window_size - 1 :]
-        out_s = self.s_fc(out)[:, :, self.input_window_size - 1:]
+        out_v = self.v_fc(out)[:, :, self.input_window_size :]
+        out_s = self.s_fc(out)[:, :, self.input_window_size :]
         return out_s.squeeze(1), out_v.squeeze(1)
 
     def init_weights(self, sd=0.05):

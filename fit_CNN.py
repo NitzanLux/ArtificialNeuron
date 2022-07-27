@@ -17,8 +17,7 @@ from neuron_network import neuronal_model
 from neuron_network.node_network import recursive_neuronal_model
 from parameters_factories import dynamic_learning_parameters_factory as dlpf, loss_function_factory
 from project_path import *
-from simulation_data_generator import *
-from simulation_data_generator import *
+from simulation_data_generator_new import *
 from datetime import datetime, timedelta
 from general_variables import *
 import gc
@@ -50,12 +49,12 @@ include_DVT = False
 
 # for dibugging
 # os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
-# BATCH_LOG_UPDATE_FREQ = 1
-# VALIDATION_EVALUATION_FREQUENCY=4
-# ACCURACY_EVALUATION_FREQUENCY = 4
-# BUFFER_SIZE_IN_FILES_VALID = 1
-# BUFFER_SIZE_IN_FILES_TRAINING = 1
-# DOCUMENT_ON_WANDB = False
+BATCH_LOG_UPDATE_FREQ = 1
+VALIDATION_EVALUATION_FREQUENCY=4
+ACCURACY_EVALUATION_FREQUENCY = 4
+BUFFER_SIZE_IN_FILES_VALID = 1
+BUFFER_SIZE_IN_FILES_TRAINING = 1
+DOCUMENT_ON_WANDB = False
 print('-----------------------------------------------')
 print('finding data')
 print('-----------------------------------------------', flush=True)
@@ -322,7 +321,8 @@ def evaluate_validation(config, custom_loss, model, validation_data_iterator):
         output_v = output[1].detach().cpu().numpy().squeeze().flatten()
         log_dict = {"brier score(s) validation": skm.brier_score_loss(target_s, output_s),
                     "R squared score(v) validation": skm.r2_score(target_v, output_v)}
-        wandb.log(log_dict, step=config.batch_counter, commit=False)  # add training parameters per step
+        if DOCUMENT_ON_WANDB:
+            wandb.log(log_dict, step=config.batch_counter, commit=False)  # add training parameters per step
 
     if config.batch_counter % ACCURACY_EVALUATION_FREQUENCY == 0:
         display_accuracy(target_s, output_s, config.batch_counter,
@@ -343,7 +343,7 @@ def get_data_generators(DVT_PCA_model, config):
                                                    window_size_ms=config.time_domain_shape,
                                                    file_load=config.train_file_load,
                                                    sample_ratio_to_shuffle=SAMPLE_RATIO_TO_SHUFFLE_TRAINING,
-                                                   DVT_PCA_model=DVT_PCA_model)
+                                                   )
     print("loading data...validation", flush=True)
 
     validation_data_generator = SimulationDataGenerator(valid_files, buffer_size_in_files=BUFFER_SIZE_IN_FILES_VALID,
@@ -351,7 +351,7 @@ def get_data_generators(DVT_PCA_model, config):
                                                         batch_size=config.batch_size_validation,
                                                         window_size_ms=config.time_domain_shape,
                                                         file_load=config.train_file_load, sample_ratio_to_shuffle=1.5,
-                                                        DVT_PCA_model=DVT_PCA_model)
+                                                        )
     if "spike_probability" in config and config.spike_probability is not None:
         train_data_generator.change_spike_probability(config.spike_probability)
     # validation_data_generator.change_spike_probability(0.5)
