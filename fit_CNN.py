@@ -48,13 +48,14 @@ synapse_type = 'NMDA'
 include_DVT = False
 
 # for dibugging
-# os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
-# BATCH_LOG_UPDATE_FREQ = 1
-# VALIDATION_EVALUATION_FREQUENCY=4
-# ACCURACY_EVALUATION_FREQUENCY = 4
-# BUFFER_SIZE_IN_FILES_VALID = 1
-# BUFFER_SIZE_IN_FILES_TRAINING = 1
-# DOCUMENT_ON_WANDB = False
+os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
+NUMBER_OF_HOURS_FOR_SAVING_MODEL_AND_CONFIG=0
+BATCH_LOG_UPDATE_FREQ = 1
+VALIDATION_EVALUATION_FREQUENCY=4
+ACCURACY_EVALUATION_FREQUENCY = 4
+BUFFER_SIZE_IN_FILES_VALID = 1
+BUFFER_SIZE_IN_FILES_TRAINING = 1
+DOCUMENT_ON_WANDB = False
 print('-----------------------------------------------')
 print('finding data')
 print('-----------------------------------------------', flush=True)
@@ -99,7 +100,6 @@ def train_without_mixed_precision(accumulate_loss_batch_factor, clip_gradient, c
         inputs = inputs.cuda().type(DATA_TYPE)
         labels = [l.cuda().flatten().type(DATA_TYPE) for l in labels]
         # forward + backward + optimize
-        print(_, "*****", flush=True)
         outputs = model(inputs)
         outputs = [i.flatten() for i in outputs]
         cur_general_loss, cur_loss_bcel, cur_loss_mse, cur_loss_dvt, cur_loss_gausian_mse = custom_loss(outputs, labels)
@@ -398,9 +398,17 @@ class SavingAndEvaluationScheduler():
         print('finished epoch %d saving...\n     "%s"\n"' % (
             config.epoch_counter, config.model_filename.split('/')[-1]))
         print('-----------------------------------------------------------------------------------------')
+        #backup
+        base_path=os.path.dirname(os.path.join(MODELS_DIR, *config.model_path))
+        files_path=os.listdir(base_path)
+        for fn in files_path:
+            fn = str(fn)
+            filename, file_extension = os.path.splitext(fn)
+            if 'temp' not in file_extension:
+                if os.path.exists(os.path.join(base_path,fn)+'temp'):
+                    os.remove(os.path.join(base_path,fn)+'temp')
 
-        if os.path.exists(os.path.join(MODELS_DIR, *config.model_path)):  # overwrite
-            os.remove(os.path.join(MODELS_DIR, *config.model_path))
+                os.rename(os.path.join(base_path, fn), os.path.join(base_path, fn) + 'temp')
         model.save(os.path.join(MODELS_DIR, *config.model_path))
         configuration_factory.overwrite_config(AttrDict(config))
 
