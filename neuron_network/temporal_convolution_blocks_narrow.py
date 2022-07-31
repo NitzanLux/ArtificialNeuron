@@ -55,14 +55,15 @@ class Base1DConvolutionBlock(nn.Module):
         else:
             self.channel_output_number = channel_output_number
         self.channel_input_number = input_shape[0]
-
+        if not isinstance(kernel_size,list):
+            kernel_size=[kernel_size]*number_of_layers
         for i in range(number_of_layers):
             in_channels, out_channels = self.channel_input_number, self.inner_scope_channel_number
             if i >= 1:
                 in_channels = self.inner_scope_channel_number
             if i == number_of_layers - 1:
                 out_channels = self.channel_output_number
-            model = Base1DConvolutionBlockLayer(in_channels, out_channels, kernel_size, stride, dilation,
+            model = Base1DConvolutionBlockLayer(in_channels, out_channels, kernel_size[i], stride, dilation,
                                                 activation_function,dropout_factor)
             self.layers_list.append(model)
 

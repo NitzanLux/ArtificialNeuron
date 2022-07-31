@@ -83,16 +83,18 @@ def surround_with_default_config_values(**kargs):
                                  kernel_sizes=[54]+[12]*6,number_of_layers_temp=0,number_of_layers_space=7,
                                  # channel_number=[128]*7,space_kernel_sizes=[6]*7,
                                  channel_number=[128]*7,space_kernel_sizes=[54]+[12]*6,
-                                 number_of_layers_root=5, number_of_layers_leaf=7, number_of_layers_intersection=5,
-                                 number_of_layers_branch_intersection=5,
+
+
+                                 number_of_layers_root=4, number_of_layers_leaf=6, number_of_layers_intersection=3,
+                                 number_of_layers_branch_intersection=3,
                                  # david_layers=[55, 13, 13, 13, 13, 13, 13],
                                  glu_number_of_layers=0,
                                  skip_connections=True,
                                  inter_module_skip_connections=True,
-                                 kernel_size=31,
-                                 kernel_size_soma=10,
-                                 kernel_size_intersection=10,
-                                 kernel_size_branch=10,
+                                 kernel_size=[5,11,21,33,35,42],
+                                 kernel_size_soma=1,
+                                 kernel_size_intersection=1,
+                                 kernel_size_branch=1,
                                  dropout_factor=0.5,
                                  # kernel_size=81,
                                  # number_of_layers=2,
@@ -101,7 +103,7 @@ def surround_with_default_config_values(**kargs):
                                  dilation=1,
                                  channel_input_number=1278,  # synapse number
                                  inner_scope_channel_number=None,
-                                 channel_output_number=16,
+                                 channel_output_number=128,
                                  activation_function_name="LeakyReLU",
                                  activation_function_kargs=dict(negative_slope=0.025),
                                  # activation_function_kargs=dict(negative_slope=0.001),
@@ -247,13 +249,13 @@ def restore_last_n_configs(n=10):
 if __name__ == '__main__':
     # restore_last_n_configs(100)
     configs = []
-    configurations_name = "davids_leak"
+    configurations_name = "morph"
     for i in ['AdamW']:
         config_morpho_0 = config_factory(loss_function='focalbcel_mse_loss',
                                          dynamic_learning_params=False,use_mixed_precision=False,
-                                         architecture_type='FullNeuronNetwork',
-                                         # architecture_type='LAYERED_TEMPORAL_CONV_N',
-                                         model_tag="%s_%s" % (configurations_name,i), optimizer_type=i,clip_gradients_factor=None,
+                                         # architecture_type='FullNeuronNetwork',
+                                         architecture_type='LAYERED_TEMPORAL_CONV_N',
+                                         model_tag="%s_%s" % (configurations_name,i), optimizer_type=i,clip_gradients_factor=2.5,
                                          accumulate_loss_batch_factor=1, spike_probability=None, prediction_length=700,
                                          batch_size_validation=50, batch_size_train=180,
                                          # batch_size_validation=4, batch_size_train=4,
