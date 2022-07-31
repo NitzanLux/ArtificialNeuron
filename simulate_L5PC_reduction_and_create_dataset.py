@@ -1,0 +1,596 @@
+import os
+import sys
+import numpy as np
+from scipy import signal
+import pickle as pickle # todo: changed
+import time
+import neuron
+from neuron import h
+from neuron import gui
+import neuron_reduce
+import argparse
+from project_path import NEURON_REDUCE_DATA_DIR
+# get or randomly generate random seed
+DIR_NAME='first_data'
+
+
+def generate_input_spike_trains_for_simulation(sim_experiment_file, print_logs=False):
+    """:DVT_PCA_model is """
+    loading_start_time = 0.
+    if print_logs:
+        print('-----------------------------------------------------------------')
+        print("loading file: '" + sim_experiment_file.split("\\")[-1] + "'")
+        loading_start_time = time.time()
+
+    if sys.version_info[0] < 3:
+        experiment_dict = pickle.load(open(sim_experiment_file, "rb"))
+    else:
+        experiment_dict = pickle.load(open(sim_experiment_file, "rb"), encoding='latin1')
+
+    def genrator():
+        # go over all simulations in the experiment and collect their results
+        for k, sim_dict in enumerate(experiment_dict['Results']['listOfSingleSimulationDicts']):
+            X_ex = dict2bin(sim_dict['exInputSpikeTimes'], num_segments, sim_duration_ms)
+            X_inh = dict2bin(sim_dict['inhInputSpikeTimes'], num_segments, sim_duration_ms)
+            yield X_ex,X_inh
+    return genrator(),experiment_dict['Params']
+
+
+parser = argparse.ArgumentParser(description='add file to run the neuron reduce')
+parser.add_argument(dest="file", type=str,
+                    help='data file to which reduce')
+args = parser.parse_args()
+sim_file=args.file
+data_generator,experimentParams = generate_input_spike_trains_for_simulation(sim_file)
+
+#%% define simulation params
+
+# general simulation parameters
+numSimulations = experimentParams['numSimulations']
+totalSimDurationInSec = experimentParams['totalSimDurationInSec']
+
+
+# high res sampling of the voltage and nexus voltages
+numSamplesPerMS_HighRes = experimentParams['numSamplesPerMS_HighRes']
+
+# synapse type
+excitatorySynapseType = experimentParams['excitatorySynapseType']    # supported options: {'AMPA','NMDA'}
+# excitatorySynapseType = 'AMPA'    # supported options: {'AMPA','NMDA'}
+inhibitorySynapseType = experimentParams['inhibitorySynapseType']
+
+# use active dendritic conductances switch
+useActiveDendrites = experimentParams['useActiveDendrites']
+
+# attenuation factor for the conductance of the SK channel
+SKE2_mult_factor = 1.0
+# SKE2_mult_factor = 0.1
+
+# determine the voltage activation curve of the Ih current (HCN channel)
+Ih_vshift = experimentParams['Ih_vshift']
+
+# simulation duration
+sim_duration_sec = totalSimDurationInSec
+sim_duration_ms  = 1000 * sim_duration_sec
+
+# define inst rate between change interval and smoothing sigma options
+
+
+
+# beaurrocracy
+showPlots = False
+
+useCvode = True
+totalSimDurationInMS = 1000 * totalSimDurationInSec
+
+#%% define some helper functions
+
+
+
+def GetDirNameAndFileName(file_name):
+    # string to describe model name based on params
+    resultsSavedIn_rootFolder = os.path.join(NEURON_REDUCE_DATA_DIR,DIR_NAME)
+    if not os.path.isexists(resultsSavedIn_rootFolder):
+        os.makedirs(resultsSavedIn_rootFolder)
+    return resultsSavedIn_rootFolder, file_name
+
+
+def GetDistanceBetweenSections(sourceSection, destSection):
+    h.distance(sec=sourceSection)
+    return h.distance(0, sec=destSection)
+
+
+# AMPA synapse
+def DefineSynapse_AMPA(segment, gMax=0.0004):
+    synapse = h.ProbUDFsyn2(segment)
+
+    synapse.tau_r = 0.3
+    synapse.tau_d = 3.0
+    synapse.gmax = gMax
+    synapse.e = 0
+    synapse.Use = 1
+    synapse.u0 = 0
+    synapse.Dep = 0
+    synapse.Fac = 0
+
+    return synapse
+
+
+# NMDA synapse
+def DefineSynapse_NMDA(segment, gMax=0.0004):
+    synapse = h.ProbAMPANMDA2(segment)
+
+    synapse.tau_r_AMPA = 0.3
+    synapse.tau_d_AMPA = 3.0
+    synapse.tau_r_NMDA = 2.0
+    synapse.tau_d_NMDA = 70.0
+    synapse.gmax = gMax
+    synapse.e = 0
+    synapse.Use = 1
+    synapse.u0 = 0
+    synapse.Dep = 0
+    synapse.Fac = 0
+
+    return synapse
+
+
+# GABA A synapse
+def DefineSynapse_GABA_A(segment, gMax=0.001):
+    synapse = h.ProbUDFsyn2(segment)
+
+    synapse.tau_r = 0.2
+    synapse.tau_d = 8
+    synapse.gmax = gMax
+    synapse.e = -80
+    synapse.Use = 1
+    synapse.u0 = 0
+    synapse.Dep = 0
+    synapse.Fac = 0
+
+    return synapse
+
+
+# GABA B synapse
+def DefineSynapse_GABA_B(segment, gMax=0.001):
+    synapse = h.ProbUDFsyn2(segment)
+
+    synapse.tau_r = 3.5
+    synapse.tau_d = 260.9
+    synapse.gmax = gMax
+    synapse.e = -97
+    synapse.Use = 1
+    synapse.u0 = 0
+    synapse.Dep = 0
+    synapse.Fac = 0
+
+    return synapse
+
+
+# GABA A+B synapse
+def DefineSynapse_GABA_AB(segment, gMax=0.001):
+    synapse = h.ProbGABAAB_EMS(segment)
+
+    synapse.tau_r_GABAA = 0.2
+    synapse.tau_d_GABAA = 8
+    synapse.tau_r_GABAB = 3.5
+    synapse.tau_d_GABAB = 260.9
+    synapse.gmax = gMax
+    synapse.e_GABAA = -80
+    synapse.e_GABAB = -97
+    synapse.GABAB_ratio = 0.0
+    synapse.Use = 1
+    synapse.u0 = 0
+    synapse.Dep = 0
+    synapse.Fac = 0
+
+    return synapse
+
+
+def ConnectEmptyEventGenerator(synapse):
+
+    netConnection = h.NetCon(None,synapse)
+    netConnection.delay = 0
+    netConnection.weight[0] = 1
+
+    return netConnection
+
+
+# create a single image of both excitatory and inhibitory spikes and the dendritic voltage traces
+def CreateCombinedColorImage(dendriticVoltageTraces, excitatoryInputSpikes, inhibitoryInputSpikes):
+    minV = -85
+    maxV = 35
+
+    excitatoryInputSpikes = signal.fftconvolve(excitatoryInputSpikes, np.ones((3,3)), mode='same')
+    inhibitoryInputSpikes = signal.fftconvolve(inhibitoryInputSpikes, np.ones((3,3)), mode='same')
+
+    stimulationImage = np.zeros((np.shape(excitatoryInputSpikes)[0],np.shape(excitatoryInputSpikes)[1],3))
+    stimulationImage[:,:,0] = 0.98 * (dendriticVoltageTraces - minV) / (maxV - minV) + inhibitoryInputSpikes
+    stimulationImage[:,:,1] = 0.98 * (dendriticVoltageTraces - minV) / (maxV - minV) + excitatoryInputSpikes
+    stimulationImage[:,:,2] = 0.98 * (dendriticVoltageTraces - minV) / (maxV - minV)
+    stimulationImage[stimulationImage > 1] = 1
+
+    return stimulationImage
+
+
+def get_neuron_model(morphology_path: str, biophysical_model_path: str, biophysical_model_tamplate_path: str):
+    h.load_file('nrngui.hoc')
+    h.load_file("import3d.hoc")
+
+    h.load_file(biophysical_model_path)
+    h.load_file(biophysical_model_tamplate_path)
+    L5PC = h.L5PCtemplate(morphology_path)
+
+    cvode = h.CVode()
+    if useCvode:
+        cvode.active(1)
+    return L5PC
+
+
+
+
+#%% define NEURON model
+morphology_path = "neuron_as_deep_net-master/L5PC_NEURON_simulation/morphologies/cell1.asc"
+biophysical_model_path = "neuron_as_deep_net-master/L5PC_NEURON_simulation/L5PCbiophys5b.hoc"
+biophysical_model_tamplate_path = "neuron_as_deep_net-master/L5PC_NEURON_simulation/L5PCtemplate_2.hoc"
+
+__L5PC=get_neuron_model(morphology_path, biophysical_model_path, biophysical_model_tamplate_path)
+#%% collect everything we need about the model
+
+# Get a list of all sections
+listOfBasalSections  = [__L5PC.dend[x] for x in range(len(__L5PC.dend))]
+listOfApicalSections = [__L5PC.apic[x] for x in range(len(__L5PC.apic))]
+allSections = listOfBasalSections + listOfApicalSections
+allSectionsType = ['basal' for x in listOfBasalSections] + ['apical''apical' for x in listOfApicalSections]
+allSectionsLength = []
+allSections_DistFromSoma = []
+
+allSegments = []
+allSegmentsLength = []
+allSegmentsType = []
+allSegments_DistFromSoma = []
+allSegments_SectionDistFromSoma = []
+allSegments_SectionInd = []
+# get a list of all segments
+for k, section in enumerate(allSections):
+    allSectionsLength.append(section.L)
+    allSections_DistFromSoma.append(GetDistanceBetweenSections(__L5PC.soma[0], section))
+    for currSegment in section:
+        allSegments.append(currSegment)
+        allSegmentsLength.append(float(section.L) / section.nseg)
+        allSegmentsType.append(allSectionsType[k])
+        allSegments_DistFromSoma.append(GetDistanceBetweenSections(__L5PC.soma[0], section) + float(section.L) * currSegment.x)
+        allSegments_SectionDistFromSoma.append(GetDistanceBetweenSections(__L5PC.soma[0], section))
+        allSegments_SectionInd.append(k)
+
+
+# set Ih vshift value and SK multiplicative factor
+for section in allSections:
+    section.vshift_Ih = Ih_vshift
+__L5PC.soma[0].vshift_Ih = Ih_vshift
+
+list_of_axonal_sections = [__L5PC.axon[x] for x in range(len(__L5PC.axon))]
+list_of_somatic_sections = [__L5PC.soma[x] for x in range(len(__L5PC.soma))]
+all_sections_with_SKE2 = list_of_somatic_sections + list_of_axonal_sections + listOfApicalSections
+
+for section in all_sections_with_SKE2:
+    orig_SKE2_g = section.gSK_E2bar_SK_E2
+    new_SKE2_g = orig_SKE2_g * SKE2_mult_factor
+    section.gSK_E2bar_SK_E2 = new_SKE2_g
+    #print('SKE2 conductance before update = %.10f' %(orig_SKE2_g))
+    #print('SKE2 conductance after  update = %.10f (actual)' %(section.gSK_E2bar_SK_E2))
+
+# Calculate total dendritic length
+numBasalSegments = 0
+numApicalSegments = 0
+totalBasalDendriticLength = 0
+totalApicalDendriticLength = 0
+
+basal_seg_length_um = []
+apical_seg_length_um = []
+for k, segmentLength in enumerate(allSegmentsLength):
+    if allSegmentsType[k] == 'basal':
+        basal_seg_length_um.append(segmentLength)
+        totalBasalDendriticLength += segmentLength
+        numBasalSegments += 1
+    if allSegmentsType[k] == 'apical':
+        apical_seg_length_um.append(segmentLength)
+        totalApicalDendriticLength += segmentLength
+        numApicalSegments += 1
+
+totalDendriticLength = sum(allSectionsLength)
+totalNumSegments = len(allSegments)
+
+# extract basal and apical segment lengths
+num_basal_segments  = len(basal_seg_length_um)
+num_apical_segments = len(apical_seg_length_um)
+
+basal_seg_length_um = np.array(basal_seg_length_um)
+apical_seg_length_um = np.array(apical_seg_length_um)
+
+assert(totalNumSegments == (numBasalSegments + numApicalSegments))
+assert(abs(totalDendriticLength - (totalBasalDendriticLength + totalApicalDendriticLength)) < 0.00001)
+
+totalNumOutputSpikes = 0
+numOutputSpikesPerSim = []
+listOfISIs = []
+listOfSingleSimulationDicts = []
+
+# %%run all simulations
+experimentStartTime = time.time()
+print('-------------------------------------\\')
+print('temperature is %.2f degrees celsius' %(h.celsius))
+print('dt is %.4f ms' %(h.dt))
+print('-------------------------------------/')
+
+
+for simInd in range(numSimulations):
+    currSimulationResultsDict = {}
+    preparationStartTime = time.time()
+    print('...')
+    print('------------------------------------------------------------------------------\\')
+
+    ex_spikes_bin, inh_spikes_bin = next(generator)
+
+    inputSpikeTrains_ex  = ex_spikes_bin
+    inputSpikeTrains_inh = inh_spikes_bin
+
+    ## convert binary vectors to dict of spike times for each seg ind
+    exSpikeSegInds, exSpikeTimes = np.nonzero(inputSpikeTrains_ex)
+    exSpikeTimesMap = {}
+    for segInd, synTime in zip(exSpikeSegInds,exSpikeTimes):
+        if segInd in exSpikeTimesMap.keys():
+            exSpikeTimesMap[segInd].append(synTime)
+        else:
+            exSpikeTimesMap[segInd] = [synTime]
+
+    inhSpikeSegInds, inhSpikeTimes = np.nonzero(inputSpikeTrains_inh)
+    inhSpikeTimesMap = {}
+    for segInd, synTime in zip(inhSpikeSegInds,inhSpikeTimes):
+        if segInd in inhSpikeTimesMap.keys():
+            inhSpikeTimesMap[segInd].append(synTime)
+        else:
+            inhSpikeTimesMap[segInd] = [synTime]
+
+
+    ## run simulation ########################
+    allExNetCons = []
+    allExNetConEventLists = []
+
+    allInhNetCons = []
+    allInhNetConEventLists = []
+
+    allExSynapses = []
+    allInhSynapses = []
+
+    for segInd, segment in enumerate(allSegments):
+        ###### excitation ######
+
+        # define synapse and connect it to a segment
+        if excitatorySynapseType == 'AMPA':
+            exSynapse = DefineSynapse_AMPA(segment)
+        elif excitatorySynapseType == 'NMDA':
+            exSynapse = DefineSynapse_NMDA(segment)
+        else:
+            assert False, 'Not supported Excitatory Synapse Type'
+        allExSynapses.append(exSynapse)
+
+        # connect synapse
+        netConnection = h.NetCon(None,exSynapse)
+        netConnection.delay = 0
+        netConnection.weight[0] = 1
+
+        # update lists
+        allExNetCons.append(netConnection)
+        if segInd in exSpikeTimesMap.keys():
+            allExNetConEventLists.append(exSpikeTimesMap[segInd])
+        else:
+            allExNetConEventLists.append([])
+
+        ###### inhibition ######
+
+        # define synapse and connect it to a segment
+        if inhibitorySynapseType == 'GABA_A':
+            inhSynapse = DefineSynapse_GABA_A(segment)
+        elif inhibitorySynapseType == 'GABA_B':
+            inhSynapse = DefineSynapse_GABA_B(segment)
+        elif inhibitorySynapseType == 'GABA_AB':
+            inhSynapse = DefineSynapse_GABA_AB(segment)
+        else:
+            assert False, 'Not supported Inhibitory Synapse Type'
+        allInhSynapses.append(inhSynapse)
+
+        # connect synapse
+        netConnection = ConnectEmptyEventGenerator(inhSynapse)
+
+        # update lists
+        allInhNetCons.append(netConnection)
+        if segInd in inhSpikeTimesMap.keys():
+            allInhNetConEventLists.append(inhSpikeTimesMap[segInd])
+        else:
+            allInhNetConEventLists.append([])  # insert empty list if no event
+
+    # define function to be run at the begining of the simulation to add synaptic events
+    def AddAllSynapticEvents():
+        for exNetCon, eventsList in zip(allExNetCons,allExNetConEventLists):
+            for eventTime in eventsList:
+                exNetCon.event(eventTime)
+        for inhNetCon, eventsList in zip(allInhNetCons,allInhNetConEventLists):
+            for eventTime in eventsList:
+                inhNetCon.event(eventTime)
+
+
+    reduction_time=time.time()
+    L5PC_reduced, synapses_list, netcons_list = neuron_reduce.subtree_reductor(__L5PC,allExSynapses+allInhSynapses,allExNetCons+allInhNetCons,reduction_frequency=0)
+    print('reduction took %.4f seconds'%(time.time()-reduction_time))
+
+    # add voltage and time recordings
+    # record time
+    recTime = h.Vector()
+    recTime.record(h._ref_t)
+
+    # record soma voltage
+    recVoltageSoma = h.Vector()
+    recVoltageSoma.record(L5PC_reduced.soma[0](0.5)._ref_v)
+
+    # record nexus voltage
+    nexusSectionInd = 50
+    recVoltageNexus = h.Vector()
+    recVoltageNexus.record(L5PC_reduced.apic[nexusSectionInd](0.9)._ref_v)
+
+    # record all segments voltage
+    if collectAndSaveDVTs:
+        recVoltage_allSegments = []
+        for segInd, segment in enumerate(allSegments):
+            voltageRecSegment = h.Vector()
+            voltageRecSegment.record(segment._ref_v)
+            recVoltage_allSegments.append(voltageRecSegment)
+    recVoltageSoma.record(L5PC_reduced.soma[0](0.5)._ref_v)
+
+    # record nexus voltage
+    nexusSectionInd = 50
+    recVoltageNexus = h.Vector()
+    recVoltageNexus.record(L5PC_reduced.apic[nexusSectionInd](0.9)._ref_v)
+
+    # record all segments voltage
+    if collectAndSaveDVTs:
+        recVoltage_allSegments = []
+        for segInd, segment in enumerate(allSegments):
+            voltageRecSegment = h.Vector()
+            voltageRecSegment.record(segment._ref_v)
+            recVoltage_allSegments.append(voltageRecSegment)
+
+    preparationDurationInSeconds = time.time() - preparationStartTime
+    print("preparing for single simulation took %.4f seconds" % (preparationDurationInSeconds))
+
+
+# %% simulate the cell
+    simulationStartTime = time.time()
+    # make sure the following line will be run after h.finitialize()
+    fih = h.FInitializeHandler('nrnpython("AddAllSynapticEvents()")')
+    h.finitialize(-76)
+    neuron.run(totalSimDurationInMS)
+    singleSimulationDurationInMinutes = (time.time() - simulationStartTime) / 60
+    print("single simulation took %.2f minutes" % (singleSimulationDurationInMinutes))
+
+    ## extract the params from the simulation
+    # collect all relevent recoding vectors (input spike times, dendritic voltage traces, soma voltage trace)
+    collectionStartTime = time.time()
+
+    origRecordingTime = np.array(recTime.to_python())
+    origSomaVoltage   = np.array(recVoltageSoma.to_python())
+    origNexusVoltage  = np.array(recVoltageNexus.to_python())
+
+    # high res - origNumSamplesPerMS per ms
+    recordingTimeHighRes = np.arange(0, totalSimDurationInMS, 1.0 / numSamplesPerMS_HighRes)
+    somaVoltageHighRes   = np.interp(recordingTimeHighRes, origRecordingTime, origSomaVoltage)
+    nexusVoltageHighRes  = np.interp(recordingTimeHighRes, origRecordingTime, origNexusVoltage)
+
+    # low res - 1 sample per ms
+    recordingTimeLowRes = np.arange(0,totalSimDurationInMS)
+    somaVoltageLowRes   = np.interp(recordingTimeLowRes, origRecordingTime, origSomaVoltage)
+
+
+    # detect soma spike times
+    risingBefore = np.hstack((0, somaVoltageHighRes[1:] - somaVoltageHighRes[:-1])) > 0
+    fallingAfter = np.hstack((somaVoltageHighRes[1:] - somaVoltageHighRes[:-1], 0)) < 0
+    localMaximum = np.logical_and(fallingAfter, risingBefore)
+    largerThanThresh = somaVoltageHighRes > -25
+
+    binarySpikeVector = np.logical_and(localMaximum,largerThanThresh)
+    spikeInds = np.nonzero(binarySpikeVector)
+    outputSpikeTimes = recordingTimeHighRes[spikeInds]
+
+    currSimulationResultsDict['recordingTimeHighRes'] = recordingTimeHighRes.astype(np.float32)
+    currSimulationResultsDict['somaVoltageHighRes']   = somaVoltageHighRes.astype(np.float16)
+    currSimulationResultsDict['nexusVoltageHighRes']  = nexusVoltageHighRes.astype(np.float16)
+
+    currSimulationResultsDict['recordingTimeLowRes'] = recordingTimeLowRes.astype(np.float32)
+    currSimulationResultsDict['somaVoltageLowRes']   = somaVoltageLowRes.astype(np.float16)
+    currSimulationResultsDict['nexusVoltageLowRes']  = nexusVoltageLowRes.astype(np.float16)
+
+    currSimulationResultsDict['exInputSpikeTimes']  = exSpikeTimesMap
+    currSimulationResultsDict['inhInputSpikeTimes'] = inhSpikeTimesMap
+    currSimulationResultsDict['outputSpikeTimes']   = outputSpikeTimes.astype(np.float16)
+
+    if collectAndSaveDVTs:
+        currSimulationResultsDict['dendriticVoltagesLowRes'] = dendriticVoltages.astype(np.float16)
+
+    numOutputSpikes = len(outputSpikeTimes)
+    numOutputSpikesPerSim.append(numOutputSpikes)
+    listOfISIs += list(np.diff(outputSpikeTimes))
+
+    listOfSingleSimulationDicts.append(currSimulationResultsDict)
+
+    dataCollectionDurationInSeconds = (time.time() - collectionStartTime)
+    print("data collection per single simulation took %.4f seconds" % (dataCollectionDurationInSeconds))
+
+    entireSimulationDurationInMinutes = (time.time() - preparationStartTime) / 60
+    print('-----------------------------------------------------------')
+    print('finished simulation %d: num output spikes = %d' %(simInd + 1, numOutputSpikes))
+    print("entire simulation took %.2f minutes" % (entireSimulationDurationInMinutes))
+    print('------------------------------------------------------------------------------/')
+
+
+
+
+#%% all simulations have ended, pring some statistics
+
+totalNumOutputSpikes = sum(numOutputSpikesPerSim)
+totalNumSimulationSeconds = totalSimDurationInSec * numSimulations
+averageOutputFrequency = totalNumOutputSpikes / float(totalNumSimulationSeconds)
+ISICV = np.std(listOfISIs) / np.mean(listOfISIs)
+entireExperimentDurationInMinutes = (time.time() - experimentStartTime) / 60
+
+# calculate some collective meassures of the experiment
+print('-------------------------------------------------\\')
+print("entire experiment took %.2f minutes" % (entireExperimentDurationInMinutes))
+print('-----------------------------------------------')
+print('total number of collected spikes is ' + str(totalNumOutputSpikes))
+print('average output frequency is %.2f [Hz]' % (averageOutputFrequency))
+print('number of spikes per simulation minute is %.2f' % (totalNumOutputSpikes / entireExperimentDurationInMinutes))
+print('ISI-CV is ' + str(ISICV))
+print('-------------------------------------------------/')
+sys.stdout.flush()
+
+#%% organize and save everything
+
+
+# create a simulation parameters dict
+experimentParams['randomSeed']     = experimentParams['randomSeed']
+experimentParams['numSimulations'] = numSimulations
+experimentParams['totalSimDurationInSec']   = totalSimDurationInSec
+experimentParams['collectAndSaveDVTs']      = collectAndSaveDVTs
+
+experimentParams['allSectionsType']          = allSectionsType
+experimentParams['allSections_DistFromSoma'] = allSections_DistFromSoma
+experimentParams['allSectionsLength']        = allSectionsLength
+experimentParams['allSegmentsType']                 = allSegmentsType
+experimentParams['allSegmentsLength']               = allSegmentsLength
+experimentParams['allSegments_DistFromSoma']        = allSegments_DistFromSoma
+experimentParams['allSegments_SectionDistFromSoma'] = allSegments_SectionDistFromSoma
+experimentParams['allSegments_SectionInd']          = allSegments_SectionInd
+
+experimentParams['ISICV'] = ISICV
+experimentParams['listOfISIs'] = listOfISIs
+experimentParams['numOutputSpikesPerSim']     = numOutputSpikesPerSim
+experimentParams['totalNumOutputSpikes']      = totalNumOutputSpikes
+experimentParams['totalNumSimulationSeconds'] = totalNumSimulationSeconds
+experimentParams['averageOutputFrequency']    = averageOutputFrequency
+experimentParams['entireExperimentDurationInMinutes'] = entireExperimentDurationInMinutes
+
+# the important things to store
+experimentResults = {}
+experimentResults['listOfSingleSimulationDicts'] = listOfSingleSimulationDicts
+
+# the dict that will hold everything
+experimentDict = {}
+experimentDict['Params']  = experimentParams
+experimentDict['Results'] = experimentResults
+
+dirToSaveIn, filenameToSave = GetDirNameAndFileName(totalNumOutputSpikes, randomSeed)
+if not os.path.exists(dirToSaveIn):
+    os.makedirs(dirToSaveIn)
+
+# pickle everythin
+pickle.dump(experimentDict, open(dirToSaveIn + filenameToSave, "wb"), protocol=2)
+
+

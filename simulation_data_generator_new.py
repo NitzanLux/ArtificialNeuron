@@ -19,11 +19,11 @@ class SimulationDataGenerator():
     'Characterizes a dataset for PyTorch'
 
     def __init__(self, sim_experiment_files, buffer_size_in_files=12, epoch_size=None,
-                 batch_size=8, sample_ratio_to_shuffle=4, prediction_length=1, window_size_ms=300, file_load=0.3,
+                 batch_size=8, sample_ratio_to_shuffle=4, prediction_length=1, window_size_ms=300,
 
                  ignore_time_from_start=20, y_train_soma_bias=-67.7, y_soma_threshold=Y_SOMA_THRESHOLD,
                  y_DTV_threshold=3.0,
-                 shuffle_files=True,  is_shuffle_data=False, number_of_traces_from_file=None,
+                 shuffle_files=True, shuffle_data=False, number_of_traces_from_file=None,
                  number_of_files=None, evaluation_mode=False):
         'data generator initialization'
         self.reload_files_once = False
@@ -40,6 +40,7 @@ class SimulationDataGenerator():
         self.y_soma_threshold = y_soma_threshold
         self.y_DTV_threshold = y_DTV_threshold
         self.sample_ratio_to_shuffle = sample_ratio_to_shuffle
+        self.shuffle_data=shuffle_data
         self.shuffle_files = shuffle_files
         self.epoch_size = epoch_size
         self.curr_file_index = -1
@@ -58,6 +59,7 @@ class SimulationDataGenerator():
 
     def eval(self):
         self.shuffle_files = False
+        self.shuffle_data=False
         prev_window_length = self.window_size_ms - self.prediction_length
         self.window_size_ms = self.X.shape[2]
         self.prediction_length = self.X.shape[2] - prev_window_length
@@ -75,25 +77,26 @@ class SimulationDataGenerator():
         yield from self.iterate_deterministic_no_repetition()
 
 
-    @staticmethod
-    def shuffle_array(arrays: List[np.array]):
-        """
-        shuffle arrays of 1d when the shuffle should be the same for the two arrays (i.e. x,y)
-        :return: new arrays
-        """
-        new_indices = np.arange(arrays[0].shape[0])
-        np.random.shuffle(new_indices)
-        new_arrays = list(arrays)
-        for i in range(len(new_arrays)):
-            new_arrays[i] = new_arrays[i][new_indices, ...]
-        return new_arrays
+    # @staticmethod
+    # def shuffle_array(arrays: List[np.array]):
+    #     """
+    #     shuffle arrays of 1d when the shuffle should be the same for the two arrays (i.e. x,y)
+    #     :return: new arrays
+    #     """
+    #     new_indices = np.arange(arrays[0].shape[0])
+    #     np.random.shuffle(new_indices)
+    #     new_arrays = list(arrays)
+    #     for i in range(len(new_arrays)):
+    #         new_arrays[i] = new_arrays[i][new_indices, ...]
+    #     return new_arrays
 
     def shuffel_data(self):
-        indexes = np.arange(self.X.shape[0])
-        np.random.shuffle(indexes)
-        self.X = self.X[indexes, :, :].squeeze()
-        self.y_soma = self.y_soma[indexes, :].squeeze()
-        self.y_spike = self.y_spike[indexes, :]
+        if self.is_shuffel_data:
+            indexes = np.arange(self.X.shape[0])
+            np.random.shuffle(indexes)
+            self.X = self.X[indexes, :, :].squeeze()
+            self.y_soma = self.y_soma[indexes, :].squeeze()
+            self.y_spike = self.y_spike[indexes, :]
 
     def iterate_deterministic_no_repetition(self):
         counter = 0
@@ -136,7 +139,7 @@ class SimulationDataGenerator():
         if len(self.sim_experiment_files) <= self.buffer_size_in_files and not self.reload_files_once:
             self.curr_files_to_use = self.sim_experiment_files
         else:
-            if self.files_counter * self.buffer_size_in_files >= len(self.sim_experiment_files):
+            if self.files_counter * self.buffer_size_in_files >= len(self.sim_experiment_files) and self.shuffle_files:
                 random.shuffle(self.sim_experiment_files)
             first_index = (self.files_counter * self.buffer_size_in_files) % len(
                 self.sim_experiment_files)
@@ -148,7 +151,7 @@ class SimulationDataGenerator():
             elif not self.reload_files_once:
                 self.curr_files_to_use = self.sim_experiment_files[:last_index] + self.sim_experiment_files[
                                                                                   first_index:]
-                random.shuffle(self.curr_files_to_use)
+                if self.shuffel_files: random.shuffle(self.curr_files_to_use)
             else:
                 self.curr_files_to_use = []
             self.files_counter += 1

@@ -46,7 +46,7 @@ SAMPLE_RATIO_TO_SHUFFLE_TRAINING = 1.1
 
 synapse_type = 'NMDA'
 include_DVT = False
-
+print_logs=False
 # for dibugging
 # os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
 # NUMBER_OF_HOURS_FOR_SAVING_MODEL_AND_CONFIG=0
@@ -130,7 +130,6 @@ def train_with_mixed_precision(accumulate_loss_batch_factor, clip_gradient, cust
         with torch.cuda.amp.autocast():
             labels = [l.cuda().flatten().type(DATA_TYPE) for l in labels]
             # forward + backward + optimize
-            print(_, "*****", flush=True)
             outputs = model(inputs)
             outputs = [i.flatten() for i in outputs]
             cur_general_loss, cur_loss_bcel, cur_loss_mse, cur_loss_dvt, cur_loss_gausian_mse = custom_loss(outputs,
@@ -293,13 +292,12 @@ def evaluate_validation(config, custom_loss, model, validation_data_iterator):
     if not (
             config.batch_counter % VALIDATION_EVALUATION_FREQUENCY == 0 or config.batch_counter % ACCURACY_EVALUATION_FREQUENCY == 0 or config.batch_counter % ACCURACY_EVALUATION_FREQUENCY == 0):
         return
-    print("validate %d" % config.batch_counter)
+    if print_logs: print("validate %d" % config.batch_counter)
     valid_input, valid_labels = next(validation_data_iterator)
     model.eval()
     valid_input = valid_input.cuda().type(DATA_TYPE)
     valid_labels = [l.cuda().type(DATA_TYPE) for l in valid_labels]
     with torch.no_grad():
-        print(valid_input.shape)
         output = model(valid_input)
     target_s = valid_labels[0].detach().cpu()
     target_s=target_s
@@ -462,7 +460,7 @@ def load_and_train(config):
 def train_log(loss, step, epoch=None, learning_rate=None, sigma=None, weights=None, additional_str='', commit=False):
     general_loss, loss_bcel, loss_mse, loss_dvt, blur_loss = loss
     general_loss = float(general_loss.item())
-    print("train", flush=True)
+    if print_logs: print("train", flush=True)
 
     if DOCUMENT_ON_WANDB:
         log_dict = {"general loss %s" % additional_str: general_loss,
@@ -479,12 +477,12 @@ def train_log(loss, step, epoch=None, learning_rate=None, sigma=None, weights=No
         if sigma is not None:
             log_dict.update({"sigma %s" % additional_str: sigma})  # add training parameters per step
         wandb.log(log_dict, step=step, commit=commit)  # add training parameters per step
-
-    print("step %d, epoch %d %s" % (step, epoch if epoch is not None else -1, additional_str))
-    print("general loss ", general_loss)
-    print("mse loss ", loss_mse)
-    print("bcel loss ", loss_bcel)
-    print("dvt loss ", loss_dvt)
+    if print_logs:
+        print("step %d, epoch %d %s" % (step, epoch if epoch is not None else -1, additional_str))
+        print("general loss ", general_loss)
+        print("mse loss ", loss_mse)
+        print("bcel loss ", loss_bcel)
+        print("dvt loss ", loss_dvt)
 
 
 def display_accuracy(target, output, step, additional_str=''):
@@ -493,7 +491,7 @@ def display_accuracy(target, output, step, additional_str=''):
     output = np.vstack([np.abs(1 - output), output]).T
     # fpr, tpr, thresholds = skm.roc_curve(target, output[:,1], )  # wandb has now possible to extruct it yet
     auc = skm.roc_auc_score(target, output[:, 1])
-    print("AUC   ", auc)
+    if print_logs: print("AUC   ", auc)
     wandb.log({"pr %s" % additional_str: wandb.plot.pr_curve(target, output,
                                                              labels=None, classes_to_plot=None),
                "roc %s" % additional_str: wandb.plot.roc_curve(target, output, labels=None, classes_to_plot=None),

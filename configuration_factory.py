@@ -21,7 +21,7 @@ include_DVT = False
 # num_DVT_components = 20 if synapse_type == 'NMDA' else 30
 CURRENT_VERSION = 1.7
 
-
+a = get_L5PC()
 def generate_model_name(additional_str: str = ''):
     model_ID = np.random.randint(100000)
     modelID_str = 'ID_%d' % (model_ID)
@@ -59,18 +59,18 @@ def surround_with_default_config_values(**kargs):
                       train_file_load=0.5, valid_file_load=0.5, spike_probability=None,
                       # files_filter_regex=".*exBas_0_1100_inhBasDiff_-1100_600__exApic_0_1100_inhApicDiff_-1100_600_SpTemp[^\\/\.]*\.p",
                       files_filter_regex=".*", freeze_node_factor=0.4,
-                      optimizer_type="Adagrad", optimizer_params=dict(),clip_gradients_factor=2.5,  # optimizer_params={'eps':1e-8},
+                      optimizer_type="NAdam", optimizer_params=dict(weight_decay=1e-8),clip_gradients_factor=2.5,  # optimizer_params={'eps':1e-8},
                       # lr_scheduler='CyclicLR',lr_scheduler_params=dict(max_lr=0.05,step_size_up=1000,base_lr=0.00003,cycle_momentum=True),
                       # lr_scheduler='ReduceLROnPlateau',lr_scheduler_params=dict(factor=0.5,cooldown=300,patience =3000,eps=1e-5, threshold=1e-2),
                       lr_scheduler=None,
                       # scheduler_cooldown_factor=150,
                       batch_counter=0, epoch_counter=0,  # default counter
                       torch_seed=42, numpy_seed=21, random_seed=12, init_weights_sd=0.05,
-                      dynamic_learning_params=True,
+                      dynamic_learning_params=False,
                       constant_loss_weights=[10000., 1., 0., 0], constant_sigma=1.2, constant_learning_rate=0.001,
                       dynamic_learning_params_function="learning_parameters_iter_per_batch",
                       config_path="", model_tag="complex_constant_model", model_path=None,
-                      loss_function="bcel_mse_dvt_loss")
+                      loss_function="focalbcel_mse_loss")
 
     architecture_dict = AttrDict(#segment_tree_path="tree.pkl",
                                  network_architecture_structure="recursive",
@@ -250,14 +250,13 @@ if __name__ == '__main__':
     # restore_last_n_configs(100)
     configs = []
     configurations_name = "morph"
-    for i in ['AdamW']:
-        config_morpho_0 = config_factory(loss_function='focalbcel_mse_loss',
-                                         dynamic_learning_params=False,use_mixed_precision=False,
+    for i in ['NAdam']:
+        config_morpho_0 = config_factory(
                                          # architecture_type='FullNeuronNetwork',
                                          architecture_type='LAYERED_TEMPORAL_CONV_N',
                                          model_tag="%s_%s" % (configurations_name,i), optimizer_type=i,clip_gradients_factor=2.5,
-                                         accumulate_loss_batch_factor=1, spike_probability=None, prediction_length=700,
-                                         batch_size_validation=50, batch_size_train=180,
+                                         accumulate_loss_batch_factor=1, prediction_length=700,
+                                         batch_size_validation=32, batch_size_train=90,
                                          # batch_size_validation=4, batch_size_train=4,
                                          constant_learning_rate=0.01)
         configs.append(config_morpho_0)
