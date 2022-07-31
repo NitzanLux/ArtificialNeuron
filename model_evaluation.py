@@ -140,27 +140,35 @@ class ModelEvaluator():
         assert not self.data.is_recording(), "evaluation had been done in this object"
         if model is None:
             model = self.load_model()
-        model.cuda().eval()
-        if DATA_TYPE == torch.cuda.FloatTensor:
-            model.float()
-        elif DATA_TYPE == torch.cuda.DoubleTensor:
-            model.double()
+        if model is not None:
+            model.cuda().eval()
+            if DATA_TYPE == torch.cuda.FloatTensor:
+                model.float()
+            elif DATA_TYPE == torch.cuda.DoubleTensor:
+                model.double()
 
         data_generator = self.load_data_generator(self.config, self.is_validation)
         for i, data in enumerate(data_generator):
             print(i)
             d_input, d_labels = data
             s, v = d_labels
-            with torch.cuda.amp.autocast():
-                with torch.no_grad():
-                    output_s, output_v = model(d_input.cuda().type(DATA_TYPE))
-                    # output_s, output_v = model(d_input.cuda().type(torch.cuda.FloatTensor))
-                    output_s = torch.nn.Sigmoid()(output_s)
-            self.data.append(v.cpu().detach().numpy().squeeze(), output_v.cpu().detach().numpy().squeeze(),
-                             s.cpu().detach().numpy().squeeze(), output_s.cpu().detach().numpy().squeeze())
+            if model is not None:
+                with torch.cuda.amp.autocast():
+                    with torch.no_grad():
+                        output_s, output_v = model(d_input.cuda().type(DATA_TYPE))
+                        # output_s, output_v = model(d_input.cuda().type(torch.cuda.FloatTensor))
+                        output_s = torch.nn.Sigmoid()(output_s)
+                output_v=output_v.cpu().detach().numpy().squeeze()
+                output_s=output_s.cpu().detach().numpy().squeeze()
+            else:
+                output_v=zeros_like(v.cpu.detach().numpy().squeeze())
+                output_s=zeros_like(v.cpu.detach().numpy().squeeze())
+            self.data.append(v.cpu().detach().numpy().squeeze(), output_v,
+                             s.cpu().detach().numpy().squeeze(), output_s)
 
     def load_model(self):
         print("loading model...", flush=True)
+        if self.config is None: return None
         if self.config.architecture_type == "DavidsNeuronNetwork":
             model = davids_network.DavidsNeuronNetwork.load(self.config)
         elif self.config.architecture_type == "FullNeuronNetwork":

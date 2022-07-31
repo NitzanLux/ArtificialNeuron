@@ -16,6 +16,29 @@ from project_path import NEURON_REDUCE_DATA_DIR
 DIR_NAME='first_data'
 
 
+
+def bin2dict(bin_spikes_matrix):
+    spike_row_inds, spike_times = np.nonzero(bin_spikes_matrix)
+    row_inds_spike_times_map = {}
+    for row_ind, syn_time in zip(spike_row_inds, spike_times):
+        if row_ind in row_inds_spike_times_map.keys():
+            row_inds_spike_times_map[row_ind].append(syn_time)
+        else:
+            row_inds_spike_times_map[row_ind] = [syn_time]
+
+    return row_inds_spike_times_map
+
+
+def dict2bin(row_inds_spike_times_map, num_segments, sim_duration_ms):
+    bin_spikes_matrix = np.zeros((num_segments, sim_duration_ms), dtype='bool')
+    for row_ind in row_inds_spike_times_map.keys():
+        for spike_time in row_inds_spike_times_map[row_ind]:
+            bin_spikes_matrix[row_ind, spike_time] = 1.0
+
+    return bin_spikes_matrix
+
+
+
 def generate_input_spike_trains_for_simulation(sim_experiment_file, print_logs=False):
     """:DVT_PCA_model is """
     loading_start_time = 0.
@@ -32,8 +55,8 @@ def generate_input_spike_trains_for_simulation(sim_experiment_file, print_logs=F
     def genrator():
         # go over all simulations in the experiment and collect their results
         for k, sim_dict in enumerate(experiment_dict['Results']['listOfSingleSimulationDicts']):
-            X_ex = dict2bin(sim_dict['exInputSpikeTimes'], num_segments, sim_duration_ms)
-            X_inh = dict2bin(sim_dict['inhInputSpikeTimes'], num_segments, sim_duration_ms)
+            X_ex = dict2bin(sim_dict['exInputSpikeTimes'],  len(experiment_dict['Params']['allSegmentsType']), experiment_dict['Params']['totalSimDurationInSec'] * 1000)
+            X_inh = dict2bin(sim_dict['inhInputSpikeTimes'],  len(experiment_dict['Params']['allSegmentsType']),  experiment_dict['Params']['totalSimDurationInSec'] * 1000)
             yield X_ex,X_inh
     return genrator(),experiment_dict['Params']
 
@@ -277,11 +300,12 @@ totalApicalDendriticLength = 0
 basal_seg_length_um = []
 apical_seg_length_um = []
 for k, segmentLength in enumerate(allSegmentsLength):
-    if allSegmentsType[k] == 'basal':
+    if 'basal' in allSegmentsType[k]:
         basal_seg_length_um.append(segmentLength)
         totalBasalDendriticLength += segmentLength
         numBasalSegments += 1
-    if allSegmentsType[k] == 'apical':
+    print(allSegmentsType[k])
+    if 'apical' in allSegmentsType[k]  :
         apical_seg_length_um.append(segmentLength)
         totalApicalDendriticLength += segmentLength
         numApicalSegments += 1
@@ -296,8 +320,8 @@ num_apical_segments = len(apical_seg_length_um)
 basal_seg_length_um = np.array(basal_seg_length_um)
 apical_seg_length_um = np.array(apical_seg_length_um)
 
-# assert(totalNumSegments == (numBasalSegments + numApicalSegments))
-# assert(abs(totalDendriticLength - (totalBasalDendriticLength + totalApicalDendriticLength)) < 0.00001)
+assert(totalNumSegments == (numBasalSegments + numApicalSegments))
+assert(abs(totalDendriticLength - (totalBasalDendriticLength + totalApicalDendriticLength)) < 0.00001)
 
 totalNumOutputSpikes = 0
 numOutputSpikesPerSim = []
@@ -318,7 +342,7 @@ for simInd in range(numSimulations):
     print('...')
     print('------------------------------------------------------------------------------\\')
 
-    ex_spikes_bin, inh_spikes_bin = next(generator)
+    ex_spikes_bin, inh_spikes_bin = next(data_generator)
 
     inputSpikeTrains_ex  = ex_spikes_bin
     inputSpikeTrains_inh = inh_spikes_bin
@@ -421,32 +445,13 @@ for simInd in range(numSimulations):
     recVoltageSoma = h.Vector()
     recVoltageSoma.record(L5PC_reduced.soma[0](0.5)._ref_v)
 
-    # record nexus voltage
-    nexusSectionInd = 50
-    recVoltageNexus = h.Vector()
-    recVoltageNexus.record(L5PC_reduced.apic[nexusSectionInd](0.9)._ref_v)
 
     # record all segments voltage
-    if collectAndSaveDVTs:
-        recVoltage_allSegments = []
-        for segInd, segment in enumerate(allSegments):
-            voltageRecSegment = h.Vector()
-            voltageRecSegment.record(segment._ref_v)
-            recVoltage_allSegments.append(voltageRecSegment)
+
     recVoltageSoma.record(L5PC_reduced.soma[0](0.5)._ref_v)
 
-    # record nexus voltage
-    nexusSectionInd = 50
-    recVoltageNexus = h.Vector()
-    recVoltageNexus.record(L5PC_reduced.apic[nexusSectionInd](0.9)._ref_v)
 
     # record all segments voltage
-    if collectAndSaveDVTs:
-        recVoltage_allSegments = []
-        for segInd, segment in enumerate(allSegments):
-            voltageRecSegment = h.Vector()
-            voltageRecSegment.record(segment._ref_v)
-            recVoltage_allSegments.append(voltageRecSegment)
 
     preparationDurationInSeconds = time.time() - preparationStartTime
     print("preparing for single simulation took %.4f seconds" % (preparationDurationInSeconds))
@@ -457,7 +462,8 @@ for simInd in range(numSimulations):
     # make sure the following line will be run after h.finitialize()
     fih = h.FInitializeHandler('nrnpython("AddAllSynapticEvents()")')
     h.finitialize(-76)
-    neuron.run(totalSimDurationInMS)
+    h.stdinit()
+    h.continuerun(totalSimDurationInMS)
     singleSimulationDurationInMinutes = (time.time() - simulationStartTime) / 60
     print("single simulation took %.2f minutes" % (singleSimulationDurationInMinutes))
 
@@ -467,12 +473,10 @@ for simInd in range(numSimulations):
 
     origRecordingTime = np.array(recTime.to_python())
     origSomaVoltage   = np.array(recVoltageSoma.to_python())
-    origNexusVoltage  = np.array(recVoltageNexus.to_python())
 
     # high res - origNumSamplesPerMS per ms
     recordingTimeHighRes = np.arange(0, totalSimDurationInMS, 1.0 / numSamplesPerMS_HighRes)
     somaVoltageHighRes   = np.interp(recordingTimeHighRes, origRecordingTime, origSomaVoltage)
-    nexusVoltageHighRes  = np.interp(recordingTimeHighRes, origRecordingTime, origNexusVoltage)
 
     # low res - 1 sample per ms
     recordingTimeLowRes = np.arange(0,totalSimDurationInMS)
@@ -491,18 +495,15 @@ for simInd in range(numSimulations):
 
     currSimulationResultsDict['recordingTimeHighRes'] = recordingTimeHighRes.astype(np.float32)
     currSimulationResultsDict['somaVoltageHighRes']   = somaVoltageHighRes.astype(np.float16)
-    currSimulationResultsDict['nexusVoltageHighRes']  = nexusVoltageHighRes.astype(np.float16)
 
     currSimulationResultsDict['recordingTimeLowRes'] = recordingTimeLowRes.astype(np.float32)
     currSimulationResultsDict['somaVoltageLowRes']   = somaVoltageLowRes.astype(np.float16)
-    currSimulationResultsDict['nexusVoltageLowRes']  = nexusVoltageLowRes.astype(np.float16)
 
     currSimulationResultsDict['exInputSpikeTimes']  = exSpikeTimesMap
     currSimulationResultsDict['inhInputSpikeTimes'] = inhSpikeTimesMap
     currSimulationResultsDict['outputSpikeTimes']   = outputSpikeTimes.astype(np.float16)
 
-    if collectAndSaveDVTs:
-        currSimulationResultsDict['dendriticVoltagesLowRes'] = dendriticVoltages.astype(np.float16)
+
 
     numOutputSpikes = len(outputSpikeTimes)
     numOutputSpikesPerSim.append(numOutputSpikes)

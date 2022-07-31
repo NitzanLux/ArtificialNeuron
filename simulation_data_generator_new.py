@@ -91,7 +91,7 @@ class SimulationDataGenerator():
     #     return new_arrays
 
     def shuffel_data(self):
-        if self.is_shuffel_data:
+        if self.shuffle_data:
             indexes = np.arange(self.X.shape[0])
             np.random.shuffle(indexes)
             self.X = self.X[indexes, :, :].squeeze()
