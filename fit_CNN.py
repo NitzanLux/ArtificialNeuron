@@ -339,7 +339,6 @@ def get_data_generators(DVT_PCA_model, config):
                                                    batch_size=config.batch_size_train,
                                                    epoch_size=config.epoch_size * config.accumulate_loss_batch_factor,
                                                    window_size_ms=config.time_domain_shape,
-                                                   file_load=config.train_file_load,
                                                    sample_ratio_to_shuffle=SAMPLE_RATIO_TO_SHUFFLE_TRAINING,
                                                    )
     print("loading data...validation", flush=True)
@@ -348,7 +347,7 @@ def get_data_generators(DVT_PCA_model, config):
                                                         prediction_length=5780,
                                                         batch_size=config.batch_size_validation,
                                                         window_size_ms=config.time_domain_shape,
-                                                        file_load=config.train_file_load, sample_ratio_to_shuffle=1.5,
+                                                        sample_ratio_to_shuffle=1.5,
                                                         )
     if "spike_probability" in config and config.spike_probability is not None:
         train_data_generator.change_spike_probability(config.spike_probability)

@@ -21,7 +21,7 @@ include_DVT = False
 # num_DVT_components = 20 if synapse_type == 'NMDA' else 30
 CURRENT_VERSION = 1.7
 
-a = get_L5PC()
+
 def generate_model_name(additional_str: str = ''):
     model_ID = np.random.randint(100000)
     modelID_str = 'ID_%d' % (model_ID)

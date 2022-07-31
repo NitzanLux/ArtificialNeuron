@@ -6,10 +6,11 @@ import platform
 h.load_file('nrngui.hoc')
 h.load_file("import3d.hoc")
 
-morphologyFilename = "L5PC_NEURON_simulation/morphologies/cell1.asc"
-biophysicalModelFilename = "L5PC_NEURON_simulation/L5PCbiophys5b.hoc"
-biophysicalModelTemplateFilename = "L5PC_NEURON_simulation/L5PCtemplate_2.hoc"
+morphologyFilename = r"L5PC_NEURON_simulation/morphologies/cell1.asc"
+biophysicalModelFilename = r"L5PC_NEURON_simulation/L5PCbiophys5b.hoc"
+biophysicalModelTemplateFilename = r"L5PC_NEURON_simulation/L5PCtemplate_2.hoc"
 DLL_FILE_PATH = r"L5PC_NEURON_simulation/nrnmech.dll"
+
 __L5PC = None
 
 

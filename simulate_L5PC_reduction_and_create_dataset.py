@@ -7,6 +7,8 @@ import time
 import neuron
 from neuron import h
 from neuron import gui
+from get_neuron_modle import get_L5PC,h
+
 import neuron_reduce
 import argparse
 from project_path import NEURON_REDUCE_DATA_DIR
@@ -211,18 +213,7 @@ def CreateCombinedColorImage(dendriticVoltageTraces, excitatoryInputSpikes, inhi
     return stimulationImage
 
 
-def get_neuron_model(morphology_path: str, biophysical_model_path: str, biophysical_model_tamplate_path: str):
-    h.load_file('nrngui.hoc')
-    h.load_file("import3d.hoc")
 
-    h.load_file(biophysical_model_path)
-    h.load_file(biophysical_model_tamplate_path)
-    L5PC = h.L5PCtemplate(morphology_path)
-
-    cvode = h.CVode()
-    if useCvode:
-        cvode.active(1)
-    return L5PC
 
 
 
@@ -231,8 +222,7 @@ def get_neuron_model(morphology_path: str, biophysical_model_path: str, biophysi
 morphology_path = "neuron_as_deep_net-master/L5PC_NEURON_simulation/morphologies/cell1.asc"
 biophysical_model_path = "neuron_as_deep_net-master/L5PC_NEURON_simulation/L5PCbiophys5b.hoc"
 biophysical_model_tamplate_path = "neuron_as_deep_net-master/L5PC_NEURON_simulation/L5PCtemplate_2.hoc"
-
-__L5PC=get_neuron_model(morphology_path, biophysical_model_path, biophysical_model_tamplate_path)
+__L5PC = get_L5PC()
 #%% collect everything we need about the model
 
 # Get a list of all sections
@@ -306,8 +296,8 @@ num_apical_segments = len(apical_seg_length_um)
 basal_seg_length_um = np.array(basal_seg_length_um)
 apical_seg_length_um = np.array(apical_seg_length_um)
 
-assert(totalNumSegments == (numBasalSegments + numApicalSegments))
-assert(abs(totalDendriticLength - (totalBasalDendriticLength + totalApicalDendriticLength)) < 0.00001)
+# assert(totalNumSegments == (numBasalSegments + numApicalSegments))
+# assert(abs(totalDendriticLength - (totalBasalDendriticLength + totalApicalDendriticLength)) < 0.00001)
 
 totalNumOutputSpikes = 0
 numOutputSpikesPerSim = []
