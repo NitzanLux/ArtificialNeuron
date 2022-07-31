@@ -23,7 +23,7 @@ class SimulationDataGenerator():
 
                  ignore_time_from_start=20, y_train_soma_bias=-67.7, y_soma_threshold=Y_SOMA_THRESHOLD,
                  y_DTV_threshold=3.0,
-                 shuffle_files=True, shuffle_data=False, number_of_traces_from_file=None,
+                 shuffle_files=True, shuffle_data=True, number_of_traces_from_file=None,
                  number_of_files=None, evaluation_mode=False):
         'data generator initialization'
         self.reload_files_once = False
