@@ -61,11 +61,12 @@ def generate_input_spike_trains_for_simulation(sim_experiment_file, print_logs=F
     return genrator(),experiment_dict['Params']
 
 
-parser = argparse.ArgumentParser(description='add file to run the neuron reduce')
-parser.add_argument(dest="file", type=str,
-                    help='data file to which reduce')
-args = parser.parse_args()
-sim_file=args.file
+# parser = argparse.ArgumentParser(description='add file to run the neuron reduce')
+# parser.add_argument(dest="file", type=str,
+#                     help='data file to which reduce')
+# args = parser.parse_args()
+# sim_file=args.file
+sim_file="/ems/elsc-labs/segev-i/david.beniaguev/Reseach/Single_Neuron_InOut/ExperimentalData/L5PC_NMDA_valid_mixed/exBas_0_1000_inhBasDiff_-800_200__exApic_0_1000_inhApicDiff_-800_200_SpTemp__saved_InputSpikes_DVTs__1566_outSpikes__128_simulationRuns__6_secDuration__randomSeed_200278.p"
 data_generator,experimentParams = generate_input_spike_trains_for_simulation(sim_file)
 
 #%% define simulation params
@@ -460,7 +461,7 @@ for simInd in range(numSimulations):
 # %% simulate the cell
     simulationStartTime = time.time()
     # make sure the following line will be run after h.finitialize()
-    fih = h.FInitializeHandler('nrnpython("AddAllSynapticEvents()")')
+    fih = h.FInitializeHandler(AddAllSynapticEvents)
     h.finitialize(-76)
     h.stdinit()
     h.continuerun(totalSimDurationInMS)
