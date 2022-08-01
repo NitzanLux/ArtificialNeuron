@@ -151,7 +151,7 @@ class SimulationDataGenerator():
             elif not self.reload_files_once:
                 self.curr_files_to_use = self.sim_experiment_files[:last_index] + self.sim_experiment_files[
                                                                                   first_index:]
-                if self.shuffel_files: random.shuffle(self.curr_files_to_use)
+                if self.shuffle_files: random.shuffle(self.curr_files_to_use)
             else:
                 self.curr_files_to_use = []
             self.files_counter += 1
