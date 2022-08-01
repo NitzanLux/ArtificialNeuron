@@ -37,6 +37,7 @@ for i,f in enumerate(onlyfiles):
 
     if i-current_cpu_index*files_per_cpu>files_per_cpu:
         if current_cpu_index>=0:
+            print(params_string)
             job_factory.send_job("%d_%s"%(i,"reduction_simulation"),
                              'python3 $(dirname "$path")/simulate_L5PC_reduction_and_create_dataset.py %s' % params_string)
         current_cpu_index+=1
@@ -44,4 +45,6 @@ for i,f in enumerate(onlyfiles):
 
     else:
         params_string = "-f '" + str(os.path.join(directory,f)) + "' " + params_string
-
+print(params_string)
+job_factory.send_job("%d_%s" % (i, "reduction_simulation"),
+                     'python3 $(dirname "$path")/simulate_L5PC_reduction_and_create_dataset.py %s' % params_string)
