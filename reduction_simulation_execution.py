@@ -20,7 +20,7 @@ print(args)
 
 number_of_cpus = args.number_of_cpus
 directory = args.directory
-onlyfiles = [f for f in listdir(directory) if os.path.isfile(os.path.join(directory, f))]
+onlyfiles = [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
 
 job_factory = SlurmJobFactory("cluster_logs")
 files_per_cpu = ceil(len(onlyfiles)/number_of_cpus)
