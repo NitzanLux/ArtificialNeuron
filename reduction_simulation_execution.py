@@ -9,7 +9,7 @@ from math import ceil
 
 parser = argparse.ArgumentParser(description='Add configuration file')
 
-parser.add_argument(dest="number_of_cpus", type=str,
+parser.add_argument(dest="number_of_cpus", type=int,
                     help='number of cpus to run on', default=None)
 
 parser.add_argument(dest="directory", type=str,
