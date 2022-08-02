@@ -32,7 +32,7 @@ class SimulationDataGenerator():
         self.buffer_size_in_files = buffer_size_in_files
         self.batch_size = batch_size
         self.evaluation_mode=evaluation_mode
-        self.window_size_ms = window_size_ms+prediction_length-1 # the window size that are important for prediction
+        self.window_size_ms = window_size_ms+prediction_length # the window size that are important for prediction
         self.ignore_time_from_start = ignore_time_from_start
         self.DVT_PCA_model = DVT_PCA_model
         self.y_train_soma_bias = y_train_soma_bias
