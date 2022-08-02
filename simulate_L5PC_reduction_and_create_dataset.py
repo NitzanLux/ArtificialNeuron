@@ -8,7 +8,7 @@ import neuron
 from neuron import h
 from neuron import gui
 from get_neuron_modle import get_L5PC,h
-
+from art import *
 import neuron_reduce
 import argparse
 from project_path import NEURON_REDUCE_DATA_DIR
@@ -587,9 +587,13 @@ parser = argparse.ArgumentParser(description='add file to run the neuron reduce'
 
 parser.add_argument('-f',dest="file", type=str,nargs='+',help='data file to which reduce')
 parser.add_argument('-d',dest="dir", type=str,nargs='+',help='data directory to which reduce')
+parser.add_argument('-i',dest="slurm_job_id", type=str,help='slurm_job_id')
 args = parser.parse_args()
 sim_files=args.file
 dir_name= args.dir
+print("<------------------------------------------------------------------------------------------------------>\n\n")
+tprint(args.slurm_job_id,font="rnd-large")
+print("\n\n<------------------------------------------------------------------------------------------------------>")
 for f in sim_files:
     print('starting---#####################################################################','\n\t',f,'\n\t',dir_name,flush=True)
     simulate_L5PC_reduction(f,dir_name)
