@@ -1,7 +1,7 @@
 from neuron import h
 from neuron import gui
 import platform
-
+import sys
 
 h.load_file('nrngui.hoc')
 h.load_file("import3d.hoc")
@@ -21,4 +21,6 @@ def get_L5PC():
         h.load_file(biophysicalModelFilename)
         h.load_file(biophysicalModelTemplateFilename)
     L5PC = h.L5PCtemplate(morphologyFilename)
+    sys.stdout.write("\033[F")
+    sys.stdout.write("\033[F")
     return L5PC
