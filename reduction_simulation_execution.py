@@ -18,9 +18,10 @@ parser.add_argument(dest="directory", type=str,
 args = parser.parse_args()
 print(args)
 
-number_of_cpus = args.number_of_cpus
+# number_of_cpus = args.number_of_cpus
 directory = args.directory
 onlyfiles = [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
+number_of_cpus = len(onlyfiles)
 
 job_factory = SlurmJobFactory("cluster_logs")
 files_per_cpu = ceil(len(onlyfiles)/number_of_cpus)

@@ -41,8 +41,8 @@ class FullNeuronNetwork(nn.Module):
                 CausalConv1d(self.num_segments,
                           self.num_segments, self.kernel_sizes[i], self.stride,
                           self.dilation, groups=config.num_segments))
-            layers_list.append(nn.BatchNorm1d(self.num_segments))
             layers_list.append(activation_function())
+            layers_list.append(nn.BatchNorm1d(self.num_segments))
 
         first_channels_flag = True
 
