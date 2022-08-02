@@ -34,11 +34,11 @@ for i,f in enumerate(onlyfiles):
     if i%number_of_cpus==0:
         params_string = " '" + str(os.path.join(directory, f)) + "' -d '" + directory_name + "_reduction'"
     else:
-        params_string = "-f '" + str(os.path.join(directory, f)) + "' " + params_string
+        params_string = " '" + str(os.path.join(directory, f)) + "'" + params_string
     if i%files_per_cpu==files_per_cpu-1 or i==len(onlyfiles)-1:
 
         job_factory.send_job("%s_%s"%("reduction_simulation",directory_name),
-                         'python3 $(dirname "$path")/simulate_L5PC_reduction_and_create_dataset.py %s -i $SLURM_JOB_ID' % (params_string),filename_index=i//files_per_cpu)
+                         'python3 $(dirname "$path")/simulate_L5PC_reduction_and_create_dataset.py %s -i $SLURM_JOB_ID' % ("-f"+params_string),filename_index=i//files_per_cpu)
 
 
 
