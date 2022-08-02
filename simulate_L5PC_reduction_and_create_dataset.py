@@ -554,7 +554,8 @@ args = parser.parse_args()
 sim_files = args.file
 dir_name = args.dir[0]
 print("<------------------------------------------------------------------------------------------------------>\n\n")
-tprint("Job ID: %s" % args.slurm_job_id, font="rnd-large")
+tprint("Job ID: " , font="alpha")
+tprint(args.slurm_job_id , font="colossal")
 print("\n\n<------------------------------------------------------------------------------------------------------>")
 for f in sim_files:
     print('#####################################################################', '\n\t')
