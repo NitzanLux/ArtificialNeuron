@@ -557,8 +557,10 @@ print("<------------------------------------------------------------------------
 tprint("Job ID: %s" % args.slurm_job_id, font="rnd-large")
 print("\n\n<------------------------------------------------------------------------------------------------------>")
 for f in sim_files:
-    print('starting---#####################################################################', '\n\t', f, '\n\t',
-          dir_name, flush=True)
-    # simulate_L5PC_reduction(f,dir_name)
-    print('ending-----#####################################################################', '\n\t', f, '\n\t',
-          dir_name)
+    print('starting---#####################################################################', '\n\t',)
+    tprint(dir_name, flush=True,font='alpha')
+    tprint(f, flush=True,font ='alphabet')
+    simulate_L5PC_reduction(f,dir_name)
+    print('ending-----#####################################################################', '\n\t')
+    tprint(dir_name, flush=True,font='alpha')
+    tprint(f, flush=True,font ='alphabet')
