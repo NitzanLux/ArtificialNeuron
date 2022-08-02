@@ -592,10 +592,14 @@ args = parser.parse_args()
 sim_files=args.file
 dir_name= args.dir
 print("<------------------------------------------------------------------------------------------------------>\n\n")
-tprint(args.slurm_job_id,font="rnd-large")
+tprint("Job ID: %s"%args.slurm_job_id,font="rnd-large")
 print("\n\n<------------------------------------------------------------------------------------------------------>")
 for f in sim_files:
+    resultsSavedIn_rootFolder = os.path.join(NEURON_REDUCE_DATA_DIR, dir_name)
+    file_name, file_extension = os.path.splitext(f)
+    _, file_name = os.path.split(file_name)
+    file_name = file_name + '_reduction_%dw' % (REDUCTION_FREQUENCY) + file_extension
     print('starting---#####################################################################','\n\t',f,'\n\t',dir_name,flush=True)
-    simulate_L5PC_reduction(f,dir_name)
+    # simulate_L5PC_reduction(f,dir_name)
     print('ending-----#####################################################################', '\n\t', f, '\n\t', dir_name)
 
