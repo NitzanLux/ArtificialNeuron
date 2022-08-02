@@ -565,7 +565,7 @@ for f in sim_files:
     print(dir_name)
     print(f)
     print(flush=True)
-    simulate_L5PC_reduction(f,dir_name)
+    # simulate_L5PC_reduction(f,dir_name)
     print('#####################################################################', '\n\t')
     tprint('ending',font='alphabet')
     print(dir_name)
