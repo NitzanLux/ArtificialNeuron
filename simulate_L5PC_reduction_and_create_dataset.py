@@ -591,7 +591,7 @@ args = parser.parse_args()
 sim_files=args.file
 dir_name= args.dir
 for f in sim_files:
-    print('starting---#####################################################################','\n\t',f,'\n\t',dir_name)
+    print('starting---#####################################################################','\n\t',f,'\n\t',dir_name,flush=True)
     simulate_L5PC_reduction(f,dir_name)
     print('ending-----#####################################################################', '\n\t', f, '\n\t', dir_name)
 

@@ -46,10 +46,14 @@ class SlurmJobState:
 
 
 class SlurmJob:
-    def __init__(self, job_name, job_folder, run_line, run_on_GPU=False, timelimit=False, mem=DEFAULT_MEM):
+    def __init__(self, job_name, job_folder, run_line, run_on_GPU=False, timelimit=False, mem=DEFAULT_MEM,filename_index=None):
         self.job_name = job_name
-        self.job_filename = os.path.join(job_folder, job_name + ".job")
-        self.log_filename = os.path.join(job_folder, job_name + ".log")
+        if filename_index is not None:
+            self.job_filename = os.path.join(job_folder, "%d_%s.job" % (filename_index, job_name))
+            self.log_filename = os.path.join(job_folder, "%d_%s.log" % (filename_index, job_name))
+        else:
+            self.job_filename = os.path.join(job_folder, job_name + ".job")
+            self.log_filename = os.path.join(job_folder, job_name + ".log")
         self.run_on_GPU = run_on_GPU
         self.run_line = run_line
         self.job_id = None
@@ -132,8 +136,8 @@ class SlurmJobFactory:
         self.jobs = []
         self.old_jobs = []
 
-    def send_job(self, job_name, run_line, run_on_GPU=False, timelimit=False, mem=DEFAULT_MEM, extra=None):
-        job = SlurmJob(job_name, self.job_folder, run_line, run_on_GPU, timelimit, mem)
+    def send_job(self, job_name, run_line, run_on_GPU=False, timelimit=False, mem=DEFAULT_MEM, extra=None,filename_index=None):
+        job = SlurmJob(job_name, self.job_folder, run_line, run_on_GPU, timelimit, mem,filename_index=filename_index)
         job.send()
         self.jobs.append((job, extra))
 
