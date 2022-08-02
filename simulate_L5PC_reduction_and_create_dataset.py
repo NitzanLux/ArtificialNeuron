@@ -15,7 +15,7 @@ from project_path import NEURON_REDUCE_DATA_DIR
 # get or randomly generate random seed
 REDUCTION_FREQUENCY = 0
 
-
+PRINT_LOGS=False
 
 
 def bin2dict(bin_spikes_matrix):
@@ -40,13 +40,13 @@ def dict2bin(row_inds_spike_times_map, num_segments, sim_duration_ms):
 
 
 
-def generate_input_spike_trains_for_simulation(sim_experiment_file, print_logs=False):
+def generate_input_spike_trains_for_simulation(sim_experiment_file, print_logs=PRINT_LOGS):
     """:DVT_PCA_model is """
     loading_start_time = 0.
     if print_logs:
+
         print('-----------------------------------------------------------------')
         print("loading file: '" + sim_experiment_file.split("\\")[-1] + "'")
-        loading_start_time = time.time()
 
     if sys.version_info[0] < 3:
         experiment_dict = pickle.load(open(sim_experiment_file, "rb"))
@@ -341,8 +341,6 @@ def simulate_L5PC_reduction(sim_file,dir_name):
             orig_SKE2_g = section.gSK_E2bar_SK_E2
             new_SKE2_g = orig_SKE2_g * SKE2_mult_factor
             section.gSK_E2bar_SK_E2 = new_SKE2_g
-            # print('SKE2 conductance before update = %.10f' %(orig_SKE2_g))
-            # print('SKE2 conductance after  update = %.10f (actual)' %(section.gSK_E2bar_SK_E2))
         # Calculate total dendritic length
         numBasalSegments = 0
         numApicalSegments = 0
@@ -368,16 +366,17 @@ def simulate_L5PC_reduction(sim_file,dir_name):
         apical_seg_length_um = np.array(apical_seg_length_um)
         assert (totalNumSegments == (numBasalSegments + numApicalSegments))
         assert (abs(totalDendriticLength - (totalBasalDendriticLength + totalApicalDendriticLength)) < 0.00001)
-        print('model loading time %.4f seconds' % (time.time()-loading_time))
+        if PRINT_LOGS:print('model loading time %.4f seconds' % (time.time()-loading_time))
         return L5PC,allSegments,num_basal_segments,num_apical_segments,basal_seg_length_um,apical_seg_length_um,allSections_DistFromSoma,allSectionsLength,allSegmentsType, allSegmentsLength,allSegments_DistFromSoma,allSectionsType,allSegments_SectionDistFromSoma,allSegments_SectionInd
 
 
     # %%run all simulations
     experimentStartTime = time.time()
-    print('-------------------------------------\\')
-    print('temperature is %.2f degrees celsius' %(h.celsius))
-    print('dt is %.4f ms' %(h.dt))
-    print('-------------------------------------/')
+    if PRINT_LOGS:
+        print('-------------------------------------\\')
+        print('temperature is %.2f degrees celsius' %(h.celsius))
+        print('dt is %.4f ms' %(h.dt))
+        print('-------------------------------------/')
 
 
     # allExSynapses,allInhSynapses =  create_synapses_list(allSegments)
@@ -396,8 +395,9 @@ def simulate_L5PC_reduction(sim_file,dir_name):
 
         currSimulationResultsDict = {}
         preparationStartTime = time.time()
-        print('...')
-        print('------------------------------------------------------------------------------\\')
+        if PRINT_LOGS:
+            print('...')
+            print('------------------------------------------------------------------------------\\')
 
         allInhNetConEventLists = []
         allExNetConEventLists = []
@@ -429,7 +429,7 @@ def simulate_L5PC_reduction(sim_file,dir_name):
         L5PC_reduced, synapses_list, netcons_list = neuron_reduce.subtree_reductor(L5PC, allExSynapses + allInhSynapses,
                                                                                    allExNetCons + allInhNetCons,
                                                                                    reduction_frequency=REDUCTION_FREQUENCY)
-        print('reduction took %.4f seconds'%(time.time()-reduction_time))
+        if PRINT_LOGS: print('reduction took %.4f seconds'%(time.time()-reduction_time))
 
 
         def AddAllSynapticEvents():
@@ -452,7 +452,7 @@ def simulate_L5PC_reduction(sim_file,dir_name):
 
 
         preparationDurationInSeconds = time.time() - preparationStartTime
-        print("preparing for single simulation took %.4f seconds" % (preparationDurationInSeconds))
+        if PRINT_LOGS: print("preparing for single simulation took %.4f seconds" % (preparationDurationInSeconds))
 
 
     # %% simulate the cell
@@ -464,7 +464,7 @@ def simulate_L5PC_reduction(sim_file,dir_name):
         h.stdinit()
         h.continuerun(totalSimDurationInMS)
         singleSimulationDurationInMinutes = (time.time() - simulationStartTime) / 60
-        print("single simulation took %.2f minutes" % (singleSimulationDurationInMinutes))
+        if PRINT_LOGS: print("single simulation took %.2f minutes" % (singleSimulationDurationInMinutes))
 
         ## extract the params from the simulation
         # collect all relevent recoding vectors (input spike times, dendritic voltage traces, soma voltage trace)
@@ -511,13 +511,14 @@ def simulate_L5PC_reduction(sim_file,dir_name):
         listOfSingleSimulationDicts.append(currSimulationResultsDict)
 
         dataCollectionDurationInSeconds = (time.time() - collectionStartTime)
-        print("data collection per single simulation took %.4f seconds" % (dataCollectionDurationInSeconds))
+        if PRINT_LOGS: print("data collection per single simulation took %.4f seconds" % (dataCollectionDurationInSeconds))
 
         entireSimulationDurationInMinutes = (time.time() - preparationStartTime) / 60
-        print('-----------------------------------------------------------')
-        print('finished simulation %d: num output spikes = %d' %(simInd + 1, numOutputSpikes))
-        print("entire simulation took %.2f minutes" % (entireSimulationDurationInMinutes))
-        print('------------------------------------------------------------------------------/')
+        if PRINT_LOGS:
+            print('-----------------------------------------------------------')
+            print('finished simulation %d: num output spikes = %d' %(simInd + 1, numOutputSpikes))
+            print("entire simulation took %.2f minutes" % (entireSimulationDurationInMinutes))
+            print('------------------------------------------------------------------------------/')
 
 
 
