@@ -38,7 +38,7 @@ for i,f in enumerate(onlyfiles):
     else:
         params_string = "-f '" + str(os.path.join(directory, f)) + "' " + params_string
     if i%files_per_cpu==files_per_cpu-1 or i==len(onlyfiles)-1:
-        print(i//len(onlyfiles))
+        print(i//files_per_cpu)
         # job_factory.send_job("%d_%s_%s"%(i//number_of_cpus,"reduction_simulation",directory_name),
         #                  'python3 $(dirname "$path")/simulate_L5PC_reduction_and_create_dataset.py %s' % params_string)
 
