@@ -28,10 +28,7 @@ files_per_cpu = ceil(len(onlyfiles)/number_of_cpus)
 
 directory_name=os.path.dirname(directory)
 directory_name=os.path.basename(directory_name)
-# with open(os.path.join(MODELS_DIR, "%s.json" % configs_file), 'r') as file:
-#     configs = json.load(file)
 
-# for i in range(number_of_cpus):
 params_string=''
 for i,f in enumerate(onlyfiles):
     if i%number_of_cpus==0:

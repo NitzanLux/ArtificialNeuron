@@ -595,6 +595,7 @@ print("<------------------------------------------------------------------------
 tprint("Job ID: %s"%args.slurm_job_id,font="rnd-large")
 print("\n\n<------------------------------------------------------------------------------------------------------>")
 for f in sim_files:
+    print(NEURON_REDUCE_DATA_DIR,dir_name)
     resultsSavedIn_rootFolder = os.path.join(NEURON_REDUCE_DATA_DIR, dir_name)
     file_name, file_extension = os.path.splitext(f)
     _, file_name = os.path.split(file_name)
