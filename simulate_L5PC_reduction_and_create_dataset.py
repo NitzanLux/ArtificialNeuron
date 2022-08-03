@@ -362,7 +362,8 @@ def simulate_L5PC_reduction(sim_file, dir_name):
     # for simInd in range(numSimulations):
     L5PC, allSegments, num_basal_segments, num_apical_segments, basal_seg_length_um, apical_seg_length_um, allSections_DistFromSoma, allSectionsLength, allSegmentsType, allSegmentsLength, allSegments_DistFromSoma, allSectionsType, allSegments_SectionDistFromSoma, allSegments_SectionInd = get_L5PC_model()
     allExSynapses, allInhSynapses = create_synapses_list(allSegments)
-    for simInd in range(numSimulations):
+    for simInd in range(1):
+    # for simInd in range(numSimulations):
         L5PC, allSegments, num_basal_segments, num_apical_segments, basal_seg_length_um, apical_seg_length_um, allSections_DistFromSoma, allSectionsLength, allSegmentsType, allSegmentsLength, allSegments_DistFromSoma, allSectionsType, allSegments_SectionDistFromSoma, allSegments_SectionInd = get_L5PC_model()
         allExSynapses, allInhSynapses = create_synapses_list(allSegments)
 
