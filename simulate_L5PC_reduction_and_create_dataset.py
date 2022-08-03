@@ -554,10 +554,11 @@ parser.add_argument('-i', dest="slurm_job_id", type=str, help='slurm_job_id')
 args = parser.parse_args()
 sim_files = args.file
 dir_name = args.dir[0]
-print("<------------------------------------------------------------------------------------------------------>\n\n")
-tprint("Job ID: " , font="alpha")
-tprint(args.slurm_job_id , font="colossal")
-print(dir_name)
+if int(args.slurm_job_id)!=-1:
+    print("<------------------------------------------------------------------------------------------------------>\n\n")
+    tprint("Job ID: " , font="alpha")
+    tprint(args.slurm_job_id , font="colossal")
+    print(dir_name)
 for f in sim_files: print(f)
 print("\n\n<------------------------------------------------------------------------------------------------------>")
 for f in sim_files:
