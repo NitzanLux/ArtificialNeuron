@@ -37,26 +37,32 @@ class EvaluationData():
         self.ground_truth= [] if ground_truth is None else ground_truth
         self.data_labels= [] if data_labels is None else data_labels
         self.data_per_recording = [] if recoreded_data is None else recoreded_data
+
     def clear(self):
         self.data_per_recording = []
+        self.data_labels=[]
+        self.data_per_recording=[]
+
 
     def is_recording(self):
         return len(self) > 0
 
-    def __getitem__(self, recording_index, is_spike=None, is_predicted=None):
-        if is_spike is None and is_predicted is None:
-            return self.__get_item_by_recording_index(recording_index)
-        assert isinstance(is_spike, bool) or isinstance(is_spike, Iterable) or (
-                isinstance(is_spike, int) and 0 <= is_spike <= 1) or (
-                       isinstance(is_spike, str) in ('s', 'v')), "cannot assign value to the second dimension"
-        assert isinstance(is_predicted, bool) or isinstance(is_predicted, Iterable) or (
-                isinstance(is_predicted, int) and 0 <= is_spike <= 1), "cannot assign value to thired dimension"
-        is_predicted, is_spike = self.__cast_indexing(is_predicted, is_spike)
-        return self.data_per_recording[recording_index][is_spike][is_predicted]
+    def __getitem__(self, recording_index):
+        return self.__get_item_by_recording_index(recording_index)
+        # assert isinstance(is_spike, bool) or isinstance(is_spike, Iterable) or (
+        #         isinstance(is_spike, int) and 0 <= is_spike <= 1) or (
+        #                isinstance(is_spike, str) in ('s', 'v')), "cannot assign value to the second dimension"
+        # assert isinstance(is_predicted, bool) or isinstance(is_predicted, Iterable) or (
+        #         isinstance(is_predicted, int) and 0 <= is_spike <= 1), "cannot assign value to thired dimension"
+        # is_predicted, is_spike = self.__cast_indexing(is_predicted, is_spike)
+        # return self.data_per_recording[recording_index][is_spike][is_predicted]
 
     def __get_item_by_recording_index(self, recording_index):
-        return self.data_per_recording[recording_index][0][0], self.data_per_recording[recording_index][0][1], \
-               self.data_per_recording[recording_index][1][0], self.data_per_recording[recording_index][1][1]
+        output=[(self.ground_truth[recording_index][0],self.ground_truth[recording_index][1],None)]
+        for data in self.data_labels:
+            offset=self.ground_truth#todo work
+        # return self.data_per_recording[recording_index][0][0], self.data_per_recording[recording_index][0][1], \
+        #        self.data_per_recording[recording_index][1][0], self.data_per_recording[recording_index][1][1]
 
     def extend(self, v_arr, v_pred_arr, s_arr, s_pred_arr):
         for i in zip(v_arr, v_pred_arr, s_arr, s_pred_arr):

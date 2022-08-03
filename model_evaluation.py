@@ -511,7 +511,7 @@ if __name__ == '__main__':
     # model_name = 'tempspace_AdamW___2022-07-18__15_54__ID_63486' # 0.97317
     # model_name = 'davids_AdamW___2022-07-18__12_52__ID_61236' # 0.98047
     model_name = 'davids_AdamW___2022-07-18__12_52__ID_70365' # 0.98120
-    model_name = 'davids_leak_AdamW___2022-07-28__17_32__ID_42419' # 0.97761
+    model_name = 'davids_leak_AdamW___2022-07-28__17_32__ID_42419' # 0.97805
 
 
 
