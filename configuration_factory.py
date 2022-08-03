@@ -59,7 +59,7 @@ def surround_with_default_config_values(**kargs):
                       train_file_load=0.5, valid_file_load=0.5, spike_probability=None,
                       # files_filter_regex=".*exBas_0_1100_inhBasDiff_-1100_600__exApic_0_1100_inhApicDiff_-1100_600_SpTemp[^\\/\.]*\.p",
                       files_filter_regex=".*", freeze_node_factor=0.4,
-                      optimizer_type="NAdam", optimizer_params=dict(weight_decay=1e-8),clip_gradients_factor=2.5,  # optimizer_params={'eps':1e-8},
+                      optimizer_type="NAdam", optimizer_params=dict(weight_decay=1e-8),clip_gradients_factor=None,  # optimizer_params={'eps':1e-8},
                       # lr_scheduler='CyclicLR',lr_scheduler_params=dict(max_lr=0.05,step_size_up=1000,base_lr=0.00003,cycle_momentum=True),
                       # lr_scheduler='ReduceLROnPlateau',lr_scheduler_params=dict(factor=0.5,cooldown=300,patience =3000,eps=1e-5, threshold=1e-2),
                       lr_scheduler=None,
@@ -249,16 +249,16 @@ def restore_last_n_configs(n=10):
 if __name__ == '__main__':
     # restore_last_n_configs(100)
     configs = []
-    configurations_name = "morph"
+    configurations_name = "davids"
     for i in ['NAdam']:
         config_morpho_0 = config_factory(
-                                         # architecture_type='FullNeuronNetwork',
-                                         architecture_type='LAYERED_TEMPORAL_CONV_N',
-                                         model_tag="%s_%s" % (configurations_name,i), optimizer_type=i,clip_gradients_factor=2.5,
+                                         architecture_type='FullNeuronNetwork',
+                                         # architecture_type='LAYERED_TEMPORAL_CONV_N',
+                                         model_tag="%s_%s" % (configurations_name,i), optimizer_type=i,#clip_gradients_factor=2.5,
                                          accumulate_loss_batch_factor=1, prediction_length=700,
-                                         batch_size_validation=32, batch_size_train=32,
+                                         batch_size_validation=32, batch_size_train=180,
                                          # batch_size_validation=4, batch_size_train=4,
-                                         constant_learning_rate=0.003)
+                                         constant_learning_rate=0.01)
         configs.append(config_morpho_0)
         # configs.extend(generate_config_files_multiple_seeds(config_morpho_0, 2))
 
