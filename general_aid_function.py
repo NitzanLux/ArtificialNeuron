@@ -28,14 +28,14 @@ def filter_file_names(files: List[str], filter: str) -> List[str]:
 
 
 def load_files_names(files_filter_regex: str = ".*") -> Tuple[List[str], List[str], List[str]]:
-    train_files = glob.glob(TRAIN_DATA_DIR + '*_128_simulationRuns*_6_secDuration_*')
+    train_files = glob.glob(TRAIN_DATA_DIR + '*')
     train_files = filter_file_names(train_files, files_filter_regex)
     print("train_files size %d" % (len(train_files)))
-    valid_files = glob.glob(VALID_DATA_DIR + '*_128_simulationRuns*_6_secDuration_*')
+    valid_files = glob.glob(VALID_DATA_DIR + '*')
     valid_files = filter_file_names(valid_files, files_filter_regex)
     print("valid_files size %d" % (len(valid_files)))
 
-    test_files = glob.glob(TEST_DATA_DIR + '*_128_simulationRuns*_6_secDuration_*')
+    test_files = glob.glob(TEST_DATA_DIR + '*')
     test_files = filter_file_names(test_files, files_filter_regex)
     print("test_files size %d" % (len(test_files)))
 
