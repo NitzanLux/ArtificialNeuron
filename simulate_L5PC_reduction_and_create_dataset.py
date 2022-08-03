@@ -556,7 +556,7 @@ sim_files = args.file
 dir_name = args.dir[0]
 if int(args.slurm_job_id)!=-1:
     print("<------------------------------------------------------------------------------------------------------>\n\n")
-    tprint("Job ID: " , font="alpha")
+    tprint("Job ID: " , font="colossal")
     tprint(args.slurm_job_id , font="colossal")
     print(dir_name)
 for f in sim_files: print(f)
