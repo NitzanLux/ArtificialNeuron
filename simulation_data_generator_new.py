@@ -101,8 +101,7 @@ class SimulationDataGenerator():
     def iterate_deterministic_no_repetition(self):
         counter = 0
         while self.epoch_size is None or counter < self.epoch_size:
-            yield self[np.arange(self.sample_counter, self.sample_counter + self.batch_size) % self.X.shape[
-                SIM_INDEX]]
+            yield self[np.arange(self.sample_counter, self.sample_counter + self.batch_size) % self.X.shape[SIM_INDEX]]
             counter += 1
             self.sample_counter += self.batch_size
             self.files_shuffle_checker()
