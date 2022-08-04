@@ -10,28 +10,7 @@ from scipy import signal
 import pickle
 from get_neuron_modle import get_L5PC, h
 
-# get or randomly generate random seed
-try:
-    print('--------------')
-    random_seed = int(sys.argv[1])
-    morphology_description = sys.argv[2]
-    gmax_NMDA_to_AMPA_ratio = float(sys.argv[3])
-    print('"random_seed" selected by user - %d' % (random_seed))
-    print('"morphology_description" selected by user - %s' % (morphology_description))
-    print('"gmax_NMDA_to_AMPA_ratio" selected by user - %.3f' % (gmax_NMDA_to_AMPA_ratio))
 
-    determine_internally = False
-except:
-    determine_internally = True
-    try:
-        random_seed = int(sys.argv[1])
-        print('random seed selected by user - %d' % (random_seed))
-    except:
-        random_seed = np.random.randint(100000)
-        print('randomly choose seed - %d' % (random_seed))
-
-np.random.seed(random_seed)
-print('--------------')
 
 
 def get_dir_name_and_filename(file_name, dir_name):
@@ -299,7 +278,7 @@ def load_experiment_data(experimentParams):
     num_active_segments = len(segments_to_keep)
     max_spikes_mult_factor_A = 1 - max_spikes_mult_factor_per_active_segment * (num_active_segments - 262)
     max_spikes_mult_factor_B = 1 - max_spikes_mult_factor_per_NMDA_g_ratio * (gmax_NMDA_to_AMPA_ratio - 1)
-     = max_spikes_mult_factor_A * max_spikes_mult_factor_B
+    exc_max_spikes_mult_factor = max_spikes_mult_factor_A * max_spikes_mult_factor_B
 
     inh_max_delta_spikes_mult_factor = 1 + inh_max_delta_spikes_mult_factor_per_NMDA_g_ratio * (
             gmax_NMDA_to_AMPA_ratio - 1)
