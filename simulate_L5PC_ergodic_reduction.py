@@ -16,7 +16,7 @@ from art import tprint
 REDUCTION_FREQUENCY=0
 PRINT_LOGS = False
 # %% define some helper functions
-def generate_input_spike_trains_for_simulation_new(sim_experiment_file, print_logs=PRINT_LOGS):
+def generate_input_spike_trains_for_simulation(sim_experiment_file, print_logs=PRINT_LOGS):
     """:DVT_PCA_model is """
     loading_start_time = 0.
     if print_logs:
