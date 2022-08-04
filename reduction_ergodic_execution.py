@@ -34,7 +34,7 @@ params_string=''
 # for i,f in enumerate(onlyfiles):
 #     if i%number_of_cpus==0:
 #         params_string = " '" + str(os.path.join(directory, f)) + "' -d '" + directory_name + "_reduction'"
-#     else:
+#     else:s
 #         params_string = " '" + str(os.path.join(directory, f)) + "'" + params_string
 #     if i%files_per_cpu==files_per_cpu-1 or i==len(onlyfiles)-1:
 #
