@@ -431,7 +431,6 @@ def simulate_L5PC_reduction(sim_file, dir_name):
 
         origRecordingTime = np.array(recTime.as_numpy())
         origSomaVoltage = np.array(recVoltageSoma.as_numpy())
-        origNexusVoltage = np.array(recVoltageNexus.as_numpy())
 
         # high res - origNumSamplesPerMS per ms
         recordingTimeHighRes = np.arange(0, totalSimDurationInMS, 1.0 / numSamplesPerMS_HighRes)
