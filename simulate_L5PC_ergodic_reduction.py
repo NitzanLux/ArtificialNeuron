@@ -8,7 +8,7 @@ import numpy as np
 import time
 from scipy import signal
 import pickle
-from get_neuron_modle import get_L5PC, h
+
 # get or randomly generate random seed
 try:
     print('--------------')
@@ -32,256 +32,55 @@ except:
 np.random.seed(random_seed)
 print('--------------')
 
-def get_dir_name_and_filename(file_name, dir_name):
-    # string to describe model name based on params
-    resultsSavedIn_rootFolder = os.path.join(NEURON_REDUCE_DATA_DIR, dir_name)
-    file_name, file_extension = os.path.splitext(file_name)
-    _, file_name = os.path.split(file_name)
-    file_name = file_name + '_reduction_%dw' % (REDUCTION_FREQUENCY) + file_extension
-    if not os.path.exists(resultsSavedIn_rootFolder):
-        os.makedirs(resultsSavedIn_rootFolder)
-    return resultsSavedIn_rootFolder, file_name
-
-
-
-
-def bin2dict(bin_spikes_matrix):
-    spike_row_inds, spike_times = np.nonzero(bin_spikes_matrix)
-    row_inds_spike_times_map = {}
-    for row_ind, syn_time in zip(spike_row_inds, spike_times):
-        if row_ind in row_inds_spike_times_map.keys():
-            row_inds_spike_times_map[row_ind].append(syn_time)
-        else:
-            row_inds_spike_times_map[row_ind] = [syn_time]
-
-    return row_inds_spike_times_map
-
-
-def dict2bin(row_inds_spike_times_map, num_segments, sim_duration_ms):
-    bin_spikes_matrix = np.zeros((num_segments, sim_duration_ms), dtype='bool')
-    for row_ind in row_inds_spike_times_map.keys():
-        for spike_time in row_inds_spike_times_map[row_ind]:
-            bin_spikes_matrix[row_ind, spike_time] = 1.0
-
-    return bin_spikes_matrix
-
-
-def generate_input_spike_trains_for_simulation(sim_experiment_file, print_logs=PRINT_LOGS):
-    """:DVT_PCA_model is """
-    loading_start_time = 0.
-    if print_logs:
-        print('-----------------------------------------------------------------')
-        print("loading file: '" + sim_experiment_file.split("\\")[-1] + "'")
-
-    if sys.version_info[0] < 3:
-        experiment_dict = pickle.load(open(sim_experiment_file, "rb"))
-    else:
-        experiment_dict = pickle.load(open(sim_experiment_file, "rb"), encoding='latin1')
-
-    def genrator():
-        # go over all simulations in the experiment and collect their results
-        for k, sim_dict in enumerate(experiment_dict['Results']['listOfSingleSimulationDicts']):
-            X_ex = dict2bin(sim_dict['exInputSpikeTimes'], len(experiment_dict['Params']['allSegmentsType']),
-                            experiment_dict['Params']['totalSimDurationInSec'] * 1000)
-            X_inh = dict2bin(sim_dict['inhInputSpikeTimes'], len(experiment_dict['Params']['allSegmentsType']),
-                             experiment_dict['Params']['totalSimDurationInSec'] * 1000)
-            yield X_ex, X_inh
-
-    return genrator(), experiment_dict['Params']
-
-
-
-def GetDistanceBetweenSections(sourceSection, destSection):
-    h.distance(sec=sourceSection)
-    return h.distance(0, sec=destSection)
-
-
-# NMDA synapse
-def DefineSynapse_NMDA(segment, gMax=0.0004, NMDA_to_AMPA_g_ratio=1.0):
-    synapse = h.ProbAMPANMDA_David(segment)
-
-    synapse.tau_r_AMPA = 0.3
-    synapse.tau_d_AMPA = 3.0
-    synapse.tau_r_NMDA = 2.0
-    synapse.tau_d_NMDA = 70.0
-    synapse.gmax_AMPA = gMax
-    synapse.gmax_NMDA = gMax * NMDA_to_AMPA_g_ratio
-    synapse.e = 0
-    synapse.Use = 1
-    synapse.u0 = 0
-    synapse.Dep = 0
-    synapse.Fac = 0
-
-    return synapse
-
-
-# GABA A synapse
-def DefineSynapse_GABA_A(segment, gMax=0.001):
-    synapse = h.ProbUDFsyn2(segment)
-
-    synapse.tau_r = 0.2
-    synapse.tau_d = 8
-    synapse.gmax = gMax
-    synapse.e = -80
-    synapse.Use = 1
-    synapse.u0 = 0
-    synapse.Dep = 0
-    synapse.Fac = 0
-
-    return synapse
-
-
-def ConnectEmptyEventGenerator(synapse):
-
-    netConnection = h.NetCon(None,synapse)
-    netConnection.delay = 0
-    netConnection.weight[0] = 1
-
-    return netConnection
-
-
-
-def create_synapses_list(all_segments):
-    allExSynapses = []
-    allInhSynapses = []
-    for segInd, segment in enumerate(all_segments):
-        ###### excitation ######
-        # define synapse and connect it to a segment
-        if excitatorySynapseType == 'AMPA':
-            exSynapse = DefineSynapse_AMPA(segment)
-        elif excitatorySynapseType == 'NMDA':
-            exSynapse = DefineSynapse_NMDA(segment)
-        else:
-            assert False, 'Not supported Excitatory Synapse Type'
-        allExSynapses.append(exSynapse)
-        ###### inhibition ######
-
-        # define synapse and connect it to a segment
-        if inhibitorySynapseType == 'GABA_A':
-            inhSynapse = DefineSynapse_GABA_A(segment)
-        elif inhibitorySynapseType == 'GABA_B':
-            inhSynapse = DefineSynapse_GABA_B(segment)
-        elif inhibitorySynapseType == 'GABA_AB':
-            inhSynapse = DefineSynapse_GABA_AB(segment)
-        else:
-            assert False, 'Not supported Inhibitory Synapse Type'
-        allInhSynapses.append(inhSynapse)
-    return allExSynapses, allInhSynapses
-
-def get_L5PC_model():
-        loading_time = time.time()
-        allSectionsLength = []
-        allSections_DistFromSoma = []
-        allSegments = []
-        allSegmentsLength = []
-        allSegmentsType = []
-        allSegments_DistFromSoma = []
-        allSegments_SectionDistFromSoma = []
-        allSegments_SectionInd = []
-        L5PC = get_L5PC()
-        # %% collect everything we need about the model
-        # Get a list of all sections
-        listOfBasalSections = [L5PC.dend[x] for x in range(len(L5PC.dend))]
-        listOfApicalSections = [L5PC.apic[x] for x in range(len(L5PC.apic))]
-        allSections = listOfBasalSections + listOfApicalSections
-        allSectionsType = ['basal' for x in listOfBasalSections] + ['apical''apical' for x in listOfApicalSections]
-
-        # get a list of all segments
-        for k, section in enumerate(allSections):
-            allSectionsLength.append(section.L)
-            allSections_DistFromSoma.append(GetDistanceBetweenSections(L5PC.soma[0], section))
-            for currSegment in section:
-                allSegments.append(currSegment)
-                allSegmentsLength.append(float(section.L) / section.nseg)
-                allSegmentsType.append(allSectionsType[k])
-                allSegments_DistFromSoma.append(
-                    GetDistanceBetweenSections(L5PC.soma[0], section) + float(section.L) * currSegment.x)
-                allSegments_SectionDistFromSoma.append(GetDistanceBetweenSections(L5PC.soma[0], section))
-                allSegments_SectionInd.append(k)
-        # set Ih vshift value and SK multiplicative factor
-        for section in allSections:
-            section.vshift_Ih = Ih_vshift
-        L5PC.soma[0].vshift_Ih = Ih_vshift
-        list_of_axonal_sections = [L5PC.axon[x] for x in range(len(L5PC.axon))]
-        list_of_somatic_sections = [L5PC.soma[x] for x in range(len(L5PC.soma))]
-        all_sections_with_SKE2 = list_of_somatic_sections + list_of_axonal_sections + listOfApicalSections
-        for section in all_sections_with_SKE2:
-            orig_SKE2_g = section.gSK_E2bar_SK_E2
-            new_SKE2_g = orig_SKE2_g * SKE2_mult_factor
-            section.gSK_E2bar_SK_E2 = new_SKE2_g
-        # Calculate total dendritic length
-        numBasalSegments = 0
-        numApicalSegments = 0
-        totalBasalDendriticLength = 0
-        totalApicalDendriticLength = 0
-        basal_seg_length_um = []
-        apical_seg_length_um = []
-        for k, segmentLength in enumerate(allSegmentsLength):
-            if 'basal' in allSegmentsType[k]:
-                basal_seg_length_um.append(segmentLength)
-                totalBasalDendriticLength += segmentLength
-                numBasalSegments += 1
-            if 'apical' in allSegmentsType[k]:
-                apical_seg_length_um.append(segmentLength)
-                totalApicalDendriticLength += segmentLength
-                numApicalSegments += 1
-        totalDendriticLength = sum(allSectionsLength)
-        totalNumSegments = len(allSegments)
-        # extract basal and apical segment lengths
-        num_basal_segments = len(basal_seg_length_um)
-        num_apical_segments = len(apical_seg_length_um)
-        basal_seg_length_um = np.array(basal_seg_length_um)
-        apical_seg_length_um = np.array(apical_seg_length_um)
-        segments_to_drop = np.array(list(set(np.arange(totalNumSegments)).difference(set(segments_to_keep)))).astype(
-            int)
-
-        assert (totalNumSegments == (numBasalSegments + numApicalSegments))
-        assert (abs(totalDendriticLength - (totalBasalDendriticLength + totalApicalDendriticLength)) < 0.00001)
-        if PRINT_LOGS: print('model loading time %.4f seconds' % (time.time() - loading_time))
-        return L5PC, allSegments, num_basal_segments, num_apical_segments, basal_seg_length_um, apical_seg_length_um, allSections_DistFromSoma, allSectionsLength, allSegmentsType, allSegmentsLength, allSegments_DistFromSoma, allSectionsType, allSegments_SectionDistFromSoma, allSegments_SectionInd,segments_to_drop
-
 #%% define simulation params
 
 # general simulation parameters
-numSimulations = experimentParams['numSimulations']
-totalSimDurationInSec = experimentParams['totalSimDurationInSec']
+numSimulations = 8
+totalSimDurationInSec = 6
 
 #collectAndSaveDVTs = False
-collectAndSaveDVTs = False
+collectAndSaveDVTs = True
 numSamplesPerMS_HighRes = 8
 
 # model params
-morphology_description = experimentParams['morphology_description']
-
-# NMDA to AMPA conductance ratio
-gmax_NMDA_to_AMPA_ratio =  experimentParams['gmax_NMDA_to_AMPA_ratio']
+if determine_internally:
+    #morphology_description = 'basal_oblique_tuft'
+    #morphology_description = 'basal_oblique'
+    morphology_description = 'basal_full'
+    #morphology_description = 'basal_proximal'
+    #morphology_description = 'basal_distal'
+    #morphology_description = 'basal_subtree_A'
+    #morphology_description = 'basal_subtree_B'
+    
+    # NMDA to AMPA conductance ratio
+    gmax_NMDA_to_AMPA_ratio = 1.0
 
 
 # SK channel g_max multiplication factor (0.0 - AMPA only, 1.0 - regular, 2.0 - human synapses)
-SKE2_mult_factor = experimentParams['SKE2_mult_factor']
+SKE2_mult_factor = 1.0
 
 # vshift of the Ih activation curve (can be in [-30,30])
-Ih_vshift =  experimentParams['Ih_vshift']
+Ih_vshift = 0
 
 # some selection adaptive mechansim to keep simulations similar (in output rates) with different params
-keep_probability_below_01_output_spikes =  experimentParams['keep_probability_below_01_output_spikes']
-keep_probability_above_24_output_spikes = experimentParams['keep_probability_above_24_output_spikes']
-max_output_spikes_to_keep_per_sim = experimentParams['max_output_spikes_to_keep_per_sim']
+keep_probability_below_01_output_spikes = 0.2
+keep_probability_above_24_output_spikes = 0.2
+max_output_spikes_to_keep_per_sim = 36
 
 # another mechansim to keep simulations similar (in output rates) with different number of active segments
 # 10% change per 131 active segments
-max_spikes_mult_factor_per_active_segment = experimentParams['max_spikes_mult_factor_per_active_segment']
+max_spikes_mult_factor_per_active_segment = 0.1 / 131
 
 # 40% change per 1.0 NMDA_to_AMPA_g_ratio
-max_spikes_mult_factor_per_NMDA_g_ratio = experimentParams['max_spikes_mult_factor_per_NMDA_g_ratio']
+max_spikes_mult_factor_per_NMDA_g_ratio = 0.4
 
 # 15% change per 1.0 NMDA_to_AMPA_g_ratio
-inh_max_delta_spikes_mult_factor_per_NMDA_g_ratio = experimentParams['inh_max_delta_spikes_mult_factor_per_NMDA_g_ratio']
+inh_max_delta_spikes_mult_factor_per_NMDA_g_ratio = 0.15
 
-                    # # load spatial clustering matrix
-folder_name = '/ems/elsc-labs/segev-i/david.beniaguev/Reseach/Single_Neuron_InOut/new_code/Neuron_Revision/L5PC_sim_experiment_AB/' TODO remove
-                    # spatial_clusters_matrix_filename = os.path.join(folder_name, 'spatial_clusters_matrix.npz')
-                    # spatial_clusters_matrix = np.load(spatial_clusters_matrix_filename)['spatial_clusters_matrix']
+# load spatial clustering matrix
+folder_name = '/ems/elsc-labs/segev-i/david.beniaguev/Reseach/Single_Neuron_InOut/new_code/Neuron_Revision/L5PC_sim_experiment_AB/'
+spatial_clusters_matrix_filename = os.path.join(folder_name, 'spatial_clusters_matrix.npz')
+spatial_clusters_matrix = np.load(spatial_clusters_matrix_filename)['spatial_clusters_matrix']
 
 # load morphology subparts dictionary
 morphology_subparts_segment_inds_filename = os.path.join(folder_name, 'morphology_subparts_segment_inds.p')
@@ -369,6 +168,36 @@ if morphology_description in ['basal_distal', 'basal_subtree_A', 'basal_subtree_
 if morphology_description in ['basal_distal', 'basal_subtree_A'] and gmax_NMDA_to_AMPA_ratio < 0.3:
     exc_max_spikes_mult_factor       = 1.1 * exc_max_spikes_mult_factor
 
+# input params
+
+# number of spike ranges for the simulation
+num_bas_ex_spikes_per_100ms_range          = [0, int(1350 * exc_max_spikes_mult_factor)]
+num_apic_ex_spikes_per_100ms_range         = [0, int(1400 * exc_max_spikes_mult_factor)]
+num_bas_ex_inh_spike_diff_per_100ms_range  = [-num_bas_ex_spikes_per_100ms_range[1] , int(600 * inh_max_delta_spikes_mult_factor)]
+num_apic_ex_inh_spike_diff_per_100ms_range = [-num_apic_ex_spikes_per_100ms_range[1], int(600 * inh_max_delta_spikes_mult_factor)]
+
+# define inst rate between change interval and smoothing sigma options (two rules of thumb:)
+# (A) increasing sampling time interval increases firing rate (more cumulative spikes at "lucky high rate" periods)
+# (B) increasing smoothing sigma reduces output firing rate (reduce effect of "lucky high rate" periods due to averaging)
+inst_rate_sampling_time_interval_options_ms   = [25,30,35,40,45,50,55,60,65,70,75,80,85,90,100,150,200,300,450]
+temporal_inst_rate_smoothing_sigma_options_ms = [25,30,35,40,45,50,55,60,65,80,100,150,200,250,300,400,500,600]
+inst_rate_sampling_time_interval_jitter_range   = 20
+temporal_inst_rate_smoothing_sigma_jitter_range = 20
+
+# spatial clustering params
+spatial_clustering_prob = 0.25
+num_spatial_clusters_range = [0,63]
+num_active_spatial_clusters_range = [1,20]
+
+# synchronization
+synchronization_prob = 0.20
+synchronization_period_range = [30,200]
+
+# remove inhibition fraction
+remove_inhibition_prob = 0.30
+
+# "regularization" param for the segment lengths
+min_seg_length_um = 10.0
 
 
 print('-----------------------------------------')
@@ -389,6 +218,9 @@ print('-----------------------------------------')
 print(segments_to_keep)
 print('-----------------------------------------')
 
+# beaurrocracy
+showPlots = False
+resultsSavedIn_rootFolder = '/ems/elsc-labs/segev-i/david.beniaguev/Reseach/Single_Neuron_InOut/ExperimentalData/Neuron_Revision/Exp_AB_data/'
 
 # simulation duration
 sim_duration_sec = totalSimDurationInSec
@@ -400,12 +232,343 @@ totalSimDurationInMS = 1000 * totalSimDurationInSec
 #%% define some helper functions
 
 
+def generate_input_spike_rates_for_simulation(sim_duration_ms):
+
+    # extract the number of basal and apical segments
+    num_basal_segments  = len(basal_seg_length_um)
+    num_apical_segments = len(apical_seg_length_um)
+        
+    # adjust segment lengths (with "min_seg_length_um")
+    adjusted_basal_length_um  = min_seg_length_um + basal_seg_length_um
+    adjusted_apical_length_um = min_seg_length_um + apical_seg_length_um
+    
+    # calc sum of seg length (to be used for normalization later on)
+    total_adjusted_basal_tree_length_um  = adjusted_basal_length_um.sum()
+    total_adjusted_apical_tree_length_um = adjusted_apical_length_um.sum()
+    
+    # randomly sample inst rate (with some uniform noise) smoothing sigma
+    keep_inst_rate_const_for_ms = inst_rate_sampling_time_interval_options_ms[np.random.randint(len(inst_rate_sampling_time_interval_options_ms))]
+    keep_inst_rate_const_for_ms += int(2 * inst_rate_sampling_time_interval_jitter_range * np.random.rand() - inst_rate_sampling_time_interval_jitter_range)
+    
+    # randomly sample smoothing sigma (with some uniform noise)
+    temporal_inst_rate_smoothing_sigma = temporal_inst_rate_smoothing_sigma_options_ms[np.random.randint(len(temporal_inst_rate_smoothing_sigma_options_ms))]
+    temporal_inst_rate_smoothing_sigma += int(2 * temporal_inst_rate_smoothing_sigma_jitter_range * np.random.rand() - temporal_inst_rate_smoothing_sigma_jitter_range)
+    
+    num_inst_rate_samples = int(np.ceil(float(sim_duration_ms) / keep_inst_rate_const_for_ms))
+    
+    # create the coarse inst rates with units of "total spikes per tree per 100 ms"
+    num_bas_ex_spikes_per_100ms   = np.random.uniform(low=num_bas_ex_spikes_per_100ms_range[0], high=num_bas_ex_spikes_per_100ms_range[1], size=(1,num_inst_rate_samples))
+    num_bas_inh_spikes_low_range  = np.maximum(0, num_bas_ex_spikes_per_100ms + num_bas_ex_inh_spike_diff_per_100ms_range[0])
+    num_bas_inh_spikes_high_range = num_bas_ex_spikes_per_100ms + num_bas_ex_inh_spike_diff_per_100ms_range[1]
+    num_bas_inh_spikes_per_100ms  = np.random.uniform(low=num_bas_inh_spikes_low_range, high=num_bas_inh_spikes_high_range, size=(1,num_inst_rate_samples))
+    
+    num_apic_ex_spikes_per_100ms   = np.random.uniform(low=num_apic_ex_spikes_per_100ms_range[0], high=num_apic_ex_spikes_per_100ms_range[1],size=(1,num_inst_rate_samples))
+    num_apic_inh_spikes_low_range  = np.maximum(0, num_apic_ex_spikes_per_100ms + num_apic_ex_inh_spike_diff_per_100ms_range[0])
+    num_apic_inh_spikes_high_range = num_apic_ex_spikes_per_100ms + num_apic_ex_inh_spike_diff_per_100ms_range[1]
+    num_apic_inh_spikes_per_100ms  = np.random.uniform(low=num_apic_inh_spikes_low_range, high=num_apic_inh_spikes_high_range, size=(1,num_inst_rate_samples))
+    
+    # convert to units of "per_1um_per_1ms"
+    ex_bas_spike_rate_per_1um_per_1ms   = num_bas_ex_spikes_per_100ms   / (total_adjusted_basal_tree_length_um  * 100.0)
+    inh_bas_spike_rate_per_1um_per_1ms  = num_bas_inh_spikes_per_100ms  / (total_adjusted_basal_tree_length_um  * 100.0)
+    ex_apic_spike_rate_per_1um_per_1ms  = num_apic_ex_spikes_per_100ms  / (total_adjusted_apical_tree_length_um * 100.0)
+    inh_apic_spike_rate_per_1um_per_1ms = num_apic_inh_spikes_per_100ms / (total_adjusted_apical_tree_length_um * 100.0)
+            
+    # kron by space (uniform distribution across branches per tree)
+    ex_bas_spike_rate_per_seg_per_1ms   = np.kron(ex_bas_spike_rate_per_1um_per_1ms  , np.ones((num_basal_segments,1)))
+    inh_bas_spike_rate_per_seg_per_1ms  = np.kron(inh_bas_spike_rate_per_1um_per_1ms , np.ones((num_basal_segments,1)))
+    ex_apic_spike_rate_per_seg_per_1ms  = np.kron(ex_apic_spike_rate_per_1um_per_1ms , np.ones((num_apical_segments,1)))
+    inh_apic_spike_rate_per_seg_per_1ms = np.kron(inh_apic_spike_rate_per_1um_per_1ms, np.ones((num_apical_segments,1)))
+        
+    # vstack basal and apical
+    ex_spike_rate_per_seg_per_1ms  = np.vstack((ex_bas_spike_rate_per_seg_per_1ms , ex_apic_spike_rate_per_seg_per_1ms))
+    inh_spike_rate_per_seg_per_1ms = np.vstack((inh_bas_spike_rate_per_seg_per_1ms, inh_apic_spike_rate_per_seg_per_1ms))
+    
+    # add some spatial multiplicative randomness (that will be added to the sampling noise)
+    ex_spike_rate_per_seg_per_1ms  = np.random.uniform(low=0.5, high=1.5, size=ex_spike_rate_per_seg_per_1ms.shape ) * ex_spike_rate_per_seg_per_1ms
+    inh_spike_rate_per_seg_per_1ms = np.random.uniform(low=0.5, high=1.5, size=inh_spike_rate_per_seg_per_1ms.shape) * inh_spike_rate_per_seg_per_1ms
+    
+    # concatenate the adjusted length
+    adjusted_length_um = np.hstack((adjusted_basal_length_um, adjusted_apical_length_um))
+    
+    # multiply each segment by it's length (now every segment will have firing rate proportional to it's length)
+    ex_spike_rate_per_seg_per_1ms  = ex_spike_rate_per_seg_per_1ms  * np.tile(adjusted_length_um[:,np.newaxis], [1, ex_spike_rate_per_seg_per_1ms.shape[1]])
+    inh_spike_rate_per_seg_per_1ms = inh_spike_rate_per_seg_per_1ms * np.tile(adjusted_length_um[:,np.newaxis], [1, inh_spike_rate_per_seg_per_1ms.shape[1]])
+        
+    # kron by time (crop if there are leftovers in the end) to fill up the time to 1ms time bins
+    ex_spike_rate_per_seg_per_1ms  = np.kron(ex_spike_rate_per_seg_per_1ms , np.ones((1,keep_inst_rate_const_for_ms)))[:,:sim_duration_ms]
+    inh_spike_rate_per_seg_per_1ms = np.kron(inh_spike_rate_per_seg_per_1ms, np.ones((1,keep_inst_rate_const_for_ms)))[:,:sim_duration_ms]
+    
+    # filter the inst rates according to smoothing sigma
+    smoothing_window = signal.gaussian(1.0 + 7 * temporal_inst_rate_smoothing_sigma, std=temporal_inst_rate_smoothing_sigma)[np.newaxis,:]
+    smoothing_window /= smoothing_window.sum()
+    seg_inst_rate_ex_smoothed  = signal.convolve(ex_spike_rate_per_seg_per_1ms,  smoothing_window, mode='same')
+    seg_inst_rate_inh_smoothed = signal.convolve(inh_spike_rate_per_seg_per_1ms, smoothing_window, mode='same')
+
+    # add synchronization if necessary
+    if np.random.rand() < synchronization_prob:
+        synchronization_period = np.random.randint(synchronization_period_range[0], synchronization_period_range[1])
+        time_ms = np.arange(0, sim_duration_ms)
+        temporal_profile = 0.6 * np.sin(2 * np.pi * time_ms / synchronization_period) + 1.0
+        temp_mult_factor = np.tile(temporal_profile[np.newaxis], (seg_inst_rate_ex_smoothed.shape[0], 1))
+
+        seg_inst_rate_ex_smoothed  = temp_mult_factor * seg_inst_rate_ex_smoothed
+        seg_inst_rate_inh_smoothed = temp_mult_factor * seg_inst_rate_inh_smoothed
+
+    # remove inhibition if necessary
+    if np.random.rand() < remove_inhibition_prob:
+        # reduce inhibition to zero
+        seg_inst_rate_inh_smoothed[:] = 0
+
+        # reduce average excitatory firing rate
+        excitation_mult_factor = 0.10 + 0.40 * np.random.rand()
+        seg_inst_rate_ex_smoothed = excitation_mult_factor * seg_inst_rate_ex_smoothed
+
+    # add spatial clustering througout the entire simulation
+    if np.random.rand() < spatial_clustering_prob:
+        spatial_cluster_matrix_row = np.random.randint(num_spatial_clusters_range[0], num_spatial_clusters_range[1])
+        curr_clustering_row = spatial_clusters_matrix[spatial_cluster_matrix_row,:]
+        num_spatial_clusters = np.unique(curr_clustering_row).shape[0]
+
+        max_num_active_clusters = max(2, min(int(0.4 * num_spatial_clusters), num_active_spatial_clusters_range[1]))
+        num_active_clusters = np.random.randint(num_active_spatial_clusters_range[0], max_num_active_clusters)
+
+        active_clusters = np.random.choice(np.unique(curr_clustering_row), size=num_active_clusters)
+        spatial_mult_factor = np.tile(np.isin(curr_clustering_row, active_clusters)[:,np.newaxis], (1, seg_inst_rate_ex_smoothed.shape[1]))
+
+        seg_inst_rate_ex_smoothed  = spatial_mult_factor * seg_inst_rate_ex_smoothed
+        seg_inst_rate_inh_smoothed = spatial_mult_factor * seg_inst_rate_inh_smoothed
+
+    return seg_inst_rate_ex_smoothed, seg_inst_rate_inh_smoothed
+
+
+def sample_spikes_from_rates(seg_inst_rate_ex, seg_inst_rate_inh):
+
+    # sample the instantanous spike prob and then sample the actual spikes
+    ex_inst_spike_prob = np.random.exponential(scale=seg_inst_rate_ex)
+    exc_spikes_bin      = np.random.rand(ex_inst_spike_prob.shape[0], ex_inst_spike_prob.shape[1]) < ex_inst_spike_prob
+    
+    inh_inst_spike_prob = np.random.exponential(scale=seg_inst_rate_inh)
+    inh_spikes_bin      = np.random.rand(inh_inst_spike_prob.shape[0], inh_inst_spike_prob.shape[1]) < inh_inst_spike_prob
+    
+    return exc_spikes_bin, inh_spikes_bin
+
+
+def generate_input_spike_trains_for_simulation_new(sim_duration_ms, transition_dur_ms=25, num_segments=5, segment_dur_ms=1500):
+
+    inst_rate_exc, inst_rate_inh = generate_input_spike_rates_for_simulation(sim_duration_ms)
+    segment_added_egde_indicator = np.zeros(sim_duration_ms)
+    for k in range(num_segments):
+        segment_start_ind = np.random.randint(sim_duration_ms - segment_dur_ms - 10)
+        segment_duration_ms = np.random.randint(500, segment_dur_ms)
+        segment_final_ind = segment_start_ind + segment_duration_ms
+
+        curr_seg_inst_rate_exc, curr_seg_inst_rate_inh = generate_input_spike_rates_for_simulation(segment_duration_ms)
+
+        inst_rate_exc[:,segment_start_ind:segment_final_ind] = curr_seg_inst_rate_exc
+        inst_rate_inh[:,segment_start_ind:segment_final_ind] = curr_seg_inst_rate_inh
+        segment_added_egde_indicator[segment_start_ind] = 1
+        segment_added_egde_indicator[segment_final_ind] = 1
+
+    smoothing_window = signal.gaussian(1.0 + 7 * transition_dur_ms, std=transition_dur_ms)
+    segment_added_egde_indicator = signal.convolve(segment_added_egde_indicator,  smoothing_window, mode='same') > 0.2
+
+    smoothing_window /= smoothing_window.sum()
+    seg_inst_rate_exc_smoothed = signal.convolve(inst_rate_exc, smoothing_window[np.newaxis,:], mode='same')
+    seg_inst_rate_inh_smoothed = signal.convolve(inst_rate_inh, smoothing_window[np.newaxis,:], mode='same')
+
+    # build the final rates matrices
+    inst_rate_exc_final = inst_rate_exc.copy()
+    inst_rate_inh_final = inst_rate_inh.copy()
+
+    inst_rate_exc_final[:,segment_added_egde_indicator] = seg_inst_rate_exc_smoothed[:,segment_added_egde_indicator]
+    inst_rate_inh_final[:,segment_added_egde_indicator] = seg_inst_rate_inh_smoothed[:,segment_added_egde_indicator]
+
+    # correct any minor mistakes
+    inst_rate_exc_final[inst_rate_exc_final <= 0] = 0
+    inst_rate_inh_final[inst_rate_inh_final <= 0] = 0
+
+    exc_spikes_bin, inh_spikes_bin = sample_spikes_from_rates(inst_rate_exc_final, inst_rate_inh_final)
+
+    return exc_spikes_bin, inh_spikes_bin
+
+
+def get_dir_name_and_filename(exc_range_per_100ms, inh_range_per_100ms, num_output_spikes, random_seed):
+
+    # string to describe model
+    synapse_type = 'NMDA_g_ratio_%0.3d' %(100 * gmax_NMDA_to_AMPA_ratio)
+    ephys_type   = 'Ih_vshift_%0.2d_SKE2_mult_%0.3d' %(Ih_vshift, 100 * SKE2_mult_factor)
+    morph_type   = morphology_description
+    model_string = 'L5PC__' + ephys_type + '__' + morph_type + '__' + synapse_type
+
+
+    # string to describe input
+    input_string = 'Exc_[%0.4d,%0.4d]_Inh_[%0.4d,%0.4d]_per100ms' %(exc_range_per_100ms[0], exc_range_per_100ms[1],
+                                                                    inh_range_per_100ms[0], inh_range_per_100ms[1])
+
+    # string to describe simulation
+    simulation_template_string = 'L5PC_sim__Output_spikes_%0.4d__Input_ranges_%s__simXsec_%dx%d_randseed_%d.p'
+
+    # output dir and filename
+    dir_to_save_in = resultsSavedIn_rootFolder + model_string + '/'
+    filename_to_save = simulation_template_string %(num_output_spikes, input_string, numSimulations, totalSimDurationInSec, random_seed)
+
+    return dir_to_save_in, filename_to_save
+
+
+def GetDistanceBetweenSections(sourceSection, destSection):
+    h.distance(sec=sourceSection)
+    return h.distance(0, sec=destSection)
+
+
+# NMDA synapse
+def DefineSynapse_NMDA(segment, gMax=0.0004, NMDA_to_AMPA_g_ratio=1.0):
+    synapse = h.ProbAMPANMDA_David(segment)
+
+    synapse.tau_r_AMPA = 0.3
+    synapse.tau_d_AMPA = 3.0
+    synapse.tau_r_NMDA = 2.0
+    synapse.tau_d_NMDA = 70.0
+    synapse.gmax_AMPA = gMax
+    synapse.gmax_NMDA = gMax * NMDA_to_AMPA_g_ratio
+    synapse.e = 0
+    synapse.Use = 1
+    synapse.u0 = 0
+    synapse.Dep = 0
+    synapse.Fac = 0
+
+    return synapse
+
+
+# GABA A synapse
+def DefineSynapse_GABA_A(segment, gMax=0.001):
+    synapse = h.ProbUDFsyn2(segment)
+
+    synapse.tau_r = 0.2
+    synapse.tau_d = 8
+    synapse.gmax = gMax
+    synapse.e = -80
+    synapse.Use = 1
+    synapse.u0 = 0
+    synapse.Dep = 0
+    synapse.Fac = 0
+
+    return synapse
+
+
+def ConnectEmptyEventGenerator(synapse):
+
+    netConnection = h.NetCon(None,synapse)
+    netConnection.delay = 0
+    netConnection.weight[0] = 1
+
+    return netConnection
+
 
 #%% define model
 
 
+h.load_file('nrngui.hoc')
+h.load_file("import3d.hoc")
+
+morphologyFilename = "morphologies/cell1.asc"
+biophysicalModelFilename = "L5PCbiophys5b.hoc"
+biophysicalModelTemplateFilename = "L5PCtemplate_2.hoc"
+
+h.load_file(biophysicalModelFilename)
+h.load_file(biophysicalModelTemplateFilename)
+L5PC = h.L5PCtemplate(morphologyFilename)
+
+cvode = h.CVode()
+if useCvode:
+    cvode.active(1)
+
 #%% collect everything we need about the model
 
+# Get a list of all sections
+listOfBasalSections  = [L5PC.dend[x] for x in range(len(L5PC.dend))]
+listOfApicalSections = [L5PC.apic[x] for x in range(len(L5PC.apic))]
+allSections = listOfBasalSections + listOfApicalSections
+allSectionsType = ['basal' for x in listOfBasalSections] + ['apical' for x in listOfApicalSections]
+allSectionsLength = []
+allSections_DistFromSoma = []
+
+allSegments = []
+allSegmentsLength = []
+allSegmentsType = []
+allSegments_DistFromSoma = []
+allSegments_SectionDistFromSoma = []
+allSegments_SectionInd = []
+# get a list of all segments
+for k, section in enumerate(allSections):
+    allSectionsLength.append(section.L)
+    allSections_DistFromSoma.append(GetDistanceBetweenSections(L5PC.soma[0], section))
+    for currSegment in section:
+        allSegments.append(currSegment)
+        allSegmentsLength.append(float(section.L) / section.nseg)
+        allSegmentsType.append(allSectionsType[k])
+        allSegments_DistFromSoma.append(GetDistanceBetweenSections(L5PC.soma[0], section) + float(section.L) * currSegment.x)
+        allSegments_SectionDistFromSoma.append(GetDistanceBetweenSections(L5PC.soma[0], section))
+        allSegments_SectionInd.append(k)
+
+
+# set Ih vshift value and SK multiplicative factor
+for section in allSections:
+    section.vshift_Ih = Ih_vshift
+L5PC.soma[0].vshift_Ih = Ih_vshift
+
+list_of_axonal_sections = [L5PC.axon[x] for x in range(len(L5PC.axon))]
+list_of_somatic_sections = [L5PC.soma[x] for x in range(len(L5PC.soma))]
+all_sections_with_SKE2 = list_of_somatic_sections + list_of_axonal_sections + listOfApicalSections
+
+print('-----------------------')
+for section in all_sections_with_SKE2:
+    orig_SKE2_g = section.gSK_E2bar_SK_E2
+    new_SKE2_g = orig_SKE2_g * SKE2_mult_factor
+    section.gSK_E2bar_SK_E2 = new_SKE2_g
+    
+    #print('SKE2 conductance before update = %.10f' %(orig_SKE2_g))
+    #print('SKE2 conductance after  update = %.10f (exprected)' %(new_SKE2_g))
+    #print('SKE2 conductance after  update = %.10f (actual)' %(section.gSK_E2bar_SK_E2))
+print('-----------------------')
+
+# Calculate total dendritic length
+numBasalSegments = 0
+numApicalSegments = 0
+totalBasalDendriticLength = 0
+totalApicalDendriticLength = 0
+
+basal_seg_length_um = []
+apical_seg_length_um = []
+for k, segmentLength in enumerate(allSegmentsLength):
+    if allSegmentsType[k] == 'basal':
+        basal_seg_length_um.append(segmentLength)
+        totalBasalDendriticLength += segmentLength
+        numBasalSegments += 1
+    if allSegmentsType[k] == 'apical':
+        apical_seg_length_um.append(segmentLength)
+        totalApicalDendriticLength += segmentLength
+        numApicalSegments += 1
+
+totalDendriticLength = sum(allSectionsLength)
+totalNumSegments = len(allSegments)
+
+# extract basal and apical segment lengths
+num_basal_segments  = len(basal_seg_length_um)
+num_apical_segments = len(apical_seg_length_um)
+
+basal_seg_length_um = np.array(basal_seg_length_um)
+apical_seg_length_um = np.array(apical_seg_length_um)
+segments_to_drop = np.array(list(set(np.arange(totalNumSegments)).difference(set(segments_to_keep)))).astype(int)
+
+print('-----------------')
+print('segments_to_drop:')
+print('-----------------')
+print(segments_to_drop.shape)
+print(segments_to_drop)
+print('-----------------')
+
+assert(totalNumSegments == (numBasalSegments + numApicalSegments))
+assert(abs(totalDendriticLength - (totalBasalDendriticLength + totalApicalDendriticLength)) < 0.00001)
 
 totalNumOutputSpikes = 0
 listOfISIs = []
@@ -420,11 +583,9 @@ print('-------------------------------------\\')
 print('temperature is %.2f degrees celsius' %(h.celsius))
 print('dt is %.4f ms' %(h.dt))
 print('-------------------------------------/')
-L5PC, allSegments, num_basal_segments, num_apical_segments, basal_seg_length_um, apical_seg_length_um, allSections_DistFromSoma, allSectionsLength, allSegmentsType, allSegmentsLength, allSegments_DistFromSoma, allSectionsType, allSegments_SectionDistFromSoma, allSegments_SectionInd,segments_to_drop=get_L5PC()
+
 simInd = 0
 while simInd < numSimulations:
-    L5PC, allSegments, num_basal_segments, num_apical_segments, basal_seg_length_um, apical_seg_length_um, allSections_DistFromSoma, allSectionsLength, allSegmentsType, allSegmentsLength, allSegments_DistFromSoma, allSectionsType, allSegments_SectionDistFromSoma, allSegments_SectionInd, segments_to_drop = get_L5PC()
-
     currSimulationResultsDict = {}
     preparationStartTime = time.time()
     print('...')
@@ -473,8 +634,10 @@ while simInd < numSimulations:
     
     allInhNetCons = []
     allInhNetConEventLists = []
-
-
+    
+    allExSynapses = []
+    allInhSynapses = []
+    
     for segInd, segment in enumerate(allSegments):
 
         ###### excitation ######
@@ -482,6 +645,7 @@ while simInd < numSimulations:
         # define synapse and connect it to a segment
         exSynapse = DefineSynapse_NMDA(segment, NMDA_to_AMPA_g_ratio=gmax_NMDA_to_AMPA_ratio)
         allExSynapses.append(exSynapse)
+    
         # connect synapse
         netConnection = ConnectEmptyEventGenerator(exSynapse)
 

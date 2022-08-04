@@ -67,43 +67,30 @@ def generate_input_spike_trains_for_simulation(sim_experiment_file, print_logs=P
 def simulate_L5PC_reduction(sim_file, dir_name):
     # sim_file="/ems/elsc-labs/segev-i/david.beniaguev/Reseach/Single_Neuron_InOut/ExperimentalData/L5PC_NMDA_valid_mixed/exBas_0_1000_inhBasDiff_-800_200__exApic_0_1000_inhApicDiff_-800_200_SpTemp__saved_InputSpikes_DVTs__1566_outSpikes__128_simulationRuns__6_secDuration__randomSeed_200278.p"
     data_generator, experimentParams = generate_input_spike_trains_for_simulation(sim_file)
-
-    # define simulation params
-
     # general simulation parameters
     numSimulations = experimentParams['numSimulations']
     totalSimDurationInSec = experimentParams['totalSimDurationInSec']
-
     # high res sampling of the voltage and nexus voltages
     numSamplesPerMS_HighRes = experimentParams['numSamplesPerMS_HighRes']
-
     # synapse type
     excitatorySynapseType = experimentParams['excitatorySynapseType']  # supported options: {'AMPA','NMDA'}
     # excitatorySynapseType = 'AMPA'    # supported options: {'AMPA','NMDA'}
     inhibitorySynapseType = experimentParams['inhibitorySynapseType']
-
     # use active dendritic conductances switch
     useActiveDendrites = experimentParams['useActiveDendrites']
-
     # attenuation factor for the conductance of the SK channel
     SKE2_mult_factor = 1.0
     # SKE2_mult_factor = 0.1
-
     # determine the voltage activation curve of the Ih current (HCN channel)
     Ih_vshift = experimentParams['Ih_vshift']
-
     # simulation duration
     sim_duration_sec = totalSimDurationInSec
     sim_duration_ms = 1000 * sim_duration_sec
-
     # define inst rate between change interval and smoothing sigma options
-
     # beaurrocracy
     showPlots = False
-
     useCvode = True
     totalSimDurationInMS = 1000 * totalSimDurationInSec
-
     # %% define some helper functions
 
     def GetDirNameAndFileName(file_name, dir_name):

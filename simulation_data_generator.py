@@ -355,7 +355,7 @@ def parse_sim_experiment_file_with_DVT(sim_experiment_file, DVT_PCA_model=None, 
         print('loading took %.3f seconds' % (loading_duration_sec))
         print('-----------------------------------------------------------------')
 
-    return X, y_spike, y_soma, y_DVTs
+    return X, y_spike, y_soma, None
 
 
 def parse_sim_experiment_file(sim_experiment_file):
