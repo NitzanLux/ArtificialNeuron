@@ -2,6 +2,7 @@ import time
 import os
 import logging
 from project_path import *
+from art import tprint
 import argparse
 import json
 from slurm_job import *

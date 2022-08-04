@@ -6,6 +6,7 @@ import argparse
 import json
 from slurm_job import *
 from math import ceil
+from art import tprint
 
 parser = argparse.ArgumentParser(description='Add configuration file')
 
