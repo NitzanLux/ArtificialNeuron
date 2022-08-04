@@ -340,13 +340,6 @@ def parse_sim_experiment_file_with_DVT(sim_experiment_file, DVT_PCA_model=None, 
     y_spike = np.zeros((sim_duration_ms, num_simulations))
     y_soma = np.zeros((sim_duration_ms, num_simulations))
 
-    # if we recive PCA model of DVTs, then output the projection on that model, else return the full DVTs
-    if DVT_PCA_model is not None:
-        num_components = DVT_PCA_model.n_components
-        y_DVTs = np.zeros((num_components, sim_duration_ms, num_simulations), dtype=np.float32)
-    else:
-        y_DVTs = np.zeros((num_segments, sim_duration_ms, num_simulations), dtype=np.float16)
-
     # go over all simulations in the experiment and collect their results
     for k, sim_dict in enumerate(experiment_dict['Results']['listOfSingleSimulationDicts']):
         X_ex = dict2bin(sim_dict['exInputSpikeTimes'], num_segments, sim_duration_ms)
@@ -356,14 +349,6 @@ def parse_sim_experiment_file_with_DVT(sim_experiment_file, DVT_PCA_model=None, 
         y_spike[spike_times, k] = 1.0
         y_soma[:, k] = sim_dict['somaVoltageLowRes']
 
-        # if we recive PCA model of DVTs, then output the projection on that model, else return the full DVTs
-        curr_DVTs = sim_dict['dendriticVoltagesLowRes']
-        # clip the DVTs (to mainly reflect synaptic input and NMDA spikes (battery ~0mV) and diminish importance of bAP and calcium spikes)
-        curr_DVTs[curr_DVTs > 2.0] = 2.0
-        if DVT_PCA_model is not None:
-            y_DVTs[:, :, k] = DVT_PCA_model.transform(curr_DVTs.T).T
-        else:
-            y_DVTs[:, :, k] = curr_DVTs
 
     if print_logs:
         loading_duration_sec = time.time() - loading_start_time
