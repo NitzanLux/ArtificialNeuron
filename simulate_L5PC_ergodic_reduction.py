@@ -87,8 +87,10 @@ def DefineSynapse_NMDA(segment, gMax=0.0004, NMDA_to_AMPA_g_ratio=1.0):
     synapse.tau_d_AMPA = 3.0
     synapse.tau_r_NMDA = 2.0
     synapse.tau_d_NMDA = 70.0
-    synapse.gmax_AMPA = gMax
-    synapse.gmax_NMDA = gMax * NMDA_to_AMPA_g_ratio
+    # synapse.gmax_AMPA = gMax
+    synapse.g_AMPA = gMax
+    # synapse.gmax_NMDA = gMax * NMDA_to_AMPA_g_ratio
+    synapse.g_NMDA = gMax * NMDA_to_AMPA_g_ratio
     synapse.e = 0
     synapse.Use = 1
     synapse.u0 = 0
