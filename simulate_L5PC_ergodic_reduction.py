@@ -281,7 +281,7 @@ def simulate_L5PC_reduction(sim_file, dir_name):
         print('...')
         print('------------------------------------------------------------------------------\\')
 
-        exc_spikes_bin, inh_spikes_bin = next(genrator)
+        exc_spikes_bin, inh_spikes_bin = next(data_generator)
 
         # zero out the necessary indices according to "morphology_description"
         exc_spikes_bin[segments_to_drop, :] = 0
