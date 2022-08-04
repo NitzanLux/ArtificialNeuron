@@ -11,7 +11,7 @@ biophysicalModelFilename = r"L5PC_NEURON_simulation/L5PCbiophys5b.hoc"
 biophysicalModelTemplateFilename = r"L5PC_NEURON_simulation/L5PCtemplate_2.hoc"
 DLL_FILE_PATH = r"L5PC_NEURON_simulation/nrnmech.dll"
 print("a")
-
+useCvode=True
 
 def get_L5PC():
     cvode = h.CVode()
