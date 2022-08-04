@@ -15,6 +15,29 @@ from get_neuron_modle import get_L5PC, h
 from art import tprint
 REDUCTION_FREQUENCY=0
 PRINT_LOGS = False
+
+
+def bin2dict(bin_spikes_matrix):
+    spike_row_inds, spike_times = np.nonzero(bin_spikes_matrix)
+    row_inds_spike_times_map = {}
+    for row_ind, syn_time in zip(spike_row_inds, spike_times):
+        if row_ind in row_inds_spike_times_map.keys():
+            row_inds_spike_times_map[row_ind].append(syn_time)
+        else:
+            row_inds_spike_times_map[row_ind] = [syn_time]
+
+    return row_inds_spike_times_map
+
+
+def dict2bin(row_inds_spike_times_map, num_segments, sim_duration_ms):
+    bin_spikes_matrix = np.zeros((num_segments, sim_duration_ms), dtype='bool')
+    for row_ind in row_inds_spike_times_map.keys():
+        for spike_time in row_inds_spike_times_map[row_ind]:
+            bin_spikes_matrix[row_ind, spike_time] = 1.0
+
+    return bin_spikes_matrix
+
+
 # %% define some helper functions
 def generate_input_spike_trains_for_simulation(sim_experiment_file, print_logs=PRINT_LOGS):
     """:DVT_PCA_model is """
