@@ -14,6 +14,9 @@ print("a")
 
 
 def get_L5PC():
+    cvode = h.CVode()
+    if useCvode:
+        cvode.active(1)
     if not hasattr(h, "L5PCtemplate"):
         if platform.system() == 'Windows':
             h.nrn_load_dll(DLL_FILE_PATH)
