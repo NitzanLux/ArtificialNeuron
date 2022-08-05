@@ -250,11 +250,11 @@ if __name__ == '__main__':
     # restore_last_n_configs(100)
     configs = []
     configurations_name = "davids_1"
-    configuration_name='morph'
+    # configuration_name='morph'
     for i in ['NAdam']:
         config_morpho_0 = config_factory(
-                                         # architecture_type='FullNeuronNetwork',
-                                         architecture_type='LAYERED_TEMPORAL_CONV_N',
+                                         architecture_type='FullNeuronNetwork',
+                                         # architecture_type='LAYERED_TEMPORAL_CONV_N',
                                          model_tag="%s_%s" % (configurations_name,i), optimizer_type=i,#clip_gradients_factor=2.5,
                                          accumulate_loss_batch_factor=1, prediction_length=700,
                                          batch_size_validation=32, batch_size_train=180,
