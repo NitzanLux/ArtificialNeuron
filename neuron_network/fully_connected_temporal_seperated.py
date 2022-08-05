@@ -31,7 +31,7 @@ class FullNeuronNetwork(nn.Module):
         activation_function = lambda: (activation_function_base_function(
             **config["activation_function_kargs"]))  # unknown bug
         if config.dropout_factor is not None:
-            dropout=nn.Dropout(p=config.dropout_factor)
+            dropout=lambda :nn.Dropout(p=config.dropout_factor)
         else:
             dropout = None
         if isinstance(self.channel_number, int):
