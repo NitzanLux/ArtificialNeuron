@@ -266,4 +266,3 @@ if __name__ == '__main__':
     with open(os.path.join(MODELS_DIR, "%s.json" % configurations_name), 'w') as file:
         file.write(json.dumps(configs))  # use `json.loads` to do the reverse
         # file.write(json.dumps([config_morpho_0]))  # use `json.loads` to do the reverse
-    #
