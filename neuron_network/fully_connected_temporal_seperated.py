@@ -33,7 +33,7 @@ class FullNeuronNetwork(nn.Module):
         if config.dropout_factor is not None:
             dropout=nn.Dropout(p=config.dropout_factor)
         else:
-            dropout = lambda :lambda x:x
+            dropout = None
         if isinstance(self.channel_number, int):
             self.channel_number = [self.channel_number] * self.number_of_layers_space
 
@@ -46,7 +46,8 @@ class FullNeuronNetwork(nn.Module):
                           self.dilation, groups=config.num_segments))
             layers_list.append(activation_function())
             layers_list.append(nn.BatchNorm1d(self.num_segments))
-            layers_list.append(dropout())
+            if dropout is not None:
+                layers_list.append(dropout())
 
         first_channels_flag = True
 
@@ -60,7 +61,8 @@ class FullNeuronNetwork(nn.Module):
             first_channels_flag = False
             layers_list.append(nn.BatchNorm1d(self.channel_number[i]))
             layers_list.append(activation_function())
-            layers_list.append(dropout())
+            if dropout is not None:
+                layers_list.append(dropout())
         self.model = nn.Sequential(*layers_list)
         self.v_fc = nn.Conv1d(self.channel_number[-1], 1, 1)
         self.s_fc = nn.Conv1d(self.channel_number[-1], 1, 1)
