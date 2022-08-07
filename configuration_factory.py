@@ -85,8 +85,8 @@ def surround_with_default_config_values(**kargs):
                                  channel_number=[128]*7,space_kernel_sizes=[54]+[12]*6,
 
 
-                                 number_of_layers_root=4, number_of_layers_leaf=6, number_of_layers_intersection=3,
-                                 number_of_layers_branch_intersection=3,
+                                 number_of_layers_root=5, number_of_layers_leaf=6, number_of_layers_intersection=4,
+                                 number_of_layers_branch_intersection=4,
                                  # david_layers=[55, 13, 13, 13, 13, 13, 13],
                                  glu_number_of_layers=0,
                                  skip_connections=True,
@@ -103,7 +103,7 @@ def surround_with_default_config_values(**kargs):
                                  dilation=1,
                                  channel_input_number=1278,  # synapse number
                                  inner_scope_channel_number=None,
-                                 channel_output_number=128,
+                                 channel_output_number=32,
                                  activation_function_name="LeakyReLU",
                                  activation_function_kargs=dict(negative_slope=0.025),
                                  # activation_function_kargs=dict(negative_slope=0.001),
@@ -253,13 +253,13 @@ if __name__ == '__main__':
     # configuration_name='morph'
     for i in ['NAdam']:
         config_morpho_0 = config_factory(
-                                         architecture_type='FullNeuronNetwork',
-                                         # architecture_type='LAYERED_TEMPORAL_CONV_N',
+                                         # architecture_type='FullNeuronNetwork',
+                                         architecture_type='LAYERED_TEMPORAL_CONV_N',
                                          model_tag="%s_%s" % (configurations_name,i), optimizer_type=i,#clip_gradients_factor=2.5,
                                          accumulate_loss_batch_factor=1, prediction_length=700,
-                                         batch_size_validation=32, batch_size_train=180,
+                                         batch_size_validation=32, batch_size_train=16,
                                          # batch_size_validation=4, batch_size_train=4,
-                                         constant_learning_rate=0.01)
+                                         constant_learning_rate=0.0003)
         configs.append(config_morpho_0)
         # configs.extend(generate_config_files_multiple_seeds(config_morpho_0, 2))
 
