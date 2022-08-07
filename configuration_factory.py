@@ -58,7 +58,7 @@ def surround_with_default_config_values(**kargs):
                       batch_size_validation=300,
                       train_file_load=0.5, valid_file_load=0.5, spike_probability=None,
                       # files_filter_regex=".*exBas_0_1100_inhBasDiff_-1100_600__exApic_0_1100_inhApicDiff_-1100_600_SpTemp[^\\/\.]*\.p",
-                      files_filter_regex=".*", freeze_node_factor=0.4,
+                      files_filter_regex=".*", freeze_node_factor=None,
                       optimizer_type="NAdam", optimizer_params=dict(weight_decay=1e-8),clip_gradients_factor=None,  # optimizer_params={'eps':1e-8},
                       # lr_scheduler='CyclicLR',lr_scheduler_params=dict(max_lr=0.05,step_size_up=1000,base_lr=0.00003,cycle_momentum=True),
                       # lr_scheduler='ReduceLROnPlateau',lr_scheduler_params=dict(factor=0.5,cooldown=300,patience =3000,eps=1e-5, threshold=1e-2),
@@ -95,7 +95,7 @@ def surround_with_default_config_values(**kargs):
                                  kernel_size_soma=1,
                                  kernel_size_intersection=1,
                                  kernel_size_branch=1,
-                                 dropout_factor=0.5,
+                                 dropout_factor=0.2,
                                  # kernel_size=81,
                                  # number_of_layers=2,
                                  stride=1,
@@ -249,7 +249,7 @@ def restore_last_n_configs(n=10):
 if __name__ == '__main__':
     # restore_last_n_configs(100)
     configs = []
-    configurations_name = "davids_0"
+    configurations_name = "davids_1"
     # configuration_name='morph'
     for i in ['NAdam']:
         config_morpho_0 = config_factory(
