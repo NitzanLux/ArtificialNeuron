@@ -1,11 +1,11 @@
 import time
 import os
 import logging
-from project_path import *
+from ..project_path import *
 from art import tprint
 import argparse
 import json
-from slurm_job import *
+from ..slurm_job import *
 from math import ceil
 
 parser = argparse.ArgumentParser(description='Add configuration file')
