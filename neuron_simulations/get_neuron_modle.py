@@ -12,7 +12,7 @@ script_dir = Path( __file__ ).parent.absolute()
 
 class ModelName(Enum):
     L5PC=str(script_dir)+r"/L5PC_NEURON_simulation"
-    L5PC_ERGODIC=script_dir+r"/L5PC_NEURON_simulation_ergodic"
+    L5PC_ERGODIC=str(script_dir)+r"/L5PC_NEURON_simulation_ergodic"
 
 
 morphologyFilename = r"/morphologies/cell1.asc"
