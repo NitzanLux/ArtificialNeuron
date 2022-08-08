@@ -1,7 +1,9 @@
 import time
 import os
 import logging
-from ..project_path import *
+# from ...project_path import *
+from ... import project_path
+from project_path import *
 import argparse
 import json
 from slurm_job import *
