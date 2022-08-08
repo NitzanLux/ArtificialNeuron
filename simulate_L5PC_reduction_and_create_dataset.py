@@ -7,7 +7,7 @@ import time
 import neuron
 from neuron import h
 from neuron import gui
-from get_neuron_modle import get_L5PC, h
+from neuron_simulations.get_neuron_modle import get_L5PC, h
 from art import *
 import neuron_reduce
 import argparse
