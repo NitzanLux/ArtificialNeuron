@@ -35,6 +35,6 @@ def get_L5PC(model_name:ModelName=ModelName.L5PC):
     #delete unwanted printings.
     old_stdout = sys.stdout  # backup current stdout
     sys.stdout = open(os.devnull, "w")
-    L5PC = h.L5PCtemplate(morphologyFilename)
+    L5PC = h.L5PCtemplate(model_name.value+morphologyFilename)
     sys.stdout = old_stdout
     return L5PC
