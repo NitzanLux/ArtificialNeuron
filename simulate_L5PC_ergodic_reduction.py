@@ -11,7 +11,7 @@ import pickle
 import neuron_reduce
 import argparse
 from project_path import NEURON_REDUCE_DATA_DIR
-from neuron_simulations.get_neuron_modle import get_L5PC, h
+from neuron_simulations.get_neuron_modle import get_L5PC, h,ModelName
 from art import tprint
 REDUCTION_FREQUENCY=0
 PRINT_LOGS = False
@@ -201,7 +201,7 @@ def simulate_L5PC_reduction(sim_file, dir_name):
     # %% define model
 
 
-    L5PC = get_L5PC()
+    L5PC = get_L5PC(ModelName.L5PC_ERGODIC)
 
     # % collect everything we need about the model
 
