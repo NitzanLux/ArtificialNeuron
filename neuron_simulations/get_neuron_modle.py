@@ -11,7 +11,7 @@ from pathlib import Path
 script_dir = Path( __file__ ).parent.absolute()
 
 class ModelName(Enum):
-    L5PC=script_dir+r"/L5PC_NEURON_simulation"
+    L5PC=str(script_dir)+r"/L5PC_NEURON_simulation"
     L5PC_ERGODIC=script_dir+r"/L5PC_NEURON_simulation_ergodic"
 
 
