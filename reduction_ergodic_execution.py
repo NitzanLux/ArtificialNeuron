@@ -1,11 +1,11 @@
 import time
 import os
 import logging
-from .project_path import *
+from project_path import *
 from art import tprint
 import argparse
 import json
-from .slurm_job import *
+from slurm_job import *
 from math import ceil
 
 parser = argparse.ArgumentParser(description='Add configuration file')
@@ -45,9 +45,9 @@ print(len(onlyfiles),flush=True)
 
 for i,f in enumerate(onlyfiles):
     if i%files_per_cpu==0:
-        params_string = 'python3 $(dirname "$path")/simulate_L5PC_ergodic_reduction.py %s -i $SLURM_JOB_ID'%("-f '" + str(os.path.join(directory, f)) + "' -d '" + directory_name + "_reduction'")
+        params_string = 'python3 $(dirname "$path")/neuron_simulation/simulate_L5PC_ergodic_reduction.py %s -i $SLURM_JOB_ID'%("-f '" + str(os.path.join(directory, f)) + "' -d '" + directory_name + "_reduction'")
     else:
-        params_string = params_string+'&& python3 $(dirname "$path")/simulate_L5PC_ergodic_reduction.py %s -i -1'%("-f '" + str(os.path.join(directory, f)) + "' -d '" + directory_name + "_reduction'")
+        params_string = params_string+'&& python3 $(dirname "$path")/neuron_simulation/simulate_L5PC_ergodic_reduction.py %s -i -1'%("-f '" + str(os.path.join(directory, f)) + "' -d '" + directory_name + "_reduction'")
 
     if i%files_per_cpu==files_per_cpu-1 or i==len(onlyfiles)-1:
 
