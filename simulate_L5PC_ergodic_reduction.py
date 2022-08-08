@@ -11,7 +11,7 @@ import pickle
 import neuron_reduce
 import argparse
 from project_path import NEURON_REDUCE_DATA_DIR
-from get_neuron_modle import get_L5PC, h
+from neuron_simulations.get_neuron_modle import get_L5PC, h
 from art import tprint
 REDUCTION_FREQUENCY=0
 PRINT_LOGS = False
