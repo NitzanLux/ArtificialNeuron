@@ -23,7 +23,7 @@ DLL_FILE_PATH = r"/nrnmech.dll"
 
 useCvode=True
 
-def get_L5PC(model_name:ModelName=L5PC):
+def get_L5PC(model_name:ModelName=ModelName.L5PC):
     cvode = h.CVode()
     if useCvode:
         cvode.active(1)
