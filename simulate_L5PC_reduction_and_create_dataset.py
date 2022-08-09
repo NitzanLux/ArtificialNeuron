@@ -124,6 +124,7 @@ def simulate_L5PC_reduction(sim_file, dir_name):
 
     # NMDA synapse
     def DefineSynapse_NMDA(segment, gMax=0.0004):
+        print(segment,flush=True)
         synapse = h.ProbAMPANMDA2(segment)
 
         synapse.tau_r_AMPA = 0.3
