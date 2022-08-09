@@ -14,7 +14,7 @@ from project_path import NEURON_REDUCE_DATA_DIR
 from neuron_simulations.get_neuron_modle import get_L5PC, h,ModelName
 from art import tprint
 REDUCTION_FREQUENCY=0
-PRINT_LOGS = False
+PRINT_LOGS = True
 
 
 def bin2dict(bin_spikes_matrix):
@@ -453,22 +453,22 @@ def simulate_L5PC_reduction(sim_file, dir_name):
         numOutputSpikes = len(outputSpikeTimes)
 
         # check if the simulation has too few (< 1) output spikes
-        if numOutputSpikes < 1:
-            print('simulation with no output spikes. tossing a coin...')
-            if np.random.rand() < keep_probability_below_01_output_spikes:
-                print('decided to keep.\n\n')
-            else:
-                print('decided to not save. continue\n\n')
-                continue
+        # if numOutputSpikes < 1:
+        #     print('simulation with no output spikes. tossing a coin...')
+        #     if np.random.rand() < keep_probability_below_01_output_spikes:
+        #         print('decided to keep.\n\n')
+        #     else:
+        #         print('decided to not save. continue\n\n')
+        #         continue
 
         # check if the simulation has too many (> 24) output spikes
-        if numOutputSpikes > 24:
-            print('simulation with many (%d) output spikes. tossing a coin...' % (numOutputSpikes))
-            if np.random.rand() < keep_probability_above_24_output_spikes:
-                print('decided to keep.\n\n')
-            else:
-                print('decided to not save. continue\n\n')
-                continue
+        # if numOutputSpikes > 24:
+        #     print('simulation with many (%d) output spikes. tossing a coin...' % (numOutputSpikes))
+        #     if np.random.rand() < keep_probability_above_24_output_spikes:
+        #         print('decided to keep.\n\n')
+        #     else:
+        #         print('decided to not save. continue\n\n')
+        #         continue
 
         # check if the simulation has too many output spikes
         if numOutputSpikes > max_output_spikes_to_keep_per_sim:
