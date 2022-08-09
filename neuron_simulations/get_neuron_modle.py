@@ -39,6 +39,7 @@ def get_L5PC(model_name:ModelName=ModelName.L5PC):
     print(model_name.value)
     print(model_name.value)
     print(model_name.value)
+    print(model_name.value)
     sys.stdout = old_stdout
     print(dir(L5PC))
     return L5PC
