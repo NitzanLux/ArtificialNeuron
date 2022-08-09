@@ -30,9 +30,9 @@ def get_L5PC(model_name:ModelName=ModelName.L5PC):
     # if not hasattr(h, "L5PCtemplate"):
     if platform.system() == 'Windows':
         h.nrn_load_dll(model_name.value+DLL_FILE_PATH)
-    neuron.load_mechanisms(model_name.value)
     h.load_file(model_name.value+biophysicalModelFilename)
     h.load_file(model_name.value+biophysicalModelTemplateFilename)
+    neuron.load_mechanisms(model_name.value)
     #delete unwanted printings.
     old_stdout = sys.stdout  # backup current stdout
     sys.stdout = open(os.devnull, "w")
