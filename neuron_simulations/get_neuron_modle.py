@@ -30,8 +30,7 @@ def get_L5PC(model_name:ModelName=ModelName.L5PC):
     # if not hasattr(h, "L5PCtemplate"):
     if platform.system() == 'Windows':
         h.nrn_load_dll(model_name.value+DLL_FILE_PATH)
-    # else:
-    #     h.nrn_load_dll(model_name.value+r'/x86_64/.libs/libnrnmech.so')
+    neuron.load_mechanisms(model_name.value)
     h.load_file(model_name.value+biophysicalModelFilename)
     h.load_file(model_name.value+biophysicalModelTemplateFilename)
     #delete unwanted printings.
