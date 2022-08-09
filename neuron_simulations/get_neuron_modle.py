@@ -38,7 +38,7 @@ def get_L5PC(model_name:ModelName=ModelName.L5PC):
         h.nrn_load_dll(model_name.value+DLL_FILE_PATH)
 
     print(model_name.value,flush=True)
-    neuron.load_mechanisms(model_name.value)
+    # neuron.load_mechanisms(model_name.value)
 
 
     print(model_name.value+biophysicalModelFilename,flush=True)
