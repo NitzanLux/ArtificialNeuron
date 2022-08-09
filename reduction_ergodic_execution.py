@@ -27,7 +27,7 @@ onlyfiles = [f for f in os.listdir(directory) if os.path.isfile(os.path.join(dir
 job_factory = SlurmJobFactory("cluster_logs")
 files_per_cpu = ceil(len(onlyfiles)/number_of_cpus)
 
-
+print(directory)
 directory_name=os.path.dirname(directory)
 directory_name=os.path.basename(directory_name)
 
