@@ -419,7 +419,7 @@ def simulate_L5PC_reduction(sim_file, dir_name):
         ##%% simulate the cell
         simulationStartTime = time.time()
         # make sure the following line will be run after h.finitialize()
-        fih = h.FInitializeHandler(AddAllSynapticEvents())
+        fih = h.FInitializeHandler(AddAllSynapticEvents)
         h.finitialize(-76)
         neuron.run(totalSimDurationInMS)
         singleSimulationDurationInMinutes = (time.time() - simulationStartTime) / 60
