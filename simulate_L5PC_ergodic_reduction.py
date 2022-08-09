@@ -174,18 +174,18 @@ def simulate_L5PC_reduction(sim_file, dir_name):
 
     inh_max_delta_spikes_mult_factor = experimentParams['inh_max_delta_spikes_mult_factor']
 
-    print('-----------------------------------------')
-    print('"morphology_description" - %s' % (morphology_description))
-    print('"gmax_NMDA_to_AMPA_ratio" - %.3f' % (gmax_NMDA_to_AMPA_ratio))
-    print('-----------------------------------------')
+    if PRINT_LOGS: print('-----------------------------------------')
+    if PRINT_LOGS: print('"morphology_description" - %s' % (morphology_description))
+    if PRINT_LOGS: print('"gmax_NMDA_to_AMPA_ratio" - %.3f' % (gmax_NMDA_to_AMPA_ratio))
+    if PRINT_LOGS: print('-----------------------------------------')
 
 
 
-    print('-----------------------------------------')
-    print('segments_to_keep = ')
-    print('-----------------------------------------')
-    print(segments_to_keep)
-    print('-----------------------------------------')
+    if PRINT_LOGS: print('-----------------------------------------')
+    if PRINT_LOGS: print('segments_to_keep = ')
+    if PRINT_LOGS: print('-----------------------------------------')
+    if PRINT_LOGS: print(segments_to_keep)
+    if PRINT_LOGS: print('-----------------------------------------')
 
     # beaurrocracy
     showPlots = False
@@ -241,16 +241,16 @@ def simulate_L5PC_reduction(sim_file, dir_name):
     list_of_somatic_sections = [L5PC.soma[x] for x in range(len(L5PC.soma))]
     all_sections_with_SKE2 = list_of_somatic_sections + list_of_axonal_sections + listOfApicalSections
 
-    print('-----------------------')
+    if PRINT_LOGS: print('-----------------------')
     for section in all_sections_with_SKE2:
         orig_SKE2_g = section.gSK_E2bar_SK_E2
         new_SKE2_g = orig_SKE2_g * SKE2_mult_factor
         section.gSK_E2bar_SK_E2 = new_SKE2_g
 
-        # print('SKE2 conductance before update = %.10f' %(orig_SKE2_g))
-        # print('SKE2 conductance after  update = %.10f (exprected)' %(new_SKE2_g))
-        # print('SKE2 conductance after  update = %.10f (actual)' %(section.gSK_E2bar_SK_E2))
-    print('-----------------------')
+        # if PRINT_LOGS: print('SKE2 conductance before update = %.10f' %(orig_SKE2_g))
+        # if PRINT_LOGS: print('SKE2 conductance after  update = %.10f (exprected)' %(new_SKE2_g))
+        # if PRINT_LOGS: print('SKE2 conductance after  update = %.10f (actual)' %(section.gSK_E2bar_SK_E2))
+    if PRINT_LOGS: print('-----------------------')
 
     # Calculate total dendritic length
     numBasalSegments = 0
@@ -275,12 +275,12 @@ def simulate_L5PC_reduction(sim_file, dir_name):
 
     segments_to_drop = np.array(list(set(np.arange(totalNumSegments)).difference(set(segments_to_keep)))).astype(int)
 
-    print('-----------------')
-    print('segments_to_drop:')
-    print('-----------------')
-    print(segments_to_drop.shape)
-    print(segments_to_drop)
-    print('-----------------')
+    if PRINT_LOGS: print('-----------------')
+    if PRINT_LOGS: print('segments_to_drop:')
+    if PRINT_LOGS: print('-----------------')
+    if PRINT_LOGS: print(segments_to_drop.shape)
+    if PRINT_LOGS: print(segments_to_drop)
+    if PRINT_LOGS: print('-----------------')
 
     assert (totalNumSegments == (numBasalSegments + numApicalSegments))
     assert (abs(totalDendriticLength - (totalBasalDendriticLength + totalApicalDendriticLength)) < 0.00001)
@@ -294,17 +294,17 @@ def simulate_L5PC_reduction(sim_file, dir_name):
 
     ##%% run the simulation
     experimentStartTime = time.time()
-    print('-------------------------------------\\')
-    print('temperature is %.2f degrees celsius' % (h.celsius))
-    print('dt is %.4f ms' % (h.dt))
-    print('-------------------------------------/')
+    if PRINT_LOGS: print('-------------------------------------\\')
+    if PRINT_LOGS: print('temperature is %.2f degrees celsius' % (h.celsius))
+    if PRINT_LOGS: print('dt is %.4f ms' % (h.dt))
+    if PRINT_LOGS: print('-------------------------------------/')
 
     simInd = 0
     while simInd < numSimulations:
         currSimulationResultsDict = {}
         preparationStartTime = time.time()
-        print('...')
-        print('------------------------------------------------------------------------------\\')
+        if PRINT_LOGS: print('...')
+        if PRINT_LOGS: print('------------------------------------------------------------------------------\\')
 
         exc_spikes_bin, inh_spikes_bin = next(data_generator)
 
@@ -322,8 +322,8 @@ def simulate_L5PC_reduction(sim_file, dir_name):
         inh_spikes_per_100ms_range = [int(np.percentile(inh_spikes_per_100ms, 5)),
                                       int(np.percentile(inh_spikes_per_100ms, 95))]
 
-        print('going to insert excitatory spikes per 100ms in range: %s' % (str(exc_spikes_per_100ms_range)))
-        print('going to insert inhibitory spikes per 100ms in range: %s' % (str(inh_spikes_per_100ms_range)))
+        if PRINT_LOGS: print('going to insert excitatory spikes per 100ms in range: %s' % (str(exc_spikes_per_100ms_range)))
+        if PRINT_LOGS: print('going to insert inhibitory spikes per 100ms in range: %s' % (str(inh_spikes_per_100ms_range)))
 
         inputSpikeTrains_ex = exc_spikes_bin
         inputSpikeTrains_inh = inh_spikes_bin
@@ -414,7 +414,7 @@ def simulate_L5PC_reduction(sim_file, dir_name):
 
 
         preparationDurationInSeconds = time.time() - preparationStartTime
-        print("preparing for single simulation took %.4f seconds" % (preparationDurationInSeconds))
+        if PRINT_LOGS: print("preparing for single simulation took %.4f seconds" % (preparationDurationInSeconds))
 
         ##%% simulate the cell
         simulationStartTime = time.time()
