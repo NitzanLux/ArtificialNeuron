@@ -32,7 +32,6 @@ def get_L5PC(model_name:ModelName=ModelName.L5PC):
         h.nrn_load_dll(model_name.value+DLL_FILE_PATH)
     h.load_file(model_name.value+biophysicalModelFilename)
     h.load_file(model_name.value+biophysicalModelTemplateFilename)
-    print()
     #delete unwanted printings.
     old_stdout = sys.stdout  # backup current stdout
     sys.stdout = open(os.devnull, "w")
