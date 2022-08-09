@@ -1,4 +1,4 @@
-
+from neuron import gui, h
 import platform
 import sys
 import os
