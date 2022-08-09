@@ -32,7 +32,7 @@ def get_L5PC(model_name:ModelName=ModelName.L5PC):
     h.load_file('nrngui.hoc')
     h.load_file("import3d.hoc")
 
-
+    print(dir(h),flush=True)
     # if not hasattr(h, "L5PCtemplate"):
     if platform.system() == 'Windows':
         h.nrn_load_dll(model_name.value+DLL_FILE_PATH)
