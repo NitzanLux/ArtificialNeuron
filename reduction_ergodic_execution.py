@@ -27,9 +27,9 @@ onlyfiles = [f for f in os.listdir(directory) if os.path.isfile(os.path.join(dir
 job_factory = SlurmJobFactory("cluster_logs")
 files_per_cpu = ceil(len(onlyfiles)/number_of_cpus)
 
-directory_name=os.path.dirname(directory)
-print(os.path.basename(directory))
-directory_name=os.path.basename(directory_name)
+base_directory=os.path.dirname(directory)
+directory_name=os.path.basename(directory)
+base_directory=os.path.basename(base_directory)
 
 params_string=''
 # for i,f in enumerate(onlyfiles):
@@ -44,16 +44,16 @@ params_string=''
 print(len(onlyfiles),flush=True)
 
 for i,f in enumerate(onlyfiles):
-    print(directory_name)
+    print(base_directory[:10]+directory_name)
 
     if i%files_per_cpu==0:
-        params_string = 'python3 $(dirname "$path")/simulate_L5PC_ergodic_reduction.py %s -i $SLURM_JOB_ID'%("-f '" + str(os.path.join(directory, f)) + "' -d '" + directory_name + "_reduction'")
+        params_string = 'python3 $(dirname "$path")/simulate_L5PC_ergodic_reduction.py %s -i $SLURM_JOB_ID'%("-f '" + str(os.path.join(directory, f)) + "' -d '" + base_directory[:10]+directory_name + "_reduction'")
     else:
-        params_string = params_string+'&& python3 $(dirname "$path")/simulate_L5PC_ergodic_reduction.py %s -i -1'%("-f '" + str(os.path.join(directory, f)) + "' -d '" + directory_name + "_reduction'")
+        params_string = params_string+'&& python3 $(dirname "$path")/simulate_L5PC_ergodic_reduction.py %s -i -1'%("-f '" + str(os.path.join(directory, f)) + "' -d '" + base_directory[:10]+directory_name + "_reduction'")
 
     if i%files_per_cpu==files_per_cpu-1 or i==len(onlyfiles)-1:
         pass
         print("Job %d"%i)
-        job_factory.send_job("%s_%s"%("reduction_simulation",directory_name), params_string,filename_index=i//files_per_cpu)
+        job_factory.send_job("%s_%s"%("reduction_simulation",base_directory[:10]+directory_name), params_string,filename_index=i//files_per_cpu)
 
 
