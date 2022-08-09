@@ -47,13 +47,13 @@ for i,f in enumerate(onlyfiles):
     print(base_directory[:10]+directory_name)
 
     if i%files_per_cpu==0:
-        params_string = 'python3 $(dirname "$path")/simulate_L5PC_ergodic_reduction.py %s -i $SLURM_JOB_ID'%("-f '" + str(os.path.join(directory, f)) + "' -d '" + base_directory[:10]+"_"+directory_name + "_reduction'")
+        params_string = 'python3 $(dirname "$path")/simulate_L5PC_ergodic_reduction.py %s -i $SLURM_JOB_ID'%("-f '" + str(os.path.join(directory, f)) + "' -d '" + base_directory+"_"+directory_name + "_reduction'")
     else:
-        params_string = params_string+'&& python3 $(dirname "$path")/simulate_L5PC_ergodic_reduction.py %s -i -1'%("-f '" + str(os.path.join(directory, f)) + "' -d '" + base_directory[:10]+"_"+directory_name + "_reduction'")
+        params_string = params_string+'&& python3 $(dirname "$path")/simulate_L5PC_ergodic_reduction.py %s -i -1'%("-f '" + str(os.path.join(directory, f)) + "' -d '" + base_directory+"_"+directory_name + "_reduction'")
 
     if i%files_per_cpu==files_per_cpu-1 or i==len(onlyfiles)-1:
         pass
         print("Job %d"%i)
-        job_factory.send_job("%s_%s"%("reduction_simulation",base_directory[:10]+directory_name), params_string,filename_index=i//files_per_cpu)
+        job_factory.send_job("%s_%s"%("reduction_simulation",base_directory[:15]+"_"+directory_name), params_string,filename_index=i//files_per_cpu)
 
 
