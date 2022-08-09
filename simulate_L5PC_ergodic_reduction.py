@@ -82,7 +82,7 @@ def GetDistanceBetweenSections(sourceSection, destSection):
 # NMDA synapse
 def DefineSynapse_NMDA(segment, gMax=0.0004, NMDA_to_AMPA_g_ratio=1.0):
     print(segment,flush=True)
-    synapse = h.ProbAMPANMDA_David(segment.sec)
+    synapse = h.ProbAMPANMDA_David(segment)
 
     synapse.tau_r_AMPA = 0.3
     synapse.tau_d_AMPA = 3.0
