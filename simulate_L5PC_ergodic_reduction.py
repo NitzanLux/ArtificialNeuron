@@ -81,7 +81,6 @@ def GetDistanceBetweenSections(sourceSection, destSection):
 
 # NMDA synapse
 def DefineSynapse_NMDA(segment, gMax=0.0004, NMDA_to_AMPA_g_ratio=1.0):
-    print(segment,flush=True)
     synapse = h.ProbAMPANMDA_David(segment)
 
     synapse.tau_r_AMPA = 0.3
@@ -212,7 +211,6 @@ def simulate_L5PC_reduction(sim_file, dir_name):
     simInd = 0
     while simInd < numSimulations:
         L5PC = get_L5PC(ModelName.L5PC_ERGODIC)
-        print(dir(h))
         # % collect everything we need about the model
 
         # Get a list of all sections
