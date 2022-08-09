@@ -718,7 +718,7 @@ while simInd < numSimulations:
     ##%% simulate the cell
     simulationStartTime = time.time()
     # make sure the following line will be run after h.finitialize()
-    fih = h.FInitializeHandler('nrnpython("AddAllSynapticEvents()")')
+    fih = h.FInitializeHandler(AddAllSynapticEvents)
     h.finitialize(-76)
     neuron.run(totalSimDurationInMS)
     singleSimulationDurationInMinutes = (time.time() - simulationStartTime) / 60
