@@ -374,7 +374,8 @@ def simulate_L5PC_reduction(sim_file, dir_name):
             ###### excitation ######
 
             # define synapse and connect it to a segment
-            exSynapse = DefineSynapse_NMDA(segment, NMDA_to_AMPA_g_ratio=gmax_NMDA_to_AMPA_ratio)
+            # exSynapse = DefineSynapse_NMDA(segment, NMDA_to_AMPA_g_ratio=gmax_NMDA_to_AMPA_ratio)
+            exSynapse = DefineSynapse_NMDA(segment)
             allExSynapses.append(exSynapse)
 
             # connect synapse
