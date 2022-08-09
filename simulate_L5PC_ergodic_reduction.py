@@ -216,7 +216,7 @@ def simulate_L5PC_reduction(sim_file, dir_name):
 
 
     L5PC = get_L5PC(ModelName.L5PC_ERGODIC)
-
+    print(dir(h))
     # % collect everything we need about the model
 
     # Get a list of all sections
@@ -372,12 +372,10 @@ def simulate_L5PC_reduction(sim_file, dir_name):
         for segInd, segment in enumerate(allSegments):
 
             ###### excitation ######
+
             # define synapse and connect it to a segment
-            inhSynapse = DefineSynapse_GABA_A(segment)
-            allInhSynapses.append(inhSynapse)
-            # define synapse and connect it to a segment
+            exSynapse = DefineSynapse_NMDA(segment, NMDA_to_AMPA_g_ratio=gmax_NMDA_to_AMPA_ratio)
             # exSynapse = DefineSynapse_NMDA(segment, NMDA_to_AMPA_g_ratio=gmax_NMDA_to_AMPA_ratio)
-            exSynapse = DefineSynapse_NMDA(segment)
             allExSynapses.append(exSynapse)
 
             # connect synapse
