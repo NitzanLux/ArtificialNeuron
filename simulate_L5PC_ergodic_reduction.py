@@ -14,7 +14,7 @@ from project_path import NEURON_REDUCE_DATA_DIR
 from neuron_simulations.get_neuron_modle import get_L5PC, h,ModelName
 from art import tprint
 REDUCTION_FREQUENCY=0
-PRINT_LOGS = True
+PRINT_LOGS = False
 
 
 def bin2dict(bin_spikes_matrix):
@@ -53,6 +53,7 @@ def generate_input_spike_trains_for_simulation(sim_experiment_file, print_logs=P
 
     def genrator():
         # go over all simulations in the experiment and collect their results
+        print("number of simulations in file: %d"%len(experiment_dict['Results']['listOfSingleSimulationDicts']))
         for k, sim_dict in enumerate(experiment_dict['Results']['listOfSingleSimulationDicts']):
             X_ex = dict2bin(sim_dict['exInputSpikeTimes'], len(experiment_dict['Params']['allSegmentsType']),
                             experiment_dict['Params']['totalSimDurationInSec'] * 1000)
