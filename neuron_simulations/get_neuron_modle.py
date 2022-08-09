@@ -1,11 +1,9 @@
-from neuron import h
-from neuron import gui
+
 import platform
 import sys
 import os
 from enum import Enum
-h.load_file('nrngui.hoc')
-h.load_file("import3d.hoc")
+
 
 from pathlib import Path
 script_dir = Path( __file__ ).parent.absolute()
@@ -25,12 +23,17 @@ useCvode=True
 
 def get_L5PC(model_name:ModelName=ModelName.L5PC):
     import neuron
+    from neuron import gui,h
+    h.load_file('nrngui.hoc')
+    h.load_file("import3d.hoc")
+
     cvode = h.CVode()
     if useCvode:
         cvode.active(1)
     # if not hasattr(h, "L5PCtemplate"):
     if platform.system() == 'Windows':
         h.nrn_load_dll(model_name.value+DLL_FILE_PATH)
+
     neuron.load_mechanisms(model_name.value)
 
     print(model_name.value,flush=True)
