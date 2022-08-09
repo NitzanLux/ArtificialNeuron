@@ -8,7 +8,7 @@ import numpy as np
 import time
 from scipy import signal
 import pickle
-LOGGER=False
+
 # get or randomly generate random seed
 try:
     print('--------------')
