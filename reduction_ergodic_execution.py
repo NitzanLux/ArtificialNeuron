@@ -28,7 +28,7 @@ job_factory = SlurmJobFactory("cluster_logs")
 files_per_cpu = ceil(len(onlyfiles)/number_of_cpus)
 
 directory_name=os.path.dirname(directory)
-print(directory)
+print(directory_name)
 directory_name=os.path.basename(directory_name)
 
 params_string=''
