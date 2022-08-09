@@ -37,15 +37,15 @@ def get_L5PC(model_name:ModelName=ModelName.L5PC):
     if platform.system() == 'Windows':
         h.nrn_load_dll(model_name.value+DLL_FILE_PATH)
 
+    print(model_name.value,flush=True)
     neuron.load_mechanisms(model_name.value)
 
-    print(model_name.value,flush=True)
 
+    print(model_name.value+biophysicalModelFilename,flush=True)
     h.load_file(model_name.value+biophysicalModelFilename)
-    print(model_name.value,flush=True)
 
+    print(model_name.value+biophysicalModelTemplateFilename,flush=True)
     h.load_file(model_name.value+biophysicalModelTemplateFilename)
-    print(model_name.value,flush=True)
 
     #delete unwanted printings.
     # old_stdout = sys.stdout  # backup current stdout
