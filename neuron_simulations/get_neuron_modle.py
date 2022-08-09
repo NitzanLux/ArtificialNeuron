@@ -13,23 +13,26 @@ class ModelName(Enum):
     L5PC_ERGODIC=str(script_dir)+r"/L5PC_NEURON_simulation_ergodic"
 
 
+useCvode=True
+
+cvode = h.CVode()
+if useCvode:
+    cvode.active(1)
+
+
 morphologyFilename = r"/morphologies/cell1.asc"
 biophysicalModelFilename = r"/L5PCbiophys5b.hoc"
 biophysicalModelTemplateFilename = r"/L5PCtemplate_2.hoc"
 DLL_FILE_PATH = r"/nrnmech.dll"
 
 
-useCvode=True
 
 def get_L5PC(model_name:ModelName=ModelName.L5PC):
     import neuron
-    from neuron import gui,h
     h.load_file('nrngui.hoc')
     h.load_file("import3d.hoc")
 
-    cvode = h.CVode()
-    if useCvode:
-        cvode.active(1)
+
     # if not hasattr(h, "L5PCtemplate"):
     if platform.system() == 'Windows':
         h.nrn_load_dll(model_name.value+DLL_FILE_PATH)
