@@ -401,7 +401,7 @@ def simulate_L5PC_reduction(sim_file, dir_name):
 
         L5PC, synapses_list, netcons_list = neuron_reduce.subtree_reductor(L5PC, allExSynapses + allInhSynapses,
                                                                                    allExNetCons + allInhNetCons,
-                                                                                   reduction_frequency=REDUCTION_FREQUENCY)
+                                                                                   REDUCTION_FREQUENCY)
         # add voltage and time recordings
 
         # record time

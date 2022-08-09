@@ -1,4 +1,4 @@
-TITLE AMPA and NMDA receptor with presynaptic short-term plasticity 
+TITLE AMPA and NMDA receptor with presynaptic short-term plasticity
 
 
 COMMENT
@@ -12,7 +12,7 @@ ENDCOMMENT
 
 NEURON {
 
-        POINT_PROCESS ProbAMPANMDA2  
+        POINT_PROCESS ProbAMPANMDA2
         RANGE tau_r_AMPA, tau_d_AMPA, tau_r_NMDA, tau_d_NMDA
         RANGE Use, u, Dep, Fac, u0, weight_NMDA
         RANGE i, i_AMPA, i_NMDA, g_AMPA, g_NMDA, e, gmax
@@ -24,48 +24,50 @@ PARAMETER {
 
         tau_r_AMPA = 0.2   (ms)  : dual-exponential conductance profile
         tau_d_AMPA = 1.7    (ms)  : IMPORTANT: tau_r < tau_d
-	tau_r_NMDA = 0.29   (ms) : dual-exponential conductance profile
+	     tau_r_NMDA = 0.29   (ms) : dual-exponential conductance profile
         tau_d_NMDA = 43     (ms) : IMPORTANT: tau_r < tau_d
-        Use = 1.0   (1)   : Utilization of synaptic efficacy (just initial values! Use, Dep and Fac are overwritten by BlueBuilder assigned values) 
+        Use = 1.0   (1)   : Utilization of synaptic efficacy (just initial values! Use, Dep and Fac are overwritten by BlueBuilder assigned values)
         Dep = 100   (ms)  : relaxation time constant from depression
         Fac = 10   (ms)  :  relaxation time constant from facilitation
         e = 0     (mV)  : AMPA and NMDA reversal potential
-	mg = 1   (mM)  : initial concentration of mg2+
+	    mg = 1   (mM)  : initial concentration of mg2+
         mggate
     	gmax = .001 (uS) : weight conversion factor (from nS to uS)
     	u0 = 0 :initial value of u, which is the running value of Use
-}
+        }
 
-COMMENT
-The Verbatim block is needed to generate random nos. from a uniform distribution between 0 and 1 
-for comparison with Pr to decide whether to activate the synapse or not
-ENDCOMMENT
-   
-VERBATIM
+        COMMENT
+        The Verbatim block is needed to generate random nos. from a uniform distribution between 0 and 1
+        for comparison with Pr to decide whether to activate the synapse or not
+        ENDCOMMENT
 
-#include<stdlib.h>
-#include<stdio.h>
-#include<math.h>
+        VERBATIM
 
-double nrn_random_pick(void* r);
-void* nrn_random_arg(int argpos);
+        #include
+<stdlib.h>
+    #include
+    <stdio.h>
+        #include
+        <math.h>
 
-ENDVERBATIM
-  
+            double nrn_random_pick(void* r);
+            void* nrn_random_arg(int argpos);
 
-ASSIGNED {
+            ENDVERBATIM
 
-        v (mV)
-        i (nA)
-	i_AMPA (nA)
-	i_NMDA (nA)
-        g_AMPA (uS)
-	g_NMDA (uS)
-        factor_AMPA
-	factor_NMDA
-	rng
-	weight_NMDA
-}
+
+            ASSIGNED {
+            v (mV)
+            i (nA)
+            i_AMPA (nA)
+            i_NMDA (nA)
+            g_AMPA (uS)
+            g_NMDA (uS)
+            factor_AMPA
+            factor_NMDA
+            rng
+            weight_NMDA
+            }
 
 STATE {
 
@@ -78,22 +80,22 @@ STATE {
 INITIAL{
 
         LOCAL tp_AMPA, tp_NMDA
-        
+
 	A_AMPA = 0
         B_AMPA = 0
-	
+
 	A_NMDA = 0
 	B_NMDA = 0
-        
+
 	tp_AMPA = (tau_r_AMPA*tau_d_AMPA)/(tau_d_AMPA-tau_r_AMPA)*log(tau_d_AMPA/tau_r_AMPA) :time to peak of the conductance
 	tp_NMDA = (tau_r_NMDA*tau_d_NMDA)/(tau_d_NMDA-tau_r_NMDA)*log(tau_d_NMDA/tau_r_NMDA) :time to peak of the conductance
-        
+
 	factor_AMPA = -exp(-tp_AMPA/tau_r_AMPA)+exp(-tp_AMPA/tau_d_AMPA) :AMPA Normalization factor - so that when t = tp_AMPA, gsyn = gpeak
         factor_AMPA = 1/factor_AMPA
-	
+
 	factor_NMDA = -exp(-tp_NMDA/tau_r_NMDA)+exp(-tp_NMDA/tau_d_NMDA) :NMDA Normalization factor - so that when t = tp_NMDA, gsyn = gpeak
         factor_NMDA = 1/factor_NMDA
-   
+
 }
 
 BREAKPOINT {
@@ -117,7 +119,7 @@ DERIVATIVE state{
 
 
 NET_RECEIVE (weight,weight_AMPA, weight_NMDA, Pv, Pr, u, tsyn (ms)){
-	
+
 	weight_AMPA = weight
 	weight_NMDA = weight
 	:printf("NMDA weight = %g\n", weight_NMDA)
@@ -132,13 +134,13 @@ NET_RECEIVE (weight,weight_AMPA, weight_NMDA, Pv, Pr, u, tsyn (ms)){
         if (Fac > 0) {
                 u = u*exp(-(t - tsyn)/Fac) :update facilitation variable if Fac>0 Eq. 2 in Fuhrmann et al.
            } else {
-                  u = Use  
-           } 
+                  u = Use
+           }
            if(Fac > 0){
                   u = u + Use*(1-u) :update facilitation variable if Fac>0 Eq. 2 in Fuhrmann et al.
-           }    
+           }
 
-        
+
             Pv  = 1 - (1-Pv) * exp(-(t-tsyn)/Dep) :Probability Pv for a vesicle to be available for release, analogous to the pool of synaptic
                                                  :resources available for release in the deterministic model. Eq. 3 in Fuhrmann et al.
             Pr  = u * Pv                         :Pr is calculated as Pv * u (running value of Use)
@@ -146,9 +148,9 @@ NET_RECEIVE (weight,weight_AMPA, weight_NMDA, Pv, Pr, u, tsyn (ms)){
             :printf("Pv = %g\n", Pv)
             :printf("Pr = %g\n", Pr)
             tsyn = t
-                
+
 		   if (erand() < Pr){
-	
+
                     A_AMPA = A_AMPA + weight_AMPA*factor_AMPA
                     B_AMPA = B_AMPA + weight_AMPA*factor_AMPA
 		    A_NMDA = A_NMDA + weight_NMDA*factor_NMDA
