@@ -29,6 +29,8 @@ DLL_FILE_PATH = r"/nrnmech.dll"
 
 def get_L5PC(model_name:ModelName=ModelName.L5PC):
     import neuron
+    from neuron import gui, h
+
     h.load_file('nrngui.hoc')
     h.load_file("import3d.hoc")
 

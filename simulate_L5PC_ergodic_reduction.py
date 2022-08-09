@@ -97,21 +97,6 @@ def DefineSynapse_NMDA(segment, gMax=0.0004, NMDA_to_AMPA_g_ratio=1.0):
     synapse.Fac = 0
 
     return synapse
-# def DefineSynapse_NMDA(segment, gMax=0.0004):
-#     synapse = h.ProbAMPANMDA2(segment)
-#
-#     synapse.tau_r_AMPA = 0.3
-#     synapse.tau_d_AMPA = 3.0
-#     synapse.tau_r_NMDA = 2.0
-#     synapse.tau_d_NMDA = 70.0
-#     synapse.gmax = gMax
-#     synapse.e = 0
-#     synapse.Use = 1
-#     synapse.u0 = 0
-#     synapse.Dep = 0
-#     synapse.Fac = 0
-#
-#     return synapse
 
 
 # GABA A synapse
@@ -215,96 +200,7 @@ def simulate_L5PC_reduction(sim_file, dir_name):
     # %% define model
 
 
-    L5PC = get_L5PC(ModelName.L5PC_ERGODIC)
-    print(dir(h))
-    # % collect everything we need about the model
 
-    # Get a list of all sections
-    listOfBasalSections = [L5PC.dend[x] for x in range(len(L5PC.dend))]
-    listOfApicalSections = [L5PC.apic[x] for x in range(len(L5PC.apic))]
-    allSections = listOfBasalSections + listOfApicalSections
-    allSectionsType = ['basal' for x in listOfBasalSections] + ['apical' for x in listOfApicalSections]
-    allSectionsLength = []
-    allSections_DistFromSoma = []
-
-    allSegments = []
-    allSegmentsLength = []
-    allSegmentsType = []
-    allSegments_DistFromSoma = []
-    allSegments_SectionDistFromSoma = []
-    allSegments_SectionInd = []
-    # get a list of all segments
-    for k, section in enumerate(allSections):
-        allSectionsLength.append(section.L)
-        allSections_DistFromSoma.append(GetDistanceBetweenSections(L5PC.soma[0], section))
-        for currSegment in section:
-            allSegments.append(currSegment)
-            allSegmentsLength.append(float(section.L) / section.nseg)
-            allSegmentsType.append(allSectionsType[k])
-            allSegments_DistFromSoma.append(
-                GetDistanceBetweenSections(L5PC.soma[0], section) + float(section.L) * currSegment.x)
-            allSegments_SectionDistFromSoma.append(GetDistanceBetweenSections(L5PC.soma[0], section))
-            allSegments_SectionInd.append(k)
-
-    # set Ih vshift value and SK multiplicative factor
-    for section in allSections:
-        section.vshift_Ih = Ih_vshift
-    L5PC.soma[0].vshift_Ih = Ih_vshift
-
-    list_of_axonal_sections = [L5PC.axon[x] for x in range(len(L5PC.axon))]
-    list_of_somatic_sections = [L5PC.soma[x] for x in range(len(L5PC.soma))]
-    all_sections_with_SKE2 = list_of_somatic_sections + list_of_axonal_sections + listOfApicalSections
-
-    if PRINT_LOGS: print('-----------------------')
-    for section in all_sections_with_SKE2:
-        orig_SKE2_g = section.gSK_E2bar_SK_E2
-        new_SKE2_g = orig_SKE2_g * SKE2_mult_factor
-        section.gSK_E2bar_SK_E2 = new_SKE2_g
-
-        # if PRINT_LOGS: print('SKE2 conductance before update = %.10f' %(orig_SKE2_g))
-        # if PRINT_LOGS: print('SKE2 conductance after  update = %.10f (exprected)' %(new_SKE2_g))
-        # if PRINT_LOGS: print('SKE2 conductance after  update = %.10f (actual)' %(section.gSK_E2bar_SK_E2))
-    if PRINT_LOGS: print('-----------------------')
-
-    # Calculate total dendritic length
-    numBasalSegments = 0
-    numApicalSegments = 0
-    totalBasalDendriticLength = 0
-    totalApicalDendriticLength = 0
-
-    basal_seg_length_um = []
-    apical_seg_length_um = []
-    for k, segmentLength in enumerate(allSegmentsLength):
-        if allSegmentsType[k] == 'basal':
-            basal_seg_length_um.append(segmentLength)
-            totalBasalDendriticLength += segmentLength
-            numBasalSegments += 1
-        if allSegmentsType[k] == 'apical':
-            apical_seg_length_um.append(segmentLength)
-            totalApicalDendriticLength += segmentLength
-            numApicalSegments += 1
-
-    totalDendriticLength = sum(allSectionsLength)
-    totalNumSegments = len(allSegments)
-
-    segments_to_drop = np.array(list(set(np.arange(totalNumSegments)).difference(set(segments_to_keep)))).astype(int)
-
-    if PRINT_LOGS: print('-----------------')
-    if PRINT_LOGS: print('segments_to_drop:')
-    if PRINT_LOGS: print('-----------------')
-    if PRINT_LOGS: print(segments_to_drop.shape)
-    if PRINT_LOGS: print(segments_to_drop)
-    if PRINT_LOGS: print('-----------------')
-
-    assert (totalNumSegments == (numBasalSegments + numApicalSegments))
-    assert (abs(totalDendriticLength - (totalBasalDendriticLength + totalApicalDendriticLength)) < 0.00001)
-
-    totalNumOutputSpikes = 0
-    listOfISIs = []
-    numOutputSpikesPerSim = []
-    listOfSingleSimulationDicts = []
-    exc_spikes_per_100ms_range_per_sim = []
-    inh_spikes_per_100ms_range_per_sim = []
 
     ##%% run the simulation
     experimentStartTime = time.time()
@@ -315,6 +211,98 @@ def simulate_L5PC_reduction(sim_file, dir_name):
 
     simInd = 0
     while simInd < numSimulations:
+        L5PC = get_L5PC(ModelName.L5PC_ERGODIC)
+        print(dir(h))
+        # % collect everything we need about the model
+
+        # Get a list of all sections
+        listOfBasalSections = [L5PC.dend[x] for x in range(len(L5PC.dend))]
+        listOfApicalSections = [L5PC.apic[x] for x in range(len(L5PC.apic))]
+        allSections = listOfBasalSections + listOfApicalSections
+        allSectionsType = ['basal' for x in listOfBasalSections] + ['apical' for x in listOfApicalSections]
+        allSectionsLength = []
+        allSections_DistFromSoma = []
+
+        allSegments = []
+        allSegmentsLength = []
+        allSegmentsType = []
+        allSegments_DistFromSoma = []
+        allSegments_SectionDistFromSoma = []
+        allSegments_SectionInd = []
+        # get a list of all segments
+        for k, section in enumerate(allSections):
+            allSectionsLength.append(section.L)
+            allSections_DistFromSoma.append(GetDistanceBetweenSections(L5PC.soma[0], section))
+            for currSegment in section:
+                allSegments.append(currSegment)
+                allSegmentsLength.append(float(section.L) / section.nseg)
+                allSegmentsType.append(allSectionsType[k])
+                allSegments_DistFromSoma.append(
+                    GetDistanceBetweenSections(L5PC.soma[0], section) + float(section.L) * currSegment.x)
+                allSegments_SectionDistFromSoma.append(GetDistanceBetweenSections(L5PC.soma[0], section))
+                allSegments_SectionInd.append(k)
+
+        # set Ih vshift value and SK multiplicative factor
+        for section in allSections:
+            section.vshift_Ih = Ih_vshift
+        L5PC.soma[0].vshift_Ih = Ih_vshift
+
+        list_of_axonal_sections = [L5PC.axon[x] for x in range(len(L5PC.axon))]
+        list_of_somatic_sections = [L5PC.soma[x] for x in range(len(L5PC.soma))]
+        all_sections_with_SKE2 = list_of_somatic_sections + list_of_axonal_sections + listOfApicalSections
+
+        if PRINT_LOGS: print('-----------------------')
+        for section in all_sections_with_SKE2:
+            orig_SKE2_g = section.gSK_E2bar_SK_E2
+            new_SKE2_g = orig_SKE2_g * SKE2_mult_factor
+            section.gSK_E2bar_SK_E2 = new_SKE2_g
+
+            # if PRINT_LOGS: print('SKE2 conductance before update = %.10f' %(orig_SKE2_g))
+            # if PRINT_LOGS: print('SKE2 conductance after  update = %.10f (exprected)' %(new_SKE2_g))
+            # if PRINT_LOGS: print('SKE2 conductance after  update = %.10f (actual)' %(section.gSK_E2bar_SK_E2))
+        if PRINT_LOGS: print('-----------------------')
+
+        # Calculate total dendritic length
+        numBasalSegments = 0
+        numApicalSegments = 0
+        totalBasalDendriticLength = 0
+        totalApicalDendriticLength = 0
+
+        basal_seg_length_um = []
+        apical_seg_length_um = []
+        for k, segmentLength in enumerate(allSegmentsLength):
+            if allSegmentsType[k] == 'basal':
+                basal_seg_length_um.append(segmentLength)
+                totalBasalDendriticLength += segmentLength
+                numBasalSegments += 1
+            if allSegmentsType[k] == 'apical':
+                apical_seg_length_um.append(segmentLength)
+                totalApicalDendriticLength += segmentLength
+                numApicalSegments += 1
+
+        totalDendriticLength = sum(allSectionsLength)
+        totalNumSegments = len(allSegments)
+
+        segments_to_drop = np.array(list(set(np.arange(totalNumSegments)).difference(set(segments_to_keep)))).astype(
+            int)
+
+        if PRINT_LOGS: print('-----------------')
+        if PRINT_LOGS: print('segments_to_drop:')
+        if PRINT_LOGS: print('-----------------')
+        if PRINT_LOGS: print(segments_to_drop.shape)
+        if PRINT_LOGS: print(segments_to_drop)
+        if PRINT_LOGS: print('-----------------')
+
+        assert (totalNumSegments == (numBasalSegments + numApicalSegments))
+        assert (abs(totalDendriticLength - (totalBasalDendriticLength + totalApicalDendriticLength)) < 0.00001)
+
+        totalNumOutputSpikes = 0
+        listOfISIs = []
+        numOutputSpikesPerSim = []
+        listOfSingleSimulationDicts = []
+        exc_spikes_per_100ms_range_per_sim = []
+        inh_spikes_per_100ms_range_per_sim = []
+
         currSimulationResultsDict = {}
         preparationStartTime = time.time()
         if PRINT_LOGS: print('...')
