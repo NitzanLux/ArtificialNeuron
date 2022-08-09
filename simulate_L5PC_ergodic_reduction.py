@@ -545,7 +545,6 @@ def simulate_L5PC_reduction(sim_file, dir_name):
     # % organize and save everything
 
     # create a simulation parameters dict
-    experimentParams = {}
     experimentParams['random_seed'] = random_seed
     experimentParams['numSimulations'] = numSimulations
     experimentParams['totalSimDurationInSec'] = totalSimDurationInSec
@@ -566,7 +565,7 @@ def simulate_L5PC_reduction(sim_file, dir_name):
     experimentParams['inh_max_delta_spikes_mult_factor'] = inh_max_delta_spikes_mult_factor
 
     experimentParams['numSamplesPerMS_HighRes'] = numSamplesPerMS_HighRes
-    experimentParams['inst_rate_sampling_time_interval_options_ms'] = inst_rate_sampling_time_interval_options_ms
+
     experimentParams['temporal_inst_rate_smoothing_sigma_options_ms'] = temporal_inst_rate_smoothing_sigma_options_ms
     experimentParams['inst_rate_sampling_time_interval_jitter_range'] = inst_rate_sampling_time_interval_jitter_range
     experimentParams['temporal_inst_rate_smoothing_sigma_jitter_range'] = temporal_inst_rate_smoothing_sigma_jitter_range
