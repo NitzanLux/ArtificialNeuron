@@ -32,19 +32,15 @@ def get_L5PC(model_name:ModelName=ModelName.L5PC):
     h.load_file('nrngui.hoc')
     h.load_file("import3d.hoc")
 
-    print(dir(h),flush=True)
     # if not hasattr(h, "L5PCtemplate"):
     if platform.system() == 'Windows':
         h.nrn_load_dll(model_name.value+DLL_FILE_PATH)
 
-    print(model_name.value,flush=True)
     neuron.load_mechanisms(model_name.value)
 
 
-    print(model_name.value+biophysicalModelFilename,flush=True)
     h.load_file(model_name.value+biophysicalModelFilename)
 
-    print(model_name.value+biophysicalModelTemplateFilename,flush=True)
     h.load_file(model_name.value+biophysicalModelTemplateFilename)
 
     #delete unwanted printings.
@@ -52,7 +48,4 @@ def get_L5PC(model_name:ModelName=ModelName.L5PC):
     # sys.stdout = open(os.devnull, "w")
     L5PC = h.L5PCtemplate(model_name.value+morphologyFilename)
     # sys.stdout = old_stdout
-    print(model_name.value)
-    print(dir(L5PC))
-    print(dir(h))
     return L5PC
