@@ -217,6 +217,7 @@ def simulate_L5PC_reduction(sim_file, dir_name):
     if PRINT_LOGS: print('-------------------------------------/')
 
     simInd = 0
+    numSimulations=3 #todo debugging
     while simInd < numSimulations:
         L5PC = get_L5PC(ModelName.L5PC_ERGODIC)
         # % collect everything we need about the model
