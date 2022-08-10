@@ -34,7 +34,6 @@ def dict2bin(row_inds_spike_times_map, num_segments, sim_duration_ms):
     for row_ind in row_inds_spike_times_map.keys():
         for spike_time in row_inds_spike_times_map[row_ind]:
             bin_spikes_matrix[row_ind, spike_time] = 1.0
-
     return bin_spikes_matrix
 
 
@@ -217,7 +216,6 @@ def simulate_L5PC_reduction(sim_file, dir_name):
     if PRINT_LOGS: print('-------------------------------------/')
 
     simInd = 0
-    numSimulations=3 #todo debugging
     while simInd < numSimulations:
         L5PC = get_L5PC(ModelName.L5PC_ERGODIC)
         # % collect everything we need about the model
@@ -595,7 +593,7 @@ def simulate_L5PC_reduction(sim_file, dir_name):
     experimentParams['totalNumSimulationSeconds'] = totalNumSimulationSeconds
     experimentParams['averageOutputFrequency'] = averageOutputFrequency
     experimentParams['entireExperimentDurationInMinutes'] = entireExperimentDurationInMinutes
-
+    experimentParams['reduction_frequency']=REDUCTION_FREQUENCY
     # the important things to store
     experimentResults = {}
     experimentResults['listOfSingleSimulationDicts'] = listOfSingleSimulationDicts
