@@ -198,7 +198,7 @@ def simulate_L5PC_reduction(sim_file, dir_name):
 
 
     # %% define model
-
+    listOfSingleSimulationDicts={}
     allSectionsLength = []
     allSections_DistFromSoma = []
 
@@ -573,11 +573,6 @@ def simulate_L5PC_reduction(sim_file, dir_name):
     experimentParams['inh_max_delta_spikes_mult_factor'] = inh_max_delta_spikes_mult_factor
 
     experimentParams['numSamplesPerMS_HighRes'] = numSamplesPerMS_HighRes
-
-    experimentParams['num_bas_ex_spikes_per_100ms_range'] = num_bas_ex_spikes_per_100ms_range
-    experimentParams['num_bas_ex_inh_spike_diff_per_100ms_range'] = num_bas_ex_inh_spike_diff_per_100ms_range
-    experimentParams['num_apic_ex_spikes_per_100ms_range'] = num_apic_ex_spikes_per_100ms_range
-    experimentParams['num_apic_ex_inh_spike_diff_per_100ms_range'] = num_apic_ex_inh_spike_diff_per_100ms_range
 
     experimentParams['collectAndSaveDVTs'] = collectAndSaveDVTs
     experimentParams['allSectionsType'] = allSectionsType
