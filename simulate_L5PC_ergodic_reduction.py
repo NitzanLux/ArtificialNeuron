@@ -606,7 +606,7 @@ def simulate_L5PC_reduction(sim_file, dir_name):
     experimentDict['Results'] = experimentResults
 
 
-    dirToSaveIn, filenameToSave = GetDirNameAndFileName(sim_file, dir_name)
+    dirToSaveIn, filenameToSave = get_dir_name_and_filename(sim_file, dir_name)
     pickle.dump(experimentDict, open(os.path.join(dirToSaveIn, filenameToSave), "wb"), protocol=2)
 
 
