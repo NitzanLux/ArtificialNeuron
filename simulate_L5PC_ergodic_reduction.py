@@ -1,5 +1,5 @@
 #!/usr/bin/python2.7
-
+import logging
 import os
 import sys
 import neuron
@@ -216,7 +216,8 @@ def simulate_L5PC_reduction(sim_file, dir_name):
     if PRINT_LOGS: print('-------------------------------------/')
 
     simInd = 0
-    while simInd < numSimulations:
+    # while simInd < numSimulations:
+    for exc_spikes_bin, inh_spikes_bin in data_generator:
         L5PC = get_L5PC(ModelName.L5PC_ERGODIC)
         # % collect everything we need about the model
 
@@ -313,7 +314,6 @@ def simulate_L5PC_reduction(sim_file, dir_name):
         if PRINT_LOGS: print('...')
         if PRINT_LOGS: print('------------------------------------------------------------------------------\\')
 
-        exc_spikes_bin, inh_spikes_bin = next(data_generator)
 
         # zero out the necessary indices according to "morphology_description"
         exc_spikes_bin[segments_to_drop, :] = 0
@@ -521,7 +521,8 @@ def simulate_L5PC_reduction(sim_file, dir_name):
         # make sure we don't run forever
         if simInd > 7 * numSimulations:
             break
-
+    numSimulations=simInd
+    if numSimulations!= simInd: logging.warning("number of simulations is incongruent numSimulations: %d while simInd: %d"%(numSimulations,simInd))
     ##%% all simulations have ended
     exc_spikes_per_100ms_mean_range = list(np.array(exc_spikes_per_100ms_range_per_sim).mean(axis=0).astype(int))
     inh_spikes_per_100ms_mean_range = list(np.array(inh_spikes_per_100ms_range_per_sim).mean(axis=0).astype(int))
