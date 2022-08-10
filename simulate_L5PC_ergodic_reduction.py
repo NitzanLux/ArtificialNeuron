@@ -199,9 +199,16 @@ def simulate_L5PC_reduction(sim_file, dir_name):
 
     # %% define model
 
+    allSectionsLength = []
+    allSections_DistFromSoma = []
 
-
-
+    allSegments = []
+    allSegmentsLength = []
+    allSegmentsType = []
+    allSegments_DistFromSoma = []
+    allSegments_SectionDistFromSoma = []
+    allSegments_SectionInd = []
+    allSectionsType=[]
     ##%% run the simulation
     experimentStartTime = time.time()
     if PRINT_LOGS: print('-------------------------------------\\')
@@ -566,9 +573,6 @@ def simulate_L5PC_reduction(sim_file, dir_name):
 
     experimentParams['numSamplesPerMS_HighRes'] = numSamplesPerMS_HighRes
 
-    experimentParams['temporal_inst_rate_smoothing_sigma_options_ms'] = temporal_inst_rate_smoothing_sigma_options_ms
-    experimentParams['inst_rate_sampling_time_interval_jitter_range'] = inst_rate_sampling_time_interval_jitter_range
-    experimentParams['temporal_inst_rate_smoothing_sigma_jitter_range'] = temporal_inst_rate_smoothing_sigma_jitter_range
     experimentParams['num_bas_ex_spikes_per_100ms_range'] = num_bas_ex_spikes_per_100ms_range
     experimentParams['num_bas_ex_inh_spike_diff_per_100ms_range'] = num_bas_ex_inh_spike_diff_per_100ms_range
     experimentParams['num_apic_ex_spikes_per_100ms_range'] = num_apic_ex_spikes_per_100ms_range
