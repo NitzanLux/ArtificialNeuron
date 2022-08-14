@@ -6,7 +6,7 @@ import yaml
 import pandas as pd
 from datetime import datetime
 from general_aid_function import *
-from get_neuron_modle import get_L5PC
+from neuron_simulations.get_neuron_modle import get_L5PC
 from neuron_network import davids_network
 from neuron_network import fully_connected_temporal_seperated
 
