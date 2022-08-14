@@ -41,7 +41,10 @@ if args.files_that_do_not_exist:
     print(files_that_exists)
     new_files=[]
     for f in only_files:
-        if f not in files_that_exists:
+        file_name, file_extension = os.path.splitext(f)
+        _, file_name = os.path.split(file_name)
+        file_name = file_name + '_reduction_%dw' % (REDUCTION_FREQUENCY) + file_extension
+        if file_name not in files_that_exists:
             new_files.append(f)
     only_files = new_files
 
