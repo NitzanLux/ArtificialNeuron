@@ -335,7 +335,7 @@ def get_data_generators(DVT_PCA_model, config):
     if config.config_version >= 1.2:
         prediction_length = config.prediction_length
     train_files, valid_files, test_files = load_files_names(config.files_filter_regex)
-    train_data_generator = SimulationDataGenerator(train_files, buffer_size_in_files=BUFFER_SIZE_IN_FILES_TRAINING,
+    train_data_generator = SimulationDataGenerator(train_files[:2], buffer_size_in_files=BUFFER_SIZE_IN_FILES_TRAINING,
                                                    prediction_length=prediction_length,
                                                    batch_size=config.batch_size_train,
                                                    epoch_size=config.epoch_size * config.accumulate_loss_batch_factor,
@@ -344,7 +344,8 @@ def get_data_generators(DVT_PCA_model, config):
                                                    )
     print("loading data...validation", flush=True)
 
-    validation_data_generator = SimulationDataGenerator(valid_files, buffer_size_in_files=BUFFER_SIZE_IN_FILES_VALID,
+    validation_data_generator = SimulationDataGenerator(train_files[:2],#valid_files,
+                                                        buffer_size_in_files=BUFFER_SIZE_IN_FILES_VALID,
                                                         prediction_length=5780,
                                                         batch_size=config.batch_size_validation,
                                                         window_size_ms=config.time_domain_shape,

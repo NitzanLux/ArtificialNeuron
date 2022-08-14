@@ -251,7 +251,7 @@ def restore_last_n_configs(n=10):
 if __name__ == '__main__':
     # restore_last_n_configs(100)
     configs = []
-    configurations_name = "davids_3"
+    configurations_name = "overfit"
     # configuration_name='morph'
     for i in ['NAdam']:
         config_morpho_0 = config_factory(
