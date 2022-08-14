@@ -17,6 +17,7 @@ parser.add_argument(dest="number_of_cpus", type=int,
 
 parser.add_argument(dest="directory", type=str,
                     help='data directory', default=None)
+
 parser.add_argument(dest="files_that_do_not_exist", type=bool,
                     help='simulate only files that do not exist', default=False)
 
