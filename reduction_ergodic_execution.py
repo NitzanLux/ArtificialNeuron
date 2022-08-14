@@ -7,7 +7,6 @@ import argparse
 import json
 from slurm_job import *
 from math import ceil
-from simulate_L5PC_ergodic_reduction import get_dir_name_and_filename
 
 parser = argparse.ArgumentParser(description='Add configuration file')
 
@@ -37,7 +36,7 @@ base_directory=os.path.basename(base_directory)
 
 
 if args.files_that_do_not_exist:
-    directory_dest , _ = get_dir_name_and_filename("",directory_name)
+    directory_dest , _ = resultsSavedIn_rootFolder = os.path.join(NEURON_REDUCE_DATA_DIR, directory_name)
     files_that_exists = set([f for f in os.listdir(directory_dest) if os.path.isfile(os.path.join(directory_dest, f))])
     new_files=[]
     for f in only_files:

@@ -9,7 +9,7 @@ import json
 from slurm_job import *
 from math import ceil
 from art import tprint
-from simulate_L5PC_ergodic_reduction import get_dir_name_and_filename
+
 parser = argparse.ArgumentParser(description='Add configuration file')
 
 parser.add_argument('-c',dest="number_of_cpus", type=int,
