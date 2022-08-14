@@ -155,7 +155,6 @@ def simulate_L5PC_reduction(sim_file, dir_name,reduction_frequency=0):
     max_spikes_mult_factor_per_NMDA_g_ratio = experimentParams['max_spikes_mult_factor_per_NMDA_g_ratio']
 
     # 15% change per 1.0 NMDA_to_AMPA_g_ratio
-    inh_max_delta_spikes_mult_factor_per_NMDA_g_ratio = experimentParams['inh_max_delta_spikes_mult_factor_per_NMDA_g_ratio']
 
     # load spatial clustering matrix
     folder_name = '/ems/elsc-labs/segev-i/david.beniaguev/Reseach/Single_Neuron_InOut/new_code/Neuron_Revision/L5PC_sim_experiment_AB/'
@@ -565,8 +564,6 @@ def simulate_L5PC_reduction(sim_file, dir_name,reduction_frequency=0):
     experimentParams['max_output_spikes_to_keep_per_sim'] = max_output_spikes_to_keep_per_sim
     experimentParams['max_spikes_mult_factor_per_active_segment'] = max_spikes_mult_factor_per_active_segment
     experimentParams['max_spikes_mult_factor_per_NMDA_g_ratio'] = max_spikes_mult_factor_per_NMDA_g_ratio
-    experimentParams[
-        'inh_max_delta_spikes_mult_factor_per_NMDA_g_ratio'] = inh_max_delta_spikes_mult_factor_per_NMDA_g_ratio
     experimentParams['exc_max_spikes_mult_factor'] = exc_max_spikes_mult_factor
     experimentParams['inh_max_delta_spikes_mult_factor'] = inh_max_delta_spikes_mult_factor
 
