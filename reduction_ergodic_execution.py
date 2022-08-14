@@ -38,7 +38,6 @@ base_directory=os.path.basename(base_directory)
 if args.files_that_do_not_exist:
     directory_dest  = os.path.join(NEURON_REDUCE_DATA_DIR, base_directory+"_"+directory_name + "_reduction")
     files_that_exists = set([f for f in os.listdir(directory_dest) if os.path.isfile(os.path.join(directory_dest, f))])
-    print(files_that_exists)
     new_files=[]
     for f in only_files:
         file_name, file_extension = os.path.splitext(f)
@@ -47,6 +46,7 @@ if args.files_that_do_not_exist:
         if file_name not in files_that_exists:
             new_files.append(f)
     only_files = new_files
+
 
 params_string=''
 
