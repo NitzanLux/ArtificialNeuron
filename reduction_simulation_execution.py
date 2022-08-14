@@ -12,13 +12,13 @@ from art import tprint
 from simulate_L5PC_ergodic_reduction import get_dir_name_and_filename
 parser = argparse.ArgumentParser(description='Add configuration file')
 
-parser.add_argument(dest="number_of_cpus", type=int,
+parser.add_argument('-c',dest="number_of_cpus", type=int,
                     help='number of cpus to run on', default=None)
 
-parser.add_argument(dest="directory", type=str,
+parser.add_argument('-d',dest="directory", type=str,
                     help='data directory', default=None)
 
-parser.add_argument(dest="files_that_do_not_exist", type=bool,
+parser.add_argument('-e',dest="files_that_do_not_exist", type=bool,
                     help='simulate only files that do not exist', default=False)
 
 args = parser.parse_args()
