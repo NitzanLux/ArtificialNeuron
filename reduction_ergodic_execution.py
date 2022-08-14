@@ -64,5 +64,5 @@ for i, f in enumerate(only_files):
                                               f)) + "' -d '" + base_directory + "_" + directory_name + "_reduction'" +
                     " -rf %d"%args.reduction_frequency)
 
-    # if i%files_per_cpu==files_per_cpu-1 or i==len(only_files)-1:
-    #     job_factory.send_job("%s_%s"%("reduction_simulation",base_directory[:15]+"_"+directory_name), params_string,filename_index=i//files_per_cpu)
+    if i%files_per_cpu==files_per_cpu-1 or i==len(only_files)-1:
+        job_factory.send_job("%s_%s"%("reduction_simulation",base_directory[:15]+"_"+directory_name), params_string,filename_index=i//files_per_cpu)
