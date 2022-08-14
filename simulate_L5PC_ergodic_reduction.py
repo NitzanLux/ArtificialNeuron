@@ -13,7 +13,6 @@ import argparse
 from project_path import NEURON_REDUCE_DATA_DIR
 from neuron_simulations.get_neuron_modle import get_L5PC, h,ModelName
 from art import tprint
-REDUCTION_FREQUENCY=0
 PRINT_LOGS = False
 
 
@@ -63,12 +62,12 @@ def generate_input_spike_trains_for_simulation(sim_experiment_file, print_logs=P
     return genrator(), experiment_dict['Params']
 
 
-def get_dir_name_and_filename(file_name, dir_name):
+def get_dir_name_and_filename(file_name, dir_name,reduction_frequency=0):
     # string to describe model name based on params
     resultsSavedIn_rootFolder = os.path.join(NEURON_REDUCE_DATA_DIR, dir_name)
     file_name, file_extension = os.path.splitext(file_name)
     _, file_name = os.path.split(file_name)
-    file_name = file_name + '_reduction_%dw' % (REDUCTION_FREQUENCY) + file_extension
+    file_name = file_name + '_reduction_%dw' % (reduction_frequency) + file_extension
     if not os.path.exists(resultsSavedIn_rootFolder):
         os.makedirs(resultsSavedIn_rootFolder)
     return resultsSavedIn_rootFolder, file_name
@@ -122,7 +121,7 @@ def ConnectEmptyEventGenerator(synapse):
     return netConnection
 
 #%%
-def simulate_L5PC_reduction(sim_file, dir_name):
+def simulate_L5PC_reduction(sim_file, dir_name,reduction_frequency=0):
     data_generator, experimentParams = generate_input_spike_trains_for_simulation(sim_file)
     # get or randomly generate random seed
     random_seed = experimentParams['random_seed']
@@ -409,7 +408,7 @@ def simulate_L5PC_reduction(sim_file, dir_name):
 
         L5PC, synapses_list, netcons_list = neuron_reduce.subtree_reductor(L5PC, allExSynapses + allInhSynapses,
                                                                                    allExNetCons + allInhNetCons,
-                                                                                   REDUCTION_FREQUENCY)
+                                                                                   reduction_frequency)
         # add voltage and time recordings
 
         # record time
@@ -594,7 +593,7 @@ def simulate_L5PC_reduction(sim_file, dir_name):
     experimentParams['totalNumSimulationSeconds'] = totalNumSimulationSeconds
     experimentParams['averageOutputFrequency'] = averageOutputFrequency
     experimentParams['entireExperimentDurationInMinutes'] = entireExperimentDurationInMinutes
-    experimentParams['reduction_frequency']=REDUCTION_FREQUENCY
+    experimentParams['reduction_frequency']=reduction_frequency
     # the important things to store
     experimentResults = {}
     experimentResults['listOfSingleSimulationDicts'] = listOfSingleSimulationDicts
@@ -605,7 +604,7 @@ def simulate_L5PC_reduction(sim_file, dir_name):
     experimentDict['Results'] = experimentResults
 
 
-    dirToSaveIn, filenameToSave = get_dir_name_and_filename(sim_file, dir_name)
+    dirToSaveIn, filenameToSave = get_dir_name_and_filename(sim_file, dir_name,reduction_frequency)
     pickle.dump(experimentDict, open(os.path.join(dirToSaveIn, filenameToSave), "wb"), protocol=2)
 
 
@@ -614,6 +613,7 @@ parser = argparse.ArgumentParser(description='add file to run the neuron reduce'
 
 parser.add_argument('-f', dest="file", type=str, nargs='+', help='data file to which reduce')
 parser.add_argument('-d', dest="dir", type=str, nargs='+', help='data directory to which reduce')
+parser.add_argument('-rf', dest="reduction_frequency", type=int, nargs='+', help='reduction frequency')
 parser.add_argument('-i', dest="slurm_job_id", type=str, help='slurm_job_id')
 args = parser.parse_args()
 sim_files = args.file
@@ -631,7 +631,7 @@ for f in sim_files:
     print(dir_name)
     print(f)
     print(flush=True)
-    simulate_L5PC_reduction(f,dir_name)
+    simulate_L5PC_reduction(f,dir_name,args.reduction_frequency[0])
     print('#####################################################################', '\n\t')
     print('ending')
     print(dir_name)

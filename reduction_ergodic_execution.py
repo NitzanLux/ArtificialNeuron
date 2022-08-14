@@ -18,6 +18,8 @@ parser.add_argument(dest="directory", type=str,
 
 parser.add_argument(dest="files_that_do_not_exist", type=bool,
                     help='simulate only files that do not exist', default=False)
+parser.add_argument(dest="reduction_frequency", type=int,
+                    help='reduction frequency', default= 0)
 
 args = parser.parse_args()
 print(args)
@@ -42,7 +44,7 @@ if args.files_that_do_not_exist:
     for f in only_files:
         file_name, file_extension = os.path.splitext(f)
         _, file_name = os.path.split(file_name)
-        file_name = file_name + '_reduction_%dw' % (REDUCTION_FREQUENCY) + file_extension
+        file_name = file_name + '_reduction_%dw' % (args.reduction_frequency) + file_extension
         if file_name not in files_that_exists:
             new_files.append(f)
     only_files = new_files
@@ -54,9 +56,9 @@ print(len(only_files), flush=True)
 
 for i,f in enumerate(only_files):
     if i%files_per_cpu==0:
-        params_string = 'python3 $(dirname "$path")/simulate_L5PC_ergodic_reduction.py %s -i $SLURM_JOB_ID'%("-f '" + str(os.path.join(directory, f)) + "' -d '" + base_directory+"_"+directory_name + "_reduction'")
+        params_string = 'python3 $(dirname "$path")/simulate_L5PC_ergodic_reduction.py %s -i $SLURM_JOB_ID'%("-f '" + str(os.path.join(directory, f)) + "' -d '" + base_directory+"_"+directory_name + "_reduction'"+" -rf "+args.reduction_frequency)
     else:
-        params_string = params_string+'&& python3 $(dirname "$path")/simulate_L5PC_ergodic_reduction.py %s -i -1'%("-f '" + str(os.path.join(directory, f)) + "' -d '" + base_directory+"_"+directory_name + "_reduction'")
+        params_string = params_string+'&& python3 $(dirname "$path")/simulate_L5PC_ergodic_reduction.py %s -i -1'%("-f '" + str(os.path.join(directory, f)) + "' -d '" + base_directory+"_"+directory_name + "_reduction'"+" -rf "+args.reduction_frequency)
 
     # if i%files_per_cpu==files_per_cpu-1 or i==len(only_files)-1:
     #     job_factory.send_job("%s_%s"%("reduction_simulation",base_directory[:15]+"_"+directory_name), params_string,filename_index=i//files_per_cpu)
