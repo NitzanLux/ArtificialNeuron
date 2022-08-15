@@ -221,9 +221,9 @@ def parse_sim_experiment_file_ido(sim_experiment_folder, print_logs=False):
     somatic_voltage = h5py.File(f'{sim_experiment_folder}/voltage.h5', 'r')['somatic_voltage']
     summary = pickle.load(open(f'{sim_experiment_folder}/summary.pkl', 'rb'))
 
-    output_spikes_for_window = np.zeros(self.window_size)
+    # output_spikes_for_window = np.zeros(self.window_size)
     spike_times = summary['output_spike_times']
-    output_spikes_for_window[spike_times.astype(int)] = 1
+    # output_spikes_for_window[spike_times.astype(int)] = 1
     return all_weighted_spikes_for_window ,spike_times,somatic_voltage
 
 def parse_sim_experiment_file(sim_experiment_file, print_logs=False):
