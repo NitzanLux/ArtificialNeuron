@@ -212,8 +212,8 @@ def parse_sim_experiment_file_ido(sim_experiment_folder, print_logs=False):
     exc_weighted_spikes = sparse.load_npz(f'{sim_experiment_folder}/exc_weighted_spikes.npz').A
     inh_weighted_spikes = sparse.load_npz(f'{sim_experiment_folder}/inh_weighted_spikes.npz').A
 
-    exc_weighted_spikes_for_window = exc_weighted_spikes[:, st_pos:en_pos]
-    inh_weighted_spikes_for_window = inh_weighted_spikes[:, st_pos:en_pos]
+    exc_weighted_spikes_for_window = exc_weighted_spikes
+    inh_weighted_spikes_for_window = inh_weighted_spikes
 
     all_weighted_spikes_for_window = np.vstack((exc_weighted_spikes_for_window, inh_weighted_spikes_for_window))
 
@@ -221,8 +221,7 @@ def parse_sim_experiment_file_ido(sim_experiment_folder, print_logs=False):
     summary = pickle.load(open(f'{sim_experiment_folder}/summary.pkl', 'rb'))
 
     output_spikes_for_window = np.zeros(self.window_size)
-    spike_times = summary['output_spike_times'][
-        (summary['output_spike_times'] >= st_pos) & (summary['output_spike_times'] < en_pos)]
+    spike_times = summary['output_spike_times']
     output_spikes_for_window[spike_times.astype(int)] = 1
     return all_weighted_spikes_for_window ,spike_times,somatic_voltage
 
