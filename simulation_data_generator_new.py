@@ -7,6 +7,7 @@ import torch
 import time
 from typing import List, Tuple
 from scipy import sparse
+import h5py
 
 Y_SOMA_THRESHOLD = -20.0
 
