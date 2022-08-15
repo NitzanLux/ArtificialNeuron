@@ -209,16 +209,16 @@ class SimulationDataGenerator():
 
 def parse_sim_experiment_file_ido(sim_experiment_folder, print_logs=False):
     # ido_base_path="/ems/elsc-labs/segev-i/Sandbox Shared/Rat_L5b_PC_2_Hay_simple_pipeline_1/simulation_dataset/"
-    exc_weighted_spikes = sparse.load_npz(f'{sim_experiment_folder}/simulation_{simulation_n}/exc_weighted_spikes.npz').A
-    inh_weighted_spikes = sparse.load_npz(f'{sim_experiment_folder}/simulation_{simulation_n}/inh_weighted_spikes.npz').A
+    exc_weighted_spikes = sparse.load_npz(f'{sim_experiment_folder}/exc_weighted_spikes.npz').A
+    inh_weighted_spikes = sparse.load_npz(f'{sim_experiment_folder}/inh_weighted_spikes.npz').A
 
     exc_weighted_spikes_for_window = exc_weighted_spikes[:, st_pos:en_pos]
     inh_weighted_spikes_for_window = inh_weighted_spikes[:, st_pos:en_pos]
 
     all_weighted_spikes_for_window = np.vstack((exc_weighted_spikes_for_window, inh_weighted_spikes_for_window))
 
-    somatic_voltage = h5py.File(f'{sim_experiment_folder}/simulation_{simulation_n}/voltage.h5', 'r')['somatic_voltage']
-    summary = pickle.load(open(f'{sim_experiment_folder}/simulation_{simulation_n}/summary.pkl', 'rb'))
+    somatic_voltage = h5py.File(f'{sim_experiment_folder}/voltage.h5', 'r')['somatic_voltage']
+    summary = pickle.load(open(f'{sim_experiment_folder}/summary.pkl', 'rb'))
 
     output_spikes_for_window = np.zeros(self.window_size)
     spike_times = summary['output_spike_times'][
