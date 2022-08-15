@@ -335,6 +335,7 @@ def get_data_generators(DVT_PCA_model, config):
     if config.config_version >= 1.2:
         prediction_length = config.prediction_length
     train_files, valid_files, test_files = load_files_names(config.files_filter_regex)
+    assert False,"fff" #todo debug
     train_data_generator = SimulationDataGenerator(train_files, buffer_size_in_files=BUFFER_SIZE_IN_FILES_TRAINING,
                                                    prediction_length=prediction_length,
                                                    batch_size=config.batch_size_train,
