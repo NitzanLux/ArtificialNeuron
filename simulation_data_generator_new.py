@@ -92,16 +92,12 @@ class SimulationDataGenerator():
 
     def shuffel_data(self):
         if self.shuffle_data:
-            indexes = np.arange(self.X.shape[0])
-            np.random.shuffle(indexes)
-            self.X = self.X[indexes, :, :].squeeze()
-            self.y_soma = self.y_soma[indexes, :].squeeze()
-            self.y_spike = self.y_spike[indexes, :]
+            np.random.shuffle(self.indexes)
 
     def iterate_deterministic_no_repetition(self):
         counter = 0
         while self.epoch_size is None or counter < self.epoch_size:
-            yield self[np.arange(self.sample_counter, self.sample_counter + self.batch_size) % self.X.shape[SIM_INDEX]]
+            yield self[np.arange(self.sample_counter, self.sample_counter + self.batch_size) % self.indexes.shape[0]]
             counter += 1
             self.sample_counter += self.batch_size
             self.files_shuffle_checker()
@@ -124,11 +120,22 @@ class SimulationDataGenerator():
         sim_ind = item
         if isinstance(sim_ind, int):
             sim_ind = np.array([sim_ind])
+        sim_indexs=self.indexes[sim_ind]//((self.X.shape[2] - self.receptive_filed_size) // self.prediction_length)
+        time_index = self.indexes[sim_ind]%((self.X.shape[2] - self.receptive_filed_size) // self.prediction_length)
+        time_index = time_index*self.prediction_length
 
-        X_batch = self.X[sim_ind, :, :]
 
-        y_spike_batch = self.y_spike[sim_ind, self.receptive_filed_size:]
-        y_soma_batch = self.y_soma[sim_ind, self.receptive_filed_size:]
+        sim_ind_mat, chn_ind, win_ind = np.meshgrid(sim_indexs,
+                                                    np.arange(self.X.shape[1]), np.arange(self.window_size_ms),
+                                                    indexing='ij',)
+        win_ind = time_index[:, np.newaxis, np.newaxis].astype(int) + win_ind.astype(int)
+
+        # time_range=(np.tile(np.arange(self.window_size_ms),(time_index.shape[0],1))+time_index[:,np.newaxis])
+        # end_time=time_index+self.window_size_ms
+
+        X_batch = self.X[sim_ind_mat, chn_ind, win_ind]
+        y_spike_batch = self.y_spike[sim_ind_mat[:,0,self.receptive_filed_size:], win_ind[:,0,self.receptive_filed_size:]]
+        y_soma_batch = self.y_soma[sim_ind_mat[:,0,self.receptive_filed_size:], win_ind[:,0,self.receptive_filed_size:]]
 
         return (torch.from_numpy(X_batch), [torch.from_numpy(y_spike_batch), torch.from_numpy(y_soma_batch)])
 
@@ -177,40 +184,7 @@ class SimulationDataGenerator():
                 X = X[:self.number_of_traces_from_file, :, :]
                 y_spike = y_spike[:self.number_of_traces_from_file, :, :]
                 y_soma = y_soma[:self.number_of_traces_from_file, :, :]
-            times=((X.shape[2]-self.receptive_filed_size)//self.prediction_length)
 
-
-            X = np.transpose(X, axes=[1, 0, 2])
-            X = [X[:,:,i:(times*self.prediction_length)+i:self.prediction_length] for i in range(self.window_size_ms)]
-            X=np.array(X)
-            X=X.reshape((X.shape[0],X.shape[1],X.shape[2]*X.shape[3]))
-            X = np.transpose(X,axes=[2,1,0])
-
-            y_soma = np.transpose(y_soma, axes=[1, 0, 2])
-            y_soma = [y_soma[:, :, i:(times * self.prediction_length) + i:self.prediction_length] for i in
-                 range(self.window_size_ms)]
-            y_soma = np.array(y_soma)
-            y_soma = y_soma.reshape((y_soma.shape[0], y_soma.shape[1], y_soma.shape[2] * y_soma.shape[3]))
-            y_soma = np.transpose(y_soma, axes=[2, 1, 0])
-
-            y_spike = np.transpose(y_spike, axes=[1, 0, 2])
-            y_spike = [y_spike[:, :, i:(times * self.prediction_length) + i:self.prediction_length] for i in
-                 range(self.window_size_ms)]
-            y_spike = np.array(y_spike)
-            y_spike = y_spike.reshape((y_spike.shape[0], y_spike.shape[1], y_spike.shape[2] * y_spike.shape[3]))
-            y_spike = np.transpose(y_spike, axes=[2, 1, 0])
-
-            # last_j = 0
-            # for i in range(X.shape[1]):
-            #     counter=0
-            #     for j in range(int((X.shape[2]-self.receptive_filed_size)//self.prediction_length)):
-            #         X_out[:,last_j+j,:]=X[:,i,counter:counter+self.window_size_ms]
-            #         y_spike_out[:,last_j+j,:]=y_spike[i,:,counter:counter+self.window_size_ms]
-            #         y_soma_out[:,last_j+j,:]=y_soma[i,:,counter:counter+self.window_size_ms]
-            #         counter+=self.prediction_length
-            #     last_j+=int((X.shape[2]-self.receptive_filed_size)//self.prediction_length)
-
-            # X_out = np.transpose(X_out,axes=[1,0,2])
             self.X.append(X)
             self.y_spike.append(y_spike)
             self.y_soma.append(y_soma)
@@ -218,8 +192,15 @@ class SimulationDataGenerator():
         self.X = np.vstack(self.X)
         self.y_spike = np.vstack(self.y_spike).squeeze(1)
         self.y_soma = np.vstack(self.y_soma).squeeze(1)
-        # threshold the signals
+        times = ((self.X.shape[2] - self.receptive_filed_size) // self.prediction_length)
+        self.X=self.X[:,:,:-((self.X.shape[2] - self.receptive_filed_size) % self.prediction_length)]
+        self.y_spike= self.y_spike[:,:-((self.y_spike.shape[1] - self.receptive_filed_size) // self.prediction_length)]
+        self.y_soma= self.y_soma[:,:-((self.y_soma.shape[1] - self.receptive_filed_size) // self.prediction_length)]
 
+        number_of_indexes = times * self.X.shape[0]
+        self.indexes=np.arange(number_of_indexes)
+
+        # threshold the signals
         self.y_soma[self.y_soma > self.y_soma_threshold] = self.y_soma_threshold
 
         self.shuffel_data()
@@ -289,3 +270,6 @@ def dict2bin(row_inds_spike_times_map, num_segments, sim_duration_ms):
 
     return bin_spikes_matrix
 
+# sim_experiment_files = ['data/L5PC_NMDA_train/sim__saved_InputSpikes_DVTs__647_outSpikes__128_simulationRuns__6_secDuration__randomSeed_100519.p']#,'data/L5PC_NMDA_train/sim__saved_InputSpikes_DVTs__561_outSpikes__128_simulationRuns__6_secDuration__randomSeed_100520.p','data/L5PC_NMDA_train/sim__saved_InputSpikes_DVTs__647_outSpikes__128_simulationRuns__6_secDuration__randomSeed_100519.p']
+# a = SimulationDataGenerator(sim_experiment_files)
+# b=parse_sim_experiment_file
