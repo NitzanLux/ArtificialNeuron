@@ -6,6 +6,7 @@ import numpy as np
 import torch
 import time
 from typing import List, Tuple
+from scipy import sparse
 
 Y_SOMA_THRESHOLD = -20.0
 
@@ -174,7 +175,8 @@ class SimulationDataGenerator():
             return
         # load the file
         for f in self.curr_files_to_use:
-            X, y_spike, y_soma = parse_sim_experiment_file(f)
+            # X, y_spike, y_soma = parse_sim_experiment_file(f)
+            X, y_spike, y_soma = parse_sim_experiment_file_ido(f)
             # reshape to what is needed
             X = np.transpose(X, axes=[2, 0, 1])
             X = X[:, :, self.sampling_start_time:]
@@ -204,6 +206,25 @@ class SimulationDataGenerator():
         self.y_soma[self.y_soma > self.y_soma_threshold] = self.y_soma_threshold
 
         self.shuffel_data()
+
+def parse_sim_experiment_file_ido(sim_experiment_folder, print_logs=False):
+    # ido_base_path="/ems/elsc-labs/segev-i/Sandbox Shared/Rat_L5b_PC_2_Hay_simple_pipeline_1/simulation_dataset/"
+    exc_weighted_spikes = sparse.load_npz(f'{sim_experiment_folder}/simulation_{simulation_n}/exc_weighted_spikes.npz').A
+    inh_weighted_spikes = sparse.load_npz(f'{sim_experiment_folder}/simulation_{simulation_n}/inh_weighted_spikes.npz').A
+
+    exc_weighted_spikes_for_window = exc_weighted_spikes[:, st_pos:en_pos]
+    inh_weighted_spikes_for_window = inh_weighted_spikes[:, st_pos:en_pos]
+
+    all_weighted_spikes_for_window = np.vstack((exc_weighted_spikes_for_window, inh_weighted_spikes_for_window))
+
+    somatic_voltage = h5py.File(f'{sim_experiment_folder}/simulation_{simulation_n}/voltage.h5', 'r')['somatic_voltage']
+    summary = pickle.load(open(f'{sim_experiment_folder}/simulation_{simulation_n}/summary.pkl', 'rb'))
+
+    output_spikes_for_window = np.zeros(self.window_size)
+    spike_times = summary['output_spike_times'][
+        (summary['output_spike_times'] >= st_pos) & (summary['output_spike_times'] < en_pos)]
+    output_spikes_for_window[spike_times.astype(int)] = 1
+    return all_weighted_spikes_for_window ,spike_times,somatic_voltage
 
 def parse_sim_experiment_file(sim_experiment_file, print_logs=False):
     """:DVT_PCA_model is """
