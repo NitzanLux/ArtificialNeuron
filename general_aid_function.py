@@ -27,7 +27,7 @@ def filter_file_names(files: List[str], filter: str) -> List[str]:
     return new_files
 
 
-def load_files_names(files_filter_regex: str = ".*",ido_format=False) -> Tuple[List[str], List[str], List[str]]:
+def load_files_names(files_filter_regex: str = ".*",ido_format=True) -> Tuple[List[str], List[str], List[str]]:
     train_files =  glob.glob(TRAIN_DATA_DIR + '*'+('/' if ido_format else ""))
     print(train_files)
     train_files = filter_file_names(train_files, files_filter_regex)
