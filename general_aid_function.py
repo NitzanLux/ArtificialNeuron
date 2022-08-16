@@ -4,6 +4,11 @@ from project_path import *
 from typing import List, Tuple
 import re
 import neuron_network.node_network.recursive_neuronal_model as recursive_neuronal_model
+import platform
+
+NEW_DIR_SIGN = '\\' if platform.system() == 'Windows'else '/'
+
+
 class AttrDict(dict):
     def __init__(self, *args, **kwargs):
         super(AttrDict, self).__init__(*args, **kwargs)
@@ -28,13 +33,13 @@ def filter_file_names(files: List[str], filter: str) -> List[str]:
 
 
 def load_files_names(files_filter_regex: str = ".*",ido_format=True) -> Tuple[List[str], List[str], List[str]]:
-    train_files =  glob.glob(TRAIN_DATA_DIR + '*'+('/' if ido_format else ""))
+    train_files =  glob.glob(TRAIN_DATA_DIR + '*' + (NEW_DIR_SIGN if ido_format else ""))
     train_files = filter_file_names(train_files, files_filter_regex)
     print("train_files size %d" % (len(train_files)))
-    valid_files = glob.glob(VALID_DATA_DIR + '*'+('/' if ido_format else ""))
+    valid_files = glob.glob(VALID_DATA_DIR + '*' + (NEW_DIR_SIGN if ido_format else ""))
     valid_files = filter_file_names(valid_files, files_filter_regex)
     print("valid_files size %d" % (len(valid_files)))
-    test_files = glob.glob(TEST_DATA_DIR + '*'+('/' if ido_format else ""))
+    test_files = glob.glob(TEST_DATA_DIR + '*' + (NEW_DIR_SIGN if ido_format else ""))
     test_files = filter_file_names(test_files, files_filter_regex)
     print("test_files size %d" % (len(test_files)))
 
