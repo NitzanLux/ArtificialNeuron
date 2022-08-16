@@ -179,8 +179,13 @@ class SimulationDataGenerator():
             # X, y_spike, y_soma = parse_sim_experiment_file(f)
             X, y_spike, y_soma = parse_sim_experiment_file_ido(f)
             # reshape to what is needed
-            X = np.transpose(X, axes=[2, 0, 1])
+            if len(X.shape)==3:
+                X = np.transpose(X, axes=[2, 0, 1])
+            else:
+                X = X[np.newaxis,...]
             X = X[:, :, self.sampling_start_time:]
+            if len(y_spike.shape) ==1: y_spike=y_spike[...,np.newaxis]
+            if len(y_soma.shape) ==1: y_soma=y_soma[...,np.newaxis]
             y_spike = y_spike.T[:, np.newaxis, self.sampling_start_time:]
             y_soma = y_soma.T[:, np.newaxis, self.sampling_start_time:]
             if self.number_of_traces_from_file is not None:
@@ -219,12 +224,13 @@ def parse_sim_experiment_file_ido(sim_experiment_folder, print_logs=False):
     all_weighted_spikes_for_window = np.vstack((exc_weighted_spikes_for_window, inh_weighted_spikes_for_window))
 
     somatic_voltage = h5py.File(f'{sim_experiment_folder}/voltage.h5', 'r')['somatic_voltage']
+    somatic_voltage = np.array(somatic_voltage)
     summary = pickle.load(open(f'{sim_experiment_folder}/summary.pkl', 'rb'))
 
-    # output_spikes_for_window = np.zeros(self.window_size)
+    output_spikes_for_window = np.zeros(somatic_voltage.shape[0])
     spike_times = summary['output_spike_times']
-    # output_spikes_for_window[spike_times.astype(int)] = 1
-    return all_weighted_spikes_for_window ,spike_times,somatic_voltage
+    output_spikes_for_window[spike_times.astype(int)] = 1
+    return all_weighted_spikes_for_window ,output_spikes_for_window,somatic_voltage
 
 def parse_sim_experiment_file(sim_experiment_file, print_logs=False):
     """:DVT_PCA_model is """
