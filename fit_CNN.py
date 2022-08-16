@@ -50,7 +50,7 @@ synapse_type = 'NMDA'
 include_DVT = False
 print_logs=False
 # for dibugging
-print_logs=True
+# print_logs=True
 # os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
 # NUMBER_OF_HOURS_FOR_SAVING_MODEL_AND_CONFIG=0
 # BATCH_LOG_UPDATE_FREQ = 1
