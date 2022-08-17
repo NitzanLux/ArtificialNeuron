@@ -19,7 +19,7 @@ import glob
 synapse_type = ''
 include_DVT = False
 # num_DVT_components = 20 if synapse_type == 'NMDA' else 30
-CURRENT_VERSION = 1.8
+CURRENT_VERSION = 1.9
 
 
 def generate_model_name(additional_str: str = ''):

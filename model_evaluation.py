@@ -472,7 +472,7 @@ class ModelEvaluator():
 
     @staticmethod
     def load_data_generator(config, is_validation):
-        train_files, valid_files, test_files = load_files_names()
+        train_files, valid_files, test_files = load_files_names(config.data_base_path)
         data_files = valid_files if is_validation else test_files
         validation_data_generator = SimulationDataGenerator(data_files, buffer_size_in_files=BUFFER_SIZE_IN_FILES_VALID,
                                                             batch_size=8,
