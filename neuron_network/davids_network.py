@@ -2,7 +2,7 @@
 import pickle  # python 3.8+ compatibility
 # from torchviz import make_dot
 import torch
-from general_aid_function import *
+from utils.general_aid_function import *
 from project_path import MODELS_DIR
 from synapse_tree import SectionNode, SectionType
 import os
