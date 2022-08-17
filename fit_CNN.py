@@ -197,7 +197,7 @@ def train_network(config, model):
         model.float()
     elif DATA_TYPE == torch.cuda.DoubleTensor:
         model.double()
-    train_data_generator, validation_data_generator = get_data_generators(DVT_PCA_model, config)
+    train_data_generator, validation_data_generator = get_data_generators(config)
     validation_data_iterator = iter(validation_data_generator)
     batch_counter = 0
     saving_counter = 0
@@ -331,12 +331,12 @@ def evaluate_validation(config, custom_loss, model, validation_data_iterator):
     model.train()
 
 
-def get_data_generators(DVT_PCA_model, config):
+def get_data_generators( config):
     print("loading data...training", flush=True)
     prediction_length = 1
     if config.config_version >= 1.2:
         prediction_length = config.prediction_length
-    train_files, valid_files, test_files = load_files_names(config.files_filter_regex)
+    train_files, valid_files, test_files = load_files_names(config.data_base_path,config.files_filter_regex)
     train_data_generator = SimulationDataGenerator(train_files, buffer_size_in_files=BUFFER_SIZE_IN_FILES_TRAINING,
                                                    prediction_length=prediction_length,
                                                    batch_size=config.batch_size_train,

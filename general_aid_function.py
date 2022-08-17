@@ -32,14 +32,19 @@ def filter_file_names(files: List[str], filter: str) -> List[str]:
     return new_files
 
 
-def load_files_names(files_filter_regex: str = ".*",ido_format=True) -> Tuple[List[str], List[str], List[str]]:
-    train_files =  glob.glob(TRAIN_DATA_DIR + '*' + (NEW_DIR_SIGN if ido_format else ""))
+def load_files_names(data_path,files_filter_regex: str = ".*") -> Tuple[List[str], List[str], List[str]]:
+    ido_format = False
+    path_func= lambda x: glob.glob(os.join(*([data_path,"*"+x+"*",'*']+([''] if ido_format else []))))
+    train_files =  path_func('train')
+    if len(train_files)==0:
+        ido_format=True
+    train_files = path_func('train')
     train_files = filter_file_names(train_files, files_filter_regex)
     print("train_files size %d" % (len(train_files)))
-    valid_files = glob.glob(VALID_DATA_DIR + '*' + (NEW_DIR_SIGN if ido_format else ""))
+    valid_files = path_func('valid')
     valid_files = filter_file_names(valid_files, files_filter_regex)
     print("valid_files size %d" % (len(valid_files)))
-    test_files = glob.glob(TEST_DATA_DIR + '*' + (NEW_DIR_SIGN if ido_format else ""))
+    test_files = path_func('test')
     test_files = filter_file_names(test_files, files_filter_regex)
     print("test_files size %d" % (len(test_files)))
 
