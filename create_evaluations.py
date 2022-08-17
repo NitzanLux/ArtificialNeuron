@@ -4,7 +4,7 @@ import logging
 from project_path import *
 import argparse
 import json
-from slurm_job import *
+from utils.slurm_job import *
 
 parser = argparse.ArgumentParser(description='Add configuration file')
 parser.add_argument(dest="config_path_or_json", type=str,
