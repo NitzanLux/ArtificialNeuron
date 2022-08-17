@@ -477,7 +477,6 @@ class ModelEvaluator():
         validation_data_generator = SimulationDataGenerator(data_files, buffer_size_in_files=BUFFER_SIZE_IN_FILES_VALID,
                                                             batch_size=8,
                                                             window_size_ms=config.time_domain_shape,
-                                                            file_load=config.train_file_load,
                                                             sample_ratio_to_shuffle=1,
                                                             # number_of_files=1,number_of_traces_from_file=2,# todo for debugging
                                                             ).eval()
