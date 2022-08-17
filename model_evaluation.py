@@ -19,7 +19,7 @@ from neuron_network import neuronal_model
 import plotly.express as px
 import datetime
 import json
-from general_variables import *
+from utils.general_variables import *
 from neuron_simulations.get_neuron_modle import get_L5PC
 from scipy.ndimage.filters import uniform_filter1d
 from scipy.signal import find_peaks
