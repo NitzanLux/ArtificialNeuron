@@ -10,7 +10,7 @@ from model_evaluation import ModelEvaluator
 import time
 import configuration_factory
 import wandb
-from general_aid_function import *
+from utils.general_aid_function import *
 from neuron_network import davids_network
 from neuron_network import fully_connected_temporal_seperated
 from neuron_network import neuronal_model

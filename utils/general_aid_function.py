@@ -34,7 +34,7 @@ def filter_file_names(files: List[str], filter: str) -> List[str]:
 
 def load_files_names(data_path,files_filter_regex: str = ".*") -> Tuple[List[str], List[str], List[str]]:
     ido_format = False
-    path_func= lambda x: glob.glob(os.join(*([data_path,"*"+x+"*",'*']+([''] if ido_format else []))))
+    path_func= lambda x: glob.glob(os.path.join(*([data_path,"*"+x+"*",'*']+([''] if ido_format else []))))
     train_files =  path_func('train')
     if len(train_files)==0:
         ido_format=True

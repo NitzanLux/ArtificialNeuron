@@ -1,6 +1,4 @@
-import slurm_job
 import argparse
-import os
 
 parser = argparse.ArgumentParser(description='Simulate NEURON and send multiple jobs')
 

@@ -6,7 +6,6 @@ import json
 from project_path import *
 import configuration_factory as confactory
 import argparse
-import slurm_job
 
 parser = argparse.ArgumentParser(description='Add configuration file')
 parser.add_argument(dest="configs_paths", type=str,
