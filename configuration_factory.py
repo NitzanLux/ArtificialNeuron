@@ -52,8 +52,8 @@ def save_config(config, path: [str, None] = None):
 def surround_with_default_config_values(**kargs):
     ##default values can be overridden by kargs
     config = AttrDict(config_version=CURRENT_VERSION, input_window_size=120, prediction_length=1,
-                      #num_segments=2 * 639,
-                      num_segments=2082,
+                      num_segments=2 * 639,
+                      # num_segments=2082,
                       num_syn_types=1,use_mixed_precision=False,
                       include_spikes=True,
                       num_epochs=15000, epoch_size=5, batch_size_train=5, accumulate_loss_batch_factor=4,
