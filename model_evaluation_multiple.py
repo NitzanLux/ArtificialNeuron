@@ -59,7 +59,7 @@ class SimulationData():
 class GroundTruthData(SimulationData):
     def __init__(self, data_files, data_label: str):
         self.d_input = []
-        s,v=[],[]
+        s, v = [], []
         data_generator = SimulationDataGenerator(data_files, buffer_size_in_files=BUFFER_SIZE_IN_FILES_VALID,
                                                  batch_size=1,
                                                  window_size_ms=config.time_domain_shape,
@@ -68,32 +68,37 @@ class GroundTruthData(SimulationData):
                                                  ).eval()
         for i, data in enumerate(data_generator):
             d_input, d_labels = data
-            s_cur,v_cur=d_labels
+            s_cur, v_cur = d_labels
             s.append(s_cur.cpu().detach().numpy().squeeze())
             v.append(v_cur.cpu().detach().numpy().squeeze())
             self.d_input.append(d_input)
-        s=np.vstack(s)
-        v=np.vstack(v)
-        self.d_input=np.vstack(self.d_input)
+        self.data_files = tuple(data_files)
+        s = np.vstack(s)
+        v = np.vstack(v)
+        self.d_input = np.vstack(self.d_input)
         super().__init__(v, s, data_label)
 
+    def __hash__(self):
+        return self.data_files.__hash__()
+
+    def __eq__(self, item):
+        return self.data_files == item.data_files
+
     def __getitem__(self, recording_index):
-        return self.v[recording_index, :], self.s[recording_index, :],self.d_input[recording_index,...]
+        return self.v[recording_index, :], self.s[recording_index, :], self.d_input[recording_index, ...]
 
     def __iter__(self):
         for i in range(len(self)):
             yield self[i]
 
 
-
 class EvaluationData(SimulationData):
     def __init__(self, ground_truth: GroundTruthData, config):
-        self.config=config
+        self.config = config
         self.ground_truth: ['GroundTruthData'] = ground_truth
-        v,s = self.__evaluate_model()
+        v, s = self.__evaluate_model()
         super().__init__(v, s, data_label)
         # self.data_per_recording = [] if recoreded_data is None else recoreded_data
-
 
     def __evaluate_model(self):
         assert not self.is_recording(), "evaluation had been done in this object"
@@ -103,10 +108,10 @@ class EvaluationData(SimulationData):
             model.float()
         elif DATA_TYPE == torch.cuda.DoubleTensor:
             model.double()
-        s_out,v_out=[],[]
+        s_out, v_out = [], []
         for i, data in enumerate(self.ground_truth):
             print(i)
-            d_input, s,v = data
+            d_input, s, v = data
             with torch.cuda.amp.autocast():
                 with torch.no_grad():
                     output_s, output_v = model(d_input.cuda().type(DATA_TYPE))
@@ -114,7 +119,7 @@ class EvaluationData(SimulationData):
                     output_s = torch.nn.Sigmoid()(output_s)
             v_out.append(output_v.cpu().detach().numpy().squeeze())
             s_out.append(output_s.cpu().detach().numpy().squeeze())
-        return v_out,s_out
+        return v_out, s_out
 
     def load_model(self):
         print("loading model...", flush=True)
@@ -131,161 +136,128 @@ class EvaluationData(SimulationData):
         return model
 
 
-
 class ModelEvaluator():
-    def __init__(self, *args:SimulationData,use_only_groundtruth=False):
-        ground_truth_set=set()
-        model_set=set()
+    def __init__(self, *args: SimulationData, use_only_groundtruth=False):
+        ground_truth_set = set()
+        model_set = set()
         if not use_only_groundtruth:
             for i in args:
-                if isinstance(i,GroundTruthData):
+                if isinstance(i, GroundTruthData):
                     ground_truth_set.add(i)
-                elif isinstance(i,EvaluationData):
+                elif isinstance(i, EvaluationData):
                     model_set.add(i)
                     ground_truth_set.add(i.ground_truth)
                 else:
                     model_set.add(i)
-        self.ground_truths=list(ground_truth_set)
-        self.models=list(model_set)
+        self.ground_truths = list(ground_truth_set)
+        self.models = list(model_set)
         self.current_good_and_bad_div = None
-
-
-    # def __getitem__(self, index):
-    #     return self.data[index]
 
     def display(self):
         app = dash.Dash()
 
-
         auc, fig = self.create_ROC_curve()
 
-        gt_index_dict = {k:i for i,k in enumerate(self.ground_truths)}
+        gt_index_dict = {k: i for i, k in enumerate(self.ground_truths)}
 
-        min_shape=min([min([j[1].shape[1] for j in i]) for i in ground_truth])
-        slider_arr=[dcc.Slider( #todo extend
-                id='my-slider%d'%i,
-                min=0,
-                max=len(d) - 1,
-                step=1,
-                value=len(d) // 2,
-                tooltip={"placement": "bottom", "always_visible": True}
-            ) for i,d in enumerate(self.ground_truths)]
-        dives_arr=[*slider_arr,
-            html.Div(id='slider-output-container', style={'height': '2vh'}),
-            html.Div([
+        min_shape = min([min([j[1].shape[1] for j in i]) for i in ground_truth])
+        slider_arr = [dcc.Slider(
+            id='my-slider%d' % i,
+            min=0,
+            max=len(d) - 1,
+            step=1,
+            value=len(d) // 2,
+            tooltip={"placement": "bottom", "always_visible": True}
+        ) for i, d in enumerate(self.ground_truths)]
+        dives_arr = [*slider_arr,
+                     html.Div(id='slider-output-container', style={'height': '2vh'}),
+                     html.Div([
 
-                html.Button('-50', id='btn-m50', n_clicks=0,
-                            style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',
-                                   "margin-left": "10px"}),
-                html.Button('-10', id='btn-m10', n_clicks=0,
-                            style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',
-                                   "margin-left": "10px"}),
-                html.Button('-5', id='btn-m5', n_clicks=0,
-                            style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',
-                                   "margin-left": "10px"}),
-                html.Button('-1', id='btn-m1', n_clicks=0,
-                            style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',
-                                   "margin-left": "10px"}),
-                html.Button('+1', id='btn-p1', n_clicks=0,
-                            style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',
-                                   "margin-left": "10px"}),
-                html.Button('+5', id='btn-p5', n_clicks=0,
-                            style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',
-                                   "margin-left": "10px"}),
-                html.Button('+10', id='btn-p10', n_clicks=0,
-                            style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',
-                                   "margin-left": "10px"}),
-                html.Button('+50', id='btn-p50', n_clicks=0,
-                            style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',
-                                   "margin-left": "10px"}),
-                ' mse window size:',
-                dcc.Input(
-                    id="mse_window_input",
-                    type="number",
-                    value=100,
-                    step=1,
-                    min=1,
-                    debounce=True,
-                    max=min_shape,
-                    placeholder="Running mse window size",
-                    style={'margin': '10', 'align': 'center', 'vertical-align': 'middle',
-                           "margin-left": "10px"}
-                )
-            ], style={'width': '100vw', 'margin': '1', 'border-style': 'solid', 'align': 'center',
-                      'vertical-align': 'middle'}),
-               html.Div([dcc.Markdown('Ground truth\n'+''.join(["(%d) %s"%(i,str(k))for i,k in enumerate(self.ground_truths)]))],style={'border-style': 'solid', 'align': 'center'}),
-               html.Div([dcc.Markdown('Models \n'+''.join(["(%d,%d) %s"%(gt_index_dict[k.ground_truth],i,str(k))for i,k in enumerate(self.ground_truths)]))],style={'border-style': 'solid', 'align': 'center'}),
-                   html.Div([
-                dcc.Graph(id='evaluation-graph', figure=go.Figure(),
-                          style={'height': '95vh', 'margin': '0', 'border-style': 'solid', 'align': 'center'})],
-                style={'height': '95vh', 'margin': '0', 'border-style': 'solid', 'align': 'center'}),
-            html.Div([dcc.Markdown('AUC: %0.5f' % auc)]),
-            html.Div([dcc.Graph(id='eval-roc', figure=fig,
-                                style={'height': '95vh', 'margin': '0', 'border-style': 'solid', 'align': 'center'})],
-                     ),
-            html.Div([' mse window size:', dcc.Input(
-                id="mse_window_input_good_and_bad",
-                type="number",
-                value=100,
-                step=1,
-                max=min_shape,
-                min=1,
-                debounce=True,
-                placeholder="Running mse window size".format("number"),
-                style={'margin': '10', 'align': 'center', 'vertical-align': 'middle',
-                       "margin-left": "10px"}
-            ), ' margin size:', dcc.Input(
-                id="margin_good_and_bad",
-                type="number",
-                value=100,
-                step=1,
-                max=1000,
-                min=1,
-                debounce=True,
-                placeholder="Running mse window size".format("number"),
-                style={'margin': '10', 'align': 'center', 'vertical-align': 'middle',
-                       "margin-left": "10px"}
-            ), html.Div(id="good_and_bad", children=[self.display_good_and_bad()])],
-                     ),
-
-        ]
+                         html.Button('-50', id='btn-m50', n_clicks=0,
+                                     style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',
+                                            "margin-left": "10px"}),
+                         html.Button('-10', id='btn-m10', n_clicks=0,
+                                     style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',
+                                            "margin-left": "10px"}),
+                         html.Button('-5', id='btn-m5', n_clicks=0,
+                                     style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',
+                                            "margin-left": "10px"}),
+                         html.Button('-1', id='btn-m1', n_clicks=0,
+                                     style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',
+                                            "margin-left": "10px"}),
+                         html.Button('+1', id='btn-p1', n_clicks=0,
+                                     style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',
+                                            "margin-left": "10px"}),
+                         html.Button('+5', id='btn-p5', n_clicks=0,
+                                     style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',
+                                            "margin-left": "10px"}),
+                         html.Button('+10', id='btn-p10', n_clicks=0,
+                                     style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',
+                                            "margin-left": "10px"}),
+                         html.Button('+50', id='btn-p50', n_clicks=0,
+                                     style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',
+                                            "margin-left": "10px"}),
+                         ' mse window size:',
+                         dcc.Input(
+                             id="mse_window_input",
+                             type="number",
+                             value=100,
+                             step=1,
+                             min=1,
+                             debounce=True,
+                             max=min_shape,
+                             placeholder="Running mse window size",
+                             style={'margin': '10', 'align': 'center', 'vertical-align': 'middle',
+                                    "margin-left": "10px"}
+                         )
+                     ], style={'width': '100vw', 'margin': '1', 'border-style': 'solid', 'align': 'center',
+                               'vertical-align': 'middle'}),
+                     html.Div([dcc.Markdown('Ground truth\n' + ''.join(
+                         ["(%d) %s" % (i, str(k)) for i, k in enumerate(self.ground_truths)]))],
+                              style={'border-style': 'solid', 'align': 'center'}),
+                     html.Div([dcc.Markdown('Models \n' + ''.join(
+                         ["(%d,%d) %s" % (gt_index_dict[k.ground_truth], i, str(k)) for i, k in
+                          enumerate(self.ground_truths)]))], style={'border-style': 'solid', 'align': 'center'}),
+                     html.Div([
+                         dcc.Graph(id='evaluation-graph', figure=go.Figure(),
+                                   style={'height': '95vh', 'margin': '0', 'border-style': 'solid',
+                                          'align': 'center'})],
+                         style={'height': '95vh', 'margin': '0', 'border-style': 'solid', 'align': 'center'}),
+                     html.Div([dcc.Markdown('AUC: %0.5f' % auc)]),
+                     html.Div([dcc.Graph(id='eval-roc', figure=fig,
+                                         style={'height': '95vh', 'margin': '0', 'border-style': 'solid',
+                                                'align': 'center'})],
+                              ),
+                     ]
         app.layout = html.Div(dives_arr)
 
         @app.callback(
-            Output('good_and_bad', 'children'),
-            Input("mse_window_input_good_and_bad", "value"),
-            Input("margin_good_and_bad", "value")
-        )
-        def update_good_and_bad(window_size, margin):
-            return self.display_good_and_bad(mse_window_size=window_size, margin=margin)
-
-        @app.callback(
-            *[Output('my-slider%d'%i, 'value')for i in range(len(self.ground_truths))],
+            *[Output('my-slider%d' % i, 'value') for i in range(len(self.ground_truths))],
             Output('slider-output-container', "children"),
             Output('evaluation-graph', 'figure'),
             [
-             Input('btn-m50', 'n_clicks'),
-             Input('btn-m10', 'n_clicks'),
-             Input('btn-m5', 'n_clicks'),
-             Input('btn-m1', 'n_clicks'),
-             Input('btn-p1', 'n_clicks'),
-             Input('btn-p5', 'n_clicks'),
-             Input('btn-p10', 'n_clicks'),
-             Input('btn-p50', 'n_clicks'),
-             Input("mse_window_input", "value"),*[Input('my-slider%d'%0, 'value')]
-             ])
-        def update_output(btnm50, btnm10, btnm5, btnm1, btnp1, btnp5, btnp10, btnp50, mse_window_size,*values):
+                Input('btn-m50', 'n_clicks'),
+                Input('btn-m10', 'n_clicks'),
+                Input('btn-m5', 'n_clicks'),
+                Input('btn-m1', 'n_clicks'),
+                Input('btn-p1', 'n_clicks'),
+                Input('btn-p5', 'n_clicks'),
+                Input('btn-p10', 'n_clicks'),
+                Input('btn-p50', 'n_clicks'),
+                Input("mse_window_input", "value"), *[Input('my-slider%d' % 0, 'value')]
+            ])
+        def update_output(btnm50, btnm10, btnm5, btnm1, btnp1, btnp5, btnp10, btnp50, *values):
             changed_id = [p['prop_id'] for p in callback_context.triggered][0][:-len(".n_clicks")]
             values = [int(v) for v in values]
 
             if 'btn-m' in changed_id:
-                values = [v - int(changed_id[len('btn-m'):])for v in values]
+                values = [v - int(changed_id[len('btn-m'):]) for v in values]
             elif 'btn-p' in changed_id:
-                values = [v + int(changed_id[len('btn-m'):])for v in values]
+                values = [v + int(changed_id[len('btn-m'):]) for v in values]
 
-            values = [ max(0, v) for v in values]
-            values = [ min(v, len(self.ground_truths[i])) for i,v in enumerate(values)]
-            fig = self.display_window(value, mse_window_size)
+            # values = [ max(0, v) for v in values]
+            values = [v % len(self.ground_truths[i]) for i, v in enumerate(values)]
+            fig = self.display_window(value)
             return *values, 'You have selected "{}"'.format(value), fig
 
         app.run_server(debug=True, use_reloader=False)
@@ -304,14 +276,13 @@ class ModelEvaluator():
         fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1], name='chance'))
         return auc, fig
 
-    def display_window(self, index, mse_window_size=100):
+    def display_window(self, index):
         v, v_p, s, s_p = self[index]
-        running_mse, general_mse = self.running_mse(v, v_p, mse_window_size)
 
         fig = make_subplots(rows=3, cols=1,
                             shared_xaxes=True,  # specs = [{}, {},{}],
                             vertical_spacing=0.05, start_cell='top-left',
-                            subplot_titles=("voltage", 'running mse w=%d mse=%0.2f' % (mse_window_size, general_mse),
+                            subplot_titles=("voltage", 'running w=%d ' % (general_mse),
                                             "spike probability"), row_heights=[0.6, 0.03, 0.37])
         x_axis = np.arange(v.shape[0])
         # s *= (np.max(s_p) * 1.1)
