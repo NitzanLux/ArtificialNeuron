@@ -139,7 +139,6 @@ def load_config_file(path: str) -> AttrDict:
     # config.constant_learning_rate=0.0007
     # config.batch_size_train = 8
     if config.config_version < CURRENT_VERSION :
-        print("updating_config")
         config = surround_with_default_config_values(**config)
     return config
 

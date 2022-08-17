@@ -31,10 +31,48 @@ GOOD_AND_BAD_SIZE = 8
 I = 8
 BUFFER_SIZE_IN_FILES_VALID = 1
 
+class SimulationData():
+    def __init__(self, v,s, data_label:str):
+        self.data_label = data_label
+        self.v=v
+        self.s=s
+
+    def __str__(self):
+        return data_label
+
+    def __len__(self):
+        assert self.v.size==self.s.size,"spikes array and soma voltage array are inconsistent"
+        return self.v.shape[0]
+
+    def __iter__(self):
+        for i in range(len(self)):
+            yield self[i]
+
+    def is_recording(self):
+        return len(self) > 0
+
+    def __getitem__(self, recording_index):
+        return self.__get_item_by_recording_index(recording_index)
+
+
+    def __get_item_by_recording_index(self, recording_index):
+        return self.v[recording_index,:], self.s[recording_index,:]
+
+
+class GroundTruthData(SimulationData):
+    def __init__(self,data_files):
+        validation_data_generator = SimulationDataGenerator(data_files, buffer_size_in_files=BUFFER_SIZE_IN_FILES_VALID,
+                                                            batch_size=BUFFER_SIZE_IN_FILES_VALID,
+                                                            window_size_ms=config.time_domain_shape,
+                                                            sample_ratio_to_shuffle=1,
+                                                            # number_of_files=1,number_of_traces_from_file=2,# todo for debugging
+                                                            ).eval()
+        for i in validation_data_generator:
 
 class EvaluationData():
-    def __init__(self,ground_truth=None, recoreded_data=None,data_labels=None):
-        self.ground_truth= [] if ground_truth is None else ground_truth
+    def __init__(self,ground_truth:GroundTruthData, data_label:str):
+
+        self.ground_truth:['EvaluationData',None] = ground_truth
         self.data_labels= [] if data_labels is None else data_labels
         self.data_per_recording = [] if recoreded_data is None else recoreded_data
 
@@ -43,6 +81,50 @@ class EvaluationData():
         self.data_labels=[]
         self.data_per_recording=[]
 
+
+
+    def __evaluate_model(self, config):
+        assert not self.data.is_recording(), "evaluation had been done in this object"
+        model = self.load_model(config)
+        model.cuda().eval()
+        if DATA_TYPE == torch.cuda.FloatTensor:
+            model.float()
+        elif DATA_TYPE == torch.cuda.DoubleTensor:
+            model.double()
+
+        data_generator = self.load_data_generator(self.config, self.is_validation)
+        for i, data in enumerate(data_generator):
+            print(i)
+            d_input, d_labels = data
+            s, v = d_labels
+            if model is not None:
+                with torch.cuda.amp.autocast():
+                    with torch.no_grad():
+                        output_s, output_v = model(d_input.cuda().type(DATA_TYPE))
+                        # output_s, output_v = model(d_input.cuda().type(torch.cuda.FloatTensor))
+                        output_s = torch.nn.Sigmoid()(output_s)
+                output_v=output_v.cpu().detach().numpy().squeeze()
+                output_s=output_s.cpu().detach().numpy().squeeze()
+            else:
+                output_v=zeros_like(v.cpu.detach().numpy().squeeze())
+                output_s=zeros_like(v.cpu.detach().numpy().squeeze())
+            self.data.append(v.cpu().detach().numpy().squeeze(), output_v,
+                             s.cpu().detach().numpy().squeeze(), output_s)
+
+    @staticmethod
+    def load_model(config):
+        print("loading model...", flush=True)
+        if config is None: return None
+        if config.architecture_type == "DavidsNeuronNetwork":
+            model = davids_network.DavidsNeuronNetwork.load(config)
+        elif config.architecture_type == "FullNeuronNetwork":
+            model = fully_connected_temporal_seperated.FullNeuronNetwork.load(config)
+        elif "network_architecture_structure" in config and config.network_architecture_structure == "recursive":
+            model = recursive_neuronal_model.RecursiveNeuronModel.load(config)
+        else:
+            model = neuronal_model.NeuronConvNet.build_model_from_self.config(config)
+        print("model parmeters: %d" % model.count_parameters())
+        return model
 
     def is_recording(self):
         return len(self) > 0
