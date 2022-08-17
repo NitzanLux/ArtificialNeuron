@@ -300,7 +300,7 @@ class ModelEvaluator():
             elif 'btn-p' in changed_id:
                 value += int(changed_id[len('btn-m'):])
             value = max(0, value)
-            value = min(value, len(self.data))
+            value = min(value, len(self.data)-1)
             fig = self.display_window(value,mse_window_size)
             return value, 'You have selected "{}"'.format(value), fig
 
