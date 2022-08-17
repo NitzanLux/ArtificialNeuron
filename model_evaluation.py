@@ -14,7 +14,7 @@ from plotly.subplots import make_subplots
 from tqdm import tqdm
 from simulation_data_generator import SimulationDataGenerator
 import neuron_network.node_network.recursive_neuronal_model as recursive_neuronal_model
-from general_aid_function import *
+from utils.general_aid_function import *
 from neuron_network import neuronal_model
 import plotly.express as px
 import datetime
