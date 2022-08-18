@@ -11,7 +11,7 @@ import wandb
 from utils.general_variables import *
 
 import train_nets.configuration_factory
-from train_nets.model_evaluation import ModelEvaluator
+from model_evaluation import ModelEvaluator
 from train_nets.neuron_network import davids_network
 from train_nets.neuron_network import fully_connected_temporal_seperated
 from train_nets.neuron_network import neuronal_model
