@@ -2,7 +2,7 @@
 # from torchviz import make_dot
 # import pickle as pickle #python 3.7 compatibility
 # from torchviz import make_dot
-from neuron_network.glu_net import *
+from train_nets.neuron_network.glu_net import *
 
 
 class SkipConnections(nn.Module):
