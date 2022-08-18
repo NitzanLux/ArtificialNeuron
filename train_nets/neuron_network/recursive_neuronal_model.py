@@ -21,7 +21,7 @@ import train_nets.neuron_network.temporal_convolution_blocks_narrow_skip_connect
 # from ....simulatget_neuron_modle import get_L5PC
 from neuron_simulations.get_neuron_modle import get_L5PC
 from project_path import MODELS_DIR
-from synapse_tree import SectionType
+from train_nets.synapse_tree import SectionType
 
 BRANCHES = 'branches'
 
