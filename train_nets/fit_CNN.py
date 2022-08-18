@@ -1,13 +1,10 @@
 import argparse
-import os
 from copy import copy
 import matplotlib.pyplot as plt
 import sklearn.metrics as skm
-import torch
 import torch.optim as optim
 import torch.optim.lr_scheduler as lr_scheduler
 from model_evaluation import ModelEvaluator
-import time
 import configuration_factory
 import wandb
 from utils.general_aid_function import *
@@ -18,7 +15,7 @@ from neuron_network.node_network import recursive_neuronal_model
 from parameters_factories import dynamic_learning_parameters_factory as dlpf, loss_function_factory
 from project_path import *
 from simulation_data_generator_new import *
-from datetime import datetime, timedelta
+from datetime import datetime
 from general_variables import *
 import gc
 
@@ -219,7 +216,7 @@ def train_network(config, model):
     if DOCUMENT_ON_WANDB and WATCH_MODEL:
         wandb.watch(model, log='all', log_freq=1, log_graph=True)
     model_level_training_scadualer=None
-    if isinstance(model,recursive_neuronal_model.RecursiveNeuronModel):
+    if isinstance(model, recursive_neuronal_model.RecursiveNeuronModel):
         model_level_training_scadualer = model.train_random_subtree(
         config.freeze_node_factor if config.freeze_node_factor is not None else 0)
     print("start training...", flush=True)
