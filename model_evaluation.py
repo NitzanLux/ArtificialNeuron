@@ -1,30 +1,26 @@
-import configuration_factory
-from neuron_network import neuronal_model
+import datetime
 import pickle
 from typing import Iterable
-import sklearn.metrics as skm
+
 import dash
+import dash_bootstrap_components as dbc
+import neuron_network.node_network.recursive_neuronal_model as recursive_neuronal_model
 import numpy as np
 import plotly.graph_objects as go
-import torch
+import sklearn.metrics as skm
 from dash import dcc, callback_context
 from dash import html
 from dash.dependencies import Input, Output
-from plotly.subplots import make_subplots
-from tqdm import tqdm
-from simulation_data_generator_new import SimulationDataGenerator
-import neuron_network.node_network.recursive_neuronal_model as recursive_neuronal_model
-from utils.general_aid_function import *
 from neuron_network import neuronal_model
-import plotly.express as px
-import datetime
-import json
-from utils.general_variables import *
-from neuron_simulations.get_neuron_modle import get_L5PC
+from plotly.subplots import make_subplots
 from scipy.ndimage.filters import uniform_filter1d
 from scipy.signal import find_peaks
-import dash_bootstrap_components as dbc
-from neuron_network import fully_connected_temporal_seperated
+
+from neuron_simulations.simulation_data_generator_new import SimulationDataGenerator
+from train_nets.neuron_network import fully_connected_temporal_seperated
+from train_nets.neuron_network import neuronal_model
+from utils.general_aid_function import *
+from utils.general_variables import *
 
 GOOD_AND_BAD_SIZE = 8
 
