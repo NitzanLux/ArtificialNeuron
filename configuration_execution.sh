@@ -21,5 +21,5 @@ fi
 path=$(dirname $SCRIPT_PATH)
 
 # put your script here - example script is sitting with this bash script
-cd $path && python3 -c __import__('train_nets').configuration_factory.create_config_file()
+cd $path && python3 -m train_nets.configuration_factory.py
 

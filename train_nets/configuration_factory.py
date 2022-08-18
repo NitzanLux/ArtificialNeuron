@@ -270,7 +270,7 @@ def arange_kernel_by_layers(kernels, layers,expend=False):
     return new_kernels
 
 
-def create_config_file():
+if __name__ == '__main__':
     # restore_last_n_configs(100)
     configs = []
     configurations_name = "reduction_comparison"
