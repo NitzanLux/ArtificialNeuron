@@ -7,7 +7,7 @@ from project_path import MODELS_DIR
 from ..synapse_tree import SectionNode, SectionType
 import os
 from enum import Enum
-from block_aid_functions import CausalConv1d,keep_dimensions_by_padding_claculator
+from train_nets.neuron_network.block_aid_functions import CausalConv1d,keep_dimensions_by_padding_claculator
 import torch.nn as nn
 import copy
 
