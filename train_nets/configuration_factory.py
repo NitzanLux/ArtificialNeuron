@@ -255,7 +255,7 @@ def restore_last_n_configs(n=10):
     load_config_file_from_wandb_yml(files)
 
 
-def arange_kernel_by_layers(kernels, layers):
+def arange_kernel_by_layers(kernels, layers,expend=False):
     # if len(kernels)<=layers: return kernels,sum(kernels)
     max_filter=max(kernels)
     credit = sum(kernels[layers:])-len(kernels)+layers
@@ -264,10 +264,10 @@ def arange_kernel_by_layers(kernels, layers):
         change = min(kernels[i] + credit, max_filter)
         credit -= change - kernels[i]
         new_kernels.append(change)
-    if sum(new_kernels)-len(new_kernels) < sum(kernels)-len(kernels):
+    if sum(new_kernels)-len(new_kernels) < sum(kernels)-len(kernels) and expend:
         new_kernels = [max_filter] * layers
         new_kernels[0] += sum(kernels)-sum(new_kernels)-len(kernels)+layers
-    return new_kernels, sum(new_kernels)-len(new_kernels)
+    return new_kernels
 
 
 if __name__ == '__main__':
