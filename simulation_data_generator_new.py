@@ -177,8 +177,8 @@ class SimulationDataGenerator():
             return
         # load the file
         for f in self.curr_files_to_use:
-            # X, y_spike, y_soma = parse_sim_experiment_file(f)
-            X, y_spike, y_soma = parse_sim_experiment_file_ido(f)
+            X, y_spike, y_soma = parse_sim_experiment_file(f)
+            # X, y_spike, y_soma = parse_sim_experiment_file_ido(f)
             # reshape to what is needed
             if len(X.shape)==3:
                 X = np.transpose(X, axes=[2, 0, 1])
