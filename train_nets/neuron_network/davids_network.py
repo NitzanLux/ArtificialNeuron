@@ -4,7 +4,7 @@ import pickle  # python 3.8+ compatibility
 import torch
 from utils.general_aid_function import *
 from project_path import MODELS_DIR
-from synapse_tree import SectionNode, SectionType
+from ..synapse_tree import SectionNode, SectionType
 import os
 from enum import Enum
 from neuron_network.block_aid_functions import CausalConv1d,keep_dimensions_by_padding_claculator
