@@ -1,17 +1,18 @@
 import json
 import os.path
-from typing import Dict
-import yaml
 from datetime import datetime
-from utils.general_aid_function import *
-from neuron_simulations.get_neuron_modle import get_L5PC
-from train_nets.work import davids_network
-from train_nets.neuron_network import fully_connected_temporal_seperated
+from typing import Dict
 
+import yaml
+from train_nets.work import davids_network
+
+from neuron_simulations.get_neuron_modle import get_L5PC
+from neuron_simulations.simulation_data_generator import *
+from train_nets.neuron_network import fully_connected_temporal_seperated
 from train_nets.neuron_network import neuronal_model
 from train_nets.neuron_network.node_network import recursive_neuronal_model
-from neuron_simulations.simulation_data_generator import *
 from train_nets.synapse_tree import SectionNode
+from utils.general_aid_function import *
 
 synapse_type = ''
 include_DVT = False

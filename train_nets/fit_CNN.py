@@ -1,23 +1,25 @@
 import argparse
+import gc
 from copy import copy
+from datetime import datetime
+
 import matplotlib.pyplot as plt
 import sklearn.metrics as skm
 import torch.optim as optim
 import torch.optim.lr_scheduler as lr_scheduler
-from model_evaluation import ModelEvaluator
-import configuration_factory
 import wandb
-from utils.general_aid_function import *
+from general_variables import *
+
+import configuration_factory
+from model_evaluation import ModelEvaluator
 from neuron_network import davids_network
 from neuron_network import fully_connected_temporal_seperated
 from neuron_network import neuronal_model
 from neuron_network.node_network import recursive_neuronal_model
+from neuron_simulations.simulation_data_generator_new import *
 from parameters_factories import dynamic_learning_parameters_factory as dlpf, loss_function_factory
 from project_path import *
-from neuron_simulations.simulation_data_generator_new import *
-from datetime import datetime
-from general_variables import *
-import gc
+from utils.general_aid_function import *
 
 torch.cuda.empty_cache()
 
