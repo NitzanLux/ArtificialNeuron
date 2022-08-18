@@ -4,7 +4,6 @@ from typing import Iterable
 
 import dash
 import dash_bootstrap_components as dbc
-import neuron_network.node_network.recursive_neuronal_model as recursive_neuronal_model
 import numpy as np
 import plotly.graph_objects as go
 import sklearn.metrics as skm
@@ -16,6 +15,7 @@ from plotly.subplots import make_subplots
 from scipy.ndimage.filters import uniform_filter1d
 from scipy.signal import find_peaks
 
+import train_nets.neuron_network.recursive_neuronal_model as recursive_neuronal_model
 from neuron_simulations.simulation_data_generator_new import SimulationDataGenerator
 from train_nets.neuron_network import fully_connected_temporal_seperated
 from train_nets.neuron_network import neuronal_model
