@@ -10,7 +10,7 @@ import torch.optim.lr_scheduler as lr_scheduler
 import wandb
 from utils.general_variables import *
 
-import train_nets.configuration_factory
+import train_nets.configuration_factory as configuration_factory
 from model_evaluation import ModelEvaluator
 from train_nets.neuron_network import davids_network
 from train_nets.neuron_network import fully_connected_temporal_seperated
