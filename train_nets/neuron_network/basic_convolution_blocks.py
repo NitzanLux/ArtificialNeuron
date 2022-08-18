@@ -1,6 +1,6 @@
 # import pickle as pickle #python 3.7 compatibility
 # from torchviz import make_dot
-from synapse_tree import NUMBER_OF_PREVIUSE_SEGMENTS_IN_BRANCH
+from train_nets.synapse_tree import NUMBER_OF_PREVIUSE_SEGMENTS_IN_BRANCH
 from train_nets.neuron_network.block_aid_functions import *
 SYNAPSE_DIMENTION_POSITION = 3
 
