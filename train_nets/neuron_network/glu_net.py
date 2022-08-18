@@ -4,7 +4,7 @@
 # from torchviz import make_dot
 import torch
 import torch.nn as nn
-from neuron_network.block_aid_functions import *
+from train_nets.neuron_network.block_aid_functions import *
 
 from utils.general_aid_function import *
 
