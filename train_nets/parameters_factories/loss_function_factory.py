@@ -1,6 +1,5 @@
 import torch.nn as nn
 import torch.nn.functional as F
-from trash.spike_blur import SpikeSmoothing
 import torch
 
 
