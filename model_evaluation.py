@@ -10,7 +10,7 @@ import sklearn.metrics as skm
 from dash import dcc, callback_context
 from dash import html
 from dash.dependencies import Input, Output
-from neuron_network import neuronal_model
+from train_nets.neuron_network import neuronal_model
 from plotly.subplots import make_subplots
 from scipy.ndimage.filters import uniform_filter1d
 from scipy.signal import find_peaks
