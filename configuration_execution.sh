@@ -21,5 +21,5 @@ fi
 path=$(dirname $SCRIPT_PATH)
 
 # put your script here - example script is sitting with this bash script
-python3 -m $path/train_nets.configuration_factory.py
+python3 $path/train_nets.configuration_factory.py
 
