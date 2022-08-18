@@ -12,7 +12,7 @@ from dash import html
 from dash.dependencies import Input, Output
 from plotly.subplots import make_subplots
 from tqdm import tqdm
-from simulation_data_generator import SimulationDataGenerator
+from simulation_data_generator_new import SimulationDataGenerator
 import neuron_network.node_network.recursive_neuronal_model as recursive_neuronal_model
 from general_aid_function import *
 from neuron_network import neuronal_model
@@ -55,9 +55,20 @@ class SimulationData():
     def __getitem__(self, recording_index):
         return self.v[recording_index, :], self.s[recording_index, :]
 
+    def save(self, path):
+        with open(path, 'wb') as f:
+            pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
+
+    @staticmethod
+    def load(path):
+        with open(path, 'rb') as f:
+            out = pickle.load(f)
+        return out
+
 
 class GroundTruthData(SimulationData):
     def __init__(self, data_files, data_label: str):
+        # data_files=sorted(data_files)
         self.d_input = []
         s, v = [], []
         data_generator = SimulationDataGenerator(data_files, buffer_size_in_files=BUFFER_SIZE_IN_FILES_VALID,
@@ -299,14 +310,6 @@ class ModelEvaluator():
             , legend_orientation="h", yaxis2=dict(ticks="", showticklabels=False))
         return fig
 
-    def save(self):
-        data = self.data.data_per_recording
-        config_path = self.config.config_path
-        is_validation = self.is_validation
-        path = os.path.join(MODELS_DIR, *self.config.config_path)[:-len(".config")]
-        with open(path + ".eval", 'wb') as pfile:
-            pickle.dump((data, config_path, is_validation), pfile)
-
     @staticmethod
     def running_mse(v, v_p, mse_window_size):
         mse_window_size = min(v.shape[0], mse_window_size)
@@ -318,35 +321,9 @@ class ModelEvaluator():
             running_mse[:, -(mse_window_size // 2 - 1):] = 0
         return running_mse, total_mse
 
-    @staticmethod
-    def load(path: str):
-        if not path.endswith('.eval'):
-            path += '.eval'
-        if not MODELS_DIR in path:
-            path = os.path.join(MODELS_DIR, path)
-        with open(path, 'rb') as pfile:
-            obj = pickle.load(pfile)
-        config = configuration_factory.load_config_file(os.path.join(MODELS_DIR, *obj[1]))
-        data = EvaluationData(obj[0])
-        obj = ModelEvaluator(config, obj[2])
-        obj.data = data
-        return obj
 
     @staticmethod
-    def load_data_generator(config, is_validation):
-        train_files, valid_files, test_files = load_files_names()
-        data_files = valid_files if is_validation else test_files
-        validation_data_generator = SimulationDataGenerator(data_files, buffer_size_in_files=BUFFER_SIZE_IN_FILES_VALID,
-                                                            batch_size=8,
-                                                            window_size_ms=config.time_domain_shape,
-                                                            file_load=config.train_file_load,
-                                                            sample_ratio_to_shuffle=1,
-                                                            # number_of_files=1,number_of_traces_from_file=2,# todo for debugging
-                                                            ).eval()
-        return validation_data_generator
-
-    @staticmethod
-    def build_and_save(config_path='', config=None, model=None):
+    def build_and_save(items_path):
         print("start create evaluation", flush=True)
         start_time = datetime.datetime.now()
         if config is None:

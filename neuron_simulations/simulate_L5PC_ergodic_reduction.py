@@ -520,7 +520,8 @@ def simulate_L5PC_reduction(sim_file, dir_name,reduction_frequency=0):
         if simInd > 7 * numSimulations:
             break
     numSimulations=simInd
-    if numSimulations!= simInd: logging.warning("number of simulations is incongruent numSimulations: %d while simInd: %d"%(numSimulations,simInd))
+    assert numSimulations!= simInd, "sim index and number of simulated are inconsistent"
+    # if numSimulations!= simInd: logging.warning("number of simulations is incongruent numSimulations: %d while simInd: %d"%(numSimulations,simInd))
     ##%% all simulations have ended
     exc_spikes_per_100ms_mean_range = list(np.array(exc_spikes_per_100ms_range_per_sim).mean(axis=0).astype(int))
     inh_spikes_per_100ms_mean_range = list(np.array(inh_spikes_per_100ms_range_per_sim).mean(axis=0).astype(int))

@@ -65,6 +65,7 @@ class SimulationDataGenerator():
         self.prediction_length = self.X.shape[2]-prev_window_length
         self.reload_files_once =True
         return self
+
     def change_spike_probability(self, spike_factor):
         """
         change the probability of spikes in the sample space.

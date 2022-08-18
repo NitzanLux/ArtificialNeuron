@@ -68,7 +68,8 @@ class SimulationDataGenerator():
         self.receptive_filed_size=self.window_size_ms-self.prediction_length
         self.reload_files_once = True
         return self
-
+    def display_current_fils(self):
+        return self.curr_files_to_use,self.sample_counter% self.indexes.shape[0], (self.sample_counter + self.batch_size) % self.indexes.shape[0]
 
     def __len__(self):
         'Denotes the total number of samples'
