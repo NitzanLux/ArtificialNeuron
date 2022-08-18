@@ -1,15 +1,11 @@
 # import pickle as pickle #python 3.7 compatibility
 import pickle  # python 3.8+ compatibility
+
 # from torchviz import make_dot
 import torch
-from utils.general_aid_function import *
-from project_path import MODELS_DIR
-from ..synapse_tree import SectionNode, SectionType
-import os
-from enum import Enum
-from train_nets.neuron_network.block_aid_functions import CausalConv1d,keep_dimensions_by_padding_claculator
 import torch.nn as nn
-import copy
+
+from train_nets.neuron_network.block_aid_functions import keep_dimensions_by_padding_claculator
 
 
 class DavidsNeuronNetwork(nn.Module):

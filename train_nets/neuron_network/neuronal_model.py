@@ -1,15 +1,17 @@
 # import pickle as pickle #python 3.7 compatibility
+import os
 import pickle  # python 3.8+ compatibility
+from enum import Enum
+
 # from torchviz import make_dot
 import torch
-from utils.general_aid_function import *
-from project_path import MODELS_DIR
-from train_nets.synapse_tree import SectionNode, SectionType
-import os
-from enum import Enum
+import torch.nn as nn
+
 import train_nets.neuron_network.basic_convolution_blocks as basic_convolution_blocks
 import train_nets.neuron_network.temporal_convolution_blocks as temporal_convolution_blocks
-import torch.nn as nn
+from project_path import MODELS_DIR
+from train_nets.synapse_tree import SectionNode, SectionType
+from utils.general_aid_function import *
 
 
 class ArchitectureType(Enum):

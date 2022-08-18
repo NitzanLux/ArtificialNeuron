@@ -1,17 +1,8 @@
-import pickle  # python 3.8+ compatibility
 import torch
-from utils.general_aid_function import *
-from project_path import MODELS_DIR
-from synapse_tree import SectionNode, SectionType
-import os
-from enum import Enum
-import neuron_network.basic_convolution_blocks as basic_convolution_blocks
-
 import torch.nn as nn
-import copy
-from synapse_tree import NUMBER_OF_PREVIUSE_SEGMENTS_IN_BRANCH
 from neuron_network.block_aid_functions import *
-import gc
+
+from utils.general_aid_function import *
 
 SYNAPSE_DIMENTION_POSITION = 1
 

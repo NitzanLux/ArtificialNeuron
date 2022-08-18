@@ -2,7 +2,7 @@
 # from torchviz import make_dot
 # import pickle as pickle #python 3.7 compatibility
 # from torchviz import make_dot
-from neuron_network.temporal_convolution_blocks_narrow import *
+from train_nets.neuron_network.temporal_convolution_blocks_narrow import *
 
 
 class SkipConnections(nn.Module):

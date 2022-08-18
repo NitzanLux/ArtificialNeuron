@@ -5,9 +5,9 @@ import pickle  # python 3.8+ compatibility
 # from torchviz import make_dot
 import torch
 import torch.nn as nn
-from train_nets.neuron_network.block_aid_functions import CausalConv1d
 
 from project_path import MODELS_DIR
+from train_nets.neuron_network.block_aid_functions import CausalConv1d
 
 
 class FullNeuronNetwork(nn.Module):
