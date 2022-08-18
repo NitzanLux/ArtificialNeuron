@@ -54,9 +54,9 @@ def surround_with_default_config_values(**kargs):
     config = AttrDict(config_version=CURRENT_VERSION, input_window_size=120, prediction_length=1,
                       num_segments=2 * 639,
                       # num_segments=2082,
-                      num_syn_types=1,use_mixed_precision=False,
+                      num_syn_types=1, use_mixed_precision=False,
                       include_spikes=True,
-                      num_epochs=15000, epoch_size=5, batch_size_train=5, accumulate_loss_batch_factor=4,
+                      num_epochs=160000, epoch_size=1, batch_size_train=5, accumulate_loss_batch_factor=1,
                       batch_size_validation=300,
                       # train_file_load=0.5, valid_file_load=0.5,
                       spike_probability=None,
@@ -65,7 +65,8 @@ def surround_with_default_config_values(**kargs):
                       # data_base_path="/ems/elsc-labs/segev-i/sandbox.shared/Rat_L5b_PC_2_Hay_simple_pipeline_1/simulation_dataset/",
                       # files_filter_regex=".*exBas_0_1100_inhBasDiff_-1100_600__exApic_0_1100_inhApicDiff_-1100_600_SpTemp[^\\/\.]*\.p",
                       files_filter_regex=".*", freeze_node_factor=None,
-                      optimizer_type="NAdam", optimizer_params=dict(weight_decay=1e-7),clip_gradients_factor=None,  # optimizer_params={'eps':1e-8},
+                      optimizer_type="NAdam", optimizer_params=dict(weight_decay=1e-7), clip_gradients_factor=None,
+                      # optimizer_params={'eps':1e-8},
                       # lr_scheduler='CyclicLR',lr_scheduler_params=dict(max_lr=0.05,step_size_up=1000,base_lr=0.00003,cycle_momentum=True),
                       # lr_scheduler='ReduceLROnPlateau',lr_scheduler_params=dict(factor=0.5,cooldown=300,patience =3000,eps=1e-5, threshold=1e-2),
                       lr_scheduler=None,
@@ -78,43 +79,42 @@ def surround_with_default_config_values(**kargs):
                       config_path="", model_tag="complex_constant_model", model_path=None,
                       loss_function="focalbcel_mse_loss")
 
-    architecture_dict = AttrDict(#segment_tree_path="tree.pkl",
-                                 network_architecture_structure="recursive",
-                                 # architecture_type="LAYERED_TEMPORAL_CONV",
-                                 architecture_type="LAYERED_TEMPORAL_CONV",
-                                 time_domain_shape=config.input_window_size,
-                                 # kernel_size_2d=3,
-                                 # kernel_size_1d=9,
-                                 # kernel_sizes=[50]+[8]*6,number_of_layers_temp=7,number_of_layers_space=7,
-                                 kernel_sizes=[54]+[12]*6,number_of_layers_temp=0,number_of_layers_space=7,
-                                 # channel_number=[128]*7,space_kernel_sizes=[6]*7,
-                                 channel_number=[128]*7,space_kernel_sizes=[54]+[12]*6,
+    architecture_dict = AttrDict(  # segment_tree_path="tree.pkl",
+        network_architecture_structure="recursive",
+        # architecture_type="LAYERED_TEMPORAL_CONV",
+        architecture_type="LAYERED_TEMPORAL_CONV",
+        time_domain_shape=config.input_window_size,
+        # kernel_size_2d=3,
+        # kernel_size_1d=9,
+        # kernel_sizes=[50]+[8]*6,number_of_layers_temp=7,number_of_layers_space=7,
+        kernel_sizes=[54] + [12] * 6, number_of_layers_temp=0, number_of_layers_space=7,
+        # channel_number=[128]*7,space_kernel_sizes=[6]*7,
+        channel_number=[128] * 7, space_kernel_sizes=[54] + [12] * 6,
 
-
-                                 number_of_layers_root=5, number_of_layers_leaf=6, number_of_layers_intersection=4,
-                                 number_of_layers_branch_intersection=4,
-                                 # david_layers=[55, 13, 13, 13, 13, 13, 13],
-                                 glu_number_of_layers=0,
-                                 skip_connections=True,
-                                 inter_module_skip_connections=True,
-                                 kernel_size=[5,11,21,33,35,42],
-                                 kernel_size_soma=1,
-                                 kernel_size_intersection=1,
-                                 kernel_size_branch=1,
-                                 dropout_factor=0.2,
-                                 # kernel_size=81,
-                                 # number_of_layers=2,
-                                 stride=1,
-                                 padding=0,
-                                 dilation=1,
-                                 # channel_input_number=1278,  # synapse number
-                                 channel_input_number=2082,  # synapse number
-                                 inner_scope_channel_number=None,
-                                 channel_output_number=32,
-                                 activation_function_name="LeakyReLU",
-                                 activation_function_kargs=dict(negative_slope=0.025),
-                                 # activation_function_kargs=dict(negative_slope=0.001),
-                                 include_dendritic_voltage_tracing=False)
+        number_of_layers_root=5, number_of_layers_leaf=6, number_of_layers_intersection=4,
+        number_of_layers_branch_intersection=4,
+        # david_layers=[55, 13, 13, 13, 13, 13, 13],
+        glu_number_of_layers=0,
+        skip_connections=True,
+        inter_module_skip_connections=True,
+        kernel_size=[5, 11, 21, 33, 35, 42],
+        kernel_size_soma=1,
+        kernel_size_intersection=1,
+        kernel_size_branch=1,
+        dropout_factor=0.2,
+        # kernel_size=81,
+        # number_of_layers=2,
+        stride=1,
+        padding=0,
+        dilation=1,
+        # channel_input_number=1278,  # synapse number
+        channel_input_number=2082,  # synapse number
+        inner_scope_channel_number=None,
+        channel_output_number=32,
+        activation_function_name="LeakyReLU",
+        activation_function_kargs=dict(negative_slope=0.025),
+        # activation_function_kargs=dict(negative_slope=0.001),
+        include_dendritic_voltage_tracing=False)
 
     # config.architecture_dict = architecture_dict
     config.update(architecture_dict)
@@ -126,7 +126,7 @@ def load_config_file(path: str) -> AttrDict:
     if path[-len('.config'):] != '.config':
         path += '.config'
     with open(path, 'r') as file:
-        file_s=file.read()
+        file_s = file.read()
     config = json.loads(file_s)
     config = AttrDict(config)
     # config.include_spikes=True
@@ -138,7 +138,7 @@ def load_config_file(path: str) -> AttrDict:
     # config.lr_scheduler=None
     # config.constant_learning_rate=0.0007
     # config.batch_size_train = 8
-    if config.config_version < CURRENT_VERSION :
+    if config.config_version < CURRENT_VERSION:
         config = surround_with_default_config_values(**config)
     return config
 
@@ -229,46 +229,68 @@ def generate_config_files_multiple_seeds(config_path: [str, Dict], number_of_con
         configs.append(
             config_factory(save_model_to_config_dir=True, generate_random_seeds=True, is_new_name=True, **base_config))
     return configs
+
+
 def load_config_file_from_wandb_yml(configs_names):
-    if isinstance(configs_names,str):
-        configs_names=[configs_names]
+    if isinstance(configs_names, str):
+        configs_names = [configs_names]
     for config_name in configs_names:
-        print(os.path.join("wandb",config_name,'files','config.yaml'))
-        with open(os.path.join("wandb",config_name,'files','config.yaml')) as file:
-            cur_config = yaml.load(file,Loader=yaml.FullLoader)
-        new_config=dict()
-        for k,v in cur_config.items():
+        print(os.path.join("wandb", config_name, 'files', 'config.yaml'))
+        with open(os.path.join("wandb", config_name, 'files', 'config.yaml')) as file:
+            cur_config = yaml.load(file, Loader=yaml.FullLoader)
+        new_config = dict()
+        for k, v in cur_config.items():
             if 'wandb' in k:
                 continue
-            new_config[k]=v['value']
+            new_config[k] = v['value']
         save_config(AttrDict(new_config))
+
 
 def restore_last_n_configs(n=10):
     search_dir = "wandb"
     search_dir = os.path.abspath(search_dir)
-    list_dirs = [os.path.join(search_dir,path)for path in os.listdir(search_dir)]
+    list_dirs = [os.path.join(search_dir, path) for path in os.listdir(search_dir)]
     files = list(filter(os.path.isdir, list_dirs))
     files.sort(key=lambda x: os.path.getmtime(x))
-    files =files[-n:]
-    files = [ os.path.basename(os.path.normpath(f)) for f in files]
+    files = files[-n:]
+    files = [os.path.basename(os.path.normpath(f)) for f in files]
     load_config_file_from_wandb_yml(files)
+
+
+def arange_kernel_by_layers(kernels, layers):
+    # if len(kernels)<=layers: return kernels,sum(kernels)
+    max_filter=max(kernels)
+    credit = sum(kernels[layers:])-len(kernels)+layers
+    new_kernels = []
+    for i in range(layers):
+        change = min(kernels[i] + credit, max_filter)
+        credit -= change - kernels[i]
+        new_kernels.append(change)
+    if sum(new_kernels)-len(new_kernels) < sum(kernels)-len(kernels):
+        new_kernels = [max_filter] * layers
+        new_kernels[0] += sum(kernels)-sum(new_kernels)-len(kernels)+layers
+    return new_kernels, sum(new_kernels)-len(new_kernels)
 
 
 if __name__ == '__main__':
     # restore_last_n_configs(100)
     configs = []
-    configurations_name = "ido_data_run"
+    configurations_name = "reduction_comparison"
     # configuration_name='morph'
-    for i in ['NAdam']:
-        config_morpho_0 = config_factory(
-                                         architecture_type='FullNeuronNetwork',
-                                         # architecture_type='LAYERED_TEMPORAL_CONV_N',
-                                         model_tag="%s_%s" % (configurations_name,i), optimizer_type=i,#clip_gradients_factor=2.5,
-                                         accumulate_loss_batch_factor=1, prediction_length=700,
-                                         batch_size_validation=20, batch_size_train=120,
-                                         # batch_size_validation=4, batch_size_train=4,
-                                         constant_learning_rate=0.01)
-        configs.append(config_morpho_0)
+    base_layer=[54]+[12]*6
+    for i in range(1,8,2):
+        kernels = arange_kernel_by_layers(base_layer,i)
+        for data in [DAVID_BASE_PATH,REDUCTION_BASE_PATH]:
+            config = config_factory(
+                architecture_type='FullNeuronNetwork',
+                # architecture_type='LAYERED_TEMPORAL_CONV_N',   clip_gradients_factor=2.5,
+                model_tag="%s_%d%s" % (configurations_name, i,"_reduction" if data == REDUCTION_BASE_PATH else ''),
+                kernel_sizes=kernels, number_of_layers_space = len(kernels),
+                accumulate_loss_batch_factor=1, prediction_length=700,
+                batch_size_validation=30, batch_size_train=180,
+                # batch_size_validation=4, batch_size_train=4,
+                constant_learning_rate=0.01)
+            configs.append(config)
         # configs.extend(generate_config_files_multiple_seeds(config_morpho_0, 2))
     print(configurations_name)
     with open(os.path.join(MODELS_DIR, "%s.json" % configurations_name), 'w') as file:
