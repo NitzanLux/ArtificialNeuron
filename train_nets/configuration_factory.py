@@ -4,7 +4,7 @@ from typing import Dict
 import yaml
 from datetime import datetime
 from utils.general_aid_function import *
-from train_nets.neuron_simulations.get_neuron_modle import get_L5PC
+from neuron_simulations.get_neuron_modle import get_L5PC
 from train_nets.work import davids_network
 from train_nets.neuron_network import fully_connected_temporal_seperated
 
