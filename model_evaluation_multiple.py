@@ -12,7 +12,7 @@ from dash import html
 from dash.dependencies import Input, Output
 from plotly.subplots import make_subplots
 from tqdm import tqdm
-from simulation_data_generator_new import SimulationDataGenerator
+from neuron_simulations.simulation_data_generator_new import SimulationDataGenerator
 import neuron_network.node_network.recursive_neuronal_model as recursive_neuronal_model
 from general_aid_function import *
 from neuron_network import neuronal_model
@@ -25,6 +25,7 @@ from scipy.ndimage.filters import uniform_filter1d
 from scipy.signal import find_peaks
 import dash_bootstrap_components as dbc
 from neuron_network import fully_connected_temporal_seperated
+from typing import List
 
 GOOD_AND_BAD_SIZE = 8
 
@@ -33,10 +34,13 @@ BUFFER_SIZE_IN_FILES_VALID = 1
 
 
 class SimulationData():
-    def __init__(self, v, s, data_label: str):
+    def __init__(self, v, s, index_labels: List, data_label: str):
+        assert len(index_labels) == v.shape[0], "labels length does not match to the data length"
+        assert v.shape == s.shape, "voltage and spikes are not match"
         self.data_label = data_label
         self.v = v
         self.s = s
+        self.index_keys = {k: v for v, k in enumerate(index_labels)}
 
     def __str__(self):
         return data_label
@@ -53,8 +57,11 @@ class SimulationData():
         return len(self) > 0
 
     def __getitem__(self, recording_index):
+        if recording_index in self.index_keys: recording_index = self.index_keys[recording_index]
         return self.v[recording_index, :], self.s[recording_index, :]
 
+    def get_key(self,index):
+        return self.index_keys[index]
     def save(self, path):
         with open(path, 'wb') as f:
             pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
@@ -70,6 +77,7 @@ class GroundTruthData(SimulationData):
     def __init__(self, data_files, data_label: str):
         # data_files=sorted(data_files)
         self.d_input = []
+        data_keys = []
         s, v = [], []
         data_generator = SimulationDataGenerator(data_files, buffer_size_in_files=BUFFER_SIZE_IN_FILES_VALID,
                                                  batch_size=1,
@@ -83,11 +91,12 @@ class GroundTruthData(SimulationData):
             s.append(s_cur.cpu().detach().numpy().squeeze())
             v.append(v_cur.cpu().detach().numpy().squeeze())
             self.d_input.append(d_input)
+            data_keys.append(data_generator.display_current_fils_and_indexes())
         self.data_files = tuple(data_files)
         s = np.vstack(s)
         v = np.vstack(v)
         self.d_input = np.vstack(self.d_input)
-        super().__init__(v, s, data_label)
+        super().__init__(v, s, index_labels, data_label)
 
     def __hash__(self):
         return self.data_files.__hash__()
@@ -108,7 +117,9 @@ class EvaluationData(SimulationData):
         self.config = config
         self.ground_truth: ['GroundTruthData'] = ground_truth
         v, s = self.__evaluate_model()
-        super().__init__(v, s, data_label)
+        s = np.vstack(s)
+        v = np.vstack(v)
+        super().__init__(v, s,ground_truth.data_keys, data_label)
         # self.data_per_recording = [] if recoreded_data is None else recoreded_data
 
     def __evaluate_model(self):
@@ -119,7 +130,8 @@ class EvaluationData(SimulationData):
             model.float()
         elif DATA_TYPE == torch.cuda.DoubleTensor:
             model.double()
-        s_out, v_out = [], []
+        data_keys, s_out, v_out = [], [], []
+
         for i, data in enumerate(self.ground_truth):
             print(i)
             d_input, s, v = data
@@ -146,6 +158,16 @@ class EvaluationData(SimulationData):
         print("model parmeters: %d" % model.count_parameters())
         return model
 
+    def running_mse(self,index,mse_window_size):
+        v,v_p=self.ground_truth[index],self[index]
+        mse_window_size = min(v.shape[0], mse_window_size)
+        running_mse = np.power(v - v_p,2)[np.newaxis,:]
+        total_mse=np.mean(running_mse)
+        if mse_window_size > 2:
+            running_mse=uniform_filter1d(running_mse, size=mse_window_size, mode='constant')
+            running_mse[:,:(mse_window_size // 2)] = 0
+            running_mse[:,-(mse_window_size // 2 - 1):] = 0
+        return running_mse,total_mse
 
 class ModelEvaluator():
     def __init__(self, *args: SimulationData, use_only_groundtruth=False):
@@ -320,7 +342,6 @@ class ModelEvaluator():
             running_mse[:, :(mse_window_size // 2)] = 0
             running_mse[:, -(mse_window_size // 2 - 1):] = 0
         return running_mse, total_mse
-
 
     @staticmethod
     def build_and_save(items_path):
