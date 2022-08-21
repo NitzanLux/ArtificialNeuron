@@ -1,31 +1,22 @@
-import configuration_factory
-from neuron_network import neuronal_model
+import datetime
 import pickle
-from typing import Iterable
-import sklearn.metrics as skm
+
 import dash
 import numpy as np
 import plotly.graph_objects as go
-import torch
+import sklearn.metrics as skm
 from dash import dcc, callback_context
 from dash import html
 from dash.dependencies import Input, Output
 from plotly.subplots import make_subplots
-from tqdm import tqdm
-from neuron_simulations.simulation_data_generator_new import SimulationDataGenerator
-import neuron_network.node_network.recursive_neuronal_model as recursive_neuronal_model
-from general_aid_function import *
-from neuron_network import neuronal_model
-import plotly.express as px
-import datetime
-import json
-from general_variables import *
-from get_neuron_modle import get_L5PC
 from scipy.ndimage.filters import uniform_filter1d
-from scipy.signal import find_peaks
-import dash_bootstrap_components as dbc
-from neuron_network import fully_connected_temporal_seperated
-from typing import List
+
+import train_nets.neuron_network.recursive_neuronal_model as recursive_neuronal_model
+from neuron_simulations.simulation_data_generator_new import SimulationDataGenerator
+from train_nets.neuron_network import fully_connected_temporal_seperated
+from train_nets.neuron_network import neuronal_model
+from utils.general_aid_function import *
+from utils.general_variables import *
 
 GOOD_AND_BAD_SIZE = 8
 
@@ -60,8 +51,9 @@ class SimulationData():
         if recording_index in self.index_keys: recording_index = self.index_keys[recording_index]
         return self.v[recording_index, :], self.s[recording_index, :]
 
-    def get_key(self,index):
+    def get_key(self, index):
         return self.index_keys[index]
+
     def save(self, path):
         with open(path, 'wb') as f:
             pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
@@ -74,14 +66,16 @@ class SimulationData():
 
 
 class GroundTruthData(SimulationData):
-    def __init__(self, data_files, data_label: str):
+    def __init__(self, data_files, data_label: str,sort=True):
         # data_files=sorted(data_files)
         self.d_input = []
         data_keys = []
         s, v = [], []
+        if sort:
+            data_files= sorted(data_files)
         data_generator = SimulationDataGenerator(data_files, buffer_size_in_files=BUFFER_SIZE_IN_FILES_VALID,
                                                  batch_size=1,
-                                                 window_size_ms=config.time_domain_shape,
+                                                 window_size_ms=-1,
                                                  sample_ratio_to_shuffle=1,
                                                  # number_of_files=1,number_of_traces_from_file=2,# todo for debugging
                                                  ).eval()
@@ -119,7 +113,7 @@ class EvaluationData(SimulationData):
         v, s = self.__evaluate_model()
         s = np.vstack(s)
         v = np.vstack(v)
-        super().__init__(v, s,ground_truth.data_keys, data_label)
+        super().__init__(v, s, ground_truth.data_keys, data_label)
         # self.data_per_recording = [] if recoreded_data is None else recoreded_data
 
     def __evaluate_model(self):
@@ -158,30 +152,35 @@ class EvaluationData(SimulationData):
         print("model parmeters: %d" % model.count_parameters())
         return model
 
-    def running_mse(self,index,mse_window_size):
-        v,v_p=self.ground_truth[index],self[index]
-        mse_window_size = min(v.shape[0], mse_window_size)
-        running_mse = np.power(v - v_p,2)[np.newaxis,:]
-        total_mse=np.mean(running_mse)
-        if mse_window_size > 2:
-            running_mse=uniform_filter1d(running_mse, size=mse_window_size, mode='constant')
-            running_mse[:,:(mse_window_size // 2)] = 0
-            running_mse[:,-(mse_window_size // 2 - 1):] = 0
-        return running_mse,total_mse
+    def running_mse(self, index, mse_window_size):
+        if not hasattr(self, '__running_mse'):
+            v, v_p = self.ground_truth[index], self[index]
+            mse_window_size = min(v.shape[0], mse_window_size)
+            self.__running_mse = np.power(v - v_p, 2)[np.newaxis, :]
+            self.__total_mse = np.mean(self.__running_mse)
+
+        if mse_window_size == 1:
+            running_mse = self.__running_mse
+        else:
+            running_mse = uniform_filter1d(self.__running_mse, size=mse_window_size, mode='constant')
+            running_mse[:, :(mse_window_size // 2)] = 0
+            running_mse[:, -(mse_window_size // 2 - 1):] = 0
+        return running_mse, self.__total_mse
+
 
 class ModelEvaluator():
-    def __init__(self, *args: SimulationData, use_only_groundtruth=False):
+    def __init__(self, *args: SimulationData):#, use_only_groundtruth=False):
         ground_truth_set = set()
         model_set = set()
-        if not use_only_groundtruth:
-            for i in args:
-                if isinstance(i, GroundTruthData):
-                    ground_truth_set.add(i)
-                elif isinstance(i, EvaluationData):
-                    model_set.add(i)
-                    ground_truth_set.add(i.ground_truth)
-                else:
-                    model_set.add(i)
+        # if not use_only_groundtruth:
+        for i in args:
+            if isinstance(i, GroundTruthData):
+                ground_truth_set.add(i)
+            elif isinstance(i, EvaluationData):
+                model_set.add(i)
+                ground_truth_set.add(i.ground_truth)
+            else:
+                model_set.add(i)
         self.ground_truths = list(ground_truth_set)
         self.models = list(model_set)
         self.current_good_and_bad_div = None
@@ -358,30 +357,9 @@ class ModelEvaluator():
 
 #
 if __name__ == '__main__':
-    # model_name='AdamWshort_and_wide_1_NMDA_Tree_TCN__2022-02-06__15_47__ID_54572'
-    # model_name = 'd_out_AdamW___2022-03-27__19_52__ID_52394'
-    # model_name = 'd_out_AdamW___2022-03-27__19_52__ID_36974'
-    # model_name = 'd_out_1_AdamW___2022-03-27__19_25__ID_12056'
-    # model_name = 'd_out_1_AdamW___2022-03-27__19_25__ID_26687' # 0.975
-    # model_name = 'd_out_5_AdamW___2022-04-09__20_08__ID_4486' # 0.97918
-    # model_name = 'narrow_last_layer_3_AdamW___2022-06-28__12_07__ID_44880' # 0.0.96779
-    # model_name = 'narrow_last_layer_3_AdamW___2022-06-28__12_07__ID_74982' # 0.97033
-    # model_name = 'narrow_last_layer_4_AdamW___2022-07-04__11_05__ID_65095' # 0.96937
-    # model_name = 'narrow_last_layer_4_AdamW___2022-07-04__11_05__ID_5433' # 0.96765
-    # model_name = 'tempspace_AdamW___2022-07-18__15_54__ID_39553' # 0.97332
-    # model_name = 'tempspace_AdamW___2022-07-18__15_54__ID_63486' # 0.97317
-    # model_name = 'davids_AdamW___2022-07-18__12_52__ID_61236' # 0.98047
-    model_name = 'davids_AdamW___2022-07-18__12_52__ID_70365'  # 0.98120
-    model_name = 'davids_leak_AdamW___2022-07-28__17_32__ID_42419'  # 0.97761
-
-    # model_name = 'd_out_5_AdamW___2022-04-09__20_08__ID_55904' #0.97762
-
-    # model_name = 'glu_3_AdamW___2022-02-17__14_33__ID_2250'
-    # model_name = 'glu_3_NAdam___2022-02-17__14_33__ID_60416'
-    # ModelEvaluator.build_and_save(r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\heavy_AdamW_NMDA_Tree_TCN__2022-01-27__17_58__ID_40048\heavy_AdamW_NMDA_Tree_TCN__2022-01-27__17_58__ID_40048")
-    eval = ModelEvaluator.load(
-        r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\%s\%s.eval" % (
-            model_name, model_name))
-    # eval.data.flatten_batch_dimensions()
-    # eval.save()
-    eval.display()
+    path=''
+    from utils.general_aid_function import load_files_names
+    g = GroundTruthData(load_files_names(path),'test')
+    g.save('test.gtest')
+    me = ModelEvaluator(g)
+    me.display()
