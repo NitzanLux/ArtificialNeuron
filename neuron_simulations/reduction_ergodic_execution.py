@@ -1,7 +1,7 @@
 import time
 import os
 import logging
-from utils.project_path import *
+from project_path import *
 from art import tprint
 import argparse
 import json
