@@ -54,12 +54,12 @@ print(len(only_files), flush=True)
 
 for i, f in enumerate(only_files):
     if i % files_per_cpu == 0:
-        params_string = 'python3 $(dirname "$path")/neuron_simulations/simulate_L5PC_ergodic_reduction.py %s -i $SLURM_JOB_ID' % (
+        params_string = 'python3 $(dirname "$path")/simulate_L5PC_ergodic_reduction.py %s -i $SLURM_JOB_ID' % (
                     "-f '" + str(os.path.join(directory,
                                               f)) + "' -d '" + base_directory + "_" + directory_name + "_reduction'" +
                     " -rf %d"%args.reduction_frequency)
     else:
-        params_string = params_string + '&& python3 $(dirname "$path")/neuron_simulations/simulate_L5PC_ergodic_reduction.py %s -i -1' % (
+        params_string = params_string + '&& python3 $(dirname "$path")/simulate_L5PC_ergodic_reduction.py %s -i -1' % (
                     "-f '" + str(os.path.join(directory,
                                               f)) + "' -d '" + base_directory + "_" + directory_name + "_reduction'" +
                     " -rf %d"%args.reduction_frequency)
