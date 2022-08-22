@@ -53,10 +53,12 @@ def generate_input_spike_trains_for_simulation(sim_experiment_file, print_logs=P
         # go over all simulations in the experiment and collect their results
         print("number of simulations in file: %d"%len(experiment_dict['Results']['listOfSingleSimulationDicts']))
         for k, sim_dict in enumerate(experiment_dict['Results']['listOfSingleSimulationDicts']):
+            print(k)
             X_ex = dict2bin(sim_dict['exInputSpikeTimes'], len(experiment_dict['Params']['allSegmentsType']),
                             experiment_dict['Params']['totalSimDurationInSec'] * 1000)
             X_inh = dict2bin(sim_dict['inhInputSpikeTimes'], len(experiment_dict['Params']['allSegmentsType']),
                              experiment_dict['Params']['totalSimDurationInSec'] * 1000)
+            print('sim number ',k,flush=True)
             yield X_ex, X_inh
 
     return genrator(), experiment_dict['Params']

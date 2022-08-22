@@ -260,10 +260,10 @@ class ModelEvaluator():
                 ground_truth_set.add(i.ground_truth)
             else:
                 model_set.add(i)
-        f_name_set=None
-        for i,gt in enumerate(self.ground_truth):
-            if f_name_set is None:
-                f_name_set=set(gt.file)
+        # f_name_set=None
+        # for i,gt in enumerate(self.ground_truths):
+        #     if f_name_set is None:
+        #         f_name_set=set(gt.file)
         self.file_names_short_names = set()
         self.ground_truths = list(ground_truth_set)
         self.models = list(model_set)
@@ -495,8 +495,7 @@ def run_test():
 
     from utils.general_aid_function import load_files_names
 
-    g0 = GroundTruthData.load("test.gtest")
-    g1 = GroundTruthData.load("test1.gtest")
-    g2 = GroundTruthData.load("test2.gtest")
-    me = ModelEvaluator(g0, g1, g2)
+    g0 = GroundTruthData.load("evaluations/ground_truth/davids_ergodic_validation.gteval")
+    g1 = GroundTruthData.load("evaluations/ground_truth/reduction_ergodic_validation.gteval")
+    me = ModelEvaluator(g0, g1)
     me.display()
