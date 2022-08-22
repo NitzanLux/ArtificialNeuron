@@ -17,6 +17,7 @@ from train_nets.neuron_network import fully_connected_temporal_seperated
 from train_nets.neuron_network import neuronal_model
 from utils.general_aid_function import *
 from utils.general_variables import *
+from train_nets.configuration_factory import load_config_file
 import plotly
 import os
 
@@ -466,7 +467,15 @@ class ModelEvaluator():
             , yaxis2=dict(ticks="", showticklabels=False))
         return fig
 
-
+def create_gt_and_save(folder,name):
+    g = GroundTruthData(get_files_by_filer_from_dir(folder),name)
+    g.save(os.path.join("evaluation",'ground_truth',name+".gteval"))
+    return g
+def create_model_evaluation(gt_name,model_name):
+    gt_path = os.path.join("evaluation",'ground_truth',gt_name+".gteval")
+    config = load_config_file(os.path.join(MODELS_DIR,config_name,config_name+".config"))
+    g = EvaluationData(GroundTruthData.load(gt_path),config)
+    g.save(os.path.join("evaluation",'models',model_name+".meval"))
 def run_test():
     #
     # if __name__ == '__main__':
