@@ -212,7 +212,11 @@ def simulate_L5PC_reduction(sim_file, dir_name,reduction_frequency=0):
     if PRINT_LOGS: print('temperature is %.2f degrees celsius' % (h.celsius))
     if PRINT_LOGS: print('dt is %.4f ms' % (h.dt))
     if PRINT_LOGS: print('-------------------------------------/')
-
+    listOfISIs = []
+    numOutputSpikesPerSim = []
+    listOfSingleSimulationDicts = []
+    exc_spikes_per_100ms_range_per_sim = []
+    inh_spikes_per_100ms_range_per_sim = []
     simInd = 0
     # while simInd < numSimulations:
     for exc_spikes_bin, inh_spikes_bin in data_generator:
@@ -301,11 +305,7 @@ def simulate_L5PC_reduction(sim_file, dir_name,reduction_frequency=0):
         assert (abs(totalDendriticLength - (totalBasalDendriticLength + totalApicalDendriticLength)) < 0.00001)
 
         totalNumOutputSpikes = 0
-        listOfISIs = []
-        numOutputSpikesPerSim = []
-        listOfSingleSimulationDicts = []
-        exc_spikes_per_100ms_range_per_sim = []
-        inh_spikes_per_100ms_range_per_sim = []
+
 
         currSimulationResultsDict = {}
         preparationStartTime = time.time()
@@ -505,13 +505,14 @@ def simulate_L5PC_reduction(sim_file, dir_name,reduction_frequency=0):
         listOfSingleSimulationDicts.append(currSimulationResultsDict)
 
         dataCollectionDurationInSeconds = (time.time() - collectionStartTime)
-        print("data collection per single simulation took %.4f seconds" % (dataCollectionDurationInSeconds))
+        if PRINT_LOGS: print("data collection per single simulation took %.4f seconds" % (dataCollectionDurationInSeconds))
+
 
         entireSimulationDurationInMinutes = (time.time() - preparationStartTime) / 60
-        print('-----------------------------------------------------------')
-        print('finished simulation %d: num output spikes = %d' % (simInd + 1, numOutputSpikes))
-        print("entire simulation took %.2f minutes" % (entireSimulationDurationInMinutes))
-        print('------------------------------------------------------------------------------/')
+        if PRINT_LOGS: print('-----------------------------------------------------------')
+        if PRINT_LOGS: print('finished simulation %d: num output spikes = %d' % (simInd + 1, numOutputSpikes))
+        if PRINT_LOGS: print("entire simulation took %.2f minutes" % (entireSimulationDurationInMinutes))
+        if PRINT_LOGS: print('------------------------------------------------------------------------------/')
 
         # increment simulation index
         simInd = simInd + 1
