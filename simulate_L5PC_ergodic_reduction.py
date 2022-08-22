@@ -169,7 +169,6 @@ def simulate_L5PC_reduction(sim_file, dir_name,reduction_frequency=0):
     # calculate the input firing rate deflection from canonical case, depending on morphology and synapatic params
     num_active_segments = len(segments_to_keep)
 
-    inh_max_delta_spikes_mult_factor = experimentParams['inh_max_delta_spikes_mult_factor']
 
     if PRINT_LOGS: print('-----------------------------------------')
     if PRINT_LOGS: print('"morphology_description" - %s' % (morphology_description))
@@ -566,7 +565,6 @@ def simulate_L5PC_reduction(sim_file, dir_name,reduction_frequency=0):
     experimentParams['max_output_spikes_to_keep_per_sim'] = max_output_spikes_to_keep_per_sim
     experimentParams['max_spikes_mult_factor_per_active_segment'] = max_spikes_mult_factor_per_active_segment
     experimentParams['max_spikes_mult_factor_per_NMDA_g_ratio'] = max_spikes_mult_factor_per_NMDA_g_ratio
-    experimentParams['inh_max_delta_spikes_mult_factor'] = inh_max_delta_spikes_mult_factor
 
     experimentParams['numSamplesPerMS_HighRes'] = numSamplesPerMS_HighRes
 
