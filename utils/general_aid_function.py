@@ -31,6 +31,10 @@ def filter_file_names(files: List[str], filter: str) -> List[str]:
 
     return new_files
 
+def get_files_by_filer_from_dir(data_path,regex_str:str='.*',ido_format=False):
+    files = glob.glob(os.path.join(*([data_path,'*']+([''] if ido_format else []))))
+    files = filter_file_names(files,regex_str)
+    return files
 
 def load_files_names(data_path,files_filter_regex: str = ".*") -> Tuple[List[str], List[str], List[str]]:
     ido_format = False

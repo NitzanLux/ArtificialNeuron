@@ -76,7 +76,7 @@ class FullNeuronNetwork(nn.Module):
     def init_weights(self, sd=0.05):
         def init_params(m):
             if hasattr(m, "weight"):
-                nn.init.normal_(m.weight.data)
+                torch.nn.init.xavier_normal_(m.weight.data)
             if hasattr(m, "bias"):
                 nn.init.zeros_(m.bias.data)
         self.apply(init_params)

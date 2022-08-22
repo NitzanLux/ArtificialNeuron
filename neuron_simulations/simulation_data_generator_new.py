@@ -8,7 +8,7 @@ import time
 from typing import List, Tuple
 from scipy import sparse
 import h5py
-
+import os
 Y_SOMA_THRESHOLD = -20.0
 
 NULL_SPIKE_FACTOR_VALUE = 0
@@ -35,14 +35,14 @@ class SimulationDataGenerator():
         self.buffer_size_in_files = buffer_size_in_files
         self.batch_size = batch_size
         self.evaluation_mode = evaluation_mode
-        self.receptive_filed_size=window_size_ms
+        self.receptive_filed_size = window_size_ms
         self.window_size_ms = window_size_ms + prediction_length  # the window size that are important for prediction
         self.ignore_time_from_start = ignore_time_from_start
         self.y_train_soma_bias = y_train_soma_bias
         self.y_soma_threshold = y_soma_threshold
         self.y_DTV_threshold = y_DTV_threshold
         self.sample_ratio_to_shuffle = sample_ratio_to_shuffle
-        self.shuffle_data=shuffle_data
+        self.shuffle_data = shuffle_data
         self.shuffle_files = shuffle_files
         self.epoch_size = epoch_size
         self.curr_file_index = -1
@@ -53,23 +53,24 @@ class SimulationDataGenerator():
         self.prediction_length = prediction_length
         self.sampling_start_time = ignore_time_from_start
         self.X, self.y_spike, self.y_soma = None, None, None
-        self.reload_files()
-        self.non_spikes, self.spikes, self.number_of_non_spikes_in_batch, self.number_of_spikes_in_batch = None, None, None, None
         self.index_set = set()
+        self.reload_files()
         # self.non_spikes,self.spikes,self.number_of_non_spikes_in_batch,self.nuber_of_spikes_in_batch = non_spikes, spikes, number_of_non_spikes_in_batch,
         #                                                         number_of_spikes_in_batch
 
     def eval(self):
         self.shuffle_files = False
-        self.shuffle_data=False
+        self.shuffle_data = False
         prev_window_length = self.window_size_ms - self.prediction_length
         self.window_size_ms = self.X.shape[2]
         self.prediction_length = self.X.shape[2] - prev_window_length
-        self.receptive_filed_size=self.window_size_ms-self.prediction_length
+        self.receptive_filed_size = self.window_size_ms - self.prediction_length
         self.reload_files_once = True
         return self
+
     def display_current_fils_and_indexes(self):
-        return self.curr_files_to_use,self.sample_counter% self.indexes.shape[0], (self.sample_counter + self.batch_size) % self.indexes.shape[0]
+        return self.curr_files_to_use, self.sample_counter % self.indexes.shape[0], (
+                    self.sample_counter + self.batch_size) % self.indexes.shape[0]
 
     def __len__(self):
         'Denotes the total number of samples'
@@ -78,7 +79,6 @@ class SimulationDataGenerator():
     def __iter__(self):
         """create epoch iterator"""
         yield from self.iterate_deterministic_no_repetition()
-
 
     # @staticmethod
     # def shuffle_array(arrays: List[np.array]):
@@ -108,7 +108,7 @@ class SimulationDataGenerator():
                 return
 
     def files_shuffle_checker(self):
-        if (self.sample_counter*self.prediction_length + self.batch_size*self.prediction_length) / (
+        if (self.sample_counter * self.prediction_length + self.batch_size * self.prediction_length) / (
                 self.X.shape[0] * self.X.shape[2]) >= self.sample_ratio_to_shuffle:
             self.reload_files()
             return True
@@ -123,22 +123,23 @@ class SimulationDataGenerator():
         sim_ind = item
         if isinstance(sim_ind, int):
             sim_ind = np.array([sim_ind])
-        sim_indexs=self.indexes[sim_ind]//((self.X.shape[2] - self.receptive_filed_size) // self.prediction_length)
-        time_index = self.indexes[sim_ind]%((self.X.shape[2] - self.receptive_filed_size) // self.prediction_length)
-        time_index = time_index*self.prediction_length
-
+        sim_indexs = self.indexes[sim_ind] // ((self.X.shape[2] - self.receptive_filed_size) // self.prediction_length)
+        time_index = self.indexes[sim_ind] % ((self.X.shape[2] - self.receptive_filed_size) // self.prediction_length)
+        time_index = time_index * self.prediction_length
 
         sim_ind_mat, chn_ind, win_ind = np.meshgrid(sim_indexs,
                                                     np.arange(self.X.shape[1]), np.arange(self.window_size_ms),
-                                                    indexing='ij',)
+                                                    indexing='ij', )
         win_ind = time_index[:, np.newaxis, np.newaxis].astype(int) + win_ind.astype(int)
 
         # time_range=(np.tile(np.arange(self.window_size_ms),(time_index.shape[0],1))+time_index[:,np.newaxis])
         # end_time=time_index+self.window_size_ms
 
         X_batch = self.X[sim_ind_mat, chn_ind, win_ind]
-        y_spike_batch = self.y_spike[sim_ind_mat[:,0,self.receptive_filed_size:], win_ind[:,0,self.receptive_filed_size:]]
-        y_soma_batch = self.y_soma[sim_ind_mat[:,0,self.receptive_filed_size:], win_ind[:,0,self.receptive_filed_size:]]
+        y_spike_batch = self.y_spike[
+            sim_ind_mat[:, 0, self.receptive_filed_size:], win_ind[:, 0, self.receptive_filed_size:]]
+        y_soma_batch = self.y_soma[
+            sim_ind_mat[:, 0, self.receptive_filed_size:], win_ind[:, 0, self.receptive_filed_size:]]
 
         return (torch.from_numpy(X_batch), [torch.from_numpy(y_spike_batch), torch.from_numpy(y_soma_batch)])
 
@@ -178,15 +179,14 @@ class SimulationDataGenerator():
         # load the file
         for f in self.curr_files_to_use:
             X, y_spike, y_soma = parse_sim_experiment_file(f)
-            # X, y_spike, y_soma = parse_sim_experiment_file_ido(f)
             # reshape to what is needed
-            if len(X.shape)==3:
+            if len(X.shape) == 3:
                 X = np.transpose(X, axes=[2, 0, 1])
             else:
-                X = X[np.newaxis,...]
+                X = X[np.newaxis, ...]
             X = X[:, :, self.sampling_start_time:]
-            if len(y_spike.shape) ==1: y_spike=y_spike[...,np.newaxis]
-            if len(y_soma.shape) ==1: y_soma=y_soma[...,np.newaxis]
+            if len(y_spike.shape) == 1: y_spike = y_spike[..., np.newaxis]
+            if len(y_soma.shape) == 1: y_soma = y_soma[..., np.newaxis]
             y_spike = y_spike.T[:, np.newaxis, self.sampling_start_time:]
             y_soma = y_soma.T[:, np.newaxis, self.sampling_start_time:]
             if self.number_of_traces_from_file is not None:
@@ -202,19 +202,22 @@ class SimulationDataGenerator():
         self.y_spike = np.vstack(self.y_spike).squeeze(1)
         self.y_soma = np.vstack(self.y_soma).squeeze(1)
         times = ((self.X.shape[2] - self.receptive_filed_size) // self.prediction_length)
-        self.X=self.X[:,:,:-((self.X.shape[2] - self.receptive_filed_size) % self.prediction_length)]
-        self.y_spike= self.y_spike[:,:-((self.y_spike.shape[1] - self.receptive_filed_size) // self.prediction_length)]
-        self.y_soma= self.y_soma[:,:-((self.y_soma.shape[1] - self.receptive_filed_size) // self.prediction_length)]
+        self.X = self.X[:, :, :-((self.X.shape[2] - self.receptive_filed_size) % self.prediction_length)]
+        self.y_spike = self.y_spike[:,
+                       :-((self.y_spike.shape[1] - self.receptive_filed_size) // self.prediction_length)]
+        self.y_soma = self.y_soma[:, :-((self.y_soma.shape[1] - self.receptive_filed_size) // self.prediction_length)]
 
         number_of_indexes = times * self.X.shape[0]
-        self.indexes=np.arange(number_of_indexes)
+        self.indexes = np.arange(number_of_indexes)
 
         # threshold the signals
         self.y_soma[self.y_soma > self.y_soma_threshold] = self.y_soma_threshold
 
         self.shuffel_data()
 
+
 def parse_sim_experiment_file_ido(sim_experiment_folder, print_logs=False):
+
     # ido_base_path="/ems/elsc-labs/segev-i/Sandbox Shared/Rat_L5b_PC_2_Hay_simple_pipeline_1/simulation_dataset/"
     exc_weighted_spikes = sparse.load_npz(f'{sim_experiment_folder}/exc_weighted_spikes.npz').A
     inh_weighted_spikes = sparse.load_npz(f'{sim_experiment_folder}/inh_weighted_spikes.npz').A
@@ -231,9 +234,12 @@ def parse_sim_experiment_file_ido(sim_experiment_folder, print_logs=False):
     output_spikes_for_window = np.zeros(somatic_voltage.shape[0])
     spike_times = summary['output_spike_times']
     output_spikes_for_window[spike_times.astype(int)] = 1
-    return all_weighted_spikes_for_window ,output_spikes_for_window,somatic_voltage
+    return all_weighted_spikes_for_window, output_spikes_for_window, somatic_voltage
+
 
 def parse_sim_experiment_file(sim_experiment_file, print_logs=False):
+    if not os.path.isfile(sim_experiment_file):
+        return parse_sim_experiment_file_ido(sim_experiment_file)
     """:DVT_PCA_model is """
     loading_start_time = 0.
     if print_logs:
@@ -259,7 +265,6 @@ def parse_sim_experiment_file(sim_experiment_file, print_logs=False):
     y_spike = np.zeros((sim_duration_ms, num_simulations))
     y_soma = np.zeros((sim_duration_ms, num_simulations))
 
-
     # go over all simulations in the experiment and collect their results
     for k, sim_dict in enumerate(experiment_dict['Results']['listOfSingleSimulationDicts']):
         X_ex = dict2bin(sim_dict['exInputSpikeTimes'], num_segments, sim_duration_ms)
@@ -269,14 +274,13 @@ def parse_sim_experiment_file(sim_experiment_file, print_logs=False):
         y_spike[spike_times, k] = 1.0
         y_soma[:, k] = sim_dict['somaVoltageLowRes']
 
-
-
     if print_logs:
         loading_duration_sec = time.time() - loading_start_time
         print('loading took %.3f seconds' % (loading_duration_sec))
         print('-----------------------------------------------------------------')
 
     return X, y_spike, y_soma
+
 
 def bin2dict(bin_spikes_matrix):
     spike_row_inds, spike_times = np.nonzero(bin_spikes_matrix)

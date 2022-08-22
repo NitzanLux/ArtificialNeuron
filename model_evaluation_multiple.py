@@ -1,6 +1,6 @@
 import datetime
 import pickle
-
+import plotly.express as px
 import dash
 import numpy as np
 import plotly.graph_objects as go
@@ -10,13 +10,17 @@ from dash import html
 from dash.dependencies import Input, Output
 from plotly.subplots import make_subplots
 from scipy.ndimage.filters import uniform_filter1d
-
+import scipy.sparse as ssparse
 import train_nets.neuron_network.recursive_neuronal_model as recursive_neuronal_model
-from neuron_simulations.simulation_data_generator_new import SimulationDataGenerator
+from neuron_simulations.simulation_data_generator_new import parse_sim_experiment_file
 from train_nets.neuron_network import fully_connected_temporal_seperated
 from train_nets.neuron_network import neuronal_model
 from utils.general_aid_function import *
 from utils.general_variables import *
+import plotly
+import os
+
+cols = plotly.colors.DEFAULT_PLOTLY_COLORS
 
 GOOD_AND_BAD_SIZE = 8
 
@@ -31,32 +35,41 @@ class SimulationData():
         self.data_label = data_label
         self.v = v
         self.s = s
-        self.index_keys = {k: v for v, k in enumerate(index_labels)}
+        self.index_labels = index_labels
+        self.keys_dict = {k: v for v, k in enumerate(index_labels)}
 
     def __str__(self):
-        return data_label
+        return self.data_label
 
     def __len__(self):
         assert self.v.size == self.s.size, "spikes array and soma voltage array are inconsistent"
         return self.v.shape[0]
 
     def __iter__(self):
-        for i in range(len(self)):
+        for i in sorted(self.keys_dict.keys()):
             yield self[i]
 
     def is_recording(self):
         return len(self) > 0
 
-    def __getitem__(self, recording_index):
-        if recording_index in self.index_keys: recording_index = self.index_keys[recording_index]
-        return self.v[recording_index, :], self.s[recording_index, :]
+    def __getitem__(self, key):
+        return self.v[self.keys_dict[key], :], self.s[self.keys_dict[key], :]
 
-    def get_key(self, index):
-        return self.index_keys[index]
+    def get_index(self, key):
+        return self.keys_dict[key]
+
+    def get_by_index(self, index):
+        return self.v[index, :], self.s[index, :]
+
+    def get_key_by_index(self, index):
+        return self.index_labels[index]
 
     def save(self, path):
         with open(path, 'wb') as f:
             pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
+
+    def __in__(self, key):
+        return key in self.keys_dict
 
     @staticmethod
     def load(path):
@@ -66,54 +79,107 @@ class SimulationData():
 
 
 class GroundTruthData(SimulationData):
-    def __init__(self, data_files, data_label: str,sort=True):
+    def __init__(self, data_files, data_label: str, sort=True):
         # data_files=sorted(data_files)
-        self.d_input = []
         data_keys = []
+        self.files_size_dict = {}
         s, v = [], []
         if sort:
-            data_files= sorted(data_files)
-        data_generator = SimulationDataGenerator(data_files, buffer_size_in_files=BUFFER_SIZE_IN_FILES_VALID,
-                                                 batch_size=1,
-                                                 window_size_ms=-1,
-                                                 sample_ratio_to_shuffle=1,
-                                                 # number_of_files=1,number_of_traces_from_file=2,# todo for debugging
-                                                 ).eval()
-        for i, data in enumerate(data_generator):
-            d_input, d_labels = data
-            s_cur, v_cur = d_labels
-            s.append(s_cur.cpu().detach().numpy().squeeze())
-            v.append(v_cur.cpu().detach().numpy().squeeze())
-            self.d_input.append(d_input)
-            data_keys.append(data_generator.display_current_fils_and_indexes())
+            data_files = sorted(data_files)
+        for f in data_files:
+            X, y_spike, y_soma = parse_sim_experiment_file(f)
+            if len(X.shape) == 3:
+                X = np.transpose(X, axes=[2, 0, 1])
+            else:
+                X = X[np.newaxis, ...]
+            self.files_size_dict[f] = X.shape[0]
+            for i in range(X.shape[0]):
+                s.append(y_spike.T[i, ...])
+                v.append(y_soma.T[i, ...])
+                data_keys.append((f, i))
         self.data_files = tuple(data_files)
+        self.files_short_names = {i: i for i in self.data_files}
+        self.crete_dense_representation_of_files()
+        self.files_short_names = {v:k for k,v in self.files_short_names.items()}
         s = np.vstack(s)
         v = np.vstack(v)
-        self.d_input = np.vstack(self.d_input)
-        super().__init__(v, s, index_labels, data_label)
+        super().__init__(v, s, data_keys, data_label)
+
+    def translate_tuple_to_files(self,f,i):
+        f=get_file_from_shortmane(f)
+        return (f,i) if (f,i) in self else None
+
+    def get_file_shortname(self, f):
+        return list(self.files_short_names.keys())[list(self.files_short_names.values()).index(f)]
+
+    def get_file_from_shortmane(self,f):
+        return self.files_short_names[f]
+
+    def crete_dense_representation_of_files(self):
+        res = self.findstem()
+        while len(res) > 0:
+            for f in self.data_files:
+                self.files_short_names[f] = self.files_short_names[f].replace(res, '')
+            res = self.findstem()
+
+    def findstem(self):
+        # Determine size of the array
+        files_short_names = list(self.files_short_names.values())
+        n = len(files_short_names)
+
+        # Take first word from array
+        # as reference
+        s = files_short_names[0]
+        l = len(s)
+        res = ""
+        for i in range(l):
+            for j in range(i + 1, l + 1):
+                # generating all possible substrings
+                # of our reference string files_short_names[0] i.e s
+                stem = s[i:j]
+                k = 1
+                for k in range(1, n):
+                    # Check if the generated stem is
+                    # common to all words
+                    if stem not in files_short_names[k]:
+                        break
+                # If current substring is present in
+                # all strings and its length is greater
+                # than current result
+                if (k + 1 == n and len(res) < len(stem)):
+                    res = stem
+        return res
 
     def __hash__(self):
         return self.data_files.__hash__()
 
-    def __eq__(self, item):
+    def __eq__(self, item: 'GroundTruthData'):
         return self.data_files == item.data_files
 
-    def __getitem__(self, recording_index):
-        return self.v[recording_index, :], self.s[recording_index, :], self.d_input[recording_index, ...]
+    def get_evaluation_input_per_file(self, f, batch_size=8):
+        assert f in self.data_files, "file not exists in this simulation."
+        X, _, __ = parse_sim_experiment_file(f)
+        X = torch.from_numpy(X)
+        for i in range(0, self.files_size_dict[f], batch_size):
+            l_range = i * batch_size
+            h_range = min(l_range + batch_size, self.files_size_dict[f])
+            yield (X[l_range:h_range, ...], [(f, i) for i in range(l_range, h_range)])
 
-    def __iter__(self):
-        for i in range(len(self)):
-            yield self[i]
+    def get_evaluation_input(self, batch_size=8):
+        for f in self.data_files:
+            yield from self.get_evaluation_input_per_file(f, batch_size)
 
 
 class EvaluationData(SimulationData):
     def __init__(self, ground_truth: GroundTruthData, config):
         self.config = config
         self.ground_truth: ['GroundTruthData'] = ground_truth
-        v, s = self.__evaluate_model()
+        v, s, data_keys = self.__evaluate_model()
         s = np.vstack(s)
         v = np.vstack(v)
-        super().__init__(v, s, ground_truth.data_keys, data_label)
+        assert sum([i != j for i, j in zip(data_keys,
+                                           self.ground_truth.data_keys)]) == 0, "Two data keys of ground_truth and model evaluation are different."
+        super().__init__(v, s, data_keys, data_label)
         # self.data_per_recording = [] if recoreded_data is None else recoreded_data
 
     def __evaluate_model(self):
@@ -126,17 +192,17 @@ class EvaluationData(SimulationData):
             model.double()
         data_keys, s_out, v_out = [], [], []
 
-        for i, data in enumerate(self.ground_truth):
+        for inputs, keys in self.ground_truth.get_evaluation_input():
             print(i)
-            d_input, s, v = data
-            with torch.cuda.amp.autocast():
-                with torch.no_grad():
-                    output_s, output_v = model(d_input.cuda().type(DATA_TYPE))
-                    # output_s, output_v = model(d_input.cuda().type(torch.cuda.FloatTensor))
-                    output_s = torch.nn.Sigmoid()(output_s)
+            with torch.no_grad():
+                output_s, output_v = model(inputs.cuda().type(DATA_TYPE))
+                output_s = torch.nn.Sigmoid()(output_s)
             v_out.append(output_v.cpu().detach().numpy().squeeze())
             s_out.append(output_s.cpu().detach().numpy().squeeze())
-        return v_out, s_out
+            data_keys = data_keys + keys
+        v_out = np.vstack(v_out)
+        s_out = np.vstack(s_out)
+        return v_out, s_out, data_keys
 
     def load_model(self):
         print("loading model...", flush=True)
@@ -167,100 +233,150 @@ class EvaluationData(SimulationData):
             running_mse[:, -(mse_window_size // 2 - 1):] = 0
         return running_mse, self.__total_mse
 
+    def get_ROC_data(self):
+        # labels_predictions = self.data.get_spikes_for_ROC()
+        # labels, prediction = labels_predictions[:, 0], labels_predictions[:, 1]
+        target = self.ground_truth.s
+        prediction = self.s
+        target = target.squeeze().flatten()
+        prediction = prediction.squeeze().flatten()
+        auc = skm.roc_auc_score(target, prediction)
+        fpr, tpr, _ = skm.roc_curve(target, prediction)
+        return auc, fpr, tpr
+
 
 class ModelEvaluator():
-    def __init__(self, *args: SimulationData):#, use_only_groundtruth=False):
+    def __init__(self, *args: SimulationData):  # , use_only_groundtruth=False):
         ground_truth_set = set()
         model_set = set()
         # if not use_only_groundtruth:
         for i in args:
             if isinstance(i, GroundTruthData):
                 ground_truth_set.add(i)
+                print(i.v.shape)
             elif isinstance(i, EvaluationData):
                 model_set.add(i)
                 ground_truth_set.add(i.ground_truth)
             else:
                 model_set.add(i)
+        f_name_set=None
+        for i,gt in enumerate(self.ground_truth):
+            if f_name_set is None:
+                f_name_set=set(gt.file)
+        self.file_names_short_names = set()
         self.ground_truths = list(ground_truth_set)
         self.models = list(model_set)
         self.current_good_and_bad_div = None
+        self.__currnt_value = None
+
+    def locking_function(self,value,locking):
+        if self.__currnt_value is None:
+            self.__currnt_value=value
+            return self.__currnt_value
+        if locking=='free':
+            self.__currnt_value=value
+            return self.__currnt_value
+        elif locking == 'locked':
+            step = sum([j-i for i,j in zip(self.__currnt_value,value)])
+            new_value = [step+v for v in self.__currnt_value]
+            self.__currnt_value=new_value
+            return self.__currnt_value
+        else:
+            changed_id = sum([(i[1] - i[0])*k for k,i in enumerate(zip(self.__currnt_value, value))])
+            f_i = self.ground_truths[changed_id].get_file_shortname(self.ground_truths[changed_id].get_key_by_index(value[changed_id]))
+            f_is = [gt.get_file_from_shortmane(f_i)for gt in self.ground_truths]
+            for i in range(len(f_is)):
+                if f_is[i] is not None:
+                    values[i]=f_is[i]
+            self.__currnt_value=values
+            return self.__currnt_value
 
     def display(self):
         app = dash.Dash()
 
-        auc, fig = self.create_ROC_curve()
+        fig, AUC_arr = self.create_ROC_curve()
 
         gt_index_dict = {k: i for i, k in enumerate(self.ground_truths)}
 
-        min_shape = min([min([j[1].shape[1] for j in i]) for i in ground_truth])
-        slider_arr = [dcc.Slider(
-            id='my-slider%d' % i,
-            min=0,
-            max=len(d) - 1,
-            step=1,
-            value=len(d) // 2,
-            tooltip={"placement": "bottom", "always_visible": True}
-        ) for i, d in enumerate(self.ground_truths)]
-        dives_arr = [*slider_arr,
-                     html.Div(id='slider-output-container', style={'height': '2vh'}),
-                     html.Div([
+        min_shape = min([i.v.shape[1] for i in self.ground_truths])
+        slider_arr = [html.Div([dcc.Markdown('(%d)' % (i),
+                                             style={"verticalAlign": "top", 'width': '2vw', 'display': 'inline-block',
+                                                    'text-align': 'top'})
+                                   , html.Div(
+                [dcc.Slider(id='my-slider%d' % i, min=0, max=len(d) - 1, step=1, value=len(d) // 2,
+                            tooltip={"placement": "bottom", "always_visible": True})],
+                style={'align': 'center', 'width': '96vw', 'display': 'inline-block', "margin-left": "1px"})
+                                ], style={'height': '5vh', 'width': '100vw', "verticalAlign": "top"}) for i, d in
+                      enumerate(self.ground_truths)]
+        dives_arr = [
+            html.Div(id='slider-output-container', style={"white-space": "pre"}), *slider_arr,
+            dcc.RadioItems(id='choose_locking',options=[
+                {'label': 'free', 'value': 'free'},
+                {'label': 'locked', 'value': 'locked'},
+                {'label': 'file locked', 'value': 'f_locked'}],persistence=True,value='free',style={'display': 'inline-block','align':'center'}),
+            html.Div([
 
-                         html.Button('-50', id='btn-m50', n_clicks=0,
-                                     style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',
-                                            "margin-left": "10px"}),
-                         html.Button('-10', id='btn-m10', n_clicks=0,
-                                     style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',
-                                            "margin-left": "10px"}),
-                         html.Button('-5', id='btn-m5', n_clicks=0,
-                                     style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',
-                                            "margin-left": "10px"}),
-                         html.Button('-1', id='btn-m1', n_clicks=0,
-                                     style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',
-                                            "margin-left": "10px"}),
-                         html.Button('+1', id='btn-p1', n_clicks=0,
-                                     style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',
-                                            "margin-left": "10px"}),
-                         html.Button('+5', id='btn-p5', n_clicks=0,
-                                     style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',
-                                            "margin-left": "10px"}),
-                         html.Button('+10', id='btn-p10', n_clicks=0,
-                                     style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',
-                                            "margin-left": "10px"}),
-                         html.Button('+50', id='btn-p50', n_clicks=0,
-                                     style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',
-                                            "margin-left": "10px"}),
-                         ' mse window size:',
-                         dcc.Input(
-                             id="mse_window_input",
-                             type="number",
-                             value=100,
-                             step=1,
-                             min=1,
-                             debounce=True,
-                             max=min_shape,
-                             placeholder="Running mse window size",
-                             style={'margin': '10', 'align': 'center', 'vertical-align': 'middle',
-                                    "margin-left": "10px"}
-                         )
-                     ], style={'width': '100vw', 'margin': '1', 'border-style': 'solid', 'align': 'center',
-                               'vertical-align': 'middle'}),
-                     html.Div([dcc.Markdown('Ground truth\n' + ''.join(
-                         ["(%d) %s" % (i, str(k)) for i, k in enumerate(self.ground_truths)]))],
-                              style={'border-style': 'solid', 'align': 'center'}),
-                     html.Div([dcc.Markdown('Models \n' + ''.join(
-                         ["(%d,%d) %s" % (gt_index_dict[k.ground_truth], i, str(k)) for i, k in
-                          enumerate(self.ground_truths)]))], style={'border-style': 'solid', 'align': 'center'}),
-                     html.Div([
-                         dcc.Graph(id='evaluation-graph', figure=go.Figure(),
-                                   style={'height': '95vh', 'margin': '0', 'border-style': 'solid',
-                                          'align': 'center'})],
-                         style={'height': '95vh', 'margin': '0', 'border-style': 'solid', 'align': 'center'}),
-                     html.Div([dcc.Markdown('AUC: %0.5f' % auc)]),
-                     html.Div([dcc.Graph(id='eval-roc', figure=fig,
-                                         style={'height': '95vh', 'margin': '0', 'border-style': 'solid',
-                                                'align': 'center'})],
-                              ),
-                     ]
+                html.Button('-50', id='btn-m50', n_clicks=0,
+                            style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',
+                                   "margin-left": "10px"}),
+                html.Button('-10', id='btn-m10', n_clicks=0,
+                            style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',
+                                   "margin-left": "10px"}),
+                html.Button('-5', id='btn-m5', n_clicks=0,
+                            style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',
+                                   "margin-left": "10px"}),
+                html.Button('-1', id='btn-m1', n_clicks=0,
+                            style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',
+                                   "margin-left": "10px"}),
+                html.Button('+1', id='btn-p1', n_clicks=0,
+                            style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',
+                                   "margin-left": "10px"}),
+                html.Button('+5', id='btn-p5', n_clicks=0,
+                            style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',
+                                   "margin-left": "10px"}),
+                html.Button('+10', id='btn-p10', n_clicks=0,
+                            style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',
+                                   "margin-left": "10px"}),
+                html.Button('+50', id='btn-p50', n_clicks=0,
+                            style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',
+                                   "margin-left": "10px"}),
+                ' mse window size:',
+                dcc.Input(
+                    id="mse_window_input",
+                    type="number",
+                    value=100,
+                    step=1,
+                    min=1,
+                    debounce=True,
+                    max=min_shape,
+                    placeholder="Running mse window size",
+                    style={'margin': '10', 'align': 'center', 'vertical-align': 'middle',
+                           "margin-left": "10px"}
+                )
+            ], style={'width': '100vw', 'margin': '1', 'border-style': 'solid', 'align': 'center',
+                      "verticalAlign": "top"}),
+            html.Div([dcc.Markdown(('*Ground truth*\t ' + ''.join(
+                ["\t(%d) %s" % (i, str(k)) for i, k in enumerate(self.ground_truths)])),
+                                   style={"white-space": "pre", 'width': '49vw', 'display': 'inline-block',
+                                          'margin': '0.1', 'border-style': 'solid', "verticalAlign": "top"})
+                         , dcc.Markdown('*Models*\t ' + ''.join(
+                    ["\t(%d,%d) %s" % (gt_index_dict[k.ground_truth], i, str(k)) for i, k in
+                     enumerate(self.models)]), style={"white-space": "pre", 'width': '49vw', 'margin': '0.1',
+                                                      'border-style': 'solid', 'display': 'inline-block',
+                                                      "verticalAlign": "top"})],
+                     style={'width': '100vw', 'margin': '1', 'border-style': 'solid', "verticalAlign": "top"
+                            }),
+            html.Div([
+                dcc.Graph(id='evaluation-graph', figure=go.Figure(),
+                          style={'height': '95vh', 'margin': '0', 'border-style': 'solid',
+                                 'align': 'center'})],
+                style={'height': '95vh', 'margin': '0', 'border-style': 'solid', 'align': 'center'})
+            , html.Div([dcc.Markdown("\t".join(AUC_arr))]),
+            html.Div([dcc.Graph(id='eval-roc', figure=fig,
+                                style={'height': '95vh', 'margin': '0', 'border-style': 'solid',
+                                       'align': 'center'})],
+                     ),
+        ]
         app.layout = html.Div(dives_arr)
 
         @app.callback(
@@ -276,90 +392,100 @@ class ModelEvaluator():
                 Input('btn-p5', 'n_clicks'),
                 Input('btn-p10', 'n_clicks'),
                 Input('btn-p50', 'n_clicks'),
-                Input("mse_window_input", "value"), *[Input('my-slider%d' % 0, 'value')]
+                Input("mse_window_input", "value"),
+                Input("choose_locking", "value"),
+                *[Input('my-slider%d' % i, 'value') for i in range(len(self.ground_truths))]
             ])
-        def update_output(btnm50, btnm10, btnm5, btnm1, btnp1, btnp5, btnp10, btnp50, *values):
+        def update_output(btnm50, btnm10, btnm5, btnm1, btnp1, btnp5, btnp10, btnp50, mse_window_size,locking, *values):
             changed_id = [p['prop_id'] for p in callback_context.triggered][0][:-len(".n_clicks")]
             values = [int(v) for v in values]
-
+            print(locking)
             if 'btn-m' in changed_id:
                 values = [v - int(changed_id[len('btn-m'):]) for v in values]
             elif 'btn-p' in changed_id:
                 values = [v + int(changed_id[len('btn-m'):]) for v in values]
-
+            else: values = self.locking_function(values,locking)
             # values = [ max(0, v) for v in values]
-            values = [v % len(self.ground_truths[i]) for i, v in enumerate(values)]
-            fig = self.display_window(value)
-            return *values, 'You have selected "{}"'.format(value), fig
+            # values = [v % len(self.ground_truths[i]) for i, v in enumerate(values)]
+            values = [min(v,len(self.ground_truths[i])-1) for i, v in enumerate(values)]
+            values = [max(v,0) for i, v in enumerate(values)]
+            fig = self.display_window(values, mse_window_size)
+            return *values, 'You have selected \n' + '\n'.join(
+                [str((os.path.basename(gt.get_key_by_index(values[i])[0]), gt.get_key_by_index(values[i])[1])) for i, gt
+                 in enumerate(self.ground_truths)]), fig
 
         app.run_server(debug=True, use_reloader=False)
 
+
     def create_ROC_curve(self):
-        if len(self.data) == 0:
-            return 0.5, go.Figure()
-        labels_predictions = self.data.get_spikes_for_ROC()
-        labels, prediction = labels_predictions[:, 0], labels_predictions[:, 1]
-        labels = labels.squeeze().flatten()
-        prediction = prediction.squeeze().flatten()
-        auc = skm.roc_auc_score(labels, prediction)
-        fpr, tpr, _ = skm.roc_curve(labels, prediction)
         fig = go.Figure()
-        fig.add_trace(go.Scatter(x=fpr, y=tpr, name='model'))
+        AUC_arr = []
+        for i, m in enumerate(self.models):
+            auc, fpr, tpr = m.get_ROC_data()
+            fig.add_trace(go.Scatter(x=fpr, y=tpr, name="(gt: %s model: %d)" % (self.gt_index_dict[m.ground_truth], i)))
+            AUC_arr.append("(gt: %s model: %d) AUC: %.4f" % (self.gt_index_dict[m.ground_truth], i, auc))
         fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1], name='chance'))
-        return auc, fig
+        fig.update_layout(title_text="ROC", showlegend=True)
+        return fig, AUC_arr
 
-    def display_window(self, index):
-        v, v_p, s, s_p = self[index]
-
+    def display_window(self, indexes, mse_window_size):
         fig = make_subplots(rows=3, cols=1,
                             shared_xaxes=True,  # specs = [{}, {},{}],
                             vertical_spacing=0.05, start_cell='top-left',
-                            subplot_titles=("voltage", 'running w=%d ' % (general_mse),
+                            subplot_titles=("voltage",
                                             "spike probability"), row_heights=[0.6, 0.03, 0.37])
-        x_axis = np.arange(v.shape[0])
-        # s *= (np.max(s_p) * 1.1)
-        # fig.add_trace(go.Scatter(x=x_axis, y=np.convolve(v,np.full((self.config.input_window_size//2,),1./(self.config.input_window_size//2))), name="avg_voltage"), row=1, col=1)
-        fig.add_trace(go.Scatter(x=x_axis, y=v, name="voltage"), row=1, col=1)
-        fig.add_trace(go.Scatter(x=x_axis, y=v_p, name="predicted voltage"), row=1, col=1)
-        fig.add_heatmap(z=running_mse, row=2, col=1)
-        fig.add_trace(go.Scatter(x=x_axis, y=s, name="spike"), row=3, col=1)
-        fig.add_trace(go.Scatter(x=x_axis, y=s_p, name="probability of spike"), row=3, col=1)
+        for j, gt in enumerate(self.ground_truths):
+            v, s = gt.get_by_index(indexes[j])
+            x_axis = np.arange(v.shape[0])
+            fig.add_trace(
+                go.Scatter(x=x_axis, y=v, legendgroup='gt%d' % j, name="(%d)" % (j), line=dict(width=2, color=cols[j])),
+                row=1, col=1)
 
+            fig.add_trace(go.Scatter(x=x_axis, y=s, legendgroup='gt%d' % j, showlegend=False, name="(%d)" % (j),
+                                     line=dict(width=2, color=cols[j])), row=3, col=1)
+            # fig['data'][j*2+1]['line']['color']=fig['data'][j*2]['line']['color']
+        mse_matrix = []
+        y = []
+        for j, m in enumerate(self.models):
+            v, s = m.get_by_index(indexes[self.gt_index_dict[m.ground_truth]])
+            x_axis = np.arange(v.shape[0])
+            y.append("(gt: %s model: %d)" % (self.gt_index_dict[m.ground_truth], j))
+            fig.add_trace(go.Scatter(x=x_axis, y=v, legendgroup='model%d' % (j + len(self.ground_truths)),
+                                     name="(gt: %s model: %d)" % (self.gt_index_dict[m.ground_truth], j),
+                                     line=dict(width=2, color=cols[(j + len(self.ground_truths))])), row=1, col=1)
+            fig.add_trace(go.Scatter(x=x_axis, y=s, legendgroup='model%d' % (j + len(self.ground_truths)),
+                                     name="(gt: %s model: %d)" % (self.gt_index_dict[m.ground_truth], j),
+                                     line=dict(width=2, color=cols[(j + len(self.ground_truths))])), row=2, col=1)
+            mse_matrix.append(m.running_mse(indexes[self.gt_index_dict[m.ground_truth]], mse_window_size))
+        if len(mse_matrix) > 0:
+            mse_matrix = np.vstack(mse_matrix)
+            fig.add_heatmap(z=mse_matrix, row=3, col=1, y=y)
         fig.update_layout(  # height=600, width=600,
-            title_text="model %s index %d" % (self.config.model_path[-1], index),
-            yaxis_range=[-83, -52], yaxis3_range=[0, 1]
-            , legend_orientation="h", yaxis2=dict(ticks="", showticklabels=False))
+            # title_text="model %s index %d" % (self.config.model_path[-1], index),
+            yaxis_range=[-83, -52], yaxis3_range=[0, 1]  # , legend_orientation="h"
+            , yaxis2=dict(ticks="", showticklabels=False))
         return fig
 
-    @staticmethod
-    def running_mse(v, v_p, mse_window_size):
-        mse_window_size = min(v.shape[0], mse_window_size)
-        running_mse = np.power(v - v_p, 2)[np.newaxis, :]
-        total_mse = np.mean(running_mse)
-        if mse_window_size > 2:
-            running_mse = uniform_filter1d(running_mse, size=mse_window_size, mode='constant')
-            running_mse[:, :(mse_window_size // 2)] = 0
-            running_mse[:, -(mse_window_size // 2 - 1):] = 0
-        return running_mse, total_mse
 
-    @staticmethod
-    def build_and_save(items_path):
-        print("start create evaluation", flush=True)
-        start_time = datetime.datetime.now()
-        if config is None:
-            config = configuration_factory.load_config_file(config_path)
-        evaluation_engine = ModelEvaluator(config)
-        evaluation_engine.evaluate_model(model)
-        evaluation_engine.save()
-        end_time = datetime.datetime.now()
-        print("evaluation took %0.1f minutes" % ((end_time - start_time).total_seconds() / 60.))
+def run_test():
+    #
+    # if __name__ == '__main__':
+    # from utils.general_aid_function import load_files_names
+    # path = r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\data\L5PC_NMDA_validation"
+    # g = GroundTruthData(get_files_by_filer_from_dir(path), 'test1')
+    # g.save('test.gtest')
+    #
+    # path = r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\data\L5PC_NMDA_test"
+    # g3 = GroundTruthData(get_files_by_filer_from_dir(path), 'test2')
+    # g3.save('test1.gtest')
+    # path = r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\data\valid"
+    # g4 = GroundTruthData(get_files_by_filer_from_dir(path), 'test3')
+    # g4.save('test2.gtest')
 
-
-#
-if __name__ == '__main__':
-    path=''
     from utils.general_aid_function import load_files_names
-    g = GroundTruthData(load_files_names(path),'test')
-    g.save('test.gtest')
-    me = ModelEvaluator(g)
+
+    g0 = GroundTruthData.load("test.gtest")
+    g1 = GroundTruthData.load("test1.gtest")
+    g2 = GroundTruthData.load("test2.gtest")
+    me = ModelEvaluator(g0, g1, g2)
     me.display()
