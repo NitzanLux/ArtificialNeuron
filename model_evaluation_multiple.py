@@ -468,7 +468,7 @@ class ModelEvaluator():
         return fig
 
 def create_gt_and_save(folder,name):
-    print(os.getcwd())
+    print(os.getcwd(),flush=True)
     files=get_files_by_filer_from_dir(folder)
     print('number of files:',len(files))
     g = GroundTruthData(files,name)
