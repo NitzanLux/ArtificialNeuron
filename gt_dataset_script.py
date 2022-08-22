@@ -14,9 +14,12 @@ parser.add_argument(dest="gt_path", type=str,
                     help='jasons with config inside', default=None)
 parser.add_argument(dest="gt_name", type=str,
                     help='jasons with config inside', default=None)
+job_factory = SlurmJobFactory("cluster_logs")
 args = parser.parse_args()
-create_gt_and_save(args.gt_path,args.gt_name)
+
 print(args)
 
+a = job_factory.send_job('gt_%s'%args.gt_name,'python -c "import model_evaluation_multiple; create_gt_and_save(%s,%s)"'%(args.gt_path,args.gt_name))
+print(a)
 
 
