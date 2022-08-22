@@ -10,15 +10,15 @@ from math import ceil
 
 parser = argparse.ArgumentParser(description='Add configuration file')
 
-parser.add_argument(dest="number_of_cpus", type=int,
+parser.add_argument('-c',dest="number_of_cpus", type=int,
                     help='number of cpus to run on', default=None)
 
-parser.add_argument(dest="directory", type=str,
+parser.add_argument('-d',dest="directory", type=str,
                     help='data directory', default=None)
 
-parser.add_argument(dest="files_that_do_not_exist", type=bool,
+parser.add_argument('-f',dest="files_that_do_not_exist", type=bool,
                     help='simulate only files that do not exist', default=False)
-parser.add_argument(dest="reduction_frequency", type=int,
+parser.add_argument('-w',dest="reduction_frequency", type=int,
                     help='reduction frequency', default=0)
 
 args = parser.parse_args()
