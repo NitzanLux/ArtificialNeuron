@@ -9,7 +9,7 @@ from utils.slurm_job import *
 from math import ceil
 import json
 from model_evaluation_multiple import create_gt_and_save
-
+parser = argparse.ArgumentParser(description='Add gt path and name')
 parser.add_argument(dest="gt_path", type=str,
                     help='jasons with config inside', default=None)
 parser.add_argument(dest="gt_name", type=str,
