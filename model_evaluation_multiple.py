@@ -469,7 +469,7 @@ class ModelEvaluator():
 
 def create_gt_and_save(folder,name):
     files=get_files_by_filer_from_dir(folder)
-    print('number of files:',len(files))
+    print('number of files:',len(files),flush=True)
     g = GroundTruthData(files,name)
     g.save(os.path.join("evaluations",'ground_truth',name+".gteval"))
     return g
