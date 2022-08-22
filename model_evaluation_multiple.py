@@ -468,17 +468,16 @@ class ModelEvaluator():
         return fig
 
 def create_gt_and_save(folder,name):
-    print(os.getcwd(),flush=True)
     files=get_files_by_filer_from_dir(folder)
     print('number of files:',len(files))
     g = GroundTruthData(files,name)
-    g.save(os.path.join("evaluation",'ground_truth',name+".gteval"))
+    g.save(os.path.join("evaluations",'ground_truth',name+".gteval"))
     return g
 def create_model_evaluation(gt_name,model_name):
-    gt_path = os.path.join("evaluation",'ground_truth',gt_name+".gteval")
+    gt_path = os.path.join("evaluations",'ground_truth',gt_name+".gteval")
     config = load_config_file(os.path.join(MODELS_DIR,config_name,config_name+".config"))
     g = EvaluationData(GroundTruthData.load(gt_path),config)
-    g.save(os.path.join("evaluation",'models',model_name+".meval"))
+    g.save(os.path.join("evaluations",'models',model_name+".meval"))
 def run_test():
     #
     # if __name__ == '__main__':
