@@ -35,7 +35,7 @@ files_per_cpu = ceil(len(only_files) / number_of_cpus)
 base_directory = os.path.dirname(directory)
 directory_name = os.path.basename(directory)
 base_directory = os.path.basename(base_directory)
-
+print(args.files_that_do_not_exist)
 if args.files_that_do_not_exist:
     directory_dest = os.path.join(NEURON_REDUCE_DATA_DIR, base_directory + "_" + directory_name + "_reduction")
     files_that_exists = set([f for f in os.listdir(directory_dest) if os.path.isfile(os.path.join(directory_dest, f))])
