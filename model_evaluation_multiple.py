@@ -167,7 +167,6 @@ class GroundTruthData(SimulationData):
         for i in range(0, self.files_size_dict[f], batch_size):
             l_range = i
             h_range = min(l_range + batch_size, self.files_size_dict[f])
-            print('file_size',self.files_size_dict[f],l_range,h_range)
             yield (X[l_range:h_range, ...], [(f, i) for i in range(l_range, h_range)])
 
     def get_evaluation_input(self, batch_size=8):
@@ -199,7 +198,6 @@ class EvaluationData(SimulationData):
         data_keys, s_out, v_out = [], [], []
         i=0
         for inputs, keys in self.ground_truth.get_evaluation_input(batch_size=BATCH_SIZE):
-            print(i)
             i+=1
             with torch.no_grad():
                 output_s, output_v = model(inputs.cuda().type(DATA_TYPE))
@@ -207,7 +205,7 @@ class EvaluationData(SimulationData):
             v_out.append(output_v.cpu().detach().numpy().squeeze())
             s_out.append(output_s.cpu().detach().numpy().squeeze())
             data_keys = data_keys + keys
-            print([i[1] for i in data_keys],flush=True)
+            # print([i[1] for i in data_keys],flush=True)
         v_out = np.vstack(v_out)
         s_out = np.vstack(s_out)
         return v_out, s_out, data_keys
