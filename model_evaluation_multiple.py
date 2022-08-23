@@ -163,6 +163,7 @@ class GroundTruthData(SimulationData):
         assert f in self.data_files, "file not exists in this simulation."
         X, _, __ = parse_sim_experiment_file(f)
         X = torch.from_numpy(X)
+        X = np.transpose(X, axes=[2, 0, 1])
         for i in range(0, self.files_size_dict[f], batch_size):
             l_range = i * batch_size
             h_range = min(l_range + batch_size, self.files_size_dict[f])
