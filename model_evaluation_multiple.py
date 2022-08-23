@@ -167,14 +167,13 @@ class GroundTruthData(SimulationData):
         for i in range(0, self.files_size_dict[f], batch_size):
             l_range = i * batch_size
             h_range = min(l_range + batch_size, self.files_size_dict[f])
-            print(l_range,h_range)
+            print('file_size',self.files_size_dict[f],l_range,h_range)
             yield (X[l_range:h_range, ...], [(f, i) for i in range(l_range, h_range)])
 
     def get_evaluation_input(self, batch_size=8):
         for f in self.data_files:
             print(f)
             for i in self.get_evaluation_input_per_file(f,batch_size):
-                print(i[1])
                 yield i
 
 
