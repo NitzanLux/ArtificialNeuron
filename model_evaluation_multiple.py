@@ -184,7 +184,7 @@ class EvaluationData(SimulationData):
         # self.data_per_recording = [] if recoreded_data is None else recoreded_data
 
     def __evaluate_model(self):
-        assert not self.is_recording(), "evaluation had been done in this object"
+        # assert not self.is_recording(), "evaluation had been done in this object"
         model = self.load_model()
         model.cuda().eval()
         if DATA_TYPE == torch.cuda.FloatTensor:
