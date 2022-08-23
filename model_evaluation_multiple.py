@@ -196,7 +196,6 @@ class EvaluationData(SimulationData):
         data_keys, s_out, v_out = [], [], []
 
         for inputs, keys in self.ground_truth.get_evaluation_input(batch_size=BATCH_SIZE):
-            print(i)
             with torch.no_grad():
                 output_s, output_v = model(inputs.cuda().type(DATA_TYPE))
                 output_s = torch.nn.Sigmoid()(output_s)
