@@ -33,7 +33,7 @@ BUFFER_SIZE_IN_FILES_VALID = 1
 
 class SimulationData():
     def __init__(self, v, s, data_keys: List, data_label: str):
-        assert len(index_labels) == v.shape[0], "labels length does not match to the data length"
+        assert len(data_keys) == v.shape[0], "labels length does not match to the data length"
         assert v.shape == s.shape, "voltage and spikes are not match"
         self.data_label = data_label
         self.v = v
