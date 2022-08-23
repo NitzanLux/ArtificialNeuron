@@ -184,7 +184,7 @@ class EvaluationData(SimulationData):
         v = np.vstack(v)
         assert sum([i != j for i, j in zip(data_keys,
                                            self.ground_truth.data_keys)]) == 0, "Two data keys of ground_truth and model evaluation are different."+"\n"+"\n".join([(str(i[1])+"\t|\t"+str(j[1]) )if i!=j else '\b' for i,j in zip(data_keys,self.ground_truth.data_keys)])
-        super().__init__(v, s, data_keys, data_label)
+        super().__init__(v, s, data_keys, config.model_tag)
         # self.data_per_recording = [] if recoreded_data is None else recoreded_data
 
     def __evaluate_model(self):
