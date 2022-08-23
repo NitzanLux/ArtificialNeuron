@@ -475,7 +475,7 @@ def create_gt_and_save(folder,name):
     return g
 def create_model_evaluation(gt_name,model_name):
     gt_path = os.path.join("evaluations",'ground_truth',gt_name+".gteval")
-    config = load_config_file(os.path.join(MODELS_DIR,config_name,config_name+".config"))
+    config = load_config_file(os.path.join(MODELS_DIR,model_name,model_name+".config"))
     print('load config')
     g = EvaluationData(GroundTruthData.load(gt_path),config)
     g.save(os.path.join("evaluations",'models',model_name+".meval"))
