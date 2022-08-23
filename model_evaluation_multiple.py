@@ -171,7 +171,8 @@ class GroundTruthData(SimulationData):
 
     def get_evaluation_input(self, batch_size=8):
         for f in self.data_files:
-            yield from self.get_evaluation_input_per_file(f, batch_size)
+            for i in self.get_evaluation_input_per_file(f,batch_size):
+                yield i
 
 
 class EvaluationData(SimulationData):
