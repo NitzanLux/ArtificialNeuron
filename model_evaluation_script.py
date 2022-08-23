@@ -19,7 +19,7 @@ args = parser.parse_args()
 
 print(args)
 
-a = job_factory.send_job('gt_%s'%args.gt_name,'python -c "from model_evaluation_multiple import create_model_evaluation; create_model_evaluation(%s,%s)"'%("'"+args.gt_name+"'","'"+args.model_name+"'"))
+a = job_factory.send_job('model_%s'%args.gt_name,'python -c "from model_evaluation_multiple import create_model_evaluation; create_model_evaluation(%s,%s)"'%("'"+args.gt_name+"'","'"+args.model_name+"'"))
 print(a)
 
 
