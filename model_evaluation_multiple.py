@@ -38,8 +38,8 @@ class SimulationData():
         self.data_label = data_label
         self.v = v
         self.s = s
-        self.index_labels = index_labels
-        self.keys_dict = {k: v for v, k in enumerate(index_labels)}
+        self.data_keys = data_keys
+        self.keys_dict = {k: v for v, k in enumerate(data_keys)}
 
     def __str__(self):
         return self.data_label
@@ -65,7 +65,7 @@ class SimulationData():
         return self.v[index, :], self.s[index, :]
 
     def get_key_by_index(self, index):
-        return self.index_labels[index]
+        return self.data_keys[index]
 
     def save(self, path):
         with open(path, 'wb') as f:
