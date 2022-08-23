@@ -205,7 +205,7 @@ class EvaluationData(SimulationData):
             v_out.append(output_v.cpu().detach().numpy().squeeze())
             s_out.append(output_s.cpu().detach().numpy().squeeze())
             data_keys = data_keys + keys
-            print([i[1] for i in data_keys])
+            print([i[1] for i in data_keys],flush=True)
         v_out = np.vstack(v_out)
         s_out = np.vstack(s_out)
         return v_out, s_out, data_keys
