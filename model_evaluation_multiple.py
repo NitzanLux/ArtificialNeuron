@@ -21,6 +21,8 @@ from train_nets.configuration_factory import load_config_file
 import plotly
 import os
 
+BATCH_SIZE = 32
+
 cols = plotly.colors.DEFAULT_PLOTLY_COLORS
 
 GOOD_AND_BAD_SIZE = 8
@@ -193,7 +195,7 @@ class EvaluationData(SimulationData):
             model.double()
         data_keys, s_out, v_out = [], [], []
 
-        for inputs, keys in self.ground_truth.get_evaluation_input():
+        for inputs, keys in self.ground_truth.get_evaluation_input(batch_size=BATCH_SIZE):
             print(i)
             with torch.no_grad():
                 output_s, output_v = model(inputs.cuda().type(DATA_TYPE))
