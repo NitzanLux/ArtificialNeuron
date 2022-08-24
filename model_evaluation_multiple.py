@@ -246,6 +246,7 @@ class EvaluationData(SimulationData):
         prediction = self.s
         target = target.squeeze().flatten()
         prediction = prediction.squeeze().flatten()
+        target = target[target.shape[0]-prediction.shape[0]:]
         auc = skm.roc_auc_score(target, prediction)
         fpr, tpr, _ = skm.roc_curve(target, prediction)
         return auc, fpr, tpr
@@ -274,6 +275,8 @@ class ModelEvaluator():
         self.models = list(model_set)
         self.current_good_and_bad_div = None
         self.__currnt_value = None
+        self.gt_index_dict = {k: i for i, k in enumerate(self.ground_truths)}
+
 
     def locking_function(self,value,locking):
         if self.__currnt_value is None:
@@ -302,7 +305,6 @@ class ModelEvaluator():
 
         fig, AUC_arr = self.create_ROC_curve()
 
-        gt_index_dict = {k: i for i, k in enumerate(self.ground_truths)}
 
         min_shape = min([i.v.shape[1] for i in self.ground_truths])
         slider_arr = [html.Div([dcc.Markdown('(%d)' % (i),
@@ -366,7 +368,7 @@ class ModelEvaluator():
                                    style={"white-space": "pre", 'width': '49vw', 'display': 'inline-block',
                                           'margin': '0.1', 'border-style': 'solid', "verticalAlign": "top"})
                          , dcc.Markdown('*Models*\t ' + ''.join(
-                    ["\t(%d,%d) %s" % (gt_index_dict[k.ground_truth], i, str(k)) for i, k in
+                    ["\t(%d,%d) %s" % (self.gt_index_dict[k.ground_truth], i, str(k)) for i, k in
                      enumerate(self.models)]), style={"white-space": "pre", 'width': '49vw', 'margin': '0.1',
                                                       'border-style': 'solid', 'display': 'inline-block',
                                                       "verticalAlign": "top"})],
@@ -439,30 +441,31 @@ class ModelEvaluator():
                             shared_xaxes=True,  # specs = [{}, {},{}],
                             vertical_spacing=0.05, start_cell='top-left',
                             subplot_titles=("voltage",
-                                            "spike probability"), row_heights=[0.6, 0.03, 0.37])
+                                            "spike probability"), row_heights=[0.6,0.37,0.03])
+        x_axis_gt=None
         for j, gt in enumerate(self.ground_truths):
             v, s = gt.get_by_index(indexes[j])
-            x_axis = np.arange(v.shape[0])
+            x_axis_gt = np.arange(v.shape[0])
             fig.add_trace(
-                go.Scatter(x=x_axis, y=v, legendgroup='gt%d' % j, name="(%d)" % (j), line=dict(width=2, color=cols[j])),
+                go.Scatter(x=x_axis_gt, y=v, legendgroup='gt%d' % j, name="(%d)" % (j), line=dict(width=2, color=cols[j])),
                 row=1, col=1)
 
-            fig.add_trace(go.Scatter(x=x_axis, y=s, legendgroup='gt%d' % j, showlegend=False, name="(%d)" % (j),
-                                     line=dict(width=2, color=cols[j])), row=3, col=1)
+            fig.add_trace(go.Scatter(x=x_axis_gt, y=s, legendgroup='gt%d' % j, showlegend=False, name="(%d)" % (j),
+                                     line=dict(width=2, color=cols[j])), row=2, col=1)
             # fig['data'][j*2+1]['line']['color']=fig['data'][j*2]['line']['color']
         mse_matrix = []
         y = []
         for j, m in enumerate(self.models):
             v, s = m.get_by_index(indexes[self.gt_index_dict[m.ground_truth]])
-            x_axis = np.arange(v.shape[0])
+            x_axis = np.arange(x_axis_gt.shape[0]-v.shape[0],x_axis_gt.shape[0])
             y.append("(gt: %s model: %d)" % (self.gt_index_dict[m.ground_truth], j))
             fig.add_trace(go.Scatter(x=x_axis, y=v, legendgroup='model%d' % (j + len(self.ground_truths)),
                                      name="(gt: %s model: %d)" % (self.gt_index_dict[m.ground_truth], j),
                                      line=dict(width=2, color=cols[(j + len(self.ground_truths))])), row=1, col=1)
-            fig.add_trace(go.Scatter(x=x_axis, y=s, legendgroup='model%d' % (j + len(self.ground_truths)),
+            fig.add_trace(go.Scatter(x=x_axis, y=s, showlegend=False,legendgroup='model%d' % (j + len(self.ground_truths)),
                                      name="(gt: %s model: %d)" % (self.gt_index_dict[m.ground_truth], j),
                                      line=dict(width=2, color=cols[(j + len(self.ground_truths))])), row=2, col=1)
-            mse_matrix.append(m.running_mse(indexes[self.gt_index_dict[m.ground_truth]], mse_window_size))
+            # mse_matrix.append(m.running_mse(indexes[self.gt_index_dict[m.ground_truth]], mse_window_size))
         if len(mse_matrix) > 0:
             mse_matrix = np.vstack(mse_matrix)
             fig.add_heatmap(z=mse_matrix, row=3, col=1, y=y)
@@ -503,5 +506,6 @@ def run_test():
 
     g0 = GroundTruthData.load("evaluations/ground_truth/davids_ergodic_validation.gteval")
     g1 = GroundTruthData.load("evaluations/ground_truth/reduction_ergodic_validation.gteval")
-    me = ModelEvaluator(g0, g1)
+    g2 = EvaluationData.load("evaluations/models/davids_2_NAdam___2022-08-15__15_02__ID_64341.meval")
+    me = ModelEvaluator(g0, g1,g2)
     me.display()
