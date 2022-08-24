@@ -192,7 +192,7 @@ class EvaluationData(SimulationData):
         v = np.vstack(v)
         assert sum([i != j for i, j in zip(data_keys,
                                            self.ground_truth.data_keys)]) == 0, "Two data keys of ground_truth and model evaluation are different."+"\n"+"\n".join([(str(i[1])+"\t|\t"+str(j[1]) )if i!=j else '\b' for i,j in zip(data_keys,self.ground_truth.data_keys)])
-        super().__init__(v, s, data_keys, config.model_tag+"_"+gt_name)
+        super().__init__(v, s, data_keys, config.model_tag)
         # self.data_per_recording = [] if recoreded_data is None else recoreded_data
 
     def __evaluate_model(self):
@@ -494,7 +494,7 @@ def create_model_evaluation(gt_name,model_name):
     config = load_config_file(os.path.join(MODELS_DIR,model_name,model_name+".config"))
     print('load config')
     g = EvaluationData(GroundTruthData.load(gt_path),config)
-    g.save(os.path.join("evaluations",'models',model_name+".meval"))
+    g.save(os.path.join("evaluations",'models',gt_name,model_name+".meval"))
 def run_test():
     #
     # if __name__ == '__main__':
