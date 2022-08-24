@@ -13,7 +13,7 @@ from train_nets.neuron_network import neuronal_model
 from train_nets.neuron_network import recursive_neuronal_model
 from train_nets.synapse_tree import SectionNode
 from utils.general_aid_function import *
-
+from project_path import *
 synapse_type = ''
 include_DVT = False
 # num_DVT_components = 20 if synapse_type == 'NMDA' else 30
@@ -276,7 +276,8 @@ if __name__ == '__main__':
     configurations_name = "reduction_comparison"
     # configuration_name='morph'
     base_layer=[54]+[12]*6
-    for i in range(1,8,2):
+    # for i in range(1,8,2):
+    for i in range(1,2,2):
         kernels = arange_kernel_by_layers(base_layer,i)
         for data in [DAVID_BASE_PATH,REDUCTION_BASE_PATH]:
             config = config_factory(
@@ -285,8 +286,7 @@ if __name__ == '__main__':
                 model_tag="%s_%d%s" % (configurations_name, i,"_reduction" if data == REDUCTION_BASE_PATH else ''),
                 kernel_sizes=kernels, number_of_layers_space = len(kernels),data_base_path=data,
                 accumulate_loss_batch_factor=1, prediction_length=700,
-                batch_size_validation=30, batch_size_train=180,
-                # batch_size_validation=4, batch_size_train=4,
+                batch_size_validation=30, batch_size_train=160,
                 constant_learning_rate=0.01)
             configs.append(config)
         # configs.extend(generate_config_files_multiple_seeds(config_morpho_0, 2))
