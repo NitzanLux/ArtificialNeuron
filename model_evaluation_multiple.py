@@ -167,12 +167,20 @@ class GroundTruthData(SimulationData):
         for i in range(0, self.files_size_dict[f], batch_size):
             l_range = i
             h_range = min(l_range + batch_size, self.files_size_dict[f])
-            yield (X[l_range:h_range, ...], [(f, i) for i in range(l_range, h_range)])
+            yield (X[l_range:h_range, ...], [(f, i) for i in range(l_range, h_range)]),self.files_size_dict[f]>batch_size #if the buffer size is bigger then the file size then we need to accumulate.
 
     def get_evaluation_input(self, batch_size=8):
+        buffer=[]
         for f in self.data_files:
-            for i in self.get_evaluation_input_per_file(f,batch_size):
-                yield i
+            for i,cond in self.get_evaluation_input_per_file(f,batch_size):
+                if cond:
+                    yield i
+                else:
+                    buffer[0]=np.vstack((buffer[0],i[0]))
+                    buffer[1]=buffer[1]+i[1]
+                    if len(buffer[1])==batch_size:
+                        yield buffer
+                        buffer = []
 
 
 class EvaluationData(SimulationData):
@@ -184,7 +192,7 @@ class EvaluationData(SimulationData):
         v = np.vstack(v)
         assert sum([i != j for i, j in zip(data_keys,
                                            self.ground_truth.data_keys)]) == 0, "Two data keys of ground_truth and model evaluation are different."+"\n"+"\n".join([(str(i[1])+"\t|\t"+str(j[1]) )if i!=j else '\b' for i,j in zip(data_keys,self.ground_truth.data_keys)])
-        super().__init__(v, s, data_keys, config.model_tag)
+        super().__init__(v, s, data_keys, config.model_tag+"_"+gt_name)
         # self.data_per_recording = [] if recoreded_data is None else recoreded_data
 
     def __evaluate_model(self):
