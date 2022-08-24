@@ -276,8 +276,7 @@ if __name__ == '__main__':
     configurations_name = "reduction_comparison"
     # configuration_name='morph'
     base_layer=[54]+[12]*6
-    # for i in range(1,8,2):
-    for i in range(1,2,2):
+    for i in range(1,8,2):
         kernels = arange_kernel_by_layers(base_layer,i)
         for data in [DAVID_BASE_PATH,REDUCTION_BASE_PATH]:
             config = config_factory(
@@ -293,4 +292,3 @@ if __name__ == '__main__':
     print(configurations_name)
     with open(os.path.join(MODELS_DIR, "%s.json" % configurations_name), 'w') as file:
         file.write(json.dumps(configs))  # use `json.loads` to do the reverse
-        # file.write(json.dumps([config_morpho_0]))  # use `json.loads` to do the reverse
