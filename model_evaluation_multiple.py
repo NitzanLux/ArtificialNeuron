@@ -244,9 +244,9 @@ class EvaluationData(SimulationData):
         # labels, prediction = labels_predictions[:, 0], labels_predictions[:, 1]
         target = self.ground_truth.s
         prediction = self.s
+        target = target[:,target.shape[1]-prediction.shape[1]:]
         target = target.squeeze().flatten()
         prediction = prediction.squeeze().flatten()
-        target = target[target.shape[0]-prediction.shape[0]:]
         auc = skm.roc_auc_score(target, prediction)
         fpr, tpr, _ = skm.roc_curve(target, prediction)
         return auc, fpr, tpr

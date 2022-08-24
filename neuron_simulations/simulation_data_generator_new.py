@@ -53,8 +53,9 @@ class SimulationDataGenerator():
         self.prediction_length = prediction_length
         self.sampling_start_time = ignore_time_from_start
         self.X, self.y_spike, self.y_soma = None, None, None
-        self.index_set = set()
         self.reload_files()
+        self.non_spikes, self.spikes, self.number_of_non_spikes_in_batch, self.number_of_spikes_in_batch = None, None, None, None
+        self.index_set = set()
         # self.non_spikes,self.spikes,self.number_of_non_spikes_in_batch,self.nuber_of_spikes_in_batch = non_spikes, spikes, number_of_non_spikes_in_batch,
         #                                                         number_of_spikes_in_batch
 
