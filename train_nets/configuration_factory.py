@@ -273,11 +273,11 @@ def arange_kernel_by_layers(kernels, layers,expend=False):
 if __name__ == '__main__':
     # restore_last_n_configs(100)
     configs = []
-    configurations_name = "reduction_comparison"
+    configurations_name = "reduction_comparison_expend"
     # configuration_name='morph'
     base_layer=[54]+[12]*6
     for i in range(1,8,2):
-        kernels = arange_kernel_by_layers(base_layer,i)
+        kernels = arange_kernel_by_layers(base_layer,i,True)
         for data in [DAVID_BASE_PATH,REDUCTION_BASE_PATH]:
             config = config_factory(
                 architecture_type='FullNeuronNetwork',
