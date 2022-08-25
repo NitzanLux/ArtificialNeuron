@@ -141,7 +141,7 @@ class SimulationDataGenerator():
             sim_ind_mat[:, 0, self.receptive_filed_size:], win_ind[:, 0, self.receptive_filed_size:]]
         y_soma_batch = self.y_soma[
             sim_ind_mat[:, 0, self.receptive_filed_size:], win_ind[:, 0, self.receptive_filed_size:]]
-        print(self.curr_files_to_use,self.indexes)
+        print(self.curr_files_to_use,item,flush=True)
         return (torch.from_numpy(X_batch), [torch.from_numpy(y_spike_batch), torch.from_numpy(y_soma_batch)])
 
     def reload_files(self):
