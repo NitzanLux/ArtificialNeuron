@@ -21,11 +21,11 @@ class SimulationDataGenerator():
     'Characterizes a dataset for PyTorch'
 
     def __init__(self, sim_experiment_files, buffer_size_in_files=12, epoch_size=None,
-                 batch_size=8, sample_ratio_to_shuffle=4, prediction_length=1, window_size_ms=300,
+                 batch_size=8, sample_ratio_to_shuffle=1, prediction_length=1, window_size_ms=300,
 
                  ignore_time_from_start=20, y_train_soma_bias=-67.7, y_soma_threshold=Y_SOMA_THRESHOLD,
                  y_DTV_threshold=3.0,
-                 shuffle_files=True, shuffle_data=True, number_of_traces_from_file=None,
+                 shuffle_files=True, shuffle_data=False, number_of_traces_from_file=None,
                  number_of_files=None, evaluation_mode=False):
         'data generator initialization'
         self.reload_files_once = False
@@ -141,7 +141,7 @@ class SimulationDataGenerator():
             sim_ind_mat[:, 0, self.receptive_filed_size:], win_ind[:, 0, self.receptive_filed_size:]]
         y_soma_batch = self.y_soma[
             sim_ind_mat[:, 0, self.receptive_filed_size:], win_ind[:, 0, self.receptive_filed_size:]]
-
+        print(self.curr_files_to_use,self.indexes)
         return (torch.from_numpy(X_batch), [torch.from_numpy(y_spike_batch), torch.from_numpy(y_soma_batch)])
 
     def reload_files(self):
