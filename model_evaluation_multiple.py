@@ -10,7 +10,6 @@ from dash import html
 from dash.dependencies import Input, Output
 from plotly.subplots import make_subplots
 from scipy.ndimage.filters import uniform_filter1d
-import scipy.sparse as ssparse
 import train_nets.neuron_network.recursive_neuronal_model as recursive_neuronal_model
 from neuron_simulations.simulation_data_generator_new import parse_sim_experiment_file
 from train_nets.neuron_network import fully_connected_temporal_seperated
