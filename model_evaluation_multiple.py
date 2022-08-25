@@ -496,7 +496,7 @@ def create_model_evaluation(gt_name,model_name):
     g = EvaluationData(GroundTruthData.load(gt_path),config)
     path=os.path.join("evaluations",'models',gt_name)
     if not os.path.exists(path):
-        os.path.mkdir(path)
+        os.mkdir(path)
     g.save(os.path.join(path,model_name+".meval"))
 def run_test():
     #
