@@ -491,13 +491,14 @@ def create_gt_and_save(folder,name):
     return g
 def create_model_evaluation(gt_name,model_name):
     gt_path = os.path.join("evaluations",'ground_truth',gt_name+".gteval")
+    dest_path=os.path.join("evaluations",'models',gt_name)
+    if not os.path.exists(dest_path):
+        os.mkdir(dest_path)
     config = load_config_file(os.path.join(MODELS_DIR,model_name,model_name+".config"))
     print('load config')
     g = EvaluationData(GroundTruthData.load(gt_path),config)
-    path=os.path.join("evaluations",'models',gt_name)
-    if not os.path.exists(path):
-        os.mkdir(path)
-    g.save(os.path.join(path,model_name+".meval"))
+
+    g.save(os.path.join(dest_path,model_name+".meval"))
 def run_test():
     #
     # if __name__ == '__main__':
