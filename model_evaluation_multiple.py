@@ -494,7 +494,7 @@ def create_model_evaluation(gt_name,model_name):
     if not os.path.exists(dest_path):
         os.mkdir(dest_path)
     config = load_config_file(os.path.join(MODELS_DIR,model_name,model_name+".config"))
-    print('load config')
+    print('load config for %s'%model_name)
     g = EvaluationData(GroundTruthData.load(gt_path),config)
 
     g.save(os.path.join(dest_path,model_name+".meval"))
