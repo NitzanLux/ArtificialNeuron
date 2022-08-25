@@ -286,7 +286,7 @@ if __name__ == '__main__':
                 kernel_sizes=kernels, number_of_layers_space = len(kernels),data_base_path=data,
                 accumulate_loss_batch_factor=1, prediction_length=700,
                 batch_size_validation=30, batch_size_train=160,
-                constant_learning_rate=0.01)
+                constant_learning_rate=0.007)
             configs.append(config)
         # configs.extend(generate_config_files_multiple_seeds(config_morpho_0, 2))
     print(configurations_name)
