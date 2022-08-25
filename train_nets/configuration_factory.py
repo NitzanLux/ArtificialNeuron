@@ -54,7 +54,7 @@ def surround_with_default_config_values(**kargs):
                       # num_segments=2082,
                       num_syn_types=1, use_mixed_precision=False,
                       include_spikes=True,
-                      num_epochs=160000, epoch_size=1, batch_size_train=5, accumulate_loss_batch_factor=1,
+                      num_epochs=32000, epoch_size=5, batch_size_train=5, accumulate_loss_batch_factor=1,
                       batch_size_validation=300,
                       # train_file_load=0.5, valid_file_load=0.5,
                       spike_probability=None,
