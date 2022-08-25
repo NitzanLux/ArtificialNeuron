@@ -494,7 +494,10 @@ def create_model_evaluation(gt_name,model_name):
     config = load_config_file(os.path.join(MODELS_DIR,model_name,model_name+".config"))
     print('load config')
     g = EvaluationData(GroundTruthData.load(gt_path),config)
-    g.save(os.path.join("evaluations",'models',gt_name,model_name+".meval"))
+    path=os.path.join("evaluations",'models',gt_name)
+    if not os.path.exists(path):
+        os.path.mkdir(path)
+    g.save(os.path.join(path,model_name+".meval"))
 def run_test():
     #
     # if __name__ == '__main__':
