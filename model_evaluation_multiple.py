@@ -193,7 +193,6 @@ class EvaluationData(SimulationData):
                                            self.ground_truth.data_keys)]) == 0, "Two data keys of ground_truth and model evaluation are different."+"\n"+"\n".join([(str(i[1])+"\t|\t"+str(j[1]) )if i!=j else '\b' for i,j in zip(data_keys,self.ground_truth.data_keys)])
         super().__init__(v, s, data_keys, config.model_tag)
         # self.data_per_recording = [] if recoreded_data is None else recoreded_data
-
     def __evaluate_model(self):
         # assert not self.is_recording(), "evaluation had been done in this object"
         model = self.load_model()
@@ -515,8 +514,8 @@ def run_test():
 
     from utils.general_aid_function import load_files_names
 
-    g0 = GroundTruthData.load("evaluations/ground_truth/davids_ergodic_validation.gteval")
-    g1 = GroundTruthData.load("evaluations/ground_truth/reduction_ergodic_validation.gteval")
-    g2 = EvaluationData.load("evaluations/models/davids_2_NAdam___2022-08-15__15_02__ID_64341.meval")
-    me = ModelEvaluator(g0, g1,g2)
+    g0 = GroundTruthData.load("evaluations/ground_truth/davids_ergodic_test.gteval")
+    # g1 = GroundTruthData.load("evaluations/ground_truth/reduction_ergodic_validation.gteval")
+    g2 = EvaluationData.load("evaluations/models/davids_ergodic_test/davids_2_NAdam___2022-08-15__15_02__ID_64341.meval")
+    me = ModelEvaluator(g0,g2)
     me.display()

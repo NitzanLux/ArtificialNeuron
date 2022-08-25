@@ -345,7 +345,7 @@ def get_data_generators( config):
                                                    )
     print("loading data...validation", flush=True)
 
-    validation_data_generator = SimulationDataGenerator(train_files,#valid_files,
+    validation_data_generator = SimulationDataGenerator(valid_files,#valid_files,
                                                         buffer_size_in_files=BUFFER_SIZE_IN_FILES_VALID,
                                                         prediction_length=5780,
                                                         batch_size=config.batch_size_validation,
