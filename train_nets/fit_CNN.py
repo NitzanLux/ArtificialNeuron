@@ -12,7 +12,7 @@ import wandb
 from utils.general_variables import *
 
 import train_nets.configuration_factory as configuration_factory
-from model_evaluation import ModelEvaluator
+# from model_evaluation import ModelEvaluator
 from train_nets.neuron_network import davids_network
 from train_nets.neuron_network import fully_connected_temporal_seperated
 from train_nets.neuron_network import neuronal_model
@@ -367,19 +367,19 @@ class SavingAndEvaluationScheduler():
     :return: evaluation
     """
 
-    def __init__(self, time_in_hours_for_saving=NUMBER_OF_HOURS_FOR_SAVING_MODEL_AND_CONFIG,
-                 time_in_hours_for_evaluation=NUMBER_OF_HOURS_FOR_PLOTTING_EVALUATIONS_PLOTS):
+    def __init__(self, time_in_hours_for_saving=NUMBER_OF_HOURS_FOR_SAVING_MODEL_AND_CONFIG):
+                 # time_in_hours_for_evaluation=NUMBER_OF_HOURS_FOR_PLOTTING_EVALUATIONS_PLOTS):
         self.last_time_evaluation = datetime.now()
         self.last_time_saving = datetime.now()
         self.time_in_hours_for_saving = time_in_hours_for_saving
-        self.time_in_hours_for_evaluation = time_in_hours_for_evaluation
+        # self.time_in_hours_for_evaluation = time_in_hours_for_evaluation
 
     def create_evaluation_schduler(self, config, model=None):
         current_time = datetime.now()
         delta_time = current_time - self.last_time_evaluation
-        if (delta_time.total_seconds() / 60) / 60 > self.time_in_hours_for_evaluation:
-            ModelEvaluator.build_and_save(config=config, model=model)
-            self.last_time_evaluation = datetime.now()
+        # if (delta_time.total_seconds() / 60) / 60 > self.time_in_hours_for_evaluation:
+            # ModelEvaluator.build_and_save(config=config, model=model)todo removed
+            # self.last_time_evaluation = datetime.now()
 
     def save_model_schduler(self, config, model,optimizer):
         current_time = datetime.now()
