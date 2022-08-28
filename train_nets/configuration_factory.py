@@ -89,8 +89,8 @@ def surround_with_default_config_values(**kargs):
         # channel_number=[128]*7,space_kernel_sizes=[6]*7,
         channel_number=[128] * 7, space_kernel_sizes=[54] + [12] * 6,
 
-        number_of_layers_root=5, number_of_layers_leaf=6, number_of_layers_intersection=4,
-        number_of_layers_branch_intersection=4,
+        number_of_layers_root=3, number_of_layers_leaf=7, number_of_layers_intersection=3,
+        number_of_layers_branch_intersection=3,
         # david_layers=[55, 13, 13, 13, 13, 13, 13],
         glu_number_of_layers=0,
         skip_connections=True,
