@@ -205,7 +205,7 @@ def train_network(config, model,optimizer):
     custom_loss = None
     evaluation_plotter_scheduler = SavingAndEvaluationScheduler()
     if not config.dynamic_learning_params:
-        learning_rate, loss_weights, optimizer, sigma, custom_loss = generate_constant_learning_parameters(config)
+        learning_rate, loss_weights, sigma, custom_loss = generate_constant_learning_parameters(config)
         if config.lr_scheduler is not None:
             optimizer_scheduler = getattr(lr_scheduler, config.lr_scheduler)(optimizer, **config.lr_scheduler_params)
         dynamic_parameter_loss_genrator = None
@@ -446,7 +446,7 @@ def generate_constant_learning_parameters(config):
     else:
         custom_loss = loss_function_factory.bcel_mse_dvt_loss(loss_weights, config.time_domain_shape, sigma)
 
-    return learning_rate, loss_weights, optimizer, sigma, custom_loss
+    return learning_rate, loss_weights, sigma, custom_loss
 
 
 def model_pipline(hyperparameters):
