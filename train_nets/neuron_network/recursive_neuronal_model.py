@@ -170,7 +170,7 @@ class RecursiveNeuronModel(nn.Module):
             intersection = IntersectionNetwork(**config)
             upper_stream_a = RecursiveNeuronModel.__build_sub_model(config, childrens[0], segment_synapse_map)
             upper_stream_b = RecursiveNeuronModel.__build_sub_model(config, childrens[1], segment_synapse_map)
-            assert len(childrens)>2,'childrens cannot be more the two, %s'%str(childrens)
+            assert len(childrens)<=>2,'childrens cannot be more the two, %s'%str(childrens)
             intersection.set_inputs_to_model(upper_stream_a, upper_stream_b, **config)
             branch_interesection = BranchNetwork(**config, input_indexes=indexes)
             branch_interesection.set_inputs_to_model(intersection, **config)
