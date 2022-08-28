@@ -10,7 +10,7 @@ if __name__ == '__main__':
                 'reduction_comparison_expend_5_reduction___2022-08-25__14_16__ID_29885'
               ,'reduction_comparison_expend_5___2022-08-25__14_16__ID_37019'
               ,'reduction_comparison_expend_7_reduction___2022-08-25__14_16__ID_6065'
-              ,'reduction_comparison_expend_7___2022-08-25__14_16__ID_1939']
+              ,'reduction_comparison_expend_7___2022-08-25__14_16__ID_1939']:
         if 'reduction___'in i:
             gt_name= 'reduction_ergodic_validation'
         else:
