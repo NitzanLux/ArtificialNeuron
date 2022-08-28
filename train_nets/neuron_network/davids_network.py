@@ -59,9 +59,9 @@ class DavidsNeuronNetwork(nn.Module):
     def init_weights(self, sd=0.05):
         def init_params(m):
             if hasattr(m, "weight"):
-                m.weight.data.normal_(0, sd)
+                m.weight.gt_name.normal_(0, sd)
             if hasattr(m, "bias"):
-                m.bias.data.normal_(0, sd)
+                m.bias.gt_name.normal_(0, sd)
 
         self.apply(init_params)
 

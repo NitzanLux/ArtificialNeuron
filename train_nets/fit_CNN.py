@@ -1,5 +1,6 @@
 import argparse
 import gc
+import pickle
 from copy import copy
 from datetime import datetime
 
@@ -247,7 +248,7 @@ def train_network(config, model):
             evaluate_validation(config, custom_loss, model, validation_data_iterator)
             # save model every once a while
             if saving_counter % 10 == 0:
-                evaluation_plotter_scheduler(model, config)
+                evaluation_plotter_scheduler(model, config,optimizer)
 
 
 def load_model(config):
@@ -380,20 +381,20 @@ class SavingAndEvaluationScheduler():
             ModelEvaluator.build_and_save(config=config, model=model)
             self.last_time_evaluation = datetime.now()
 
-    def save_model_schduler(self, config, model):
+    def save_model_schduler(self, config, model,optimizer):
         current_time = datetime.now()
         delta_time = current_time - self.last_time_saving
         if (delta_time.total_seconds() / 60) / 60 > self.time_in_hours_for_saving:
-            self.save_model(model, config)
+            self.save_model(model, config,optimizer)
             self.last_time_saving = datetime.now()
 
     @staticmethod
-    def flush_all(config, model):
-        SavingAndEvaluationScheduler.save_model(model, config)
+    def flush_all(config, model,optimizer):
+        SavingAndEvaluationScheduler.save_model(model, config,optimizer)
         # ModelEvaluator.build_and_save(config=config, model=model)
 
     @staticmethod
-    def save_model(model, config: AttrDict):
+    def save_model(model, config: AttrDict,optimizer):
         print('-----------------------------------------------------------------------------------------')
         print('finished epoch %d saving...\n     "%s"\n"' % (
             config.epoch_counter, config.model_filename.split('/')[-1]))
@@ -410,11 +411,15 @@ class SavingAndEvaluationScheduler():
 
                 os.rename(os.path.join(base_path, fn), os.path.join(base_path, fn) + 'temp')
         model.save(os.path.join(MODELS_DIR, *config.model_path))
+
+        opt_file_path=os.path.join(MODELS_DIR,*config.model_path)+".optim"
+        with open(opt_file_path) as fo:
+            pickle.dump(optimizer.state_dict(),fo)
         configuration_factory.overwrite_config(AttrDict(config))
 
-    def __call__(self, model, config):
+    def __call__(self, model, config,optimizer):
         self.create_evaluation_schduler(config, model)
-        self.save_model_schduler(config, model)
+        self.save_model_schduler(config, model,optimizer)
 
 
 def generate_constant_learning_parameters(config, model):
@@ -433,8 +438,13 @@ def generate_constant_learning_parameters(config, model):
         optimizer_params["lr"] = float(config.constant_learning_rate)
         config.update(dict(optimizer_params=optimizer_params), allow_val_change=True)
 
+
     optimizer = getattr(optim, config.optimizer_type)(model.parameters(),
                                                       **config.optimizer_params)
+    if os.path.exists(os.path.join(MODELS_DIR,*config.mode_path)+'.optim'):
+        with open(os.path.join(MODELS_DIR,*config.mode_path)+'.optim','rb') as f:
+            state_dict=pickle.load(f)
+        optimizer.load_state_dict(state_dict)
     return learning_rate, loss_weights, optimizer, sigma, custom_loss
 
 

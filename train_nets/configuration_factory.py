@@ -17,7 +17,7 @@ from project_path import *
 synapse_type = ''
 include_DVT = False
 # num_DVT_components = 20 if synapse_type == 'NMDA' else 30
-CURRENT_VERSION = 1.9
+CURRENT_VERSION = 1.91
 
 
 def generate_model_name(additional_str: str = ''):
