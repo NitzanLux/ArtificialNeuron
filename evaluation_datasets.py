@@ -1,5 +1,5 @@
 from model_evaluation_multiple import *
-from utils import slurm_job
+from utils.slurm_job import *
 from project_path import *
 if __name__ == '__main__':
     job_factory = SlurmJobFactory("cluster_logs")
