@@ -413,7 +413,7 @@ class SavingAndEvaluationScheduler():
         model.save(os.path.join(MODELS_DIR, *config.model_path))
 
         opt_file_path=os.path.join(MODELS_DIR,*config.model_path)+".optim"
-        with open(opt_file_path) as fo:
+        with open(opt_file_path,'wb') as fo:
             pickle.dump(optimizer.state_dict(),fo)
         configuration_factory.overwrite_config(AttrDict(config))
 
