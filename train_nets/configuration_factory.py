@@ -273,21 +273,23 @@ def arange_kernel_by_layers(kernels, layers,expend=False):
 if __name__ == '__main__':
     # restore_last_n_configs(100)
     configs = []
-    configurations_name = "reduction_comparison_expend"
-    # configuration_name='morph'
+    # configurations_name = "davids"
+    configuration_name='morph'
     base_layer=[54]+[12]*6
     for i in range(7,0,-2):
         kernels = arange_kernel_by_layers(base_layer,i,False)
         for data in [DAVID_BASE_PATH,REDUCTION_BASE_PATH]:
             config = config_factory(
-                architecture_type='FullNeuronNetwork',
-                # architecture_type='LAYERED_TEMPORAL_CONV_N',   clip_gradients_factor=2.5,
+                # architecture_type='FullNeuronNetwork',
+                architecture_type='LAYERED_TEMPORAL_CONV_N',   clip_gradients_factor=2.5,
                 model_tag="%s_%d%s" % (configurations_name, i,"_reduction" if data == REDUCTION_BASE_PATH else ''),
                 kernel_sizes=kernels, number_of_layers_space = len(kernels),data_base_path=data,
                 accumulate_loss_batch_factor=1, prediction_length=700,
                 batch_size_validation=30, batch_size_train=160,
                 constant_learning_rate=0.007)
             configs.append(config)
+            break
+        break
         # configs.extend(generate_config_files_multiple_seeds(config_morpho_0, 2))
     print(configurations_name)
     with open(os.path.join(MODELS_DIR, "%s.json" % configurations_name), 'w') as file:

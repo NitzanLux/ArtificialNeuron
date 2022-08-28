@@ -102,19 +102,19 @@ class GroundTruthData(SimulationData):
         self.data_files = tuple(data_files)
         self.files_short_names = {i: i for i in self.data_files}
         self.crete_dense_representation_of_files()
-        self.files_short_names = {v:k for k,v in self.files_short_names.items()}
+        self.files_short_names = {v: k for k, v in self.files_short_names.items()}
         s = np.vstack(s)
         v = np.vstack(v)
         super().__init__(v, s, data_keys, data_label)
 
-    def translate_tuple_to_files(self,f,i):
-        f=get_file_from_shortmane(f)
-        return (f,i) if (f,i) in self else None
+    def translate_tuple_to_files(self, f, i):
+        f = get_file_from_shortmane(f)
+        return (f, i) if (f, i) in self else None
 
     def get_file_shortname(self, f):
         return list(self.files_short_names.keys())[list(self.files_short_names.values()).index(f)]
 
-    def get_file_from_shortmane(self,f):
+    def get_file_from_shortmane(self, f):
         return self.files_short_names[f]
 
     def crete_dense_representation_of_files(self):
@@ -166,18 +166,19 @@ class GroundTruthData(SimulationData):
         for i in range(0, self.files_size_dict[f], batch_size):
             l_range = i
             h_range = min(l_range + batch_size, self.files_size_dict[f])
-            yield (X[l_range:h_range, ...], [(f, i) for i in range(l_range, h_range)]),self.files_size_dict[f]>batch_size #if the buffer size is bigger then the file size then we need to accumulate.
+            yield (X[l_range:h_range, ...], [(f, i) for i in range(l_range, h_range)]), self.files_size_dict[
+                f] > batch_size  # if the buffer size is bigger then the file size then we need to accumulate.
 
     def get_evaluation_input(self, batch_size=8):
-        buffer=[]
+        buffer = []
         for f in self.data_files:
-            for i,cond in self.get_evaluation_input_per_file(f,batch_size):
+            for i, cond in self.get_evaluation_input_per_file(f, batch_size):
                 if cond:
                     yield i
                 else:
-                    buffer[0]=np.vstack((buffer[0],i[0]))
-                    buffer[1]=buffer[1]+i[1]
-                    if len(buffer[1])==batch_size:
+                    buffer[0] = np.vstack((buffer[0], i[0]))
+                    buffer[1] = buffer[1] + i[1]
+                    if len(buffer[1]) == batch_size:
                         yield buffer
                         buffer = []
 
@@ -190,9 +191,12 @@ class EvaluationData(SimulationData):
         s = np.vstack(s)
         v = np.vstack(v)
         assert sum([i != j for i, j in zip(data_keys,
-                                           self.ground_truth.data_keys)]) == 0, "Two data keys of ground_truth and model evaluation are different."+"\n"+"\n".join([(str(i[1])+"\t|\t"+str(j[1]) )if i!=j else '\b' for i,j in zip(data_keys,self.ground_truth.data_keys)])
+                                           self.ground_truth.data_keys)]) == 0, "Two data keys of ground_truth and model evaluation are different." + "\n" + "\n".join(
+            [(str(i[1]) + "\t|\t" + str(j[1])) if i != j else '\b' for i, j in
+             zip(data_keys, self.ground_truth.data_keys)])
         super().__init__(v, s, data_keys, config.model_tag)
         # self.data_per_recording = [] if recoreded_data is None else recoreded_data
+
     def __evaluate_model(self):
         # assert not self.is_recording(), "evaluation had been done in this object"
         model = self.load_model()
@@ -202,9 +206,9 @@ class EvaluationData(SimulationData):
         elif DATA_TYPE == torch.cuda.DoubleTensor:
             model.double()
         data_keys, s_out, v_out = [], [], []
-        i=0
+        i = 0
         for inputs, keys in self.ground_truth.get_evaluation_input(batch_size=BATCH_SIZE):
-            i+=1
+            i += 1
             with torch.no_grad():
                 output_s, output_v = model(inputs.cuda().type(DATA_TYPE))
                 output_s = torch.nn.Sigmoid()(output_s)
@@ -250,7 +254,7 @@ class EvaluationData(SimulationData):
         # labels, prediction = labels_predictions[:, 0], labels_predictions[:, 1]
         target = self.ground_truth.s
         prediction = self.s
-        target = target[:,target.shape[1]-prediction.shape[1]:]
+        target = target[:, target.shape[1] - prediction.shape[1]:]
         target = target.squeeze().flatten()
         prediction = prediction.squeeze().flatten()
         auc = skm.roc_auc_score(target, prediction)
@@ -282,35 +286,34 @@ class ModelEvaluator():
         self.current_good_and_bad_div = None
         self.__currnt_value = None
         self.gt_index_dict = {k: i for i, k in enumerate(self.ground_truths)}
-
-
-    def locking_function(self,value,locking):
+        self.cur_restyleData= {}
+    def locking_function(self, value, locking):
         if self.__currnt_value is None:
-            self.__currnt_value=value
+            self.__currnt_value = value
             return self.__currnt_value
-        if locking=='free':
-            self.__currnt_value=value
+        if locking == 'free':
+            self.__currnt_value = value
             return self.__currnt_value
         elif locking == 'locked':
-            step = sum([j-i for i,j in zip(self.__currnt_value,value)])
-            new_value = [step+v for v in self.__currnt_value]
-            self.__currnt_value=new_value
+            step = sum([j - i for i, j in zip(self.__currnt_value, value)])
+            new_value = [step + v for v in self.__currnt_value]
+            self.__currnt_value = new_value
             return self.__currnt_value
         else:
-            changed_id = sum([(i[1] - i[0])*k for k,i in enumerate(zip(self.__currnt_value, value))])
-            f_i = self.ground_truths[changed_id].get_file_shortname(self.ground_truths[changed_id].get_key_by_index(value[changed_id]))
-            f_is = [gt.get_file_from_shortmane(f_i)for gt in self.ground_truths]
+            changed_id = sum([(i[1] - i[0]) * k for k, i in enumerate(zip(self.__currnt_value, value))])
+            f_i = self.ground_truths[changed_id].get_file_shortname(
+                self.ground_truths[changed_id].get_key_by_index(value[changed_id]))
+            f_is = [gt.get_file_from_shortmane(f_i) for gt in self.ground_truths]
             for i in range(len(f_is)):
                 if f_is[i] is not None:
-                    values[i]=f_is[i]
-            self.__currnt_value=values
+                    values[i] = f_is[i]
+            self.__currnt_value = values
             return self.__currnt_value
 
     def display(self):
         app = dash.Dash()
 
         fig, AUC_arr = self.create_ROC_curve()
-
 
         min_shape = min([i.v.shape[1] for i in self.ground_truths])
         slider_arr = [html.Div([dcc.Markdown('(%d)' % (i),
@@ -324,10 +327,11 @@ class ModelEvaluator():
                       enumerate(self.ground_truths)]
         dives_arr = [
             html.Div(id='slider-output-container', style={"white-space": "pre"}), *slider_arr,
-            dcc.RadioItems(id='choose_locking',options=[
+            dcc.RadioItems(id='choose_locking', options=[
                 {'label': 'free', 'value': 'free'},
                 {'label': 'locked', 'value': 'locked'},
-                {'label': 'file locked', 'value': 'f_locked'}],persistence=True,value='free',style={'display': 'inline-block','align':'center'}),
+                {'label': 'file locked', 'value': 'f_locked'}], persistence=True, value='free',
+                           style={'display': 'inline-block', 'align': 'center'}),
             html.Div([
 
                 html.Button('-50', id='btn-m50', n_clicks=0,
@@ -369,23 +373,24 @@ class ModelEvaluator():
                 )
             ], style={'width': '100vw', 'margin': '1', 'border-style': 'solid', 'align': 'center',
                       "verticalAlign": "top"}),
-            html.Div([dcc.Markdown(('*Ground truth*\t ' + ''.join(
+            html.Div([dcc.Markdown(('*Ground truth*\t ' + '\t\t\t\n'.join(
                 ["\t(%d) %s" % (i, str(k)) for i, k in enumerate(self.ground_truths)])),
                                    style={"white-space": "pre", 'width': '49vw', 'display': 'inline-block',
                                           'margin': '0.1', 'border-style': 'solid', "verticalAlign": "top"})
-                         , dcc.Markdown('*Models*\t ' + ''.join(
+                         , dcc.Markdown('*Models*\t ' + '\t\t\t\n'.join(
                     ["\t(%d,%d) %s" % (self.gt_index_dict[k.ground_truth], i, str(k)) for i, k in
                      enumerate(self.models)]), style={"white-space": "pre", 'width': '49vw', 'margin': '0.1',
                                                       'border-style': 'solid', 'display': 'inline-block',
                                                       "verticalAlign": "top"})],
-                     style={'width': '100vw', 'margin': '1', 'border-style': 'solid', "verticalAlign": "top"
-                            }),
+                     style={'width': '100vw', 'margin': '1', 'border-style': 'solid', "verticalAlign": "top",
+                        "white-space": "pre"
+        }),
             html.Div([
                 dcc.Graph(id='evaluation-graph', figure=go.Figure(),
                           style={'height': '95vh', 'margin': '0', 'border-style': 'solid',
                                  'align': 'center'})],
                 style={'height': '95vh', 'margin': '0', 'border-style': 'solid', 'align': 'center'})
-            , html.Div([dcc.Markdown("\t".join(AUC_arr))]),
+            , html.Div([dcc.Markdown("\n".join(AUC_arr))]),
             html.Div([dcc.Graph(id='eval-roc', figure=fig,
                                 style={'height': '95vh', 'margin': '0', 'border-style': 'solid',
                                        'align': 'center'})],
@@ -418,26 +423,35 @@ class ModelEvaluator():
                 values = [v - int(changed_id[len('btn-m'):]) for v in values]
             elif 'btn-p' in changed_id:
                 values = [v + int(changed_id[len('btn-m'):]) for v in values]
-            else: values = self.locking_function(values,locking)
-            # values = [ max(0, v) for v in values]
+            else:
+                values = self.locking_function(values, locking)
             # values = [v % len(self.ground_truths[i]) for i, v in enumerate(values)]
-            values = [min(v,len(self.ground_truths[i])-1) for i, v in enumerate(values)]
-            values = [max(v,0) for i, v in enumerate(values)]
+            values = [min(v, len(self.ground_truths[i]) - 1) for i, v in enumerate(values)]
+            values = [max(v, 0) for i, v in enumerate(values)]
             fig = self.display_window(values, mse_window_size)
+            # if restyleData is not None:
+            #     print(restyleData)
+            #     for i,v in enumerate(restyleData[1]):
+            #         restyleData[0]['visible'][i]='legendonly'
+            #         self.cur_restyleData[v]=False #restyleData[0]['visible'][i]
+            # restyle_data_out = [{'visible':sorted(list(self.cur_restyleData.values()))},sorted(list(self.cur_restyleData.keys()))] if len(list(self.cur_restyleData.keys())) else None
+            # print(restyle_data_out)
+
             return *values, 'You have selected \n' + '\n'.join(
                 [str((os.path.basename(gt.get_key_by_index(values[i])[0]), gt.get_key_by_index(values[i])[1])) for i, gt
                  in enumerate(self.ground_truths)]), fig
 
         app.run_server(debug=True, use_reloader=False)
 
-
     def create_ROC_curve(self):
         fig = go.Figure()
         AUC_arr = []
         for i, m in enumerate(self.models):
             auc, fpr, tpr = m.get_ROC_data()
-            fig.add_trace(go.Scatter(x=fpr, y=tpr, name="(gt: %s model: %d)" % (self.gt_index_dict[m.ground_truth], i)))
-            AUC_arr.append("(gt: %s model: %d) AUC: %.4f" % (self.gt_index_dict[m.ground_truth], i, auc))
+            fig.add_trace(go.Scatter(x=fpr, y=tpr, name="(gt: %s model: %s)" % (self.gt_index_dict[m.ground_truth], self.models[i].data_label)))
+            AUC_arr.append((auc,"(gt: %s model: %s) AUC: %.4f" % (self.gt_index_dict[m.ground_truth], self.models[i].data_label, auc)))
+        AUC_arr= sorted(AUC_arr,key=lambda x: x[0])
+        AUC_arr=[v[1]+("\n" if i%1==0 else '') for i,v in enumerate(AUC_arr)]
         fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1], name='chance'))
         fig.update_layout(title_text="ROC", showlegend=True)
         return fig, AUC_arr
@@ -447,13 +461,14 @@ class ModelEvaluator():
                             shared_xaxes=True,  # specs = [{}, {},{}],
                             vertical_spacing=0.05, start_cell='top-left',
                             subplot_titles=("voltage",
-                                            "spike probability"), row_heights=[0.6,0.37,0.03])
-        x_axis_gt=None
+                                            "spike probability"), row_heights=[0.6, 0.37, 0.03])
+        x_axis_gt = None
         for j, gt in enumerate(self.ground_truths):
             v, s = gt.get_by_index(indexes[j])
             x_axis_gt = np.arange(v.shape[0])
             fig.add_trace(
-                go.Scatter(x=x_axis_gt, y=v, legendgroup='gt%d' % j, name="(%d)" % (j), line=dict(width=2, color=cols[j])),
+                go.Scatter(x=x_axis_gt, y=v, legendgroup='gt%d' % j, name="%s" % (self.ground_truths[j]),
+                           line=dict(width=2, color=cols[j])),
                 row=1, col=1)
 
             fig.add_trace(go.Scatter(x=x_axis_gt, y=s, legendgroup='gt%d' % j, showlegend=False, name="(%d)" % (j),
@@ -463,40 +478,46 @@ class ModelEvaluator():
         y = []
         for j, m in enumerate(self.models):
             v, s = m.get_by_index(indexes[self.gt_index_dict[m.ground_truth]])
-            x_axis = np.arange(x_axis_gt.shape[0]-v.shape[0],x_axis_gt.shape[0])
+            x_axis = np.arange(x_axis_gt.shape[0] - v.shape[0], x_axis_gt.shape[0])
             y.append("(gt: %s model: %d)" % (self.gt_index_dict[m.ground_truth], j))
             fig.add_trace(go.Scatter(x=x_axis, y=v, legendgroup='model%d' % (j + len(self.ground_truths)),
-                                     name="(gt: %s model: %d)" % (self.gt_index_dict[m.ground_truth], j),
+                                     name="(gt: %s model: %s)" % (self.gt_index_dict[m.ground_truth], self.models[j].data_label),
                                      line=dict(width=2, color=cols[(j + len(self.ground_truths))])), row=1, col=1)
-            fig.add_trace(go.Scatter(x=x_axis, y=s, showlegend=False,legendgroup='model%d' % (j + len(self.ground_truths)),
-                                     name="(gt: %s model: %d)" % (self.gt_index_dict[m.ground_truth], j),
-                                     line=dict(width=2, color=cols[(j + len(self.ground_truths))])), row=2, col=1)
+            fig.add_trace(
+                go.Scatter(x=x_axis, y=s, showlegend=False, legendgroup='model%d' % (j + len(self.ground_truths)),
+                           name="(gt: %s model: %s)" % (self.gt_index_dict[m.ground_truth], self.models[j].data_label),
+                           line=dict(width=2, color=cols[(j + len(self.ground_truths))])), row=2, col=1)
             # mse_matrix.append(m.running_mse(indexes[self.gt_index_dict[m.ground_truth]], mse_window_size))
         if len(mse_matrix) > 0:
             mse_matrix = np.vstack(mse_matrix)
             fig.add_heatmap(z=mse_matrix, row=3, col=1, y=y)
         fig.update_layout(  # height=600, width=600,
             # title_text="model %s index %d" % (self.config.model_path[-1], index),
-            yaxis_range=[-83, -52], yaxis3_range=[0, 1]  # , legend_orientation="h"
+            yaxis_range=[-83, -52], yaxis2_range=[0, 1]  # , legend_orientation="h"
             , yaxis2=dict(ticks="", showticklabels=False))
         return fig
 
-def create_gt_and_save(folder,name):
-    files=get_files_by_filer_from_dir(folder)
-    print('number of files:',len(files),flush=True)
-    g = GroundTruthData(files,name)
-    g.save(os.path.join("evaluations",'ground_truth',name+".gteval"))
+
+def create_gt_and_save(folder, name):
+    files = get_files_by_filer_from_dir(folder)
+    print('number of files:', len(files), flush=True)
+    g = GroundTruthData(files, name)
+    g.save(os.path.join("evaluations", 'ground_truth', name + ".gteval"))
     return g
-def create_model_evaluation(gt_name,model_name):
-    gt_path = os.path.join("evaluations",'ground_truth',gt_name+".gteval")
-    dest_path=os.path.join("evaluations",'models',gt_name)
+
+
+def create_model_evaluation(gt_name, model_name):
+    gt_path = os.path.join("evaluations", 'ground_truth', gt_name + ".gteval")
+    dest_path = os.path.join("evaluations", 'models', gt_name)
     if not os.path.exists(dest_path):
         os.mkdir(dest_path)
-    config = load_config_file(os.path.join(MODELS_DIR,model_name,model_name+".config"))
-    print('load config for %s'%model_name)
-    g = EvaluationData(GroundTruthData.load(gt_path),config)
+    config = load_config_file(os.path.join(MODELS_DIR, model_name, model_name + ".config"))
+    print('load config for %s' % model_name)
+    g = EvaluationData(GroundTruthData.load(gt_path), config)
 
-    g.save(os.path.join(dest_path,model_name+".meval"))
+    g.save(os.path.join(dest_path, model_name + ".meval"))
+
+
 def run_test():
     #
     # if __name__ == '__main__':
@@ -513,9 +534,14 @@ def run_test():
     # g4.save('test2.gtest')
 
     from utils.general_aid_function import load_files_names
-
-    g0 = GroundTruthData.load("evaluations/ground_truth/davids_ergodic_test.gteval")
-    # g1 = GroundTruthData.load("evaluations/ground_truth/reduction_ergodic_validation.gteval")
-    g2 = EvaluationData.load("evaluations/models/davids_ergodic_test/davids_2_NAdam___2022-08-15__15_02__ID_64341.meval")
-    me = ModelEvaluator(g0,g2)
+    g=[]
+    b_p = r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project"
+    g0 = GroundTruthData.load(r"evaluations\ground_truth\davids_ergodic_validation.gteval")
+    g1 = GroundTruthData.load(r"evaluations\ground_truth\reduction_ergodic_validation.gteval")
+    for p in [r"evaluations\models\davids_ergodic_validation",r"evaluations\models\reduction_ergodic_validation"]:
+        for i in os.listdir(p):
+           g.append(EvaluationData.load(os.path.join(p,i)))
+    # g2 = EvaluationData.load(
+    #     "evaluations/models/davids_ergodic_test/davids_2_NAdam___2022-08-15__15_02__ID_64341.meval")
+    me = ModelEvaluator(g0, g1,*g)
     me.display()
