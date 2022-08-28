@@ -285,8 +285,8 @@ if __name__ == '__main__':
                 model_tag="%s_%d%s" % (configurations_name, i,"_reduction" if data == REDUCTION_BASE_PATH else ''),
                 kernel_sizes=kernels, number_of_layers_space = len(kernels),data_base_path=data,
                 accumulate_loss_batch_factor=1, prediction_length=700,
-                batch_size_validation=30, batch_size_train=160,
-                constant_learning_rate=0.007)
+                batch_size_validation=30, batch_size_train=32,
+                constant_learning_rate=0.0007)
             configs.append(config)
             break
         break
