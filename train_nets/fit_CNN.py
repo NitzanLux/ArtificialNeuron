@@ -224,7 +224,7 @@ def train_network(config, model,optimizer):
     for epoch in range(config.num_epochs):
         config.update(dict(epoch_counter=config.epoch_counter + 1), allow_val_change=True)
         # epoch_start_time = time.time()
-        loss_weights, optimizer, sigma, custom_loss = set_dynamic_learning_parameters(config,
+        loss_weights, sigma, custom_loss,optimizer = set_dynamic_learning_parameters(config,
                                                                                       dynamic_parameter_loss_genrator,
                                                                                       loss_weights, model, optimizer,
                                                                                       custom_loss, sigma)
