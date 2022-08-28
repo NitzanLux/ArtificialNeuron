@@ -430,8 +430,8 @@ def load_optimizer(config,model):
 
     optimizer = getattr(optim, config.optimizer_type)(model.parameters(),
                                                       **config.optimizer_params)
-    if os.path.exists(os.path.join(MODELS_DIR,*config.mode_path)+'.optim'):
-        with open(os.path.join(MODELS_DIR,*config.mode_path)+'.optim','rb') as f:
+    if os.path.exists(os.path.join(MODELS_DIR,*config.model_path)+'.optim'):
+        with open(os.path.join(MODELS_DIR,*config.model_path)+'.optim','rb') as f:
             state_dict=pickle.load(f)
         optimizer.load_state_dict(state_dict)
     return optimizer
