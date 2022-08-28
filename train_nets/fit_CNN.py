@@ -428,13 +428,13 @@ def load_optimizer(config):
         optimizer_params["lr"] = float(config.constant_learning_rate)
         config.update(dict(optimizer_params=optimizer_params), allow_val_change=True)
 
-
     optimizer = getattr(optim, config.optimizer_type)(model.parameters(),
                                                       **config.optimizer_params)
     if os.path.exists(os.path.join(MODELS_DIR,*config.mode_path)+'.optim'):
         with open(os.path.join(MODELS_DIR,*config.mode_path)+'.optim','rb') as f:
             state_dict=pickle.load(f)
         optimizer.load_state_dict(state_dict)
+    return optimizer
 
 def generate_constant_learning_parameters(config):
     loss_weights = config.constant_loss_weights
@@ -463,8 +463,8 @@ def model_pipline(hyperparameters):
 
 def load_and_train(config):
     model = load_model(config)
+    optimizer= load_optimizer(config)
     try:
-        optimizer= load_optimizer(config)
         train_network(config, model,optimizer)
     finally:
         # pass
