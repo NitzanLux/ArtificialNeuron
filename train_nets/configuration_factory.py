@@ -95,7 +95,7 @@ def surround_with_default_config_values(**kargs):
         glu_number_of_layers=0,
         skip_connections=True,
         inter_module_skip_connections=True,
-        kernel_size=[5, 11, 21, 33, 35, 42],
+        kernel_size=[54] + [12] * 6,
         kernel_size_soma=1,
         kernel_size_intersection=1,
         kernel_size_branch=1,
@@ -105,10 +105,10 @@ def surround_with_default_config_values(**kargs):
         stride=1,
         padding=0,
         dilation=1,
-        # channel_input_number=1278,  # synapse number
-        channel_input_number=2082,  # synapse number
+        channel_input_number=1278,  # synapse number
+        # channel_input_number=2082,  # synapse number
         inner_scope_channel_number=None,
-        channel_output_number=32,
+        channel_output_number=64,
         activation_function_name="LeakyReLU",
         activation_function_kargs=dict(negative_slope=0.025),
         # activation_function_kargs=dict(negative_slope=0.001),
