@@ -189,7 +189,7 @@ def plot_grad_flow(model=None):
     plt.show()
 
 
-def train_network(config, model,optimizer_buffer):
+def train_network(config, model,optimizer):
     DVT_PCA_model = None
 
     model.cuda().train()
@@ -203,18 +203,16 @@ def train_network(config, model,optimizer_buffer):
     saving_counter = 0
     optimizer_scheduler = None
     custom_loss = None
-    optimizer = None
     evaluation_plotter_scheduler = SavingAndEvaluationScheduler()
     if not config.dynamic_learning_params:
-        learning_rate, loss_weights, optimizer, sigma, custom_loss = generate_constant_learning_parameters(config,
-                                                                                                           model)
+        learning_rate, loss_weights, optimizer, sigma, custom_loss = generate_constant_learning_parameters(config)
         if config.lr_scheduler is not None:
             optimizer_scheduler = getattr(lr_scheduler, config.lr_scheduler)(optimizer, **config.lr_scheduler_params)
         dynamic_parameter_loss_genrator = None
     else:
         learning_rate, loss_weights, sigma = 0.001, [1] * 3, 0.1  # default values
         dynamic_parameter_loss_genrator = getattr(dlpf, config.dynamic_learning_params_function)(config)
-    optimizer_buffer[0]=optimizer
+
     scaler = torch.cuda.amp.GradScaler(enabled=True) if config.use_mixed_precision else None
     if DOCUMENT_ON_WANDB and WATCH_MODEL:
         wandb.watch(model, log='all', log_freq=1, log_graph=True)
@@ -278,17 +276,18 @@ def log_lr(config, optimizer):
 
 def set_dynamic_learning_parameters(config, dynamic_parameter_loss_genrator, loss_weights, model, optimizer,
                                     custom_loss, sigma):
-    if config.dynamic_learning_params:
-        learning_rate, loss_weights, sigma = next(dynamic_parameter_loss_genrator)
-        if "loss_function" in config:
-            custom_loss = getattr(loss_function_factory, config.loss_function)(loss_weights,
-                                                                               config.time_domain_shape, sigma)
-        else:
-            custom_loss = loss_function_factory.bcel_mse_dvt_loss(loss_weights, config.time_domain_shape, sigma)
-        config.optimizer_params["lr"] = float(learning_rate)
-        optimizer = getattr(optim, config.optimizer_type)(model.parameters(),
-                                                          **config.optimizer_params)
-    return loss_weights, optimizer, sigma, custom_loss
+#     if config.dynamic_learning_params:
+#         learning_rate, loss_weights, sigma = next(dynamic_parameter_loss_genrator)
+#         if "loss_function" in config:
+#             custom_loss = getattr(loss_function_factory, config.loss_function)(loss_weights,
+#                                                                                config.time_domain_shape, sigma)
+#         else:
+#             custom_loss = loss_function_factory.bcel_mse_dvt_loss(loss_weights, config.time_domain_shape, sigma)
+#         # config.optimizer_params["lr"] = float(learning_rate)
+#         # optimizer = getattr(optim, config.optimizer_type)(model.parameters(),
+#         #                                                   **config.optimizer_params)
+#
+    return loss_weights, sigma, custom_loss,optimizer
 
 
 def evaluate_validation(config, custom_loss, model, validation_data_iterator):
@@ -421,16 +420,7 @@ class SavingAndEvaluationScheduler():
         self.create_evaluation_schduler(config, model)
         self.save_model_schduler(config, model,optimizer)
 
-
-def generate_constant_learning_parameters(config, model):
-    loss_weights = config.constant_loss_weights
-    sigma = config.constant_sigma
-    learning_rate = None
-    if "loss_function" in config:
-        custom_loss = getattr(loss_function_factory, config["loss_function"])(loss_weights,
-                                                                              config.time_domain_shape, sigma)
-    else:
-        custom_loss = loss_function_factory.bcel_mse_dvt_loss(loss_weights, config.time_domain_shape, sigma)
+def load_optimizer(config):
     if "lr" in (config.optimizer_params):
         config.update(dict(constant_learning_rate=float(config.optimizer_params["lr"])), allow_val_change=True)
     else:
@@ -445,6 +435,17 @@ def generate_constant_learning_parameters(config, model):
         with open(os.path.join(MODELS_DIR,*config.mode_path)+'.optim','rb') as f:
             state_dict=pickle.load(f)
         optimizer.load_state_dict(state_dict)
+
+def generate_constant_learning_parameters(config):
+    loss_weights = config.constant_loss_weights
+    sigma = config.constant_sigma
+    learning_rate = None
+    if "loss_function" in config:
+        custom_loss = getattr(loss_function_factory, config["loss_function"])(loss_weights,
+                                                                              config.time_domain_shape, sigma)
+    else:
+        custom_loss = loss_function_factory.bcel_mse_dvt_loss(loss_weights, config.time_domain_shape, sigma)
+
     return learning_rate, loss_weights, optimizer, sigma, custom_loss
 
 
@@ -462,12 +463,12 @@ def model_pipline(hyperparameters):
 
 def load_and_train(config):
     model = load_model(config)
-    optimizer_buffer=[None]
     try:
-        train_network(config, model,optimizer_buffer)
+        optimizer= load_optimizer(config)
+        train_network(config, model,optimizer)
     finally:
         # pass
-        SavingAndEvaluationScheduler.flush_all(config, model,optimizer_buffer[0])
+        SavingAndEvaluationScheduler.flush_all(config, model,optimizer)
 
 
 def train_log(loss, step, epoch=None, learning_rate=None, sigma=None, weights=None, additional_str='', commit=False):
