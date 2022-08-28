@@ -274,7 +274,7 @@ if __name__ == '__main__':
     # restore_last_n_configs(100)
     configs = []
     # configurations_name = "davids"
-    configuration_name='morph'
+    configurations_name='morph'
     base_layer=[54]+[12]*6
     for i in range(7,0,-2):
         kernels = arange_kernel_by_layers(base_layer,i,False)
