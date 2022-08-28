@@ -276,16 +276,16 @@ def log_lr(config, optimizer):
 
 def set_dynamic_learning_parameters(config, dynamic_parameter_loss_genrator, loss_weights, model, optimizer,
                                     custom_loss, sigma):
-#     if config.dynamic_learning_params:
-#         learning_rate, loss_weights, sigma = next(dynamic_parameter_loss_genrator)
-#         if "loss_function" in config:
-#             custom_loss = getattr(loss_function_factory, config.loss_function)(loss_weights,
-#                                                                                config.time_domain_shape, sigma)
-#         else:
-#             custom_loss = loss_function_factory.bcel_mse_dvt_loss(loss_weights, config.time_domain_shape, sigma)
-#         # config.optimizer_params["lr"] = float(learning_rate)
-#         # optimizer = getattr(optim, config.optimizer_type)(model.parameters(),
-#         #                                                   **config.optimizer_params)
+    if config.dynamic_learning_params:
+        learning_rate, loss_weights, sigma = next(dynamic_parameter_loss_genrator)
+        if "loss_function" in config:
+            custom_loss = getattr(loss_function_factory, config.loss_function)(loss_weights,
+                                                                               config.time_domain_shape, sigma)
+        else:
+            custom_loss = loss_function_factory.bcel_mse_dvt_loss(loss_weights, config.time_domain_shape, sigma)
+        # config.optimizer_params["lr"] = float(learning_rate)
+        # optimizer = getattr(optim, config.optimizer_type)(model.parameters(),
+        #                                                   **config.optimizer_params)
 #
     return loss_weights, sigma, custom_loss,optimizer
 
@@ -420,7 +420,7 @@ class SavingAndEvaluationScheduler():
         self.create_evaluation_schduler(config, model)
         self.save_model_schduler(config, model,optimizer)
 
-def load_optimizer(config):
+def load_optimizer(config,model):
     if "lr" in (config.optimizer_params):
         config.update(dict(constant_learning_rate=float(config.optimizer_params["lr"])), allow_val_change=True)
     else:
@@ -463,7 +463,7 @@ def model_pipline(hyperparameters):
 
 def load_and_train(config):
     model = load_model(config)
-    optimizer= load_optimizer(config)
+    optimizer= load_optimizer(config,model)
     try:
         train_network(config, model,optimizer)
     finally:
