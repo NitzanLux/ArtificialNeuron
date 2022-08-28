@@ -189,7 +189,7 @@ def plot_grad_flow(model=None):
     plt.show()
 
 
-def train_network(config, model):
+def train_network(config, model,optimizer_buffer):
     DVT_PCA_model = None
 
     model.cuda().train()
@@ -214,7 +214,7 @@ def train_network(config, model):
     else:
         learning_rate, loss_weights, sigma = 0.001, [1] * 3, 0.1  # default values
         dynamic_parameter_loss_genrator = getattr(dlpf, config.dynamic_learning_params_function)(config)
-
+    optimizer_buffer[0]=optimizer
     scaler = torch.cuda.amp.GradScaler(enabled=True) if config.use_mixed_precision else None
     if DOCUMENT_ON_WANDB and WATCH_MODEL:
         wandb.watch(model, log='all', log_freq=1, log_graph=True)
@@ -462,11 +462,12 @@ def model_pipline(hyperparameters):
 
 def load_and_train(config):
     model = load_model(config)
+    optimizer_buffer=[None]
     try:
-        train_network(config, model)
+        train_network(config, model,optimizer_buffer)
     finally:
         # pass
-        SavingAndEvaluationScheduler.flush_all(config, model)
+        SavingAndEvaluationScheduler.flush_all(config, model,optimizer_buffer[0])
 
 
 def train_log(loss, step, epoch=None, learning_rate=None, sigma=None, weights=None, additional_str='', commit=False):
