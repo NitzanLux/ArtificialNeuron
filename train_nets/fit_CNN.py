@@ -433,8 +433,7 @@ def load_optimizer(config,model):
     if os.path.exists(os.path.join(MODELS_DIR,*config.model_path)+'.optim'):
         with open(os.path.join(MODELS_DIR,*config.model_path)+'.optim','rb') as f:
             state_dict=pickle.load(f)
-        device = torch.device('cpu')
-        optimizer.load_state_dict(state_dict.cuda())
+        optimizer.load_state_dict(state_dict)
     return optimizer
 
 def generate_constant_learning_parameters(config):
