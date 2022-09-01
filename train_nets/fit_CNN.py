@@ -78,16 +78,16 @@ def batch_train(model, optimizer, custom_loss, train_data_iterator, clip_gradien
     torch.cuda.empty_cache()
     gc.collect()
     model.train()
-    general_loss, loss_bcel, loss_mse, loss_dvt, loss_gausian_mse = 0, 0, 0, 0, 0
+    general_loss, loss_bcel, loss_mse, loss_dvt, loss_gaussian_mse = 0, 0, 0, 0, 0
     if scaler is None:
         out = train_without_mixed_precision(accumulate_loss_batch_factor, clip_gradient, custom_loss, general_loss,
                                             loss_bcel,
-                                            loss_dvt, loss_gausian_mse, loss_mse, model, optimizer, optimizer_scdualer,
+                                            loss_dvt, loss_gaussian_mse, loss_mse, model, optimizer, optimizer_scdualer,
                                             train_data_iterator)
     else:
         out = train_with_mixed_precision(accumulate_loss_batch_factor, clip_gradient, custom_loss, general_loss,
                                          loss_bcel,
-                                         loss_dvt, loss_gausian_mse, loss_mse, model, optimizer, optimizer_scdualer,
+                                         loss_dvt, loss_gaussian_mse, loss_mse, model, optimizer, optimizer_scdualer,
                                          scaler,
                                          train_data_iterator)
 
@@ -463,7 +463,7 @@ def model_pipline(hyperparameters):
 
 def load_and_train(config):
     model = load_model(config)
-    optimizer= load_optimizer(config,model)
+    optimizer= load_optimizer(config,model.cuda())
     try:
         train_network(config, model,optimizer)
     finally:
