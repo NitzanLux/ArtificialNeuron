@@ -25,7 +25,7 @@ class SimulationDataGenerator():
 
                  ignore_time_from_start=20, y_train_soma_bias=-67.7, y_soma_threshold=Y_SOMA_THRESHOLD,
                  y_DTV_threshold=3.0,
-                 shuffle_files=True, shuffle_data=True, number_of_traces_from_file=None,
+                 shuffle_files=True, is_shuffle_data=True, number_of_traces_from_file=None,
                  number_of_files=None, evaluation_mode=False):
         'data generator initialization'
         self.reload_files_once = False
@@ -42,7 +42,7 @@ class SimulationDataGenerator():
         self.y_soma_threshold = y_soma_threshold
         self.y_DTV_threshold = y_DTV_threshold
         self.sample_ratio_to_shuffle = sample_ratio_to_shuffle
-        self.shuffle_data = shuffle_data
+        self.is_shuffle_data = is_shuffle_data
         self.shuffle_files = shuffle_files
         self.epoch_size = epoch_size
         self.curr_file_index = -1
@@ -61,7 +61,7 @@ class SimulationDataGenerator():
 
     def eval(self):
         self.shuffle_files = False
-        self.shuffle_data = False
+        self.is_shuffle_data = False
         prev_window_length = self.window_size_ms - self.prediction_length
         self.window_size_ms = self.X.shape[2]
         self.prediction_length = self.X.shape[2] - prev_window_length
@@ -94,8 +94,8 @@ class SimulationDataGenerator():
     #         new_arrays[i] = new_arrays[i][new_indices, ...]
     #     return new_arrays
 
-    def shuffel_data(self):
-        if self.shuffle_data:
+    def shuffle_data(self):
+        if self.is_shuffle_data:
             np.random.shuffle(self.indexes)
 
     def iterate_deterministic_no_repetition(self):
@@ -121,14 +121,13 @@ class SimulationDataGenerator():
         :param: item :   batches: indexes of samples , win_time: last time point index
         :return:items (X, y_spike,y_soma  [if exists])
         """
-        print(item)
         sim_ind = item
         if isinstance(sim_ind, int):
             sim_ind = np.array([sim_ind])
         sim_indexs = self.indexes[sim_ind] // ((self.X.shape[2] - self.receptive_filed_size) // self.prediction_length)
         time_index = self.indexes[sim_ind] % ((self.X.shape[2] - self.receptive_filed_size) // self.prediction_length)
         time_index = time_index * self.prediction_length
-
+        print("\t".join([str((i,j))for i,j in zip(sim_indexs,time_index)]))
         sim_ind_mat, chn_ind, win_ind = np.meshgrid(sim_indexs,
                                                     np.arange(self.X.shape[1]), np.arange(self.window_size_ms),
                                                     indexing='ij', )
@@ -215,7 +214,7 @@ class SimulationDataGenerator():
         # threshold the signals
         self.y_soma[self.y_soma > self.y_soma_threshold] = self.y_soma_threshold
 
-        self.shuffel_data()
+        self.shuffle_data()
 
 
 def parse_sim_experiment_file_ido(sim_experiment_folder, print_logs=False):
