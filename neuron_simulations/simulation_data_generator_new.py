@@ -165,7 +165,10 @@ class SimulationDataGenerator():
 
             else:
                 self.curr_files_to_use = []
+
             self.files_counter += 1
+            print("first_index :  f %.2f l %.2f"%(first_index,last_index))
+
         self.load_files_to_buffer()
 
     def load_files_to_buffer(self):
