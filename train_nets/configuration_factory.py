@@ -108,7 +108,7 @@ def surround_with_default_config_values(**kargs):
         channel_input_number=1278,  # synapse number
         # channel_input_number=2082,  # synapse number
         inner_scope_channel_number=None,
-        channel_output_number=64,
+        channel_output_number=128,
         activation_function_name="LeakyReLU",
         activation_function_kargs=dict(negative_slope=0.025),
         # activation_function_kargs=dict(negative_slope=0.001),
@@ -276,7 +276,7 @@ if __name__ == '__main__':
     # configurations_name = "davids"
     configurations_name='morph'
     base_layer=[54]+[12]*6
-    for i in range(7,0,-2):
+    for i in range(7,6,-2):
         kernels = arange_kernel_by_layers(base_layer,i,False)
         for data in [DAVID_BASE_PATH,REDUCTION_BASE_PATH]:
             config = config_factory(
