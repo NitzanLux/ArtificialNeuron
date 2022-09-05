@@ -121,6 +121,7 @@ class SimulationDataGenerator():
         :param: item :   batches: indexes of samples , win_time: last time point index
         :return:items (X, y_spike,y_soma  [if exists])
         """
+        print(item)
         sim_ind = item
         if isinstance(sim_ind, int):
             sim_ind = np.array([sim_ind])
@@ -149,8 +150,8 @@ class SimulationDataGenerator():
         if len(self.sim_experiment_files) <= self.buffer_size_in_files and not self.reload_files_once:
             self.curr_files_to_use = self.sim_experiment_files
         else:
-            if self.files_counter * self.buffer_size_in_files >= len(self.sim_experiment_files) and self.shuffle_files:
-                random.shuffle(self.sim_experiment_files)
+            # if self.files_counter * self.buffer_size_in_files >= len(self.sim_experiment_files) and self.shuffle_files:
+            #     random.shuffle(self.sim_experiment_files)
             first_index = (self.files_counter * self.buffer_size_in_files) % len(
                 self.sim_experiment_files)
             last_index = ((self.files_counter + 1) * self.buffer_size_in_files) % len(
@@ -159,9 +160,10 @@ class SimulationDataGenerator():
                 self.curr_files_to_use = self.sim_experiment_files[first_index:last_index]
 
             elif not self.reload_files_once:
+                if self.shuffle_files: random.shuffle(self.curr_files_to_use)
                 self.curr_files_to_use = self.sim_experiment_files[:last_index] + self.sim_experiment_files[
                                                                                   first_index:]
-                if self.shuffle_files: random.shuffle(self.curr_files_to_use)
+
             else:
                 self.curr_files_to_use = []
             self.files_counter += 1
