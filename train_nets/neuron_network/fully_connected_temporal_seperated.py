@@ -9,6 +9,72 @@ import torch.nn as nn
 from project_path import MODELS_DIR
 from train_nets.neuron_network.block_aid_functions import CausalConv1d
 
+def weight_init(m):
+    '''
+    Usage:
+        model = Model()
+        model.apply(weight_init)
+    '''
+    if isinstance(m, nn.Conv1d):
+        init.normal_(m.weight.data)
+        if m.bias is not None:
+            init.normal_(m.bias.data)
+    elif isinstance(m, nn.Conv2d):
+        init.xavier_normal_(m.weight.data)
+        if m.bias is not None:
+            init.normal_(m.bias.data)
+    elif isinstance(m, nn.Conv3d):
+        init.xavier_normal_(m.weight.data)
+        if m.bias is not None:
+            init.normal_(m.bias.data)
+    elif isinstance(m, nn.ConvTranspose1d):
+        init.normal_(m.weight.data)
+        if m.bias is not None:
+            init.normal_(m.bias.data)
+    elif isinstance(m, nn.ConvTranspose2d):
+        init.xavier_normal_(m.weight.data)
+        if m.bias is not None:
+            init.normal_(m.bias.data)
+    elif isinstance(m, nn.ConvTranspose3d):
+        init.xavier_normal_(m.weight.data)
+        if m.bias is not None:
+            init.normal_(m.bias.data)
+    elif isinstance(m, nn.BatchNorm1d):
+        init.normal_(m.weight.data, mean=1, std=0.02)
+        init.constant_(m.bias.data, 0)
+    elif isinstance(m, nn.BatchNorm2d):
+        init.normal_(m.weight.data, mean=1, std=0.02)
+        init.constant_(m.bias.data, 0)
+    elif isinstance(m, nn.BatchNorm3d):
+        init.normal_(m.weight.data, mean=1, std=0.02)
+        init.constant_(m.bias.data, 0)
+    elif isinstance(m, nn.Linear):
+        init.xavier_normal_(m.weight.data)
+        init.normal_(m.bias.data)
+    elif isinstance(m, nn.LSTM):
+        for param in m.parameters():
+            if len(param.shape) >= 2:
+                init.orthogonal_(param.data)
+            else:
+                init.normal_(param.data)
+    elif isinstance(m, nn.LSTMCell):
+        for param in m.parameters():
+            if len(param.shape) >= 2:
+                init.orthogonal_(param.data)
+            else:
+                init.normal_(param.data)
+    elif isinstance(m, nn.GRU):
+        for param in m.parameters():
+            if len(param.shape) >= 2:
+                init.orthogonal_(param.data)
+            else:
+                init.normal_(param.data)
+    elif isinstance(m, nn.GRUCell):
+        for param in m.parameters():
+            if len(param.shape) >= 2:
+                init.orthogonal_(param.data)
+            else:
+                init.normal_(param.data)
 
 class FullNeuronNetwork(nn.Module):
     def __init__(self, config):
@@ -75,10 +141,72 @@ class FullNeuronNetwork(nn.Module):
 
     def init_weights(self, sd=0.05):
         def init_params(m):
-            if hasattr(m, "weight"):
-                nn.init.normal_(m.weight.data)
-            if hasattr(m, "bias"):
-                nn.init.zeros_(m.bias.data)
+            '''
+            Usage:
+                model = Model()
+                model.apply(weight_init)
+            '''
+            if isinstance(m, nn.Conv1d):
+                init.normal_(m.weight.data)
+                if m.bias is not None:
+                    init.normal_(m.bias.data)
+            elif isinstance(m, nn.Conv2d):
+                init.xavier_normal_(m.weight.data)
+                if m.bias is not None:
+                    init.normal_(m.bias.data)
+            elif isinstance(m, nn.Conv3d):
+                init.xavier_normal_(m.weight.data)
+                if m.bias is not None:
+                    init.normal_(m.bias.data)
+            elif isinstance(m, nn.ConvTranspose1d):
+                init.normal_(m.weight.data)
+                if m.bias is not None:
+                    init.normal_(m.bias.data)
+            elif isinstance(m, nn.ConvTranspose2d):
+                init.xavier_normal_(m.weight.data)
+                if m.bias is not None:
+                    init.normal_(m.bias.data)
+            elif isinstance(m, nn.ConvTranspose3d):
+                init.xavier_normal_(m.weight.data)
+                if m.bias is not None:
+                    init.normal_(m.bias.data)
+            elif isinstance(m, nn.BatchNorm1d):
+                init.normal_(m.weight.data, mean=1, std=0.02)
+                init.constant_(m.bias.data, 0)
+            elif isinstance(m, nn.BatchNorm2d):
+                init.normal_(m.weight.data, mean=1, std=0.02)
+                init.constant_(m.bias.data, 0)
+            elif isinstance(m, nn.BatchNorm3d):
+                init.normal_(m.weight.data, mean=1, std=0.02)
+                init.constant_(m.bias.data, 0)
+            elif isinstance(m, nn.Linear):
+                init.xavier_normal_(m.weight.data)
+                init.normal_(m.bias.data)
+            elif isinstance(m, nn.LSTM):
+                for param in m.parameters():
+                    if len(param.shape) >= 2:
+                        init.orthogonal_(param.data)
+                    else:
+                        init.normal_(param.data)
+            elif isinstance(m, nn.LSTMCell):
+                for param in m.parameters():
+                    if len(param.shape) >= 2:
+                        init.orthogonal_(param.data)
+                    else:
+                        init.normal_(param.data)
+            elif isinstance(m, nn.GRU):
+                for param in m.parameters():
+                    if len(param.shape) >= 2:
+                        init.orthogonal_(param.data)
+                    else:
+                        init.normal_(param.data)
+            elif isinstance(m, nn.GRUCell):
+                for param in m.parameters():
+                    if len(param.shape) >= 2:
+                        init.orthogonal_(param.data)
+                    else:
+                        init.normal_(param.data)
+
         self.apply(init_params)
 
     def count_parameters(self):
