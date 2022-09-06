@@ -484,7 +484,7 @@ def train_log(loss, step, epoch=None, learning_rate=None, sigma=None, weights=No
                     "dvt loss %s" % additional_str: loss_dvt, "blur loss %s" % additional_str: blur_loss}
         if epoch is not None:
             log_dict.update({"epoch": epoch})
-        # log_dict.update({"batch": step})
+        log_dict.update({"batch": step})
         if learning_rate is not None:
             log_dict.update({"learning rate %s" % additional_str: learning_rate})  # add training parameters per step
         if weights is not None:
