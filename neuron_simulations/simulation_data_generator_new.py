@@ -108,7 +108,7 @@ class SimulationDataGenerator():
 
     def iterate_deterministic_no_repetition(self):
         counter = 0
-        while counter < self.indexes.size:
+        while self.files_counter*self.buffer_size_in_files<len(self.sim_experiment_files) or counter < self.indexes.size:
             yield self[np.arange(self.sample_counter, self.sample_counter + self.batch_size) % self.indexes.shape[0]]
             counter += 1
             self.sample_counter += self.batch_size
