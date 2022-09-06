@@ -288,8 +288,6 @@ if __name__ == '__main__':
                 batch_size_validation=30, batch_size_train=32,
                 constant_learning_rate=0.0007)
             configs.append(config)
-            break
-        break
         # configs.extend(generate_config_files_multiple_seeds(config_morpho_0, 2))
     print(configurations_name)
     with open(os.path.join(MODELS_DIR, "%s.json" % configurations_name), 'w') as file:
