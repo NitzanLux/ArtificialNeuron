@@ -203,7 +203,7 @@ class SimulationDataGenerator():
                 y_spike = y_spike[:self.number_of_traces_from_file, :, :]
                 y_soma = y_soma[:self.number_of_traces_from_file, :, :]
 
-            self.curr_files_index.append(X.shape+(0 if len(self.curr_files_index)==0 else self.curr_files_index[-1]))
+            self.curr_files_index.append(X.shape[0]+(0 if len(self.curr_files_index)==0 else self.curr_files_index[-1]))
             self.X.append(X)
             self.y_spike.append(y_spike)
             self.y_soma.append(y_soma)
