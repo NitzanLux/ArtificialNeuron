@@ -140,7 +140,7 @@ class SimulationDataGenerator():
 
         # time_range=(np.tile(np.arange(self.window_size_ms),(time_index.shape[0],1))+time_index[:,np.newaxis])
         # end_time=time_index+self.window_size_ms
-        print("number_of_samples = %d"%len(self.data_set))
+        print("number_of_samples = %d"%len(self.data_set),flush =True)
         X_batch = self.X[sim_ind_mat, chn_ind, win_ind]
         y_spike_batch = self.y_spike[
             sim_ind_mat[:, 0, self.receptive_filed_size:], win_ind[:, 0, self.receptive_filed_size:]]
