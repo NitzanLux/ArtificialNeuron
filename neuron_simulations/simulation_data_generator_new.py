@@ -47,6 +47,7 @@ class SimulationDataGenerator():
         self.shuffle_files = shuffle_files
         self.curr_file_index = -1
         self.files_counter = 0
+        self.epoch_counter = 0
         self.sample_counter = 0
         self.curr_files_to_use = None
         self.curr_files_index = []
@@ -81,8 +82,10 @@ class SimulationDataGenerator():
 
     def __iter__(self):
         """create epoch iterator"""
+        self.epoch_counter+=1
         if self.shuffle_files: random.shuffle(self.curr_files_to_use); print("Shuffling files")
         self.files_counter=0
+        self.sample_counter=0
         self.reload_files()
         if self.is_shuffle_data: self.shuffle_data()
 
@@ -107,10 +110,8 @@ class SimulationDataGenerator():
             np.random.shuffle(self.indexes)
 
     def iterate_deterministic_no_repetition(self):
-        counter = 0
-        while self.files_counter*self.buffer_size_in_files<len(self.sim_experiment_files) or counter < self.indexes.size:
+        while self.files_counter*self.buffer_size_in_files<len(self.sim_experiment_files) or self.sample_counter < self.indexes.size:
             yield self[np.arange(self.sample_counter, self.sample_counter + self.batch_size) % self.indexes.shape[0]]
-            counter += 1
             self.sample_counter += self.batch_size
             self.files_shuffle_checker()
             if len(self.curr_files_to_use) == 0:
