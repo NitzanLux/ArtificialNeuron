@@ -50,15 +50,15 @@ synapse_type = 'NMDA'
 include_DVT = False
 print_logs=False
 # for dibugging
-# print_logs=True
+print_logs=True
 # os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
-# NUMBER_OF_HOURS_FOR_SAVING_MODEL_AND_CONFIG=0
-# BATCH_LOG_UPDATE_FREQ = 1
-# VALIDATION_EVALUATION_FREQUENCY=4
-# ACCURACY_EVALUATION_FREQUENCY = 4
-# BUFFER_SIZE_IN_FILES_VALID = 1
-# BUFFER_SIZE_IN_FILES_TRAINING = 1
-# DOCUMENT_ON_WANDB = False
+NUMBER_OF_HOURS_FOR_SAVING_MODEL_AND_CONFIG=1000
+BATCH_LOG_UPDATE_FREQ = 1
+VALIDATION_EVALUATION_FREQUENCY=4000
+ACCURACY_EVALUATION_FREQUENCY = 4000
+BUFFER_SIZE_IN_FILES_VALID = 1
+BUFFER_SIZE_IN_FILES_TRAINING = 1
+DOCUMENT_ON_WANDB = False
 print('-----------------------------------------------')
 print('finding data')
 print('-----------------------------------------------', flush=True)
@@ -231,18 +231,20 @@ def train_network(config, model,optimizer):
         train_data_iterator = iter(train_data_generator)
         if model_level_training_scadualer is not None:
             next(model_level_training_scadualer)
-
-        for i in range(config.epoch_size):
+        data_arr=[]
+        for i,data in enumerate(train_data_iterator):
             saving_counter += 1
             if DOCUMENT_ON_WANDB:
                 wandb.log({}, commit=True)
             config.update(dict(batch_counter=config.batch_counter + 1), allow_val_change=True)
             # get the inputs; data is a list of [inputs, labels]
-
-            train_loss = batch_train(model, optimizer, custom_loss, train_data_iterator, config.clip_gradients_factor,
+            data_arr.append(data)
+            if i%config.accumulate_loss_batch_factor==0:
+                train_loss = batch_train(model, optimizer, custom_loss, data_arr, config.clip_gradients_factor,
                                      config.accumulate_loss_batch_factor, optimizer_scheduler, scaler)
-            lr = log_lr(config, optimizer)
-            train_log(train_loss, config.batch_counter, epoch, lr, sigma, loss_weights, additional_str="train")
+                lr = log_lr(config, optimizer)
+                train_log(train_loss, config.batch_counter, epoch, lr, sigma, loss_weights, additional_str="train")
+                data_arr = []
             evaluate_validation(config, custom_loss, model, validation_data_iterator)
             # save model every once a while
             if saving_counter % 10 == 0:
@@ -339,7 +341,6 @@ def get_data_generators( config):
     train_data_generator = SimulationDataGenerator(train_files, buffer_size_in_files=BUFFER_SIZE_IN_FILES_TRAINING,
                                                    prediction_length=prediction_length,
                                                    batch_size=config.batch_size_train,
-                                                   epoch_size=config.epoch_size * config.accumulate_loss_batch_factor,
                                                    window_size_ms=config.time_domain_shape,
                                                    sample_ratio_to_shuffle=SAMPLE_RATIO_TO_SHUFFLE_TRAINING,
                                                    )
@@ -466,9 +467,9 @@ def load_and_train(config):
     optimizer= load_optimizer(config,model.cuda())
     try:
         train_network(config, model,optimizer)
-    finally:
-        # pass
+    except Exception as e:
         SavingAndEvaluationScheduler.flush_all(config, model,optimizer)
+        raise e
 
 
 def train_log(loss, step, epoch=None, learning_rate=None, sigma=None, weights=None, additional_str='', commit=False):

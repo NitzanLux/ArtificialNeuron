@@ -54,7 +54,7 @@ def surround_with_default_config_values(**kargs):
                       # num_segments=2082,
                       num_syn_types=1, use_mixed_precision=False,
                       include_spikes=True,
-                      num_epochs=32000, epoch_size=5, batch_size_train=5, accumulate_loss_batch_factor=1,
+                      num_epochs=32000, batch_size_train=5, accumulate_loss_batch_factor=1,
                       batch_size_validation=300,
                       # train_file_load=0.5, valid_file_load=0.5,
                       spike_probability=None,
@@ -273,15 +273,15 @@ def arange_kernel_by_layers(kernels, layers,expend=False):
 if __name__ == '__main__':
     # restore_last_n_configs(100)
     configs = []
-    # configurations_name = "davids"
-    configurations_name='morph_1'
+    configurations_name = "davids"
+    # configurations_name='morph_1'
     base_layer=[54]+[12]*6
     for i in range(7,6,-2):
         kernels = arange_kernel_by_layers(base_layer,i,False)
         for data in [DAVID_BASE_PATH,REDUCTION_BASE_PATH]:
             config = config_factory(
-                # architecture_type='FullNeuronNetwork',
-                architecture_type='LAYERED_TEMPORAL_CONV_N',   clip_gradients_factor=2.5,
+                architecture_type='FullNeuronNetwork',
+                # architecture_type='LAYERED_TEMPORAL_CONV_N',   clip_gradients_factor=2.5,
                 model_tag="%s_%d%s" % (configurations_name, i,"_reduction" if data == REDUCTION_BASE_PATH else ''),
                 kernel_sizes=kernels, number_of_layers_space = len(kernels),data_base_path=data,
                 accumulate_loss_batch_factor=1, prediction_length=700,
