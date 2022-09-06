@@ -58,6 +58,8 @@ class SimulationDataGenerator():
         self.index_set = set()
         # self.non_spikes,self.spikes,self.number_of_non_spikes_in_batch,self.nuber_of_spikes_in_batch = non_spikes, spikes, number_of_non_spikes_in_batch,
         #                                                         number_of_spikes_in_batch
+        self.curr_files_index=[]
+        self.data_set=set()
 
     def eval(self):
         self.shuffle_files = False
@@ -69,7 +71,7 @@ class SimulationDataGenerator():
         self.reload_files_once = True
         return self
 
-    def display_current_fils_and_indexes(self):
+    def display_current_file_and_indexes(self):
         return self.curr_files_to_use, self.sample_counter % self.indexes.shape[0], (
                     self.sample_counter + self.batch_size) % self.indexes.shape[0]
 
@@ -126,8 +128,11 @@ class SimulationDataGenerator():
             sim_ind = np.array([sim_ind])
         sim_indexs = self.indexes[sim_ind] // ((self.X.shape[2] - self.receptive_filed_size) // self.prediction_length)
         time_index = self.indexes[sim_ind] % ((self.X.shape[2] - self.receptive_filed_size) // self.prediction_length)
+        for s,t in zip(sim_ind,time_index):
+            for i,v in enumerate(self.curr_files_index[:-1]):
+                if s<self.curr_files_index[i+1] and s>=v:
+                    self.data_set.add((self.curr_files_to_use[i],t))
         time_index = time_index * self.prediction_length
-        print("\t".join([str((i,j))for i,j in zip(sim_indexs,time_index)]))
         sim_ind_mat, chn_ind, win_ind = np.meshgrid(sim_indexs,
                                                     np.arange(self.X.shape[1]), np.arange(self.window_size_ms),
                                                     indexing='ij', )
@@ -135,7 +140,7 @@ class SimulationDataGenerator():
 
         # time_range=(np.tile(np.arange(self.window_size_ms),(time_index.shape[0],1))+time_index[:,np.newaxis])
         # end_time=time_index+self.window_size_ms
-
+        print("number_of_samples = %d"%len(self.data_set))
         X_batch = self.X[sim_ind_mat, chn_ind, win_ind]
         y_spike_batch = self.y_spike[
             sim_ind_mat[:, 0, self.receptive_filed_size:], win_ind[:, 0, self.receptive_filed_size:]]
@@ -167,7 +172,6 @@ class SimulationDataGenerator():
                 self.curr_files_to_use = []
 
             self.files_counter += 1
-            print("first_index :  f %.2f l %.2f"%(first_index,last_index))
 
         self.load_files_to_buffer()
 
@@ -178,6 +182,7 @@ class SimulationDataGenerator():
         self.X = []
         self.y_spike = []
         self.y_soma = []
+        self.curr_files_index=[]
         if len(self.curr_files_to_use) == 0:
             return
         # load the file
@@ -198,6 +203,7 @@ class SimulationDataGenerator():
                 y_spike = y_spike[:self.number_of_traces_from_file, :, :]
                 y_soma = y_soma[:self.number_of_traces_from_file, :, :]
 
+            self.curr_files_index.append(X.shape+(0 if len(self.curr_files_index)==0 else self.curr_files_index[-1]))
             self.X.append(X)
             self.y_spike.append(y_spike)
             self.y_soma.append(y_soma)
