@@ -245,6 +245,7 @@ def train_network(config, model,optimizer):
                 lr = log_lr(config, optimizer)
                 train_log(train_loss, config.batch_counter, epoch, lr, sigma, loss_weights, additional_str="train")
                 data_arr = []
+
             evaluate_validation(config, custom_loss, model, validation_data_iterator)
             # save model every once a while
             if saving_counter % 10 == 0:
@@ -483,6 +484,7 @@ def train_log(loss, step, epoch=None, learning_rate=None, sigma=None, weights=No
                     "dvt loss %s" % additional_str: loss_dvt, "blur loss %s" % additional_str: blur_loss}
         if epoch is not None:
             log_dict.update({"epoch": epoch})
+        # log_dict.update({"batch": step})
         if learning_rate is not None:
             log_dict.update({"learning rate %s" % additional_str: learning_rate})  # add training parameters per step
         if weights is not None:
