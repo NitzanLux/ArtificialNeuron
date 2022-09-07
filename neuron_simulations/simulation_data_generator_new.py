@@ -12,6 +12,7 @@ import os
 import logging
 import multiprocessing
 from enum import Enum
+
 Y_SOMA_THRESHOLD = -20.0
 
 NULL_SPIKE_FACTOR_VALUE = 0
@@ -19,17 +20,22 @@ CPUS_COUNT = multiprocessing.cpu_count()
 print("Number of cpus: %d" % CPUS_COUNT)
 USE_CVODE = True
 SIM_INDEX = 0
+
+
 class GeneratorState(Enum):
-    TRAIN=0
-    EVAL=1
-    VALIDATION=2
+    TRAIN = 0
+    EVAL = 1
+    VALIDATION = 2
 
 
 def helper_queue_process(queue, obj, f, i):
     X, y_spike, y_soma, curr_files_index = obj.generate_data_from_file(f, i)
     queue.put((i, X, y_spike, y_soma, curr_files_index))
+
+
 def helper_load_in_background(obj):
     obj.reload_files()
+
 
 class SimulationDataGenerator():
     'Characterizes a dataset for PyTorch'
@@ -38,9 +44,9 @@ class SimulationDataGenerator():
                  batch_size=8, sample_ratio_to_shuffle=1, prediction_length=1, window_size_ms=300,
 
                  ignore_time_from_start=20, y_train_soma_bias=-67.7, y_soma_threshold=Y_SOMA_THRESHOLD,
-                 y_DTV_threshold=3.0,generator_name='',
+                 y_DTV_threshold=3.0, generator_name='',
                  shuffle_files=True, is_shuffle_data=True, number_of_traces_from_file=None,
-                 number_of_files=None,load_on_parallel=True):
+                 number_of_files=None, load_on_parallel=True):
         'data generator initialization'
         self.load_on_parallel = load_on_parallel
         self.reload_files_once = False
@@ -70,9 +76,10 @@ class SimulationDataGenerator():
         self.sampling_start_time = ignore_time_from_start
         self.X, self.y_spike, self.y_soma = None, None, None
         self.reload_files()
+        self.first_run = True
         self.non_spikes, self.spikes, self.number_of_non_spikes_in_batch, self.number_of_spikes_in_batch = None, None, None, None
         self.index_set = set()
-        self.state=GeneratorState.TRAIN
+        self.state = GeneratorState.TRAIN
         # self.non_spikes,self.spikes,self.number_of_non_spikes_in_batch,self.nuber_of_spikes_in_batch = non_spikes, spikes, number_of_non_spikes_in_batch,
         #                                                         number_of_spikes_in_batch
         self.data_set = set()
@@ -85,10 +92,11 @@ class SimulationDataGenerator():
         self.prediction_length = self.X.shape[2] - prev_window_length
         self.receptive_filed_size = self.window_size_ms - self.prediction_length
         self.reload_files_once = True
-        self.state=GeneratorState.EVAL
+        self.state = GeneratorState.EVAL
         return self
+
     def validate(self):
-        self.state=GeneratorState.VALIDATION
+        self.state = GeneratorState.VALIDATION
         self.shuffle_files = True
         self.is_shuffle_data = True
         return self
@@ -103,11 +111,11 @@ class SimulationDataGenerator():
 
     def __iter__(self):
         """create epoch iterator"""
-        self.epoch_counter+=1
+        self.epoch_counter += 1
         if self.shuffle_files: random.shuffle(self.curr_files_to_use); print("Shuffling files")
-        self.files_counter=0
-        self.sample_counter=0
-        self.reload_files()
+        self.files_counter = 0
+        self.sample_counter = 0
+        if not self.first_run: self.reload_files()
         if self.is_shuffle_data: self.shuffle_data()
 
         yield from self.iterate_deterministic_no_repetition()
@@ -131,13 +139,15 @@ class SimulationDataGenerator():
             np.random.shuffle(self.indexes)
 
     def iterate_deterministic_no_repetition(self):
-        while self.files_counter*self.buffer_size_in_files<len(self.sim_experiment_files) or self.sample_counter < self.indexes.size or self.state==GeneratorState.VALIDATION:
+        while self.files_counter * self.buffer_size_in_files < len(
+                self.sim_experiment_files) or self.sample_counter < self.indexes.size or self.state == GeneratorState.VALIDATION:
             yield self[np.arange(self.sample_counter, self.sample_counter + self.batch_size) % self.indexes.shape[0]]
             self.sample_counter += self.batch_size
             if self.files_reload_checker():
-                out = self[np.arange(self.sample_counter, self.sample_counter + self.batch_size) % self.indexes.shape[0]][:]
+                out = self[np.arange(self.sample_counter, self.sample_counter + self.batch_size) % self.indexes.shape[
+                    0]][:]
                 if self.load_on_parallel:
-                    p1 = multiprocessing.Process(target=helper_load_in_background,args=(self,))
+                    p1 = multiprocessing.Process(target=helper_load_in_background, args=(self,))
                     p1.start()
                     yield out
                     p1.join()
@@ -146,7 +156,7 @@ class SimulationDataGenerator():
                     self.reload_files()
             if len(self.curr_files_to_use) == 0:
                 return
-            if self.state==GeneratorState.VALIDATION:
+            if self.state == GeneratorState.VALIDATION:
                 if self.files_counter * self.buffer_size_in_files >= len(self.sim_experiment_files):
                     self.files_counter = 0
                     self.reload_files()
@@ -168,15 +178,16 @@ class SimulationDataGenerator():
         if isinstance(item, int):
             item = np.array([item])
         sim_indexs = (self.indexes[item] * self.prediction_length) // ((self.X.shape[2] - self.receptive_filed_size) - (
-                    (self.X.shape[2] - self.receptive_filed_size) % self.prediction_length))
+                (self.X.shape[2] - self.receptive_filed_size) % self.prediction_length))
         time_index = (self.indexes[item] * self.prediction_length) % ((self.X.shape[2] - self.receptive_filed_size) - (
-                    (self.X.shape[2] - self.receptive_filed_size) % self.prediction_length))
+                (self.X.shape[2] - self.receptive_filed_size) % self.prediction_length))
 
         for s, t in zip(sim_indexs, time_index):
             for i, v in enumerate(self.curr_files_index):
                 if s < v and (s >= (0 if i == 0 else self.curr_files_index[i - 1])):
-                    if (self.curr_files_to_use[i], s, t) in self.data_set and self.state!=GeneratorState.VALIDATION:
-                        logging.warning("generator: %s has repeated within an epoch\n*****************    ", (self.generator_name,self.curr_files_to_use[i][-14:], s, t))
+                    if (self.curr_files_to_use[i], s, t) in self.data_set and self.state != GeneratorState.VALIDATION:
+                        logging.warning("generator: %s has repeated within an epoch\n*****************    ",
+                                        (self.generator_name, self.curr_files_to_use[i][-14:], s, t))
                     self.data_set.add((self.curr_files_to_use[i], s, t))
                     break
         sim_ind_mat, chn_ind, win_ind = np.meshgrid(sim_indexs,
@@ -233,32 +244,32 @@ class SimulationDataGenerator():
             return
         # load the files in parallel
 
-
-        if self.load_on_parallel and CPUS_COUNT>1:
+        if self.load_on_parallel and CPUS_COUNT > 1:
             queue = multiprocessing.Queue()
             processes = []
             rets = []
-            for i,f in enumerate(self.curr_files_to_use):
+            for i, f in enumerate(self.curr_files_to_use):
                 print("start_process")
-                p = multiprocessing.Process(target=helper_queue_process,args=(queue,self,f,i))
+                p = multiprocessing.Process(target=helper_queue_process, args=(queue, self, f, i))
                 processes.append(p)
                 p.start()
             for p in processes:
-                ret= queue.get()
+                ret = queue.get()
                 rets.append(ret)
             for p in processes:
                 p.join()
             for ret in rets:
-                i,out=ret[0],ret[1:]
+                i, out = ret[0], ret[1:]
                 self.X[i], self.y_spike[i], self.y_soma[i], self.curr_files_index[i] = out
-            for i in range(1,len(self.curr_files_index)):
-                self.curr_files_index[i]+=self.curr_files_index[i-1]
+            for i in range(1, len(self.curr_files_index)):
+                self.curr_files_index[i] += self.curr_files_index[i - 1]
 
         else:
-            for i,f in enumerate(self.curr_files_to_use):
-                self.X[i], self.y_spike[i],self.y_soma[i],self.curr_files_index[i] = self.generate_data_from_file(f,i)
-                if i!=0:
-                    self.curr_files_index[i]+=self.curr_files_index[i-1]
+            for i, f in enumerate(self.curr_files_to_use):
+                self.X[i], self.y_spike[i], self.y_soma[i], self.curr_files_index[i] = self.generate_data_from_file(f,
+                                                                                                                    i)
+                if i != 0:
+                    self.curr_files_index[i] += self.curr_files_index[i - 1]
         self.X = np.vstack(self.X)
         self.y_spike = np.vstack(self.y_spike).squeeze(1)
         self.y_soma = np.vstack(self.y_soma).squeeze(1)
@@ -276,7 +287,7 @@ class SimulationDataGenerator():
 
         self.shuffle_data()
 
-    def generate_data_from_file(self, f,i):
+    def generate_data_from_file(self, f, i):
         X, y_spike, y_soma = parse_sim_experiment_file(f)
         # reshape to what is needed
         if len(X.shape) == 3:
@@ -292,8 +303,9 @@ class SimulationDataGenerator():
             X = X[:self.number_of_traces_from_file, :, :]
             y_spike = y_spike[:self.number_of_traces_from_file, :, :]
             y_soma = y_soma[:self.number_of_traces_from_file, :, :]
-        curr_files_index=X.shape[0]
-        return X, y_spike,y_soma,curr_files_index
+        curr_files_index = X.shape[0]
+        return X, y_spike, y_soma, curr_files_index
+
 
 def parse_sim_experiment_file_ido(sim_experiment_folder, print_logs=False):
     # ido_base_path="/ems/elsc-labs/segev-i/Sandbox Shared/Rat_L5b_PC_2_Hay_simple_pipeline_1/simulation_dataset/"
