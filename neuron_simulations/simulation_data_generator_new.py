@@ -191,13 +191,12 @@ class SimulationDataGenerator():
         time_index = (self.indexes[item] * self.prediction_length) % ((self.X.shape[2] - self.receptive_filed_size) - (
                 (self.X.shape[2] - self.receptive_filed_size) % self.prediction_length))
 
-        for i,st in enumerate(zip(sim_indexs, time_index)):
-            s,t=st
+        for s,t,id in enumerate(zip(sim_indexs, time_index,item)):
             for i, v in enumerate(self.curr_files_index):
                 if s < v and (s >= (0 if i == 0 else self.curr_files_index[i - 1])):
                     if (self.curr_files_to_use[i], s, t) in self.data_set and self.state != GeneratorState.VALIDATION:
                         logging.warning("generator: %s has repeated within an epoch\n*****************    ",
-                                        (self.generator_name, self.curr_files_to_use[i][-14:], s, t,i))
+                                        (self.generator_name, self.curr_files_to_use[i][-14:], s, t,id))
                     self.data_set.add((self.curr_files_to_use[i], s, t))
                     break
         sim_ind_mat, chn_ind, win_ind = np.meshgrid(sim_indexs,
