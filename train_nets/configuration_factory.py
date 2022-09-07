@@ -54,7 +54,8 @@ def surround_with_default_config_values(**kargs):
                       # num_segments=2082,
                       num_syn_types=1, use_mixed_precision=False,
                       include_spikes=True,
-                      num_epochs=32000, batch_size_train=5, accumulate_loss_batch_factor=1,
+                      number_of_steps=5760000,
+                      batch_size_train=5, accumulate_loss_batch_factor=1,
                       batch_size_validation=300,
                       # train_file_load=0.5, valid_file_load=0.5,
                       spike_probability=None,
@@ -285,8 +286,8 @@ if __name__ == '__main__':
                 model_tag="%s_%d%s" % (configurations_name, i,"_reduction" if data == REDUCTION_BASE_PATH else ''),
                 kernel_sizes=kernels, number_of_layers_space = len(kernels),data_base_path=data,
                 accumulate_loss_batch_factor=1, prediction_length=700,
-                batch_size_validation=30, batch_size_train=32,
-                constant_learning_rate=0.0007)
+                batch_size_validation=30, batch_size_train=180,
+                constant_learning_rate=0.01)
             configs.append(config)
         # configs.extend(generate_config_files_multiple_seeds(config_morpho_0, 2))
 

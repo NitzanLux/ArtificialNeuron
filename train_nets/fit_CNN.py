@@ -221,9 +221,8 @@ def train_network(config, model, optimizer):
         model_level_training_scadualer = model.train_random_subtree(
             config.freeze_node_factor if config.freeze_node_factor is not None else 0)
     print("start training...", flush=True)
-    for epoch in range(config.num_epochs):
+    while config.number_of_steps > config.batch_counter:
         config.update(dict(epoch_counter=config.epoch_counter + 1), allow_val_change=True)
-        # epoch_start_time = time.time()
         loss_weights, sigma, custom_loss, optimizer = set_dynamic_learning_parameters(config,
                                                                                       dynamic_parameter_loss_genrator,
                                                                                       loss_weights, model, optimizer,
@@ -237,19 +236,23 @@ def train_network(config, model, optimizer):
             if DOCUMENT_ON_WANDB:
                 wandb.log({}, commit=True)
             config.update(dict(batch_counter=config.batch_counter + 1), allow_val_change=True)
-            # get the inputs; data is a list of [inputs, labels]
+            # get the inputs for accumulate batch; data is a list of [inputs, labels]
             data_arr.append(data)
-            if i % config.accumulate_loss_batch_factor == 0:
+            if i % config.accumulate_loss_batch_factor == 0 or config.number_of_steps == config.batch_counter:
                 train_loss = batch_train(model, optimizer, custom_loss, data_arr, config.clip_gradients_factor,
                                          config.accumulate_loss_batch_factor, optimizer_scheduler, scaler)
                 lr = log_lr(config, optimizer)
                 train_log(train_loss, config.batch_counter, epoch, lr, sigma, loss_weights, additional_str="train")
                 data_arr = []
-
             evaluate_validation(config, custom_loss, model, validation_data_iterator)
+
+            if config.number_of_steps == config.batch_counter:  # finnish model saving
+                SavingAndEvaluationScheduler.flush_all(config, models, optimizer)
+                return
             # save model every once a while
-            if saving_counter % 10 == 0:
+            elif saving_counter % 10 == 0:
                 evaluation_plotter_scheduler(model, config, optimizer)
+            # if our model finnished its steps
 
 
 def load_model(config):
@@ -295,7 +298,10 @@ def set_dynamic_learning_parameters(config, dynamic_parameter_loss_genrator, los
 
 def evaluate_validation(config, custom_loss, model, validation_data_iterator):
     if not (
-            config.batch_counter % VALIDATION_EVALUATION_FREQUENCY == 0 or config.batch_counter % ACCURACY_EVALUATION_FREQUENCY == 0 or config.batch_counter % ACCURACY_EVALUATION_FREQUENCY == 0):
+            config.number_of_steps == config.batch_counter or
+            config.batch_counter % VALIDATION_EVALUATION_FREQUENCY == 0 or
+            config.batch_counter % ACCURACY_EVALUATION_FREQUENCY == 0 or
+            config.batch_counter % ACCURACY_EVALUATION_FREQUENCY == 0):
         return
     if print_logs: print("validate %d" % config.batch_counter)
     valid_input, valid_labels = next(validation_data_iterator)
