@@ -404,6 +404,7 @@ class SavingAndEvaluationScheduler():
 
     @staticmethod
     def save_model(model, config: AttrDict, optimizer):
+        if not SAVE_MODEL: return
         print('-----------------------------------------------------------------------------------------')
         print('finished epoch %d saving...\n     "%s"\n"' % (
             config.epoch_counter, config.model_filename.split('/')[-1]))
