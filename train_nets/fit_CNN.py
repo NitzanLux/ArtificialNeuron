@@ -49,16 +49,17 @@ SAMPLE_RATIO_TO_SHUFFLE_TRAINING = 1.0001
 synapse_type = 'NMDA'
 include_DVT = False
 print_logs = False
+SAVE_MODEL=False
 # for dibugging
-print_logs=True
+# print_logs=True
 # os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
-NUMBER_OF_HOURS_FOR_SAVING_MODEL_AND_CONFIG=1000
-BATCH_LOG_UPDATE_FREQ = 1
-VALIDATION_EVALUATION_FREQUENCY=4000
-ACCURACY_EVALUATION_FREQUENCY = 4000
-BUFFER_SIZE_IN_FILES_VALID = 1
-BUFFER_SIZE_IN_FILES_TRAINING = 4
-DOCUMENT_ON_WANDB = False
+# NUMBER_OF_HOURS_FOR_SAVING_MODEL_AND_CONFIG=1000
+# BATCH_LOG_UPDATE_FREQ = 1
+# VALIDATION_EVALUATION_FREQUENCY=4000
+# ACCURACY_EVALUATION_FREQUENCY = 4000
+# BUFFER_SIZE_IN_FILES_VALID = 1
+# BUFFER_SIZE_IN_FILES_TRAINING = 4
+# DOCUMENT_ON_WANDB = False
 print('-----------------------------------------------')
 print('finding data')
 print('-----------------------------------------------', flush=True)
@@ -478,8 +479,9 @@ def load_and_train(config):
     try:
         train_network(config, model, optimizer)
     except Exception as e:
-        SavingAndEvaluationScheduler.flush_all(config, model, optimizer)
+        if SAVE_MODEL: SavingAndEvaluationScheduler.flush_all(config, model, optimizer)
         raise e
+
 
 
 def train_log(loss, step, epoch=None, learning_rate=None, sigma=None, weights=None, additional_str='', commit=False):
