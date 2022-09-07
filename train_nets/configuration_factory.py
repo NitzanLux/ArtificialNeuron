@@ -57,7 +57,6 @@ def surround_with_default_config_values(**kargs):
                       number_of_steps=5760000,
                       batch_size_train=5, accumulate_loss_batch_factor=1,
                       batch_size_validation=300,
-                      # train_file_load=0.5, valid_file_load=0.5,
                       spike_probability=None,
                       # data_base_path=IDO_BASE_PATH,
                       data_base_path=DAVID_BASE_PATH,
@@ -109,7 +108,7 @@ def surround_with_default_config_values(**kargs):
         channel_input_number=1278,  # synapse number
         # channel_input_number=2082,  # synapse number
         inner_scope_channel_number=None,
-        channel_output_number=128,
+        channel_output_number=64,
         activation_function_name="LeakyReLU",
         activation_function_kargs=dict(negative_slope=0.025),
         # activation_function_kargs=dict(negative_slope=0.001),
@@ -274,7 +273,7 @@ def arange_kernel_by_layers(kernels, layers,expend=False):
 if __name__ == '__main__':
     # restore_last_n_configs(100)
     configs = []
-    configurations_name = "davids"
+    configurations_name = "d_r_comparison"
     # configurations_name='morph_1'
     base_layer=[54]+[12]*6
     for i in range(7,6,-2):
