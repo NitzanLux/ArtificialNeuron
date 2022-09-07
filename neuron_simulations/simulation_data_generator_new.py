@@ -13,6 +13,8 @@ import logging
 import multiprocessing
 from enum import Enum
 
+START_LOADING_FILES_N_SAMPLES_FROM_END = 5
+
 Y_SOMA_THRESHOLD = -20.0
 
 NULL_SPIKE_FACTOR_VALUE = 0
@@ -116,7 +118,7 @@ class SimulationDataGenerator():
         if self.shuffle_files: random.shuffle(self.curr_files_to_use); print("Shuffling files")
         self.files_counter = 0
         self.sample_counter = 0
-        if not self.first_run: self.reload_files() ;self.first_run=False
+        if not self.first_run: self.reload_files();self.first_run = False
         if self.is_shuffle_data: self.shuffle_data()
 
         yield from self.iterate_deterministic_no_repetition()
@@ -144,17 +146,23 @@ class SimulationDataGenerator():
                 self.sim_experiment_files) or self.sample_counter < self.indexes.size or self.state == GeneratorState.VALIDATION:
             yield self[np.arange(self.sample_counter, self.sample_counter + self.batch_size) % self.indexes.shape[0]]
             self.sample_counter += self.batch_size
-            if self.files_reload_checker():
-                out = self[np.arange(self.sample_counter, self.sample_counter + self.batch_size) % self.indexes.shape[
-                    0]][:]
-                if self.load_on_parallel:
-                    p1 = multiprocessing.Process(target=helper_load_in_background, args=(self,))
-                    p1.start()
+            if self.files_reload_checker(START_LOADING_FILES_N_SAMPLES_FROM_END) and self.load_on_parallel:
+                outs=[]
+                for i in range(START_LOADING_FILES_N_SAMPLES_FROM_END):
+                    out = self[np.arange(self.sample_counter+(self.batch_size*i), self.sample_counter ++(self.batch_size*(i+1))) % self.indexes.shape[0]][:]
+                    outs.append(out)
+                p1 = multiprocessing.Process(target=helper_load_in_background, args=(self,))
+                p1.start()
+                for out in outs:
                     yield out
-                    p1.join()
-                else:
-                    yield out
-                    self.reload_files()
+                    self.sample_counter += self.batch_size
+                p1.join()
+            elif self.files_reload_checker():
+                out = self[np.arange(self.sample_counter + (self.batch_size ),
+                                     self.sample_counter + +(self.batch_size *  1)) % self.indexes.shape[0]][:]
+                yield out
+                self.sample_counter += self.batch_size
+                self.reload_files()
             if len(self.curr_files_to_use) == 0:
                 return
             if self.state == GeneratorState.VALIDATION:
@@ -162,8 +170,8 @@ class SimulationDataGenerator():
                     self.files_counter = 0
                     self.reload_files()
 
-    def files_reload_checker(self):
-        if (self.sample_counter + (self.batch_size*2)) / (self.indexes.shape[0])> self.sample_ratio_to_shuffle:
+    def files_reload_checker(self,steps_before=2):
+        if (self.sample_counter + (self.batch_size * (steps_before+1))) / (self.indexes.shape[0]) > self.sample_ratio_to_shuffle:
             print("Reloading files")
             # self.reload_files()
 
