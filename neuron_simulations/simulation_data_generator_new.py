@@ -116,7 +116,7 @@ class SimulationDataGenerator():
         if self.shuffle_files: random.shuffle(self.curr_files_to_use); print("Shuffling files")
         self.files_counter = 0
         self.sample_counter = 0
-        if not self.first_run: self.reload_files()
+        if not self.first_run: self.reload_files() ;self.first_run=False
         if self.is_shuffle_data: self.shuffle_data()
 
         yield from self.iterate_deterministic_no_repetition()
@@ -163,7 +163,7 @@ class SimulationDataGenerator():
                     self.reload_files()
 
     def files_reload_checker(self):
-        if (self.sample_counter + (self.batch_size*2)) / (self.indexes.shape[0]) > self.sample_ratio_to_shuffle:
+        if (self.sample_counter + (self.batch_size*2)) / (self.indexes.shape[0])> self.sample_ratio_to_shuffle:
             print("Reloading files")
             # self.reload_files()
 
