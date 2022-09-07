@@ -276,7 +276,7 @@ if __name__ == '__main__':
     configurations_name = "d_r_comparison"
     # configurations_name='morph_1'
     base_layer=[54]+[12]*6
-    for i in range(7,6,-2):
+    for i in range(7,1,-2):
         kernels = arange_kernel_by_layers(base_layer,i,False)
         for data in [DAVID_BASE_PATH,REDUCTION_BASE_PATH]:
             config = config_factory(
