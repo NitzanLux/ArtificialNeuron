@@ -35,6 +35,7 @@ def helper_queue_process(queue, obj, f, i):
 
 def helper_load_in_background(obj):
     obj.reload_files()
+    print("ended loading data in background !!!!!!!!!!!!!!!")
 
 
 class SimulationDataGenerator():
@@ -162,7 +163,7 @@ class SimulationDataGenerator():
                     self.reload_files()
 
     def files_reload_checker(self):
-        if (self.sample_counter + self.batch_size) / (self.indexes.shape[0]) >= self.sample_ratio_to_shuffle:
+        if (self.sample_counter + self.batch_size*2) / (self.indexes.shape[0]) >= self.sample_ratio_to_shuffle:
             print("Reloading files")
             # self.reload_files()
 
