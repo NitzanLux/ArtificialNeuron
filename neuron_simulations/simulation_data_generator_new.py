@@ -241,10 +241,13 @@ class SimulationDataGenerator():
             for ret in rets:
                 i,out=ret[0],ret[1:]
                 self.X[i], self.y_spike[i], self.y_soma[i], self.curr_files_index[i] = out
+                if i!=0:
+                    self.curr_files_index[i]+=self.curr_files_index[i-1]
         else:
             for i,f in enumerate(self.curr_files_to_use):
                 self.X[i], self.y_spike[i],self.y_soma[i],self.curr_files_index[i] = self.generate_data_from_file(f,i)
-
+                if i!=0:
+                    self.curr_files_index[i]+=self.curr_files_index[i-1]
         self.X = np.vstack(self.X)
         self.y_spike = np.vstack(self.y_spike).squeeze(1)
         self.y_soma = np.vstack(self.y_soma).squeeze(1)
@@ -278,7 +281,7 @@ class SimulationDataGenerator():
             X = X[:self.number_of_traces_from_file, :, :]
             y_spike = y_spike[:self.number_of_traces_from_file, :, :]
             y_soma = y_soma[:self.number_of_traces_from_file, :, :]
-        curr_files_index=(X.shape[0] + (0 if len(self.curr_files_index) == 0 else self.curr_files_index[-1]))
+        curr_files_index=X.shape[0]
         return X, y_spike,y_soma,curr_files_index
 
 def parse_sim_experiment_file_ido(sim_experiment_folder, print_logs=False):
