@@ -28,7 +28,8 @@ class GeneratorState(Enum):
 def helper_queue_process(queue, obj, f, i):
     X, y_spike, y_soma, curr_files_index = obj.generate_data_from_file(f, i)
     queue.put((i, X, y_spike, y_soma, curr_files_index))
-
+def helper_load_in_background(obj):
+    obj.reload_files()
 
 class SimulationDataGenerator():
     'Characterizes a dataset for PyTorch'
@@ -133,7 +134,16 @@ class SimulationDataGenerator():
         while self.files_counter*self.buffer_size_in_files<len(self.sim_experiment_files) or self.sample_counter < self.indexes.size or self.state==GeneratorState.VALIDATION:
             yield self[np.arange(self.sample_counter, self.sample_counter + self.batch_size) % self.indexes.shape[0]]
             self.sample_counter += self.batch_size
-            self.files_reload_checker()
+            if self.files_reload_checker():
+                out = self[np.arange(self.sample_counter, self.sample_counter + self.batch_size) % self.indexes.shape[0]][:]
+                if self.load_on_parallel:
+                    p1 = multiprocessing.Process(target=helper_load_in_background,args=(self,))
+                    p1.start()
+                    yield out
+                    p1.join()
+                else:
+                    yield out
+                    self.reload_files()
             if len(self.curr_files_to_use) == 0:
                 return
             if self.state==GeneratorState.VALIDATION:
@@ -144,7 +154,7 @@ class SimulationDataGenerator():
     def files_reload_checker(self):
         if (self.sample_counter + self.batch_size) / (self.indexes.shape[0]) >= self.sample_ratio_to_shuffle:
             print("Reloading files")
-            self.reload_files()
+            # self.reload_files()
 
             return True
         return False
@@ -241,8 +251,9 @@ class SimulationDataGenerator():
             for ret in rets:
                 i,out=ret[0],ret[1:]
                 self.X[i], self.y_spike[i], self.y_soma[i], self.curr_files_index[i] = out
-                if i!=0:
-                    self.curr_files_index[i]+=self.curr_files_index[i-1]
+            for i in range(1,len(self.curr_files_index)):
+                self.curr_files_index[i]+=self.curr_files_index[i-1]
+
         else:
             for i,f in enumerate(self.curr_files_to_use):
                 self.X[i], self.y_spike[i],self.y_soma[i],self.curr_files_index[i] = self.generate_data_from_file(f,i)
