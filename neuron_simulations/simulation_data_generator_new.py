@@ -10,17 +10,25 @@ from scipy import sparse
 import h5py
 import os
 import logging
+import multiprocessing
 from enum import Enum
 Y_SOMA_THRESHOLD = -20.0
 
 NULL_SPIKE_FACTOR_VALUE = 0
-
+CPUS_COUNT = multiprocessing.cpu_count()
+print("Number of cpus: %d" % CPUS_COUNT)
 USE_CVODE = True
 SIM_INDEX = 0
 class GeneratorState(Enum):
     TRAIN=0
     EVAL=1
     VALIDATION=2
+
+
+def helper_queue_process(queue, obj, f, i):
+    X, y_spike, y_soma, curr_files_index = obj.generate_data_from_file(f, i)
+    queue.put((i, X, y_spike, y_soma, curr_files_index))
+
 
 class SimulationDataGenerator():
     'Characterizes a dataset for PyTorch'
@@ -31,8 +39,9 @@ class SimulationDataGenerator():
                  ignore_time_from_start=20, y_train_soma_bias=-67.7, y_soma_threshold=Y_SOMA_THRESHOLD,
                  y_DTV_threshold=3.0,generator_name='',
                  shuffle_files=True, is_shuffle_data=True, number_of_traces_from_file=None,
-                 number_of_files=None):
+                 number_of_files=None,load_on_parallel=True):
         'data generator initialization'
+        self.load_on_parallel = load_on_parallel
         self.reload_files_once = False
         self.sim_experiment_files = sim_experiment_files
         self.generator_name = generator_name
@@ -206,35 +215,35 @@ class SimulationDataGenerator():
         'load new file to draw batches from'
         # update the current file in use
 
-        self.X = []
-        self.y_spike = []
-        self.y_soma = []
-        self.curr_files_index = []
+        self.X = [None] * len(self.curr_files_to_use)
+        self.y_spike = [None] * len(self.curr_files_to_use)
+        self.y_soma = [None] * len(self.curr_files_to_use)
+        self.curr_files_index = [None] * len(self.curr_files_to_use)
         if len(self.curr_files_to_use) == 0:
             return
-        # load the file
-        for f in self.curr_files_to_use:
-            X, y_spike, y_soma = parse_sim_experiment_file(f)
-            # reshape to what is needed
-            if len(X.shape) == 3:
-                X = np.transpose(X, axes=[2, 0, 1])
-            else:
-                X = X[np.newaxis, ...]
-            X = X[:, :, self.sampling_start_time:]
-            if len(y_spike.shape) == 1: y_spike = y_spike[..., np.newaxis]
-            if len(y_soma.shape) == 1: y_soma = y_soma[..., np.newaxis]
-            y_spike = y_spike.T[:, np.newaxis, self.sampling_start_time:]
-            y_soma = y_soma.T[:, np.newaxis, self.sampling_start_time:]
-            if self.number_of_traces_from_file is not None:
-                X = X[:self.number_of_traces_from_file, :, :]
-                y_spike = y_spike[:self.number_of_traces_from_file, :, :]
-                y_soma = y_soma[:self.number_of_traces_from_file, :, :]
+        # load the files in parallel
 
-            self.curr_files_index.append(
-                X.shape[0] + (0 if len(self.curr_files_index) == 0 else self.curr_files_index[-1]))
-            self.X.append(X)
-            self.y_spike.append(y_spike)
-            self.y_soma.append(y_soma)
+
+        if self.load_on_parallel and CPUS_COUNT>1:
+            queue = multiprocessing.Queue()
+            processes = []
+            rets = []
+            for i,f in enumerate(self.curr_files_to_use):
+                print("start_process")
+                p = multiprocessing.Process(target=helper_queue_process,args=(queue,self,f,i))
+                processes.append(p)
+                p.start()
+            for p in processes:
+                ret= queue.get()
+                rets.append(ret)
+            for p in processes:
+                p.join()
+            for ret in rets:
+                i,out=ret[0],ret[1:]
+                self.X[i], self.y_spike[i], self.y_soma[i], self.curr_files_index[i] = out
+        else:
+            for i,f in enumerate(self.curr_files_to_use):
+                self.X[i], self.y_spike[i],self.y_soma[i],self.curr_files_index[i] = self.generate_data_from_file(f,i)
 
         self.X = np.vstack(self.X)
         self.y_spike = np.vstack(self.y_spike).squeeze(1)
@@ -253,6 +262,24 @@ class SimulationDataGenerator():
 
         self.shuffle_data()
 
+    def generate_data_from_file(self, f,i):
+        X, y_spike, y_soma = parse_sim_experiment_file(f)
+        # reshape to what is needed
+        if len(X.shape) == 3:
+            X = np.transpose(X, axes=[2, 0, 1])
+        else:
+            X = X[np.newaxis, ...]
+        X = X[:, :, self.sampling_start_time:]
+        if len(y_spike.shape) == 1: y_spike = y_spike[..., np.newaxis]
+        if len(y_soma.shape) == 1: y_soma = y_soma[..., np.newaxis]
+        y_spike = y_spike.T[:, np.newaxis, self.sampling_start_time:]
+        y_soma = y_soma.T[:, np.newaxis, self.sampling_start_time:]
+        if self.number_of_traces_from_file is not None:
+            X = X[:self.number_of_traces_from_file, :, :]
+            y_spike = y_spike[:self.number_of_traces_from_file, :, :]
+            y_soma = y_soma[:self.number_of_traces_from_file, :, :]
+        curr_files_index=(X.shape[0] + (0 if len(self.curr_files_index) == 0 else self.curr_files_index[-1]))
+        return X, y_spike,y_soma,curr_files_index
 
 def parse_sim_experiment_file_ido(sim_experiment_folder, print_logs=False):
     # ido_base_path="/ems/elsc-labs/segev-i/Sandbox Shared/Rat_L5b_PC_2_Hay_simple_pipeline_1/simulation_dataset/"
