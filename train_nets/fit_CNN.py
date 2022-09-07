@@ -41,14 +41,14 @@ VALIDATION_EVALUATION_FREQUENCY = 100
 ACCURACY_EVALUATION_FREQUENCY = 100
 BATCH_LOG_UPDATE_FREQ = 100
 # BUFFER_SIZE_IN_FILES_VALID = 4
-BUFFER_SIZE_IN_FILES_VALID = 1
+BUFFER_SIZE_IN_FILES_VALID = 4
 # BUFFER_SIZE_IN_FILES_TRAINING = 8
-BUFFER_SIZE_IN_FILES_TRAINING = 5
+BUFFER_SIZE_IN_FILES_TRAINING = 10
 SAMPLE_RATIO_TO_SHUFFLE_TRAINING = 1.0001
 
 synapse_type = 'NMDA'
 include_DVT = False
-print_logs=False
+print_logs = False
 # for dibugging
 # print_logs=True
 # os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
@@ -189,7 +189,7 @@ def plot_grad_flow(model=None):
     plt.show()
 
 
-def train_network(config, model,optimizer):
+def train_network(config, model, optimizer):
     DVT_PCA_model = None
 
     model.cuda().train()
@@ -216,32 +216,32 @@ def train_network(config, model,optimizer):
     scaler = torch.cuda.amp.GradScaler(enabled=True) if config.use_mixed_precision else None
     if DOCUMENT_ON_WANDB and WATCH_MODEL:
         wandb.watch(model, log='all', log_freq=1, log_graph=True)
-    model_level_training_scadualer=None
+    model_level_training_scadualer = None
     if isinstance(model, recursive_neuronal_model.RecursiveNeuronModel):
         model_level_training_scadualer = model.train_random_subtree(
-        config.freeze_node_factor if config.freeze_node_factor is not None else 0)
+            config.freeze_node_factor if config.freeze_node_factor is not None else 0)
     print("start training...", flush=True)
     for epoch in range(config.num_epochs):
         config.update(dict(epoch_counter=config.epoch_counter + 1), allow_val_change=True)
         # epoch_start_time = time.time()
-        loss_weights, sigma, custom_loss,optimizer = set_dynamic_learning_parameters(config,
+        loss_weights, sigma, custom_loss, optimizer = set_dynamic_learning_parameters(config,
                                                                                       dynamic_parameter_loss_genrator,
                                                                                       loss_weights, model, optimizer,
                                                                                       custom_loss, sigma)
         train_data_iterator = iter(train_data_generator)
         if model_level_training_scadualer is not None:
             next(model_level_training_scadualer)
-        data_arr=[]
-        for i,data in enumerate(train_data_iterator):
+        data_arr = []
+        for i, data in enumerate(train_data_iterator):
             saving_counter += 1
             if DOCUMENT_ON_WANDB:
                 wandb.log({}, commit=True)
             config.update(dict(batch_counter=config.batch_counter + 1), allow_val_change=True)
             # get the inputs; data is a list of [inputs, labels]
             data_arr.append(data)
-            if i%config.accumulate_loss_batch_factor==0:
+            if i % config.accumulate_loss_batch_factor == 0:
                 train_loss = batch_train(model, optimizer, custom_loss, data_arr, config.clip_gradients_factor,
-                                     config.accumulate_loss_batch_factor, optimizer_scheduler, scaler)
+                                         config.accumulate_loss_batch_factor, optimizer_scheduler, scaler)
                 lr = log_lr(config, optimizer)
                 train_log(train_loss, config.batch_counter, epoch, lr, sigma, loss_weights, additional_str="train")
                 data_arr = []
@@ -249,7 +249,7 @@ def train_network(config, model,optimizer):
             evaluate_validation(config, custom_loss, model, validation_data_iterator)
             # save model every once a while
             if saving_counter % 10 == 0:
-                evaluation_plotter_scheduler(model, config,optimizer)
+                evaluation_plotter_scheduler(model, config, optimizer)
 
 
 def load_model(config):
@@ -257,7 +257,7 @@ def load_model(config):
     if config.architecture_type == "DavidsNeuronNetwork":
         model = davids_network.DavidsNeuronNetwork.load(config)
     elif config.architecture_type == "FullNeuronNetwork":
-        model =fully_connected_temporal_seperated.FullNeuronNetwork.load(config)
+        model = fully_connected_temporal_seperated.FullNeuronNetwork.load(config)
     elif "network_architecture_structure" in config and config.network_architecture_structure == "recursive":
         model = recursive_neuronal_model.RecursiveNeuronModel.load(config)
     else:
@@ -289,8 +289,8 @@ def set_dynamic_learning_parameters(config, dynamic_parameter_loss_genrator, los
         # config.optimizer_params["lr"] = float(learning_rate)
         # optimizer = getattr(optim, config.optimizer_type)(model.parameters(),
         #                                                   **config.optimizer_params)
-#
-    return loss_weights, sigma, custom_loss,optimizer
+    #
+    return loss_weights, sigma, custom_loss, optimizer
 
 
 def evaluate_validation(config, custom_loss, model, validation_data_iterator):
@@ -305,10 +305,10 @@ def evaluate_validation(config, custom_loss, model, validation_data_iterator):
     with torch.no_grad():
         output = model(valid_input)
     target_s = valid_labels[0].detach().cpu()
-    target_s=target_s
+    target_s = target_s
     target_s = target_s.numpy()
 
-    target_s=target_s.astype(bool).squeeze().flatten()
+    target_s = target_s.astype(bool).squeeze().flatten()
     if config.include_spikes:
         output_s = torch.nn.Sigmoid()(output[0])
         output_s = output_s.detach().cpu().numpy().squeeze().flatten()
@@ -333,27 +333,28 @@ def evaluate_validation(config, custom_loss, model, validation_data_iterator):
     model.train()
 
 
-def get_data_generators( config):
+def get_data_generators(config):
     print("loading data...training", flush=True)
     prediction_length = 1
     if config.config_version >= 1.2:
         prediction_length = config.prediction_length
-    train_files, valid_files, test_files = load_files_names(config.data_base_path,config.files_filter_regex)
+    train_files, valid_files, test_files = load_files_names(config.data_base_path, config.files_filter_regex)
     train_data_generator = SimulationDataGenerator(train_files, buffer_size_in_files=BUFFER_SIZE_IN_FILES_TRAINING,
                                                    prediction_length=prediction_length,
                                                    batch_size=config.batch_size_train,
-                                                   window_size_ms=config.time_domain_shape,
+                                                   window_size_ms=config.time_domain_shape, generator_name='train',
                                                    sample_ratio_to_shuffle=SAMPLE_RATIO_TO_SHUFFLE_TRAINING,
                                                    )
     print("loading data...validation", flush=True)
 
-    validation_data_generator = SimulationDataGenerator(valid_files,#valid_files,
+    validation_data_generator = SimulationDataGenerator(valid_files,
                                                         buffer_size_in_files=BUFFER_SIZE_IN_FILES_VALID,
                                                         prediction_length=5780,
                                                         batch_size=config.batch_size_validation,
+                                                        generator_name='validation',
                                                         window_size_ms=config.time_domain_shape,
                                                         sample_ratio_to_shuffle=1.5,
-                                                        )
+                                                        ).validate()
     if "spike_probability" in config and config.spike_probability is not None:
         train_data_generator.change_spike_probability(config.spike_probability)
     # validation_data_generator.change_spike_probability(0.5)
@@ -369,7 +370,7 @@ class SavingAndEvaluationScheduler():
     """
 
     def __init__(self, time_in_hours_for_saving=NUMBER_OF_HOURS_FOR_SAVING_MODEL_AND_CONFIG):
-                 # time_in_hours_for_evaluation=NUMBER_OF_HOURS_FOR_PLOTTING_EVALUATIONS_PLOTS):
+        # time_in_hours_for_evaluation=NUMBER_OF_HOURS_FOR_PLOTTING_EVALUATIONS_PLOTS):
         self.last_time_evaluation = datetime.now()
         self.last_time_saving = datetime.now()
         self.time_in_hours_for_saving = time_in_hours_for_saving
@@ -379,50 +380,51 @@ class SavingAndEvaluationScheduler():
         current_time = datetime.now()
         delta_time = current_time - self.last_time_evaluation
         # if (delta_time.total_seconds() / 60) / 60 > self.time_in_hours_for_evaluation:
-            # ModelEvaluator.build_and_save(config=config, model=model)todo removed
-            # self.last_time_evaluation = datetime.now()
+        # ModelEvaluator.build_and_save(config=config, model=model)todo removed
+        # self.last_time_evaluation = datetime.now()
 
-    def save_model_schduler(self, config, model,optimizer):
+    def save_model_schduler(self, config, model, optimizer):
         current_time = datetime.now()
         delta_time = current_time - self.last_time_saving
         if (delta_time.total_seconds() / 60) / 60 > self.time_in_hours_for_saving:
-            self.save_model(model, config,optimizer)
+            self.save_model(model, config, optimizer)
             self.last_time_saving = datetime.now()
 
     @staticmethod
-    def flush_all(config, model,optimizer):
-        SavingAndEvaluationScheduler.save_model(model, config,optimizer)
+    def flush_all(config, model, optimizer):
+        SavingAndEvaluationScheduler.save_model(model, config, optimizer)
         # ModelEvaluator.build_and_save(config=config, model=model)
 
     @staticmethod
-    def save_model(model, config: AttrDict,optimizer):
+    def save_model(model, config: AttrDict, optimizer):
         print('-----------------------------------------------------------------------------------------')
         print('finished epoch %d saving...\n     "%s"\n"' % (
             config.epoch_counter, config.model_filename.split('/')[-1]))
         print('-----------------------------------------------------------------------------------------')
-        #backup
-        base_path=os.path.dirname(os.path.join(MODELS_DIR, *config.model_path))
-        files_path=os.listdir(base_path)
+        # backup
+        base_path = os.path.dirname(os.path.join(MODELS_DIR, *config.model_path))
+        files_path = os.listdir(base_path)
         for fn in files_path:
             fn = str(fn)
             filename, file_extension = os.path.splitext(fn)
             if 'temp' not in file_extension:
-                if os.path.exists(os.path.join(base_path,fn)+'temp'):
-                    os.remove(os.path.join(base_path,fn)+'temp')
+                if os.path.exists(os.path.join(base_path, fn) + 'temp'):
+                    os.remove(os.path.join(base_path, fn) + 'temp')
 
                 os.rename(os.path.join(base_path, fn), os.path.join(base_path, fn) + 'temp')
         model.save(os.path.join(MODELS_DIR, *config.model_path))
 
-        opt_file_path=os.path.join(MODELS_DIR,*config.model_path)+".optim"
-        with open(opt_file_path,'wb') as fo:
-            pickle.dump(optimizer.state_dict(),fo)
+        opt_file_path = os.path.join(MODELS_DIR, *config.model_path) + ".optim"
+        with open(opt_file_path, 'wb') as fo:
+            pickle.dump(optimizer.state_dict(), fo)
         configuration_factory.overwrite_config(AttrDict(config))
 
-    def __call__(self, model, config,optimizer):
+    def __call__(self, model, config, optimizer):
         self.create_evaluation_schduler(config, model)
-        self.save_model_schduler(config, model,optimizer)
+        self.save_model_schduler(config, model, optimizer)
 
-def load_optimizer(config,model):
+
+def load_optimizer(config, model):
     if "lr" in (config.optimizer_params):
         config.update(dict(constant_learning_rate=float(config.optimizer_params["lr"])), allow_val_change=True)
     else:
@@ -432,11 +434,12 @@ def load_optimizer(config,model):
 
     optimizer = getattr(optim, config.optimizer_type)(model.parameters(),
                                                       **config.optimizer_params)
-    if os.path.exists(os.path.join(MODELS_DIR,*config.model_path)+'.optim'):
-        with open(os.path.join(MODELS_DIR,*config.model_path)+'.optim','rb') as f:
-            state_dict=pickle.load(f)
+    if os.path.exists(os.path.join(MODELS_DIR, *config.model_path) + '.optim'):
+        with open(os.path.join(MODELS_DIR, *config.model_path) + '.optim', 'rb') as f:
+            state_dict = pickle.load(f)
         optimizer.load_state_dict(state_dict)
     return optimizer
+
 
 def generate_constant_learning_parameters(config):
     loss_weights = config.constant_loss_weights
@@ -465,11 +468,11 @@ def model_pipline(hyperparameters):
 
 def load_and_train(config):
     model = load_model(config)
-    optimizer= load_optimizer(config,model.cuda())
+    optimizer = load_optimizer(config, model.cuda())
     try:
-        train_network(config, model,optimizer)
+        train_network(config, model, optimizer)
     except Exception as e:
-        SavingAndEvaluationScheduler.flush_all(config, model,optimizer)
+        SavingAndEvaluationScheduler.flush_all(config, model, optimizer)
         raise e
 
 
