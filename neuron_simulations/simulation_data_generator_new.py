@@ -191,7 +191,7 @@ class SimulationDataGenerator():
         time_index = (self.indexes[item] * self.prediction_length) % ((self.X.shape[2] - self.receptive_filed_size) - (
                 (self.X.shape[2] - self.receptive_filed_size) % self.prediction_length))
 
-        for s,t,id in enumerate(zip(sim_indexs, time_index,item)):
+        for s,t,id in zip(sim_indexs, time_index,item):
             for i, v in enumerate(self.curr_files_index):
                 if s < v and (s >= (0 if i == 0 else self.curr_files_index[i - 1])):
                     if (self.curr_files_to_use[i], s, t) in self.data_set and self.state != GeneratorState.VALIDATION:
