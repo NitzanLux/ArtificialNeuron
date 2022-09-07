@@ -16,7 +16,6 @@ import threading
 from enum import Enum
 import os
 
-START_LOADING_FILES_N_BATCHES_FROM_END = 30
 
 Y_SOMA_THRESHOLD = -20.0
 
@@ -53,8 +52,9 @@ class SimulationDataGenerator():
                  ignore_time_from_start=20, y_train_soma_bias=-67.7, y_soma_threshold=Y_SOMA_THRESHOLD,
                  y_DTV_threshold=3.0, generator_name='',
                  shuffle_files=True, is_shuffle_data=True, number_of_traces_from_file=None,
-                 number_of_files=None, load_on_parallel=True,start_loading_while_training=True):
+                 number_of_files=None, load_on_parallel=True, start_loading_while_training=True, start_loading_files_n_batches_from_end = 30):
         'data generator initialization'
+        self.start_loading_files_n_batches_from_end=start_loading_files_n_batches_from_end
         self.load_on_parallel = load_on_parallel
         self.start_loading_while_training=start_loading_while_training
         self.reload_files_once = False
@@ -103,6 +103,7 @@ class SimulationDataGenerator():
         return self
 
     def validate(self):
+        self.start_loading_files_n_batches_from_end=2
         self.state = GeneratorState.VALIDATION
         self.shuffle_files = True
         self.is_shuffle_data = True
@@ -153,9 +154,9 @@ class SimulationDataGenerator():
                 self.sim_experiment_files) or self.sample_counter < self.indexes.size or self.state == GeneratorState.VALIDATION:
             yield self[np.arange(self.sample_counter, self.sample_counter + self.batch_size) % self.indexes.shape[0]]
             self.sample_counter += self.batch_size
-            if self.files_reload_checker(START_LOADING_FILES_N_BATCHES_FROM_END) and self.start_loading_while_training:
+            if self.files_reload_checker(self.start_loading_files_n_batches_from_end) and self.start_loading_while_training:
                 outs=[]
-                for i in range(START_LOADING_FILES_N_BATCHES_FROM_END):
+                for i in range(self.start_loading_files_n_batches_from_end):
                     out = self[np.arange(self.sample_counter, self.sample_counter +(self.batch_size)) % self.indexes.shape[0]][:]
                     outs.append(out)
                     self.sample_counter += self.batch_size
