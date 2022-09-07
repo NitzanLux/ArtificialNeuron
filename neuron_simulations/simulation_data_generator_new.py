@@ -81,6 +81,7 @@ class SimulationDataGenerator():
         self.state=GeneratorState.VALIDATION
         self.shuffle_files = True
         self.is_shuffle_data = True
+        return self
 
     def display_current_file_and_indexes(self):
         return self.curr_files_to_use, self.sample_counter % self.indexes.shape[0], (
