@@ -163,7 +163,7 @@ class SimulationDataGenerator():
                     self.reload_files()
 
     def files_reload_checker(self):
-        if (self.sample_counter + (self.batch_size*2)) / (self.indexes.shape[0]) >= self.sample_ratio_to_shuffle:
+        if (self.sample_counter + (self.batch_size*2)) / (self.indexes.shape[0]) > self.sample_ratio_to_shuffle:
             print("Reloading files")
             # self.reload_files()
 
