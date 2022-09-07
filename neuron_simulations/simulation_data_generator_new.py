@@ -10,15 +10,18 @@ from scipy import sparse
 import h5py
 import os
 import logging
-import multiprocessing
+# import multiprocessing
+import queue
+import threading
 from enum import Enum
+import os
 
-START_LOADING_FILES_N_SAMPLES_FROM_END = 5
+START_LOADING_FILES_N_BATCHES_FROM_END = 30
 
 Y_SOMA_THRESHOLD = -20.0
 
 NULL_SPIKE_FACTOR_VALUE = 0
-CPUS_COUNT = multiprocessing.cpu_count()
+CPUS_COUNT = os.cpu_count()
 print("Number of cpus: %d" % CPUS_COUNT)
 USE_CVODE = True
 SIM_INDEX = 0
@@ -30,9 +33,10 @@ class GeneratorState(Enum):
     VALIDATION = 2
 
 
-def helper_queue_process(queue, obj, f, i):
-    X, y_spike, y_soma, curr_files_index = obj.generate_data_from_file(f, i)
-    queue.put((i, X, y_spike, y_soma, curr_files_index))
+def helper_queue_process(q, obj):
+    f,i = q.get()
+    obj.X[i], obj.y_spike[i], obj.y_soma[i], obj.curr_files_index[i] = obj.generate_data_from_file(f, i)
+    # queue.put((i, X, y_spike, y_soma, curr_files_index))
 
 
 def helper_load_in_background(obj):
@@ -49,9 +53,10 @@ class SimulationDataGenerator():
                  ignore_time_from_start=20, y_train_soma_bias=-67.7, y_soma_threshold=Y_SOMA_THRESHOLD,
                  y_DTV_threshold=3.0, generator_name='',
                  shuffle_files=True, is_shuffle_data=True, number_of_traces_from_file=None,
-                 number_of_files=None, load_on_parallel=True):
+                 number_of_files=None, load_on_parallel=True,start_loading_while_training=True):
         'data generator initialization'
         self.load_on_parallel = load_on_parallel
+        self.start_loading_while_training=start_loading_while_training
         self.reload_files_once = False
         self.sim_experiment_files = sim_experiment_files
         self.generator_name = generator_name
@@ -68,7 +73,6 @@ class SimulationDataGenerator():
         self.sample_ratio_to_shuffle = sample_ratio_to_shuffle
         self.is_shuffle_data = is_shuffle_data
         self.shuffle_files = shuffle_files
-        self.curr_file_index = -1
         self.files_counter = 0
         self.epoch_counter = 0
         self.sample_counter = 0
@@ -116,9 +120,12 @@ class SimulationDataGenerator():
         """create epoch iterator"""
         self.epoch_counter += 1
         if self.shuffle_files: random.shuffle(self.curr_files_to_use); print("Shuffling files")
-        self.files_counter = 0
+        self.files_counter = 1
         self.sample_counter = 0
-        if not self.first_run: self.reload_files();self.first_run = False
+        if not self.first_run:
+            self.reload_files()
+            self.first_run = False
+            # self.files_counter=1
         if self.is_shuffle_data: self.shuffle_data()
 
         yield from self.iterate_deterministic_no_repetition()
@@ -146,17 +153,19 @@ class SimulationDataGenerator():
                 self.sim_experiment_files) or self.sample_counter < self.indexes.size or self.state == GeneratorState.VALIDATION:
             yield self[np.arange(self.sample_counter, self.sample_counter + self.batch_size) % self.indexes.shape[0]]
             self.sample_counter += self.batch_size
-            if self.files_reload_checker(START_LOADING_FILES_N_SAMPLES_FROM_END) and self.load_on_parallel:
+            if self.files_reload_checker(START_LOADING_FILES_N_BATCHES_FROM_END) and self.start_loading_while_training:
                 outs=[]
-                for i in range(START_LOADING_FILES_N_SAMPLES_FROM_END):
-                    out = self[np.arange(self.sample_counter+(self.batch_size*i), self.sample_counter ++(self.batch_size*(i+1))) % self.indexes.shape[0]][:]
+                for i in range(START_LOADING_FILES_N_BATCHES_FROM_END):
+                    out = self[np.arange(self.sample_counter, self.sample_counter +(self.batch_size)) % self.indexes.shape[0]][:]
                     outs.append(out)
-                p1 = multiprocessing.Process(target=helper_load_in_background, args=(self,))
-                p1.start()
+                    self.sample_counter += self.batch_size
+
+                t1 = threading.Thread(target=helper_load_in_background,args=(self,), daemon=True)
+                t1.start()
                 for out in outs:
                     yield out
-                    self.sample_counter += self.batch_size
-                p1.join()
+                t1.join()
+                # self.files_counter,self.sample_counter,  self.curr_files_to_use,self.X,self.y_spike,self.y_soma,self.indexes,self.curr_files_index=return_list[0].files_counter,return_list[0].sample_counter,  return_list[0].curr_files_to_use,return_list[0].X,return_list[0].y_spike,return_list[0].y_soma,return_list[0].indexes,return_list[0].curr_files_index
             elif self.files_reload_checker():
                 out = self[np.arange(self.sample_counter + (self.batch_size ),
                                      self.sample_counter + +(self.batch_size *  1)) % self.indexes.shape[0]][:]
@@ -170,11 +179,8 @@ class SimulationDataGenerator():
                     self.files_counter = 0
                     self.reload_files()
 
-    def files_reload_checker(self,steps_before=2):
+    def files_reload_checker(self,steps_before=1):
         if (self.sample_counter + (self.batch_size * (steps_before+1))) / (self.indexes.shape[0]) > self.sample_ratio_to_shuffle:
-            print("Reloading files")
-            # self.reload_files()
-
             return True
         return False
 
@@ -206,7 +212,7 @@ class SimulationDataGenerator():
 
         # time_range=(np.tile(np.arange(self.window_size_ms),(time_index.shape[0],1))+time_index[:,np.newaxis])
         # end_time=time_index+self.window_size_ms
-        print("number_of_samples = %d" % len(self.data_set), flush=True)
+        # print("number_of_samples = %d" % len(self.data_set), flush=True)
         X_batch = self.X[sim_ind_mat, chn_ind, win_ind]
         y_spike_batch = self.y_spike[
             sim_ind_mat[:, 0, self.receptive_filed_size:], win_ind[:, 0, self.receptive_filed_size:]]
@@ -236,14 +242,15 @@ class SimulationDataGenerator():
 
             else:
                 self.curr_files_to_use = []
-
             self.files_counter += 1
+
 
         self.load_files_to_buffer()
 
     def load_files_to_buffer(self):
         'load new file to draw batches from'
         # update the current file in use
+        # print("Reloading files")
 
         self.X = [None] * len(self.curr_files_to_use)
         self.y_spike = [None] * len(self.curr_files_to_use)
@@ -253,23 +260,16 @@ class SimulationDataGenerator():
             return
         # load the files in parallel
 
-        if self.load_on_parallel and CPUS_COUNT > 1:
-            queue = multiprocessing.Queue()
-            processes = []
-            rets = []
+        if self.load_on_parallel and min(CPUS_COUNT,len(self.curr_files_to_use)) > 1:
+            q = queue.Queue()
+
+            for i in range(min(CPUS_COUNT,len(self.curr_files_to_use))):
+                # print("start_process")
+                threading.Thread(target=helper_queue_process,args=(q,self), daemon=True).start()
             for i, f in enumerate(self.curr_files_to_use):
-                print("start_process")
-                p = multiprocessing.Process(target=helper_queue_process, args=(queue, self, f, i))
-                processes.append(p)
-                p.start()
-            for p in processes:
-                ret = queue.get()
-                rets.append(ret)
-            for p in processes:
-                p.join()
-            for ret in rets:
-                i, out = ret[0], ret[1:]
-                self.X[i], self.y_spike[i], self.y_soma[i], self.curr_files_index[i] = out
+                print(f)
+                q.put((f,i))
+            q.join()
             for i in range(1, len(self.curr_files_index)):
                 self.curr_files_index[i] += self.curr_files_index[i - 1]
 
@@ -313,6 +313,7 @@ class SimulationDataGenerator():
             y_spike = y_spike[:self.number_of_traces_from_file, :, :]
             y_soma = y_soma[:self.number_of_traces_from_file, :, :]
         curr_files_index = X.shape[0]
+        # print("generated_data")
         return X, y_spike, y_soma, curr_files_index
 
 

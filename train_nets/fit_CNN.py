@@ -52,16 +52,16 @@ include_DVT = False
 print_logs = False
 
 # for dibugging
-# SAVE_MODEL=False
-# print_logs=True
+SAVE_MODEL=False
+print_logs=True
 # os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
-# NUMBER_OF_HOURS_FOR_SAVING_MODEL_AND_CONFIG=1000
-# BATCH_LOG_UPDATE_FREQ = 1
-# VALIDATION_EVALUATION_FREQUENCY=4000
-# ACCURACY_EVALUATION_FREQUENCY = 4000
-# BUFFER_SIZE_IN_FILES_VALID = 1
-# BUFFER_SIZE_IN_FILES_TRAINING = 4
-# DOCUMENT_ON_WANDB = False
+NUMBER_OF_HOURS_FOR_SAVING_MODEL_AND_CONFIG=1000
+BATCH_LOG_UPDATE_FREQ = 1
+VALIDATION_EVALUATION_FREQUENCY=4000
+ACCURACY_EVALUATION_FREQUENCY = 4000
+BUFFER_SIZE_IN_FILES_VALID = 1
+BUFFER_SIZE_IN_FILES_TRAINING = 1
+DOCUMENT_ON_WANDB = False
 print('-----------------------------------------------')
 print('finding data')
 print('-----------------------------------------------', flush=True)
@@ -557,7 +557,7 @@ def run_fit_cnn():
     # send_mail("nitzan.luxembourg@mail.huji.ac.il","somthing went wrong",e)
     # raise e
 
-
-run_fit_cnn()
+if __name__ == "__main__":
+    run_fit_cnn()
 
 # send_mail("nitzan.luxembourg@mail.huji.ac.il","finished run","finished run")
