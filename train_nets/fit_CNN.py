@@ -242,7 +242,7 @@ def train_network(config, model, optimizer):
                 train_loss = batch_train(model, optimizer, custom_loss, data_arr, config.clip_gradients_factor,
                                          config.accumulate_loss_batch_factor, optimizer_scheduler, scaler)
                 lr = log_lr(config, optimizer)
-                train_log(train_loss, config.batch_counter, epoch, lr, sigma, loss_weights, additional_str="train")
+                train_log(train_loss, config.batch_counter, config.epoch_counter, lr, sigma, loss_weights, additional_str="train")
                 data_arr = []
             evaluate_validation(config, custom_loss, model, validation_data_iterator)
 
