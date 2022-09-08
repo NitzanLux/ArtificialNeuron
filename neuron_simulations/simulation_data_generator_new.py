@@ -251,7 +251,7 @@ class SimulationDataGenerator():
     def load_files_to_buffer(self):
         'load new file to draw batches from'
         # update the current file in use
-        # print("Reloading files")
+        print("Reloading files")
 
         self.X = [None] * len(self.curr_files_to_use)
         self.y_spike = [None] * len(self.curr_files_to_use)
@@ -314,7 +314,7 @@ class SimulationDataGenerator():
             y_spike = y_spike[:self.number_of_traces_from_file, :, :]
             y_soma = y_soma[:self.number_of_traces_from_file, :, :]
         curr_files_index = X.shape[0]
-        # print("generated_data")
+        print("generated_data")
         return X, y_spike, y_soma, curr_files_index
 
 
