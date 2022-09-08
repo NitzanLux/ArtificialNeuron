@@ -52,7 +52,7 @@ class SimulationDataGenerator():
                  ignore_time_from_start=20, y_train_soma_bias=-67.7, y_soma_threshold=Y_SOMA_THRESHOLD,
                  y_DTV_threshold=3.0, generator_name='',
                  shuffle_files=True, is_shuffle_data=True, number_of_traces_from_file=None,
-                 number_of_files=None, load_on_parallel=True, start_loading_while_training=True, start_loading_files_n_batches_from_end = 30):
+                 number_of_files=None, load_on_parallel=True, start_loading_while_training=True, start_loading_files_n_batches_from_end = 20):
         'data generator initialization'
         self.start_loading_files_n_batches_from_end=start_loading_files_n_batches_from_end
         self.load_on_parallel = load_on_parallel
