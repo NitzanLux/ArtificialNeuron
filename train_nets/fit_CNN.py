@@ -60,7 +60,7 @@ print_logs = False
 # VALIDATION_EVALUATION_FREQUENCY=4000
 # ACCURACY_EVALUATION_FREQUENCY = 4000
 # BUFFER_SIZE_IN_FILES_VALID = 1
-# BUFFER_SIZE_IN_FILES_TRAINING = 1
+# BUFFER_SIZE_IN_FILES_TRAINING = 4
 # DOCUMENT_ON_WANDB = False
 print('-----------------------------------------------')
 print('finding data')
@@ -557,7 +557,7 @@ def run_fit_cnn():
     # send_mail("nitzan.luxembourg@mail.huji.ac.il","somthing went wrong",e)
     # raise e
 
-# if __name__ == "__main__":
-run_fit_cnn()
+if __name__ == "__main__":
+    run_fit_cnn()
 
 # send_mail("nitzan.luxembourg@mail.huji.ac.il","finished run","finished run")

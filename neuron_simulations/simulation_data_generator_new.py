@@ -34,8 +34,8 @@ class GeneratorState(Enum):
 
 def helper_queue_process(q, obj):
     f,i = q.get()
-    obj.X[i], obj.y_spike[i], obj.y_soma[i], obj.curr_files_index[i] = obj.generate_data_from_file(f, i)
-    # queue.put((i, X, y_spike, y_soma, curr_files_index))
+    obj.X[i], obj.y_spike[i], obj.y_soma[i], obj.curr_files_index[i] = obj.generate_data_from_file(f)
+    q.task_done()
 
 
 def helper_load_in_background(obj):
@@ -52,7 +52,7 @@ class SimulationDataGenerator():
                  ignore_time_from_start=20, y_train_soma_bias=-67.7, y_soma_threshold=Y_SOMA_THRESHOLD,
                  y_DTV_threshold=3.0, generator_name='',
                  shuffle_files=True, is_shuffle_data=True, number_of_traces_from_file=None,
-                 number_of_files=None, load_on_parallel=True, start_loading_while_training=True, start_loading_files_n_batches_from_end = 20):
+                 number_of_files=None, load_on_parallel=True, start_loading_while_training=True, start_loading_files_n_batches_from_end = 30):
         'data generator initialization'
         self.start_loading_files_n_batches_from_end=start_loading_files_n_batches_from_end
         self.load_on_parallel = load_on_parallel
@@ -276,8 +276,7 @@ class SimulationDataGenerator():
 
         else:
             for i, f in enumerate(self.curr_files_to_use):
-                self.X[i], self.y_spike[i], self.y_soma[i], self.curr_files_index[i] = self.generate_data_from_file(f,
-                                                                                                                    i)
+                self.X[i], self.y_spike[i], self.y_soma[i], self.curr_files_index[i] = self.generate_data_from_file(f)
                 if i != 0:
                     self.curr_files_index[i] += self.curr_files_index[i - 1]
         self.X = np.vstack(self.X)
@@ -297,7 +296,7 @@ class SimulationDataGenerator():
 
         self.shuffle_data()
 
-    def generate_data_from_file(self, f, i):
+    def generate_data_from_file(self, f):
         X, y_spike, y_soma = parse_sim_experiment_file(f)
         # reshape to what is needed
         if len(X.shape) == 3:
