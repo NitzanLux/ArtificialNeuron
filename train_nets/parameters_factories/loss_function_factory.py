@@ -293,12 +293,12 @@ def focalbcel_mse_loss(loss_weights, window_size, sigma):
             general_loss = loss_weights[0] * loss_bcel
 
         if loss_weights[1] > 0:
-            loss_mse = mse_loss(output[1], target[1])
+            loss_mse = orch.mean(output[1]-target[1])**2
             loss_mse_item = loss_mse.item()
             general_loss = general_loss + loss_weights[1] * loss_mse if general_loss else loss_weights[1] * loss_mse
 
         if loss_weights[2] > 0:
-            loss_dvt = mse_loss(output[2], target[2])
+            loss_dvt = orch.mean(output[2]-target[2])**2
             loss_dvt_item = loss_dvt.item()
             general_loss = general_loss + loss_weights[2] * loss_dvt if general_loss else loss_weights[2] * loss_dvt
 
@@ -308,10 +308,10 @@ def focalbcel_mse_loss(loss_weights, window_size, sigma):
         #     blur_output = (output[0] >= 0.5).double()
         #     loss_blur = loss_weights[3] * mse_loss(g_blur(blur_output.squeeze(3)), g_blur(target[0].squeeze(3)))
         #     general_loss = general_loss + loss_blur if general_loss else loss_blur
-        if DATA_TYPE == torch.cuda.FloatTensor:
-            general_loss.float()
-        elif DATA_TYPE == torch.cuda.DoubleTensor:
-            general_loss.double()
+        # if DATA_TYPE == torch.cuda.FloatTensor:
+        #     general_loss.float()
+        # elif DATA_TYPE == torch.cuda.DoubleTensor:
+        #     general_loss.double()
         return general_loss, loss_bcel_item, loss_mse_item, loss_dvt_item, loss_blur_item
         # return general_loss, 0, 0, loss_dvt
 
