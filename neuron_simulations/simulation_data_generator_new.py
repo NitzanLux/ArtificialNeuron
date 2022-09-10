@@ -123,6 +123,7 @@ class SimulationDataGenerator():
         if self.shuffle_files: random.shuffle(self.curr_files_to_use); print("Shuffling files")
         self.files_counter = 1
         self.sample_counter = 0
+        self.index_set = set()
         if not self.first_run:
             self.reload_files()
             self.first_run = False
@@ -152,6 +153,8 @@ class SimulationDataGenerator():
     def iterate_deterministic_no_repetition(self):
         while self.files_counter * self.buffer_size_in_files < len(
                 self.sim_experiment_files) or self.sample_counter < self.indexes.size or self.state == GeneratorState.VALIDATION:
+            print(self.files_counter*self.buffer_size_in_files)
+
             yield self[np.arange(self.sample_counter, self.sample_counter + self.batch_size) % self.indexes.shape[0]]
             self.sample_counter += self.batch_size
             if self.files_reload_checker(self.start_loading_files_n_batches_from_end) and self.start_loading_while_training:
