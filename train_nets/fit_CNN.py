@@ -197,10 +197,8 @@ def train_network(config, model, optimizer):
 
     model.cuda().train()
     if DATA_TYPE == torch.cuda.FloatTensor:
-        optimizer.float()
         model.float()
     elif DATA_TYPE == torch.cuda.DoubleTensor:
-        model.double()
         optimizer.double()
     train_data_generator, validation_data_generator = get_data_generators(config)
     validation_data_iterator = iter(validation_data_generator)
