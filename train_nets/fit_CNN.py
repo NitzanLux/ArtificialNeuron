@@ -199,7 +199,7 @@ def train_network(config, model, optimizer):
     if DATA_TYPE == torch.cuda.FloatTensor:
         model.float()
     elif DATA_TYPE == torch.cuda.DoubleTensor:
-        optimizer.double()
+        model.double()
     train_data_generator, validation_data_generator = get_data_generators(config)
     validation_data_iterator = iter(validation_data_generator)
     batch_counter = 0
