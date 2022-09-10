@@ -271,7 +271,6 @@ class SimulationDataGenerator():
                 # print("start_process")
                 threading.Thread(target=helper_queue_process,args=(q,self), daemon=True).start()
             for i, f in enumerate(self.curr_files_to_use):
-                print(f)
                 q.put((f,i))
             q.join()
             for i in range(1, len(self.curr_files_index)):
