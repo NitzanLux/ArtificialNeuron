@@ -308,10 +308,10 @@ def focalbcel_mse_loss(loss_weights, window_size, sigma):
         #     blur_output = (output[0] >= 0.5).double()
         #     loss_blur = loss_weights[3] * mse_loss(g_blur(blur_output.squeeze(3)), g_blur(target[0].squeeze(3)))
         #     general_loss = general_loss + loss_blur if general_loss else loss_blur
-        # if DATA_TYPE == torch.cuda.FloatTensor:
-        #     general_loss.float()
-        # elif DATA_TYPE == torch.cuda.DoubleTensor:
-        #     general_loss.double()
+        if DATA_TYPE == torch.cuda.FloatTensor:
+            general_loss.float()
+        elif DATA_TYPE == torch.cuda.DoubleTensor:
+            general_loss.double()
         return general_loss, loss_bcel_item, loss_mse_item, loss_dvt_item, loss_blur_item
         # return general_loss, 0, 0, loss_dvt
 
