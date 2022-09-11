@@ -35,7 +35,7 @@ WANDB_PROJECT_NAME = "ArtificialNeuron1"
 DOCUMENT_ON_WANDB = True
 WATCH_MODEL = False
 SAVE_MODEL=True
-
+INCLUDE_OPTIMIZER_AT_LOADING=False
 NUMBER_OF_HOURS_FOR_PLOTTING_EVALUATIONS_PLOTS = 6000
 NUMBER_OF_HOURS_FOR_SAVING_MODEL_AND_CONFIG = 1
 VALIDATION_EVALUATION_FREQUENCY = 100
@@ -423,10 +423,10 @@ class SavingAndEvaluationScheduler():
 
                 os.rename(os.path.join(base_path, fn), os.path.join(base_path, fn) + 'temp')
         model.save(os.path.join(MODELS_DIR, *config.model_path))
-
-        opt_file_path = os.path.join(MODELS_DIR, *config.model_path) + ".optim"
-        with open(opt_file_path, 'wb') as fo:
-            pickle.dump(optimizer.state_dict(), fo)
+        if INCLUDE_OPTIMIZER_AT_LOADING:
+            opt_file_path = os.path.join(MODELS_DIR, *config.model_path) + ".optim"
+            with open(opt_file_path, 'wb') as fo:
+                pickle.dump(optimizer.state_dict(), fo)
         configuration_factory.overwrite_config(AttrDict(config))
 
     def __call__(self, model, config, optimizer):
@@ -444,7 +444,7 @@ def load_optimizer(config, model):
 
     optimizer = getattr(optim, config.optimizer_type)(model.parameters(),
                                                       **config.optimizer_params)
-    if os.path.exists(os.path.join(MODELS_DIR, *config.model_path) + '.optim'):
+    if os.path.exists(os.path.join(MODELS_DIR, *config.model_path) + '.optim') and INCLUDE_OPTIMIZER_AT_LOADING:
         with open(os.path.join(MODELS_DIR, *config.model_path) + '.optim', 'rb') as f:
             state_dict = pickle.load(f)
         optimizer.load_state_dict(state_dict)
