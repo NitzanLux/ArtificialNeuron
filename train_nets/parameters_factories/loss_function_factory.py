@@ -293,12 +293,12 @@ def focalbcel_mse_loss(loss_weights, window_size, sigma):
             general_loss = loss_weights[0] * loss_bcel
 
         if loss_weights[1] > 0:
-            loss_mse = torch.mean(output[1]-target[1])**2
+            loss_mse = mse_loss(output[1], target[1])
             loss_mse_item = loss_mse.item()
             general_loss = general_loss + loss_weights[1] * loss_mse if general_loss else loss_weights[1] * loss_mse
 
         if loss_weights[2] > 0:
-            loss_dvt = torch.mean(output[2]-target[2])**2
+            loss_dvt = mse_loss(output[2], target[2])
             loss_dvt_item = loss_dvt.item()
             general_loss = general_loss + loss_weights[2] * loss_dvt if general_loss else loss_weights[2] * loss_dvt
 

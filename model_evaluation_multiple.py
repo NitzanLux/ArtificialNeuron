@@ -19,10 +19,10 @@ from utils.general_variables import *
 from train_nets.configuration_factory import load_config_file
 import plotly
 import os
-
+import plotly.express as px
 BATCH_SIZE = 32
 
-cols = plotly.colors.DEFAULT_PLOTLY_COLORS
+cols = px.colors.qualitative.Alphabet
 
 GOOD_AND_BAD_SIZE = 8
 
