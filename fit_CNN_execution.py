@@ -22,4 +22,5 @@ with open(os.path.join(MODELS_DIR, "%s.json" % configs_file), 'r') as file:
 for i, conf in enumerate(configs):
     job_factory.send_job("%i_%s" % (i, configs_file),
                          'python3 -m train_nets.fit_CNN %s $SLURM_JOB_ID' % str(
-                             os.path.join(MODELS_DIR, *conf)), False)
+                             os.path.join(MODELS_DIR, *conf))#)
+                            , False,mem=120000)
