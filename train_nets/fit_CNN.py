@@ -203,9 +203,9 @@ def train_network(config, model, optimizer):
     DVT_PCA_model = None
     model.cuda() if USE_CUDA else model.cpu()
     model.train()
-    if DATA_TYPE == torch.cuda.FloatTensor or DATA_TYPE == torch.cpu.FloatTensor:
+    if DATA_TYPE == torch.cuda.FloatTensor or DATA_TYPE == torch.FloatTensor:
         model.float()
-    elif DATA_TYPE == torch.cuda.DoubleTensor or DATA_TYPE == torch.cpu.DoubleTensor:
+    elif DATA_TYPE == torch.cuda.DoubleTensor or DATA_TYPE == torch.DoubleTensor:
         model.double()
 
     train_data_generator, validation_data_generator = get_data_generators(config)

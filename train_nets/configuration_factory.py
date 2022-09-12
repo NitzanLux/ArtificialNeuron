@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Dict
 
 import yaml
-
+import errno
 from neuron_simulations.get_neuron_modle import get_L5PC
 from neuron_simulations.simulation_data_generator import *
 from train_nets.neuron_network import davids_network
@@ -279,7 +279,7 @@ def arange_kernel_by_layers(kernels, layers, expend=False):
 if __name__ == '__main__':
     # restore_last_n_configs(100)
     configs = []
-    configurations_name = "d_r_comparison_ss"
+    configurations_name = "d_r_comparison_cpu"
     # configurations_name = 'morph'
     base_layer = [54] + [12] * 6
     for k in range(4):
@@ -300,5 +300,6 @@ if __name__ == '__main__':
         # configs.extend(generate_config_files_multiple_seeds(config_morpho_0, 2))
 
     print(configurations_name)
-    with open(os.path.join(MODELS_DIR, "%s.json" % configurations_name), 'w') as file:
+
+    with open(os.path.join(MODELS_DIR, "%s.json" % configurations_name), 'x') as file:
         file.write(json.dumps(configs))  # use `json.loads` to do the reverse
