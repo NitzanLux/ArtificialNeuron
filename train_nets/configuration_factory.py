@@ -279,7 +279,7 @@ def arange_kernel_by_layers(kernels, layers, expend=False):
 if __name__ == '__main__':
     # restore_last_n_configs(100)
     configs = []
-    configurations_name = "d_r_comparison"
+    configurations_name = "d_r_comparison_ss"
     # configurations_name = 'morph'
     base_layer = [54] + [12] * 6
     for k in range(4):
