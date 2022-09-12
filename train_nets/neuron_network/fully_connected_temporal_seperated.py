@@ -5,7 +5,7 @@ import pickle  # python 3.8+ compatibility
 # from torchviz import make_dot
 import torch
 import torch.nn as nn
-
+from utils.general_variables import  *
 from project_path import MODELS_DIR
 from train_nets.neuron_network.block_aid_functions import CausalConv1d
 
@@ -133,7 +133,7 @@ class FullNeuronNetwork(nn.Module):
         self.double()
 
     def forward(self, x):
-        x = x.type(torch.cuda.DoubleTensor)
+        x = x.type(DATA_TYPE)
         out = self.model(x)
         out_v = self.v_fc(out)[:, :, self.input_window_size :]
         out_s = self.s_fc(out)[:, :, self.input_window_size :]
