@@ -22,10 +22,12 @@ from train_nets.parameters_factories import dynamic_learning_parameters_factory 
 from project_path import *
 from utils.general_aid_function import *
 
-torch.cuda.empty_cache()
 
-print(torch.cuda.get_device_name(0))
-print(torch.cuda.is_available())
+
+if USE_CUDA:
+    torch.cuda.empty_cache()
+    print(torch.cuda.get_device_name(0))
+    print(torch.cuda.is_available())
 print("done")
 
 WANDB_API_KEY = "2725e59f8f4484605300fdf4da4c270ff0fe44a3"
@@ -78,7 +80,7 @@ print('-----------------------------------------------', flush=True)
 def batch_train(model, optimizer, custom_loss, train_data_iterator, clip_gradient, accumulate_loss_batch_factor,
                 optimizer_scdualer, scaler):
     # zero the parameter gradients
-    torch.cuda.empty_cache()
+    if USE_CUDA: torch.cuda.empty_cache()
     gc.collect()
     model.train()
     general_loss, loss_bcel, loss_mse, loss_dvt, loss_gaussian_mse = 0, 0, 0, 0, 0
@@ -101,10 +103,13 @@ def train_without_mixed_precision(accumulate_loss_batch_factor, clip_gradient, c
                                   loss_dvt, loss_gausian_mse, loss_mse, model, optimizer, optimizer_scdualer,
                                   train_data_iterator):
     for _, data in zip(range(accumulate_loss_batch_factor), train_data_iterator):
-        torch.cuda.empty_cache()
         inputs, labels = data
-        inputs = inputs.cuda().type(DATA_TYPE)
-        labels = [l.cuda().flatten().type(DATA_TYPE) for l in labels]
+        if USE_CUDA:
+            inputs = inputs.cuda().type(DATA_TYPE)
+            labels = [l.cuda().flatten().type(DATA_TYPE) for l in labels]
+        else:
+            inputs = inputs.cpu().type(DATA_TYPE)
+            labels = [l.cpu().flatten().type(DATA_TYPE) for l in labels]
         # forward + backward + optimize
         outputs = model(inputs)
         outputs = [i.flatten() for i in outputs]
@@ -171,8 +176,10 @@ def plot_grad_flow(model=None):
 
     Usage: Plug this function in Trainer class after loss.backwards() as
     "plot_grad_flow(self.model.named_parameters())" to visualize the gradient flow'''
-
-    model.cuda().eval()
+    if USE_CUDA:
+        model.cuda().eval()
+    else:
+        model.cpu().eval()
     ave_grads = []
     max_grads = []
     layers = []
@@ -194,12 +201,13 @@ def plot_grad_flow(model=None):
 
 def train_network(config, model, optimizer):
     DVT_PCA_model = None
-
-    model.cuda().train()
-    if DATA_TYPE == torch.cuda.FloatTensor:
+    model.cuda() if USE_CUDA else model.cpu()
+    model.train()
+    if DATA_TYPE == torch.cuda.FloatTensor or DATA_TYPE == torch.cpu.FloatTensor:
         model.float()
-    elif DATA_TYPE == torch.cuda.DoubleTensor:
+    elif DATA_TYPE == torch.cuda.DoubleTensor or DATA_TYPE == torch.cpu.DoubleTensor:
         model.double()
+
     train_data_generator, validation_data_generator = get_data_generators(config)
     validation_data_iterator = iter(validation_data_generator)
     batch_counter = 0
@@ -215,8 +223,10 @@ def train_network(config, model, optimizer):
     else:
         learning_rate, loss_weights, sigma = 0.001, [1] * 3, 0.1  # default values
         dynamic_parameter_loss_genrator = getattr(dlpf, config.dynamic_learning_params_function)(config)
-
-    scaler = torch.cuda.amp.GradScaler(enabled=True) if config.use_mixed_precision else None
+    if USE_CUDA:
+        scaler = torch.cuda.amp.GradScaler(enabled=True) if config.use_mixed_precision else None
+    else:
+        scaler = torch.cpu.amp.GradScaler(enabled=True) if config.use_mixed_precision else None
     if DOCUMENT_ON_WANDB and WATCH_MODEL:
         wandb.watch(model, log='all', log_freq=1, log_graph=True)
     model_level_training_scadualer = None
@@ -309,8 +319,12 @@ def evaluate_validation(config, custom_loss, model, validation_data_iterator):
     if print_logs: print("validate %d" % config.batch_counter)
     valid_input, valid_labels = next(validation_data_iterator)
     model.eval()
-    valid_input = valid_input.cuda().type(DATA_TYPE)
-    valid_labels = [l.cuda().type(DATA_TYPE) for l in valid_labels]
+    if USE_CUDA:
+        valid_input = valid_input.cuda().type(DATA_TYPE)
+        valid_labels = [l.cuda().type(DATA_TYPE) for l in valid_labels]
+    else:
+        valid_input = valid_input.cpu().type(DATA_TYPE)
+        valid_labels = [l.cpu().type(DATA_TYPE) for l in valid_labels]
     with torch.no_grad():
         output = model(valid_input)
     target_s = valid_labels[0].detach().cpu()
@@ -478,7 +492,7 @@ def model_pipline(hyperparameters):
 
 def load_and_train(config):
     model = load_model(config)
-    optimizer = load_optimizer(config, model.cuda())
+    optimizer = load_optimizer(config, model.cuda() if USE_CUDA else model.cpu())
     try:
         train_network(config, model, optimizer)
     except Exception as e:

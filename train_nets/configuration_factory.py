@@ -14,6 +14,7 @@ from train_nets.neuron_network import recursive_neuronal_model
 from train_nets.synapse_tree import SectionNode
 from utils.general_aid_function import *
 from project_path import *
+
 synapse_type = ''
 include_DVT = False
 # num_DVT_components = 20 if synapse_type == 'NMDA' else 30
@@ -151,12 +152,7 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
     if is_new_name or not ("model_filename" in config):
         config.model_filename = generate_model_name(config.model_tag)
     if generate_random_seeds:
-        max_seed_number = sum([2 ** i for i in range(32)]) - 1  # maximal seed
-        np.random.seed()
-        config.torch_seed, config.numpy_seed, config.random_seed = np.random.randint(0, max_seed_number - 1, 3,
-                                                                                     np.uint32)
-        config.torch_seed, config.numpy_seed, config.random_seed = float(config.torch_seed), float(
-            config.numpy_seed), float(config.random_seed)
+        config.torch_seed, config.numpy_seed, config.random_seed = get_seeds()
     if config_new_path is None:
         try:
             os.mkdir(os.path.join(MODELS_DIR, config.model_filename))
@@ -199,6 +195,16 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
     config.config_path = config_new_path + ['%s.config' % config.model_filename]
     save_config(config)
     return config.config_path
+
+
+def get_seeds():
+    max_seed_number = sum([2 ** i for i in range(32)]) - 1  # maximal seed
+    np.random.seed()
+    torch_seed, numpy_seed, random_seed = np.random.randint(0, max_seed_number - 1, 3,
+                                                            np.uint32)
+    torch_seed, numpy_seed, random_seed = float(torch_seed), float(
+        numpy_seed), float(random_seed)
+    return torch_seed, numpy_seed, random_seed
 
 
 def overwrite_config(config, **kargs):
@@ -255,40 +261,42 @@ def restore_last_n_configs(n=10):
     load_config_file_from_wandb_yml(files)
 
 
-def arange_kernel_by_layers(kernels, layers,expend=False):
+def arange_kernel_by_layers(kernels, layers, expend=False):
     # if len(kernels)<=layers: return kernels,sum(kernels)
-    max_filter=max(kernels)
-    credit = sum(kernels[layers:])-len(kernels)+layers
+    max_filter = max(kernels)
+    credit = sum(kernels[layers:]) - len(kernels) + layers
     new_kernels = []
     for i in range(layers):
         change = min(kernels[i] + credit, max_filter)
         credit -= change - kernels[i]
         new_kernels.append(change)
-    if sum(new_kernels)-len(new_kernels) < sum(kernels)-len(kernels) and expend:
+    if sum(new_kernels) - len(new_kernels) < sum(kernels) - len(kernels) and expend:
         new_kernels = [max_filter] * layers
-        new_kernels[0] += sum(kernels)-sum(new_kernels)-len(kernels)+layers
+        new_kernels[0] += sum(kernels) - sum(new_kernels) - len(kernels) + layers
     return new_kernels
 
 
 if __name__ == '__main__':
     # restore_last_n_configs(100)
     configs = []
-    # configurations_name = "d_r_comparison"
-    configurations_name='morph'
-    base_layer=[54]+[12]*6
-    for i in range(7,0,-2):
-        kernels = arange_kernel_by_layers(base_layer,i,False)
-        for data in [DAVID_BASE_PATH,REDUCTION_BASE_PATH]:
-            config = config_factory(
-                # architecture_type='FullNeuronNetwork',
-                architecture_type='LAYERED_TEMPORAL_CONV_N',   clip_gradients_factor=2.5,
-                model_tag="%s_%d%s" % (configurations_name, i,"_reduction" if data == REDUCTION_BASE_PATH else ''),
-                kernel_sizes=kernels, number_of_layers_space = len(kernels),data_base_path=data,
-                accumulate_loss_batch_factor=1, prediction_length=700,
-                batch_size_validation=30, batch_size_train=32,
-                # batch_size_validation=30, batch_size_train=160,
-                constant_learning_rate=0.003)
-            configs.append(config)
+    configurations_name = "d_r_comparison"
+    # configurations_name = 'morph'
+    base_layer = [54] + [12] * 6
+    for k in range(4):
+        torch_seed, numpy_seed, random_seed = get_seeds()
+        for i in range(7, 0, -2):
+            kernels = arange_kernel_by_layers(base_layer, i, False)
+            for data in [DAVID_BASE_PATH, REDUCTION_BASE_PATH]:
+                config = config_factory(
+                    architecture_type='FullNeuronNetwork',
+                    # architecture_type='LAYERED_TEMPORAL_CONV_N', clip_gradients_factor=2.5,
+                    model_tag="%s_%d%s" % (configurations_name, i, "_reduction" if data == REDUCTION_BASE_PATH else ''),
+                    kernel_sizes=kernels, number_of_layers_space=len(kernels), data_base_path=data,
+                    accumulate_loss_batch_factor=1, prediction_length=700,torch_seed=torch_seed,numpy_seed=numpy_seed,random_seed=random_seed,
+                    # batch_size_validation=30, batch_size_train=32,
+                    batch_size_validation=30, batch_size_train=160,
+                    constant_learning_rate=0.07)
+                configs.append(config)
         # configs.extend(generate_config_files_multiple_seeds(config_morpho_0, 2))
 
     print(configurations_name)
