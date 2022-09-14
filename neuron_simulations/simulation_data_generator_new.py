@@ -124,6 +124,7 @@ class SimulationDataGenerator():
         self.files_counter = 1
         self.sample_counter = 0
         self.index_set = set()
+        self.data_set=set()
         if not self.first_run:
             self.reload_files()
             self.first_run = False

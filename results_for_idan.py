@@ -1,10 +1,10 @@
 import matplotlib.pyplot as plt
 import numpy as np
 #%%
-data = [(1, 0.9690, "original"), (1, 0.9781, "reduction"),
-        (3, 0.9859, "original"), (5, 0.9866, "original"),
-        (7, 0.9869, "original"), (7, 0.9872, "reduction"),
-        (5, 0.9882, "reduction"), (3, 0.9885, "reduction")]
+data = [(1, 0.9676, "original"), (1, 0.9751, "reduction"),
+        (3, 0.9834, "original"), (3, 0.9873, "reduction"),
+        (5,  0.9853, "original"), (5, 0.9878, "reduction"),
+        (7, 0.9866, "original"), (7, 0.9870, "reduction")]
 data = sorted(data,key=lambda x:2*x[0]+int(x[2]=="original"))
 o_data=list(map(lambda x:x[1],data[1::2]))
 r_data=list(map(lambda x:x[1],data[::2]))

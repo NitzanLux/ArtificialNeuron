@@ -249,6 +249,13 @@ def load_config_file_from_wandb_yml(configs_names):
             new_config[k] = v['value']
         save_config(AttrDict(new_config))
 
+def change_configs_in_json(configs_json,**kwargs):
+    with open(os.path.join(MODELS_DIR, "%s.json" % configs_json), 'r') as file:
+        configs = json.load(file)
+    for conf in configs:
+        path = os.path.join(MODELS_DIR, *conf)
+        config = load_config_file(path)
+        overwrite_config(config,**kwargs)
 
 def restore_last_n_configs(n=10):
     search_dir = "../wandb"
