@@ -142,13 +142,13 @@ class RootBlock(nn.Module):
     def __init__(self, input_shape: Tuple[int, int], number_of_layers_root: int, activation_function
                  , channel_output_number, inner_scope_channel_number
                  , kernel_size,  stride=1,
-                 dilation=1,kernel_size_soma=None,dropout_factor=None,trim_last_nonlinear=False, **kwargs):
+                 dilation=1,kernel_size_soma=None,dropout_factor=None, **kwargs):
         super(RootBlock, self).__init__()
         self.conv1d_root = Base1DConvolutionBlock(number_of_layers_root, input_shape, activation_function,
                                                   inner_scope_channel_number, inner_scope_channel_number,
 
                                                   kernel_size=kernel_size if kernel_size_soma is None else kernel_size_soma,
-                                                  stride=stride, dilation=dilation,trim_last_nonlinear=trim_last_nonlinear,
+                                                  stride=stride, dilation=dilation,trim_last_nonlinear=False,
                                                   skip_connections=kwargs['skip_connections'], dropout_factor=dropout_factor)
         self.model = nn.Sequential(self.conv1d_root, activation_function())
         self.input_shape=input_shape
