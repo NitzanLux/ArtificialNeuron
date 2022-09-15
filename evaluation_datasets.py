@@ -11,6 +11,7 @@ if __name__ == '__main__':
         for i in ["morph_7___2022-09-07__23_01__ID_42876",
                     "morph_7_reduction___2022-09-07__23_01__ID_28654",
                     "d_r_comparison_7___2022-09-07__22_59__ID_57875",
+                    "morph_linear_7___2022-09-15__17_55__ID_30822",
                     "d_r_comparison_7_reduction___2022-09-07__22_59__ID_31437",
                     "d_r_comparison_5___2022-09-07__22_59__ID_65381",
                     "d_r_comparison_5_reduction___2022-09-07__22_59__ID_9020",
