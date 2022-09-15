@@ -307,6 +307,7 @@ if __name__ == '__main__':
                 configs.append(config)
                 break
             break
+        break
         # configs.extend(generate_config_files_multiple_seeds(config_morpho_0, 2))
 
     print(configurations_name)
