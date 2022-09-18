@@ -19,6 +19,8 @@ if __name__ == '__main__':
         configs_lists=[]
         print(args)
         for json_name in args.json_files_name:
+            if isinstance(json_name,list):
+                json_name=json_name[0]
             with open(os.path.join(MODELS_DIR, "%s.json" % json_name), 'r') as file:
                 configs_lists.extend(json.load(file))
         for i in configs_lists:
