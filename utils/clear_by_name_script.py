@@ -20,7 +20,8 @@ print(str(result))
 
 # print("****")
 print( [[j.strip() for j in i.split('\\s')] for i in result.split('\n')])
-
+with open("test.txt",'w') as f:
+    writelines([[j.strip() for j in i.split('\\s')] for i in result.split('\n')])
 # number_of_jobs=len(configs)
 
 
