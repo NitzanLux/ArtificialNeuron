@@ -6,7 +6,7 @@ import argparse
 import json
 from utils.slurm_job import *
 import subprocess
-
+import re
 parser = argparse.ArgumentParser(description='json file...')
 
 parser.add_argument(dest="job_name_format", type=str,
@@ -19,7 +19,7 @@ result = result.stdout.decode('utf-8')
 result=str(result)
 result = result.split('\n')
 for i,s in enumerate(result):
-    result[i] = s.split('\\s+')
+    result[i] = re.split('[\s]+',s)
 print(result)
 with open("test.txt",'w') as f:
     f.write(str(result))
