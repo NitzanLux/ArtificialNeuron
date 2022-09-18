@@ -16,9 +16,10 @@ parser.add_argument(dest="amount", type=int,
 
 result = subprocess.run(['squeue', '--me','-o' ,'"%.1i %.1P %100j %1T %.1M  %.R"'], stdout=subprocess.PIPE)
 result = result.stdout
-print(result)
-print("****")
-print(result.split('\t'))
+print(str(result))
+
+# print("****")
+# print(result.split('\t'))
 
 # number_of_jobs=len(configs)
 
