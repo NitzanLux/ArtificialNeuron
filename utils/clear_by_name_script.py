@@ -29,7 +29,7 @@ for i,arr in enumerate(result):
     if m.match(arr[index]):
         print(arr[index])
         deleted_names.append(arr[index])
-subprocess.run(["printf",'Is this a good question (y/n)?'], stdout=subprocess.STDOUT)
+subprocess.run(["printf",'Is this a good question (y/n)?'], stdout=subprocess.PIPE)
 delete_all = subprocess.run(["read answer"], stdout=subprocess.PIPE)
 if delete_all.stdout.decode('utf-8')=='y':
     command = f'scancel -n {" ".join(deleted_names)}'
