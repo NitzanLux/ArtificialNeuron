@@ -20,7 +20,7 @@ result=str(result)
 result = result.split('\n')
 for i,s in enumerate(result):
     result[i] = re.split('[\s]+',s)
-    print(len(result))
+    print(len(result[i]))
 print(result)
 with open("test.txt",'w') as f:
     f.write(str(result))
