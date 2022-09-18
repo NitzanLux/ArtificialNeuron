@@ -24,6 +24,7 @@ if __name__ == '__main__':
             i=i[1]
             if i.endswith('.config'):
                 i=i[:len('.config')]
+                print(i)
             if 'reduction___'in i:
                 gt_name= 'reduction_ergodic_validation'
             else:
