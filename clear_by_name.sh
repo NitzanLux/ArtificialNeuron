@@ -21,5 +21,5 @@ fi
 path=$(dirname $SCRIPT_PATH)
 
 # put your script here - example script is sitting with this bash script
-python3 -m utils.clear_by_name_script arg
+python3 -m utils.clear_by_name_script
 
