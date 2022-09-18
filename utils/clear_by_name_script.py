@@ -34,4 +34,4 @@ delete_all = input('delete all those files? (y/n)?')
 if delete_all=='y':
     command = f'scancel -n {" ".join(deleted_names)}'
     # print(command)
-    subprocess.run([command], stdout=subprocess.STDOUT)
+    subprocess.run([*command], stdout=subprocess.PIPE)
