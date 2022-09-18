@@ -13,7 +13,7 @@ parser.add_argument(dest="configs_paths", type=str,
 parser.add_argument('-g',dest="use_gpu", type=str,
                     help='true if to use gpu false otherwise', default="False")
 args = parser.parse_args()
-use_gpu = args.use_gpu.lower() in {"false",'0',''}
+use_gpu = not args.use_gpu.lower() in {"false",'0',''}
 print(args)
 print(f"use gpu : {use_gpu}")
 configs_file = args.configs_paths
