@@ -11,8 +11,12 @@ if __name__ == '__main__':
         parser = argparse.ArgumentParser(description='json files')
 
         parser.add_argument('-j', dest="json_files_name",action='append', type=str, nargs='+', help='jsons files names')
+        parser.add_argument('-n', dest="jobs_number",type=int, help='number of jobs to use',default=-1)
+        parser.add_argument('-g', dest="use_gpu", type=str,
+                            help='true if to use gpu false otherwise', default="False")
 
         args = parser.parse_args()
+        use_gpu = not args.use_gpu.lower() in {"false", '0', ''}
 
 
         job_factory = SlurmJobFactory("cluster_logs")
@@ -23,6 +27,9 @@ if __name__ == '__main__':
                 json_name=json_name[0]
             with open(os.path.join(MODELS_DIR, "%s.json" % json_name), 'r') as file:
                 configs_lists.extend(json.load(file))
+        commands=[]
+        number_of_cpus = args.cpus_number
+
         for i in configs_lists:
             i=i[1]
             if i.endswith('.config'):
@@ -32,8 +39,14 @@ if __name__ == '__main__':
                 gt_name= 'reduction_ergodic_validation'
             else:
                 gt_name= 'davids_ergodic_validation'
-            job_factory.send_job('model_%s'%gt_name,'python -c "from model_evaluation_multiple import create_model_evaluation;'
-                                                    ' create_model_evaluation(%s,%s)"'%("'" + gt_name + "'", "'" + i + "'")  , run_on_GPU=False)
+            commands.append('python -c "from model_evaluation_multiple import create_model_evaluation;'
+                                                    ' create_model_evaluation(%s,%s)"'%("'" + gt_name + "'", "'" + i + "'") )
+        number_of_cpus=min(number_of_cpus,len(commands))
+        jumps=len(commands)//number_of_cpus
+        for i in range(0,number_of_cpus,jumps):
+            command=" && ".join(commands[i:min(i+jumps,len(commands))])
+
+            job_factory.send_job('model_evaluations',command, run_on_GPU=use_gpu)
 
     # for i in ["morph_7___2022-09-07__23_01__ID_42876",
     #             "morph_7_reduction___2022-09-07__23_01__ID_28654",
