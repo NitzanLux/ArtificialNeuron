@@ -34,7 +34,7 @@ for i, conf in enumerate(configs):
     current_job_name="%i_%s" % (i, configs_file)
     if current_job_name in current_cluster_work:
         continue
-    if arga.memory>0:
+    if args.memory>0:
         keys.update({'mem':args.memory})
     job_factory.send_job(current_job_name,
                          'python3 -m train_nets.fit_CNN %s $SLURM_JOB_ID' % str(
