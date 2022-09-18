@@ -24,7 +24,7 @@ class Base1DConvolutionBlockLayer(nn.Module):
             self.dropout = lambda x:x
     def forward(self, x):
         out = self.conv1d(x)
-        if not trim_last_nonlinear:
+        if not self.trim_last_nonlinear:
             out = self.batch_norm(out)
             out = self.activation_function(out)
             out = self.dropout(out)
