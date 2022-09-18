@@ -15,6 +15,7 @@ parser.add_argument('-g',dest="use_gpu", type=str,
 args = parser.parse_args()
 use_gpu = args.use_gpu.lower() in {"false",'0',''}
 print(args)
+print(f"use gpu : {use_gpu}")
 configs_file = args.configs_paths
 exit(0)
 job_factory = SlurmJobFactory("cluster_logs")
