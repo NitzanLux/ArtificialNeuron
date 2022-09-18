@@ -20,6 +20,7 @@ from train_nets.configuration_factory import load_config_file
 import plotly
 import os
 import plotly.express as px
+from utils.general_variables import *
 BATCH_SIZE = 32
 
 cols = px.colors.qualitative.Alphabet
@@ -200,17 +201,18 @@ class EvaluationData(SimulationData):
     def __evaluate_model(self):
         # assert not self.is_recording(), "evaluation had been done in this object"
         model = self.load_model()
-        model.cuda().eval()
-        if DATA_TYPE == torch.cuda.FloatTensor:
+        model.cuda().eval() if USE_CUDA else model.cpu().eval()
+        if DATA_TYPE == torch.cuda.FloatTensor or DATA_TYPE == torch.FloatTensor:
             model.float()
-        elif DATA_TYPE == torch.cuda.DoubleTensor:
+        elif DATA_TYPE == torch.cuda.DoubleTensor or DATA_TYPE==torch.DoubleTensor:
             model.double()
         data_keys, s_out, v_out = [], [], []
         i = 0
         for inputs, keys in self.ground_truth.get_evaluation_input(batch_size=BATCH_SIZE):
             i += 1
             with torch.no_grad():
-                output_s, output_v = model(inputs.cuda().type(DATA_TYPE))
+                inputs.cuda() if USE_CUDA else inputs.cpu()
+                output_s, output_v = model(inputs.type(DATA_TYPE))
                 output_s = torch.nn.Sigmoid()(output_s)
             v_out.append(output_v.cpu().detach().numpy().squeeze())
             s_out.append(output_s.cpu().detach().numpy().squeeze())
