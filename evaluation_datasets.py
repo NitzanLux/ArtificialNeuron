@@ -43,11 +43,8 @@ if __name__ == '__main__':
                                                     ' create_model_evaluation(%s,%s)"'%("'" + gt_name + "'", "'" + i + "'") )
         number_of_jobs=min(number_of_jobs, len(commands))
         jumps= len(commands)//number_of_jobs
-        print(jumps)
-        print(len(commands))
         for c,i in enumerate(range(0, len(commands), jumps)):
             command=" && ".join(commands[i:min(i+jumps,len(commands))])
-            print(command)
             keys={}
             if not use_gpu:
                 keys={'mem':120000}
