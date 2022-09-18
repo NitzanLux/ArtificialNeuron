@@ -10,7 +10,7 @@ import re
 parser = argparse.ArgumentParser(description='json file...')
 
 parser.add_argument('-re',dest="job_name_format", type=str,
-                    help='configurations json file of paths', default=None)
+                    help='configurations json file of paths')
 
 args = parser.parse_args()
 result = subprocess.run(['squeue', '--me','-o' ,'"%.1i %.1P %100j %1T %.1M  %.R"'], stdout=subprocess.PIPE)
