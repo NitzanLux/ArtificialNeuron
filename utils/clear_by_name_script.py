@@ -22,11 +22,14 @@ for i,s in enumerate(result):
 index = result[0].index("NAME")
 print(f"{args.job_name_format}")
 m=re.compile(f"{args.job_name_format}")
+deleted_names=[]
 for i,arr in enumerate(result):
     if i == 0 or len(arr)<index+1:
         continue
     if m.match(arr[index]):
         print(arr[index])
-
-
-
+        deleted_names.append(arr[index])
+delete_all = subprocess.run(["printf 'Is this a good question (y/n)?' && read answer"], stdout=subprocess.PIPE)
+if delete_all.stdout.decode('utf-8')=='y':
+    command = f'scancel -n {" ".join(deleted_names)}'
+    subprocess.run([command], stdout=subprocess.STDOUT)
