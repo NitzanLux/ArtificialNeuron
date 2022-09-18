@@ -18,7 +18,7 @@ from project_path import *
 synapse_type = ''
 include_DVT = False
 # num_DVT_components = 20 if synapse_type == 'NMDA' else 30
-CURRENT_VERSION = 1.91
+CURRENT_VERSION = 1.92
 
 
 def generate_model_name(additional_str: str = ''):
@@ -97,7 +97,7 @@ def surround_with_default_config_values(**kargs):
         skip_connections=True,
         inter_module_skip_connections=True,
         kernel_size=[54] + [12] * 6,
-        trim_last_nonlinear=True,
+        trim_last_nonlinear=False,
         kernel_size_soma=1,
         kernel_size_intersection=1,
         kernel_size_branch=1,
