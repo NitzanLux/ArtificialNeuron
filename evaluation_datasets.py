@@ -17,6 +17,7 @@ if __name__ == '__main__':
 
         job_factory = SlurmJobFactory("cluster_logs")
         configs_lists=[]
+        print(args.json_files_name)
         for json_name in args.json_files_name:
             with open(os.path.join(MODELS_DIR, "%s.json" % json_name), 'r') as file:
                 configs_lists.extend(json.load(file))
