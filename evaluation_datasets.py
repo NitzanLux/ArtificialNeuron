@@ -28,7 +28,7 @@ if __name__ == '__main__':
             with open(os.path.join(MODELS_DIR, "%s.json" % json_name), 'r') as file:
                 configs_lists.extend(json.load(file))
         commands=[]
-        number_of_cpus = args.cpus_number
+        number_of_jobs = args.jobs_number
 
         for i in configs_lists:
             i=i[1]
@@ -41,9 +41,9 @@ if __name__ == '__main__':
                 gt_name= 'davids_ergodic_validation'
             commands.append('python -c "from model_evaluation_multiple import create_model_evaluation;'
                                                     ' create_model_evaluation(%s,%s)"'%("'" + gt_name + "'", "'" + i + "'") )
-        number_of_cpus=min(number_of_cpus,len(commands))
-        jumps=len(commands)//number_of_cpus
-        for i in range(0,number_of_cpus,jumps):
+        number_of_jobs=min(number_of_jobs, len(commands))
+        jumps= len(commands) // number_of_jobs
+        for i in range(0, number_of_jobs, jumps):
             command=" && ".join(commands[i:min(i+jumps,len(commands))])
 
             job_factory.send_job('model_evaluations',command, run_on_GPU=use_gpu)
