@@ -43,9 +43,10 @@ if __name__ == '__main__':
                                                     ' create_model_evaluation(%s,%s)"'%("'" + gt_name + "'", "'" + i + "'") )
         number_of_jobs=min(number_of_jobs, len(commands))
         jumps= len(commands) // number_of_jobs
+        print(jumps)
         for i in range(0, number_of_jobs, jumps):
             command=" && ".join(commands[i:min(i+jumps,len(commands))])
-
+            print(command)
             job_factory.send_job('model_evaluations',command, run_on_GPU=use_gpu)
 
     # for i in ["morph_7___2022-09-07__23_01__ID_42876",
