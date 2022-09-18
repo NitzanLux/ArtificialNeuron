@@ -19,7 +19,7 @@ result = str(result.stdout)
 print(str(result))
 
 # print("****")
-print(result.split('\t'))
+print( [i.split('\t') for i in result.split('\n')])
 
 # number_of_jobs=len(configs)
 
