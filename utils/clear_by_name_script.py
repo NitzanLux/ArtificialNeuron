@@ -32,6 +32,7 @@ for i,arr in enumerate(result):
 delete_all = input('delete all those files? (y/n)?')
 # delete_all = subprocess.run(["read answer"], stdout=subprocess.PIPE)
 if delete_all=='y':
-    command = ['scancel','-n' ]+deleted_names
-    # print(command)
-    subprocess.run(command, stdout=subprocess.PIPE)
+    for i in deleted_names:
+        command = ['scancel','-n' ,i]
+        # print(command)
+        subprocess.run(command, stdout=subprocess.PIPE)
