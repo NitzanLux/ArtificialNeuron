@@ -10,13 +10,12 @@ parser = argparse.ArgumentParser(description='Add configuration file')
 
 parser.add_argument(dest="configs_paths", type=str,
                     help='configurations json file of paths', default=None)
-parser.add_argument(dest="use_gpu", type=bool,
+parser.add_argument('-g',dest="use_gpu", type=bool,
                     help='true if to use gpu false otherwise', default=False)
 args = parser.parse_args()
 print(args)
-
 configs_file = args.configs_paths
-
+exit(0)
 job_factory = SlurmJobFactory("cluster_logs")
 with open(os.path.join(MODELS_DIR, "%s.json" % configs_file), 'r') as file:
     configs = json.load(file)
