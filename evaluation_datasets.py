@@ -10,7 +10,7 @@ if __name__ == '__main__':
     else:
         parser = argparse.ArgumentParser(description='json files')
 
-        parser.add_argument('-j', dest="json_files_name", type=str, nargs='+', help='jsons files names')
+        parser.add_argument('-j', dest="json_files_name",action='append', type=str, nargs='+', help='jsons files names')
 
         args = parser.parse_args()
 
