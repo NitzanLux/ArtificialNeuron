@@ -13,4 +13,4 @@ for i,s in enumerate(runs_array):
     print(f"Now running command: {s}")
     s=re.split(f"[\s]+",s)
     result = subprocess.run(s, input=str.encode('y'),stderr=sys.stderr, stdout=sys.stdout)
-    # time.sleep(5)
+    time.sleep(1)
