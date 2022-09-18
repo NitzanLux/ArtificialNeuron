@@ -16,10 +16,10 @@ parser.add_argument(dest="amount", type=int,
 
 result = subprocess.run(['squeue', '--me','-o' ,'"%.1i %.1P %100j %1T %.1M  %.R"'], stdout=subprocess.PIPE)
 result = result.stdout.decode('utf-8')
-print(str(result))
-
-# print("****")
-print( [[j.strip() for j in i.split('\\s')] for i in result.split('\n')])
+result=str(result)
+result = result.split('\n')
+for i,s in enumerate(result):
+    result[i] = s.split('\\s+')
 with open("test.txt",'w') as f:
     f.write("\n".join([str([str(j).strip() for j in str(i).split('\\s')]) for i in result.split('\n')]))
 # number_of_jobs=len(configs)
