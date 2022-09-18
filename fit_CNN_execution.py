@@ -17,7 +17,14 @@ use_gpu = not args.use_gpu.lower() in {"false",'0',''}
 print(args)
 print(f"use gpu : {use_gpu}")
 configs_file = args.configs_paths
+response = input("continue?y/n")
+while response not in {'y','n'}:
+    response = input("continue?y/n")
+if response=='n':
+    exit(0)
+
 job_factory = SlurmJobFactory("cluster_logs")
+
 with open(os.path.join(MODELS_DIR, "%s.json" % configs_file), 'r') as file:
     configs = json.load(file)
 for i, conf in enumerate(configs):
