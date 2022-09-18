@@ -33,7 +33,7 @@ if __name__ == '__main__':
             else:
                 gt_name= 'davids_ergodic_validation'
             job_factory.send_job('model_%s'%gt_name,'python -c "from model_evaluation_multiple import create_model_evaluation;'
-                                                    ' create_model_evaluation(%s,%s)"'%("'" + gt_name + "'", "'" + i + "'")  , run_on_GPU=True)
+                                                    ' create_model_evaluation(%s,%s)"'%("'" + gt_name + "'", "'" + i + "'")  , run_on_GPU=False)
 
     # for i in ["morph_7___2022-09-07__23_01__ID_42876",
     #             "morph_7_reduction___2022-09-07__23_01__ID_28654",
