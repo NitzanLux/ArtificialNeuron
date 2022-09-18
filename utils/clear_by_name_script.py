@@ -20,8 +20,9 @@ result=str(result)
 result = result.split('\n')
 for i,s in enumerate(result):
     result[i] = s.split('\\s+')
-with open("test.txt",'w') as f:
-    f.write("\n".join([str([str(j).strip() for j in str(i).split('\\s')]) for i in result.split('\n')]))
+print(result)
+with open("test.txt",'wb') as f:
+    f.write(result)
 # number_of_jobs=len(configs)
 
 
