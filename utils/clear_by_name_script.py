@@ -20,11 +20,11 @@ result=str(result)
 result = result.split('\n')
 for i,s in enumerate(result):
     result[i] = re.split('[\s]+',s)
-    print(len(result[i]))
-print(result)
-with open("test.txt",'w') as f:
-    f.write(str(result))
-# number_of_jobs=len(configs)
+index = result[0].index("NAME")
+for i,arr in enumerate(result):
+    if i == 0 or len(arr)<index+1:
+        continue
+    print(arr[index])
 
 
 
