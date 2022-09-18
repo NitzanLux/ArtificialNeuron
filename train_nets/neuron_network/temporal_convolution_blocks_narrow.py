@@ -17,6 +17,7 @@ class Base1DConvolutionBlockLayer(nn.Module):
         self.conv1d = CausalConv1d(in_channels, out_channels, kernel_size, stride, dilation)
         self.activation_function = activation_function()
         self.batch_norm = nn.BatchNorm1d(out_channels)
+        self.trim_last_nonlinear=trim_last_nonlinear
         if dropout_factor is not None:
             self.dropout=nn.Dropout(p=dropout_factor)
         else:
