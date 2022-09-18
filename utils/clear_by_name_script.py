@@ -7,28 +7,14 @@ import json
 from utils.slurm_job import *
 import subprocess
 import re
+from utils.general_aid_function import get_works_on_cluster
 parser = argparse.ArgumentParser(description='json file...')
 
 parser.add_argument('-re',dest="job_name_format", type=str,
                     help='configurations json file of paths')
 
 args = parser.parse_args()
-result = subprocess.run(['squeue', '--me','-o' ,'"%.1i %.1P %100j %1T %.1M  %.R"'], stdout=subprocess.PIPE)
-result = result.stdout.decode('utf-8')
-result=str(result)
-result = result.split('\n')
-for i,s in enumerate(result):
-    result[i] = re.split('[\s]+',s)
-index = result[0].index("NAME")
-print(f"{args.job_name_format}")
-m=re.compile(f"{args.job_name_format}")
-deleted_names=[]
-for i,arr in enumerate(result):
-    if i == 0 or len(arr)<index+1:
-        continue
-    if m.match(arr[index]):
-        print(arr[index])
-        deleted_names.append(arr[index])
+deleted_names = get_works_on_cluster(f"{args.job_name_format}")
 delete_all = input('delete all those files? (y/n)?')
 # delete_all = subprocess.run(["read answer"], stdout=subprocess.PIPE)
 if delete_all=='y':
