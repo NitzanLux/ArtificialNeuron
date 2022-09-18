@@ -9,7 +9,7 @@ import subprocess
 import re
 parser = argparse.ArgumentParser(description='json file...')
 
-parser.add_argument(dest="job_name_format", type=str,
+parser.add_argument('-re',dest="job_name_format", type=str,
                     help='configurations json file of paths', default=None)
 
 args = parser.parse_args()
