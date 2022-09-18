@@ -20,7 +20,7 @@ result = result.split('\n')
 for i,s in enumerate(result):
     result[i] = re.split('[\s]+',s)
 index = result[0].index("NAME")
-
+print(f"{args.job_name_format}")
 m=re.compile(f"{args.job_name_format}")
 for i,arr in enumerate(result):
     if i == 0 or len(arr)<index+1:
