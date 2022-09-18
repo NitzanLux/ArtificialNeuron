@@ -5,6 +5,7 @@ from typing import List, Tuple
 import re
 # import neuron_network.node_network.recursive_neuronal_model as recursive_neuronal_model
 import platform
+import subprocess
 
 NEW_DIR_SIGN = '\\' if platform.system() == 'Windows'else '/'
 
