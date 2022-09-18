@@ -63,7 +63,7 @@ def get_works_on_cluster(match_filter:str):
     for i, s in enumerate(result):
         result[i] = re.split('[\s]+', s)
     index = result[0].index("NAME")
-    print(f"{args.job_name_format}")
+    print(f"{match_filter}")
     m = re.compile(f"{match_filter}")
     filterd_names = []
     for i, arr in enumerate(result):
