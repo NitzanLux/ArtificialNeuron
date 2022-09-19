@@ -465,6 +465,7 @@ def load_optimizer(config, model):
         optimizer.load_state_dict(state_dict)
         print(type(optimizer.param_groups[0]),optimizer.param_groups[0])
         # optimizer.param_groups[0]=config.optimizer_params['lr']
+    exit(0)
     return optimizer
 
 
