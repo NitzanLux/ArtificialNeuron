@@ -23,7 +23,7 @@ runs_array=[
             ]
 
 for i,s in enumerate(runs_array):
-    reduce_lr(models_jsons)
+    # reduce_lr(models_jsons)
     print(f"Now running command: {s}")
     s=re.split(f"[\s]+",s)
     result = subprocess.run(s, input=str.encode('y'),stderr=subprocess.PIPE, stdout=sys.stdout)
