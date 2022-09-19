@@ -7,9 +7,9 @@ models_jsons=["d_r_comparison","d_r_comparison_ss","morph","morph_linear"]
 def reduce_lr(models_jsons):
     def update_lr_function(config):
         lr_value = 0.003 if "morph" in config.model_tag else 0.01
-        config.constant_learning_rate=0.03
+        config.constant_learning_rate=lr_value
         if 'lr' in config.optimizer_params:
-            config.optimizer_params['lr']=0.003
+            config.optimizer_params['lr']=lr_value
 
         # return "constant_learning_rate",config.constant_learning_rate, config.optimizer_params
     for i in models_jsons:
