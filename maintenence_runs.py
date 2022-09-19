@@ -29,6 +29,6 @@ runs_array=[
 for i,s in enumerate(runs_array):
     print(f"Now running command: {s}")
     s=re.split(f"[\s]+",s)
-    result = subprocess.run(s, stderr=subprocess.PIPE, stdout=sys.stdout,input=str.encode('y'))
+    result = subprocess.run(s, stderr=subprocess.PIPE, stdout=sys.stdout)#,input=str.encode('y'))
     assert result.returncode==0 ,result.stderr
     time.sleep(1)
