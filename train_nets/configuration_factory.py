@@ -257,10 +257,9 @@ def change_configs_in_json(configs_json,update_funnction=None,**kwargs):
     for conf in configs:
         path = os.path.join(MODELS_DIR, *conf)
         config = load_config_file(path)
-        new_kwargs={}
         if update_funnction is not None:
-            new_kwargs= update_funnction(config)
-        overwrite_config(config,**kwargs,**new_kwargs)
+            update_funnction(config)
+        overwrite_config(config,**kwargs)
 
 def restore_last_n_configs(n=10):
     search_dir = "../wandb"
