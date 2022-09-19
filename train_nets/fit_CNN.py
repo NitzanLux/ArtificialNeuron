@@ -464,7 +464,7 @@ def load_optimizer(config, model):
             state_dict = pickle.load(f)
         optimizer.load_state_dict(state_dict)
         for g in optimizer.param_groups:
-            g['lr'] =torch.tensor([0.01],dtype=DATA_TYPE_TENSOR)
+            g['lr'] =torch.tensor([0.01],dtype=DATA_TYPE_TENSOR)[0]
     return optimizer
 
 
@@ -498,9 +498,11 @@ def load_and_train(config):
     optimizer = load_optimizer(config, model.cuda() if USE_CUDA else model.cpu())
     try:
         train_network(config, model, optimizer)
-    except Exception as e:
+    except KeyboardInterrupt :
         if SAVE_MODEL: SavingAndEvaluationScheduler.flush_all(config, model, optimizer)
         raise e
+    else:
+        if SAVE_MODEL: SavingAndEvaluationScheduler.flush_all(config, model, optimizer)
 
 
 
