@@ -19,9 +19,11 @@ use_gpu = not args.use_gpu.lower() in {"false",'0',''}
 print(args)
 print(f"use gpu : {use_gpu}")
 configs_file = args.configs_paths
-response = input("continue?y/n")
+print("continue?y/n")
+response = input()
 while response not in {'y','n'}:
-    response = input("continue?y/n")
+    print("continue?y/n")
+    response = input()
 if response=='n':
     exit(0)
 current_cluster_work = set(get_works_on_cluster(f"[\d]+_{configs_file}"))
