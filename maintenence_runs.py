@@ -6,9 +6,9 @@ from train_nets.configuration_factory import change_configs_in_json
 models_jsons=["d_r_comparison","d_r_comparison_ss","morph","morph_linear"]
 def reduce_lr(models_jsons):
     def update_lr_function(config):
-        config.constant_learning_rate=config.constant_learning_rate/2
+        config.constant_learning_rate=config.constant_learning_rate*2
         if 'lr' in config.optimizer_params:
-            config.optimizer_params['lr']=config.optimizer_params['lr']/2
+            config.optimizer_params['lr']=config.optimizer_params['lr']*2
         # return "constant_learning_rate",config.constant_learning_rate, config.optimizer_params
     for i in models_jsons:
         change_configs_in_json(i,update_funnction=update_lr_function)
