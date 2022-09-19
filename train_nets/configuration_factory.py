@@ -283,7 +283,6 @@ def restore_optimizers_from_temp(configs_json):
         configs = json.load(file)
     for conf in configs:
         conf[-1] = conf[-1][:-len('config')]+'optim' + 'temp'
-        conf[-1]= conf[-1]+'temp'
         path = os.path.join(MODELS_DIR, *conf)
         shutil.copyfile(path,path[:-len('temp')])
 def arange_kernel_by_layers(kernels, layers, expend=False):
