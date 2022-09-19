@@ -258,7 +258,7 @@ def change_configs_in_json(configs_json,update_funnction=None,**kwargs):
         path = os.path.join(MODELS_DIR, *conf)
         config = load_config_file(path)
         if update_funnction is not None:
-            config = update_funnction(config)
+            update_funnction(config)
         overwrite_config(config,**kwargs)
 
 def restore_last_n_configs(n=10):

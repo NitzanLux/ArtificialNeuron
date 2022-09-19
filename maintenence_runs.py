@@ -6,12 +6,10 @@ from train_nets.configuration_factory import change_configs_in_json
 models_jsons=["d_r_comparison","d_r_comparison_ss","morph","morph_linear"]
 def reduce_lr(models_jsons):
     def update_lr_function(config):
-        # del config.optim_params
         config.constant_learning_rate=0.003
         if 'lr' in config.optimizer_params:
             config.optimizer_params['lr']=0.003
         # return "constant_learning_rate",config.constant_learning_rate, config.optimizer_params
-        return config
     for i in models_jsons:
         change_configs_in_json(i,update_funnction=update_lr_function)
 
