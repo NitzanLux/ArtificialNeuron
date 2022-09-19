@@ -8,10 +8,10 @@ def reduce_lr(models_jsons):
     def update_lr_function(config):
         if not "optim_params" in config:
             return
-        del config.optim_params
-        config.constant_learning_rate=config.constant_learning_rate*2
+        # del config.optim_params
+        config.constant_learning_rate=0.003
         if 'lr' in config.optimizer_params:
-            config.optimizer_params['lr']=config.optimizer_params['lr']*2
+            config.optimizer_params['lr']=0.003
         # return "constant_learning_rate",config.constant_learning_rate, config.optimizer_params
     for i in models_jsons:
         change_configs_in_json(i,update_funnction=update_lr_function)
@@ -24,8 +24,8 @@ runs_array=[
             "python fit_CNN_execution.py morph -g True",
             "python fit_CNN_execution.py morph_linear -g True",
             ]
-# reduce_lr(models_jsons)
-
+reduce_lr(models_jsons)
+exit(0)
 for i,s in enumerate(runs_array):
     print(f"Now running command: {s}")
     s=re.split(f"[\s]+",s)
