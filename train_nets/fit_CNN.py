@@ -464,7 +464,7 @@ def load_optimizer(config, model):
             state_dict = pickle.load(f)
         optimizer.load_state_dict(state_dict)
         for g in optimizer.param_groups:
-            g['lr'] =torch.tensor([0.01],dtype=DATA_TYPE)
+            g['lr'] =torch.tensor([0.01],dtype=DATA_TYPE_TENSOR)
         print(type(optimizer.param_groups[0]),optimizer.param_groups[0])
         # optimizer.param_groups[0]=config.optimizer_params['lr']
     exit(0)
