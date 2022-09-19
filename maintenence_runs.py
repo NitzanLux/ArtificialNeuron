@@ -23,9 +23,9 @@ runs_array=[
             "python fit_CNN_execution.py morph -g True",
             "python fit_CNN_execution.py morph_linear -g True",
             ]
-for i in models_jsons:
-    restore_configs_from_temp(i)
-    restore_optimizers_from_temp(i)
+# for i in models_jsons:
+#     restore_configs_from_temp(i)
+#     restore_optimizers_from_temp(i)
 for i,s in enumerate(runs_array):
     print(f"Now running command: {s}")
     s=re.split(f"[\s]+",s)
