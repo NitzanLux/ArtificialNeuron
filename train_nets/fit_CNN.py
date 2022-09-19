@@ -465,7 +465,8 @@ def load_optimizer(config, model):
         optimizer.load_state_dict(state_dict)
         for g in optimizer.param_groups:
             g['lr'] =torch.tensor([0.01],dtype=DATA_TYPE_TENSOR)
-        print(type(optimizer.param_groups[0]),optimizer.param_groups[0])
+        for g in optimizer.param_groups:
+            print(g['lr'])
         # optimizer.param_groups[0]=config.optimizer_params['lr']
     exit(0)
     return optimizer
