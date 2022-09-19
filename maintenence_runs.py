@@ -13,7 +13,7 @@ def reduce_lr(models_jsons):
     for i in models_jsons:
         change_configs_in_json(i,update_funnction=update_lr_function)
 runs_array=[
-            f"python -c ' {f'from maintenence_runs import reduce_lr; reduce_lr({str(models_jsons)})'} '",
+            rf"python -c ' {rf'from maintenence_runs import reduce_lr; reduce_lr({str(models_jsons)})'} '",
             "python evaluation_datasets.py -j d_r_comparison -j d_r_comparison_ss -j morph -j morph_linear -n 1 -g True"]+[
             "python fit_CNN_execution.py d_r_comparison -g True",
             "python fit_CNN_execution.py d_r_comparison_ss -g False -mem 120000",
