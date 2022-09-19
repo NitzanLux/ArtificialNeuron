@@ -2,7 +2,7 @@ import json
 import os.path
 from datetime import datetime
 from typing import Dict
-
+import shutil
 import yaml
 import errno
 from neuron_simulations.get_neuron_modle import get_L5PC
@@ -277,10 +277,15 @@ def restore_configs_from_temp(json):
     for conf in configs:
         conf[-1]=conf[-1]+'temp'
         path = os.path.join(MODELS_DIR, *conf)
-        config = load_config_file(path)
-        # if update_funnction is not None:
-        #     update_funnction(config)
-        overwrite_config(config,**kwargs)
+        shutil.copyfile(path,path[:-len('temp')])
+def restore_optimizers_from_temp(json):
+    with open(os.path.join(MODELS_DIR, "%s.json" % configs_json), 'r') as file:
+        configs = json.load(file)
+    for conf in configs:
+        conf[-1] = conf[-1][:-len('config')]+'optim' + 'temp'
+        conf[-1]= conf[-1]+'temp'
+        path = os.path.join(MODELS_DIR, *conf)
+        shutil.copyfile(path,path[:-len('temp')])
 def arange_kernel_by_layers(kernels, layers, expend=False):
     # if len(kernels)<=layers: return kernels,sum(kernels)
     max_filter = max(kernels)

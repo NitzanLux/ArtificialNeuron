@@ -2,7 +2,7 @@ import subprocess
 import re
 import time
 import sys
-from train_nets.configuration_factory import change_configs_in_json
+from train_nets.configuration_factory import change_configs_in_json ,restore_configs_from_temp
 models_jsons=["d_r_comparison","d_r_comparison_ss"]#,"morph","morph_linear"]
 def reduce_lr(models_jsons):
     def update_lr_function(config):
@@ -23,7 +23,9 @@ runs_array=[
             "python fit_CNN_execution.py morph -g True",
             "python fit_CNN_execution.py morph_linear -g True",
             ]
-# reduce_lr(models_jsons)
+for i in models_jsons:
+    restore_configs_from_temp(i)
+
 for i,s in enumerate(runs_array):
     print(f"Now running command: {s}")
     s=re.split(f"[\s]+",s)
