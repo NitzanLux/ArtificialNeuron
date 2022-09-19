@@ -501,8 +501,6 @@ def load_and_train(config):
     except KeyboardInterrupt :
         if SAVE_MODEL: SavingAndEvaluationScheduler.flush_all(config, model, optimizer)
         raise e
-    else:
-        if SAVE_MODEL: SavingAndEvaluationScheduler.flush_all(config, model, optimizer)
 
 
 
