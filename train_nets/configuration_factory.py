@@ -271,7 +271,16 @@ def restore_last_n_configs(n=10):
     files = [os.path.basename(os.path.normpath(f)) for f in files]
     load_config_file_from_wandb_yml(files)
 
-
+def restore_configs_from_temp(json):
+    with open(os.path.join(MODELS_DIR, "%s.json" % configs_json), 'r') as file:
+        configs = json.load(file)
+    for conf in configs:
+        conf[-1]=conf[-1]+'temp'
+        path = os.path.join(MODELS_DIR, *conf)
+        config = load_config_file(path)
+        # if update_funnction is not None:
+        #     update_funnction(config)
+        overwrite_config(config,**kwargs)
 def arange_kernel_by_layers(kernels, layers, expend=False):
     # if len(kernels)<=layers: return kernels,sum(kernels)
     max_filter = max(kernels)
