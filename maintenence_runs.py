@@ -3,7 +3,7 @@ import re
 import time
 import sys
 from train_nets.configuration_factory import change_configs_in_json
-models_jsons=["d_r_comparison","d_r_comparison_ss","morph","morph_linear"]
+models_jsons=["d_r_comparison","d_r_comparison_ss"]#,"morph","morph_linear"]
 def reduce_lr(models_jsons):
     def update_lr_function(config):
         lr_value = 0.003 if "morph" in config.model_tag else 0.01
@@ -23,7 +23,7 @@ runs_array=[
             "python fit_CNN_execution.py morph -g True",
             "python fit_CNN_execution.py morph_linear -g True",
             ]
-reduce_lr(models_jsons)
+# reduce_lr(models_jsons)
 for i,s in enumerate(runs_array):
     print(f"Now running command: {s}")
     s=re.split(f"[\s]+",s)
