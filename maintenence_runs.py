@@ -17,11 +17,11 @@ def reduce_lr(models_jsons):
 
 runs_array=[
             # rf"python -c ' {rf'from maintenence_runs import reduce_lr; reduce_lr({str(models_jsons)})'} '",
-            "python evaluation_datasets.py -j d_r_comparison -j d_r_comparison_ss -j morph -j morph_linear -n 1 -g True"]+[
+            # "python evaluation_datasets.py -j d_r_comparison -j d_r_comparison_ss -j morph -j morph_linear -n 1 -g True"]+[
             "python fit_CNN_execution.py d_r_comparison -g True",
-            "python fit_CNN_execution.py d_r_comparison_ss -g False -mem 120000",
-            "python fit_CNN_execution.py morph -g True",
-            "python fit_CNN_execution.py morph_linear -g True",
+            # "python fit_CNN_execution.py d_r_comparison_ss -g False -mem 120000",
+            # "python fit_CNN_execution.py morph -g True",
+            # "python fit_CNN_execution.py morph_linear -g True",
             ]
 # for i in models_jsons:
 #     restore_configs_from_temp(i)
