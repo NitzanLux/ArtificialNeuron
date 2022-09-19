@@ -287,9 +287,9 @@ def load_model(config):
 def log_lr(config, optimizer):
     lr = float(optimizer.param_groups[0]['lr'])
     if lr != config.optimizer_params['lr']:
-        optim_params = config.optimizer_params
-        optim_params['lr'] = lr
-        config.update(dict(optim_params=optim_params), allow_val_change=True)
+        config.optimizer_params = config.optimizer_params
+        config.optimizer_params['lr'] = lr
+        config.update(dict(optimizer_params=config.optimizer_params), allow_val_change=True)
     return lr
 
 
