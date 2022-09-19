@@ -271,14 +271,14 @@ def restore_last_n_configs(n=10):
     files = [os.path.basename(os.path.normpath(f)) for f in files]
     load_config_file_from_wandb_yml(files)
 
-def restore_configs_from_temp(json):
+def restore_configs_from_temp(configs_json):
     with open(os.path.join(MODELS_DIR, "%s.json" % configs_json), 'r') as file:
         configs = json.load(file)
     for conf in configs:
         conf[-1]=conf[-1]+'temp'
         path = os.path.join(MODELS_DIR, *conf)
         shutil.copyfile(path,path[:-len('temp')])
-def restore_optimizers_from_temp(json):
+def restore_optimizers_from_temp(configs_json):
     with open(os.path.join(MODELS_DIR, "%s.json" % configs_json), 'r') as file:
         configs = json.load(file)
     for conf in configs:
