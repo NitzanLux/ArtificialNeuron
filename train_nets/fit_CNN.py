@@ -454,6 +454,7 @@ def load_optimizer(config, model):
     else:
         optimizer_params = copy(config.optimizer_params)
         optimizer_params["lr"] = float(config.constant_learning_rate)
+        print(f"initial lr {optimizer_params['lr']}")
         config.update(dict(optimizer_params=optimizer_params), allow_val_change=True)
 
     optimizer = getattr(optim, config.optimizer_type)(model.parameters(),
@@ -462,6 +463,7 @@ def load_optimizer(config, model):
         with open(os.path.join(MODELS_DIR, *config.model_path) + '.optim', 'rb') as f:
             state_dict = pickle.load(f)
         optimizer.load_state_dict(state_dict)
+    optimizer.defaults['lr']=optimizer_params['lr']
     return optimizer
 
 
