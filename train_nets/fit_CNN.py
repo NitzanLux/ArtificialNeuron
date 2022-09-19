@@ -463,8 +463,7 @@ def load_optimizer(config, model):
         with open(os.path.join(MODELS_DIR, *config.model_path) + '.optim', 'rb') as f:
             state_dict = pickle.load(f)
         optimizer.load_state_dict(state_dict)
-        for g in optimizer.param_groups:
-            g['lr']=config.optimizer_params['lr']
+        optimizer.param_groups[0]=config.optimizer_params['lr']
     return optimizer
 
 

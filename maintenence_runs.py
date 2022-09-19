@@ -23,7 +23,7 @@ runs_array=[
             "python fit_CNN_execution.py morph -g True",
             "python fit_CNN_execution.py morph_linear -g True",
             ]
-reduce_lr(models_jsons)
+# reduce_lr(models_jsons)
 for i,s in enumerate(runs_array):
     print(f"Now running command: {s}")
     s=re.split(f"[\s]+",s)
