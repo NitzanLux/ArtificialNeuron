@@ -9,7 +9,7 @@ def reduce_lr(models_jsons):
         config.constant_learning_rate=config.constant_learning_rate/2
         if 'lr' in config.optimizer_params:
             config.optimizer_params['lr']=config.optimizer_params['lr']/2
-        return config.constant_learning_rate, config.optimizer_params
+        # return "constant_learning_rate",config.constant_learning_rate, config.optimizer_params
     for i in models_jsons:
         change_configs_in_json(i,update_funnction=update_lr_function)
 
