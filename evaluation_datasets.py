@@ -35,11 +35,11 @@ if __name__ == '__main__':
 
         for i in configs_lists:
             i=i[1]
+            if not m_query.match(i):
+                continue
             if i.endswith('.config'):
                 i=i[:-len('.config')]
                 print(i)
-            if not m_query.match(i):
-                continue
             if 'reduction___'in i:
                 gt_name= 'reduction_ergodic_validation'
             else:
