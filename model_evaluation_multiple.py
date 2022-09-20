@@ -1,4 +1,5 @@
 import datetime
+import json
 import pickle
 import plotly.express as px
 import dash
@@ -521,7 +522,7 @@ def create_model_evaluation(gt_name, model_name):
 
     g.save(os.path.join(dest_path, model_name + ".meval"))
 
-def evaluate_auc_of_models(replace_regex:str, *args: EvaluationData):
+def evaluate_auc_of_models(name:str,replace_regex:str, *args: EvaluationData):
     gt_dict=dict()
     for i in args:
         if i.ground_truth not in gt_dict:
@@ -536,7 +537,9 @@ def evaluate_auc_of_models(replace_regex:str, *args: EvaluationData):
                 data_dict[name]=[i.get_ROC_data()[0]]
             else:
                 data_dict[name].append(i.get_ROC_data()[0])
-    return data_dict
+    if not os.path.exists(os.path.join("evaluations", 'auc_curve')): os.mkdir(os.path.join("evaluations", ''))
+    with open(os.path.join("evaluations", 'auc_curve','name'), 'x') as file:
+        file.write(json.dumps(data_dict))
 
 def run_test():
     #
