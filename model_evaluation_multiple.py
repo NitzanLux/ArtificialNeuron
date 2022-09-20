@@ -21,6 +21,8 @@ import plotly
 import os
 import plotly.express as px
 from utils.general_variables import *
+from typing import Callable
+
 BATCH_SIZE = 32
 
 cols = px.colors.qualitative.Alphabet
@@ -519,6 +521,22 @@ def create_model_evaluation(gt_name, model_name):
 
     g.save(os.path.join(dest_path, model_name + ".meval"))
 
+def evaluate_auc_of_models(replace_regex:str, *args: EvaluationData):
+    gt_dict=dict()
+    for i in args:
+        if i.ground_truth not in gt_dict:
+            gt_dict[i.ground_truth]=[i]
+        else:
+            gt_dict[i.ground_truth].append(i)
+    data_dict = dict()
+    for k,v in gt_dict.items():
+        for i in v:
+            name = re.sub(replace_regex,'',i.data_label)
+            if name in data_dict:
+                data_dict[name]=[i.get_ROC_data()[0]]
+            else:
+                data_dict[name].append(i.get_ROC_data()[0])
+    return data_dict
 
 def run_test():
     #
