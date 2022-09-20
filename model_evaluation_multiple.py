@@ -538,7 +538,7 @@ def evaluate_auc_of_models(name:str,replace_regex:str, *args: EvaluationData):
             else:
                 data_dict[name].append(i.get_ROC_data()[0])
     if not os.path.exists(os.path.join("evaluations", 'auc_curve')): os.mkdir(os.path.join("evaluations", ''))
-    with open(os.path.join("evaluations", 'auc_curve','name'), 'x') as file:
+    with open(os.path.join("evaluations", 'auc_curve',name), 'x') as file:
         file.write(json.dumps(data_dict))
 
 def run_test():
