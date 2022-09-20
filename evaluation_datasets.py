@@ -20,7 +20,7 @@ if __name__ == '__main__':
 
         args = parser.parse_args()
         use_gpu = not args.use_gpu.lower() in {"false", '0', ''}
-        m_query=re.compile(args.json_regex_query)
+        m_query=re.compile(f"{args.json_regex_query}")
 
         job_factory = SlurmJobFactory("cluster_logs")
         configs_lists=[]
@@ -34,7 +34,6 @@ if __name__ == '__main__':
         number_of_jobs = args.jobs_number
 
         for i in configs_lists:
-
             i=i[1]
             if i.endswith('.config'):
                 i=i[:-len('.config')]
