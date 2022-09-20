@@ -34,12 +34,13 @@ if __name__ == '__main__':
         number_of_jobs = args.jobs_number
 
         for i in configs_lists:
-            if not m_query.match(i):
-                continue
+
             i=i[1]
             if i.endswith('.config'):
                 i=i[:-len('.config')]
                 print(i)
+            if not m_query.match(i):
+                continue
             if 'reduction___'in i:
                 gt_name= 'reduction_ergodic_validation'
             else:
