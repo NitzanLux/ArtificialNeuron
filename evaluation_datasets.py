@@ -3,6 +3,7 @@ from utils.slurm_job import *
 from project_path import *
 from utils.general_aid_function import get_works_on_cluster
 import platform
+import re
 import argparse
 import logging
 if __name__ == '__main__':
@@ -12,13 +13,14 @@ if __name__ == '__main__':
         parser = argparse.ArgumentParser(description='json files')
 
         parser.add_argument('-j', dest="json_files_name",action='append', type=str, nargs='+', help='jsons files names')
+        parser.add_argument('-re', dest="json_regex_query", type=str, help='jsons files regex query',default='.*')
         parser.add_argument('-n', dest="jobs_number",type=int, help='number of jobs to use',default=-1)
         parser.add_argument('-g', dest="use_gpu", type=str,
                             help='true if to use gpu false otherwise', default="False")
 
         args = parser.parse_args()
         use_gpu = not args.use_gpu.lower() in {"false", '0', ''}
-
+        m_query=re.compile(args.json_regex_query)
 
         job_factory = SlurmJobFactory("cluster_logs")
         configs_lists=[]
@@ -32,6 +34,8 @@ if __name__ == '__main__':
         number_of_jobs = args.jobs_number
 
         for i in configs_lists:
+            if not m_query.match(i):
+                continue
             i=i[1]
             if i.endswith('.config'):
                 i=i[:-len('.config')]
