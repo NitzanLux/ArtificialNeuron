@@ -49,9 +49,12 @@ SYNAPSE_DIMENTION_POSITION = 1
 
 
 class RecursiveNeuronModel(nn.Module):
-    def __init__(self, model_type, activation_function_kargs=None, activation_function_name=None,
+    def __init__(self, model_type, section_depth:int,section_name:str,section_parent:[None,'RecursiveNeuronalModel'],activation_function_kargs=None, activation_function_name=None,
                  is_cuda=False, include_dendritic_voltage_tracing=False, **network_kwargs):
         super(RecursiveNeuronModel, self).__init__()
+        self.section_depth = section_depth
+        self.section_name = section_name
+        self.section_parent = section_parent
         self.model_type = model_type
         self.include_dendritic_voltage_tracing = include_dendritic_voltage_tracing
         self.is_cuda = is_cuda
@@ -142,19 +145,19 @@ class RecursiveNeuronModel(nn.Module):
     @staticmethod
     def build_model(config, neuron_biophysics_model, segment_synapse_map: Dict):  # todo implement
 
-        soma = SomaNetwork(**config)
+        soma = SomaNetwork(section_depth=0,section_name=euron_biophysics_model.soma[0].name(),section_parent=None,**config)
         childrens = neuron_biophysics_model.soma[0].children()
         branches = []
         for child in childrens:
             if "axon" in child.name():
                 continue
             else:
-                branches.append(RecursiveNeuronModel.__build_sub_model(config, child, segment_synapse_map))
+                branches.append(RecursiveNeuronModel.__build_sub_model(config, child,soma,segment_synapse_map))
         soma.set_inputs_to_model(*branches, **config)
         return soma
 
     @staticmethod
-    def __build_sub_model(config, neuron_section, segment_synapse_map: Dict,
+    def __build_sub_model(config, neuron_section,model_parent, segment_synapse_map: Dict,
                           starting_position=1):
         parent = neuron_section.parentseg()
         assert "soma" in parent.sec.name() or 1 == parent.x, "position not match 1 the building of the model is incomplete parent name - %s" % parent
@@ -165,15 +168,15 @@ class RecursiveNeuronModel(nn.Module):
         assert len(childrens) <=  2, 'childrens cannot be more the two, %s' % str(childrens)
 
         if len(childrens) == 0:
-            leaf = LeafNetwork(**config, input_indexes=indexes)
+            leaf = LeafNetwork(section_depth=model_parent.section_depth+1,section_name=neuron_section[0].name(),model_parent=model_parent,**config, input_indexes=indexes)
             leaf.set_inputs_to_model(**config)
             return leaf
         else:
-            intersection = IntersectionNetwork(**config)
-            upper_stream_a = RecursiveNeuronModel.__build_sub_model(config, childrens[0], segment_synapse_map)
-            upper_stream_b = RecursiveNeuronModel.__build_sub_model(config, childrens[1], segment_synapse_map)
+            branch_interesection = BranchNetwork(**config, section_depth=model_parent.section_depth+1,section_name=neuron_section[0].name(),input_indexes=indexes,model_parent=model_parent)
+            intersection = IntersectionNetwork(section_depth=model_parent.section_depth+1,section_name=neuron_section[0].name(),model_parent=branch_interesection,**config)
+            upper_stream_a = RecursiveNeuronModel.__build_sub_model(config, childrens[0], intersection,segment_synapse_map)
+            upper_stream_b = RecursiveNeuronModel.__build_sub_model(config, childrens[1], intersection,segment_synapse_map)
             intersection.set_inputs_to_model(upper_stream_a, upper_stream_b, **config)
-            branch_interesection = BranchNetwork(**config, input_indexes=indexes)
             branch_interesection.set_inputs_to_model(intersection, **config)
             return branch_interesection
 
@@ -407,7 +410,7 @@ class BranchNetwork(RecursiveNeuronModel):
 
 
 class SomaNetwork(RecursiveNeuronModel):
-    def __init__(self, input_window_size, is_cuda=False, include_dendritic_voltage_tracing=False,
+    def __init__(self,input_window_size, is_cuda=False, include_dendritic_voltage_tracing=False,
                  **network_kwargs):
         super().__init__(SectionType.SOMA, is_cuda=is_cuda,
                          include_dendritic_voltage_tracing=include_dendritic_voltage_tracing, **network_kwargs)
