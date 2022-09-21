@@ -3,7 +3,7 @@ import re
 import time
 import sys
 from train_nets.configuration_factory import change_configs_in_json ,restore_configs_from_temp,restore_optimizers_from_temp
-models_jsons=["d_r_comparison","d_r_comparison_ss"]#,"morph","morph_linear"]
+models_jsons=["d_r_comparison","d_r_comparison_ss","morph","morph_linear"]
 def reduce_lr(models_jsons):
     def update_lr_function(config):
         lr_value = 0.003 if "morph" in config.model_tag else 0.01
@@ -17,7 +17,7 @@ def reduce_lr(models_jsons):
 
 runs_array=[
             # rf"python -c ' {rf'from maintenence_runs import reduce_lr; reduce_lr({str(models_jsons)})'} '",
-            "python evaluation_datasets.py -j d_r_comparison -j d_r_comparison_ss -j morph -j morph_linear -n 1 -g True"]+[
+            "python -m evaluation_tools/evaluation_datasets.py -j d_r_comparison -j d_r_comparison_ss -j morph  -n 1 -g True"]+[
             "python fit_CNN_execution.py d_r_comparison -g True",
             "python fit_CNN_execution.py d_r_comparison_ss -g False -mem 120000",
             "python fit_CNN_execution.py morph -g True",

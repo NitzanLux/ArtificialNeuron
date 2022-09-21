@@ -22,7 +22,7 @@ model_name = str(Path(os.path.basename(args.model_name)).with_suffix(''))
 print(args)
 # from model_evaluation_multiple import create_model_evaluation
 # create_model_evaluation(gt_name,model_name)
-a = job_factory.send_job('model_%s'%gt_name,'python -c "from model_evaluation_multiple import create_model_evaluation; create_model_evaluation(%s,%s)"'%("'"+gt_name+"'","'"+model_name+"'"), run_on_GPU=True)
+a = job_factory.send_job('model_%s'%gt_name,'python -c "from evaluation_tools.model_evaluation_multiple import create_model_evaluation; create_model_evaluation(%s,%s)"'%("'"+gt_name+"'","'"+model_name+"'"), run_on_GPU=True)
 print(a)
 
 

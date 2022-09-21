@@ -46,6 +46,7 @@ if __name__ == '__main__':
                 gt_name= 'davids_ergodic_validation'
             commands.append('python -c "from model_evaluation_multiple import create_model_evaluation;'
                                                     ' create_model_evaluation(%s,%s)"'%("'" + gt_name + "'", "'" + i + "'") )
+        assert len(commands)>0, "no files that match regex pattern or exists in the json"
         number_of_jobs=min(number_of_jobs, len(commands))
         jumps= len(commands)//number_of_jobs
         if len(get_works_on_cluster("model_evaluations_[0-9]+"))>0:
