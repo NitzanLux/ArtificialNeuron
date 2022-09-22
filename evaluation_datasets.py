@@ -1,4 +1,4 @@
-from evaluation_tools.model_evaluation_multiple import *
+from model_evaluation_multiple import *
 from utils.slurm_job import *
 from project_path import *
 from utils.general_aid_function import get_works_on_cluster

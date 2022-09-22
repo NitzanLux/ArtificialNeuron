@@ -507,13 +507,13 @@ def create_gt_and_save(folder, name):
     files = get_files_by_filer_from_dir(folder)
     print('number of files:', len(files), flush=True)
     g = GroundTruthData(files, name)
-    g.save(os.path.join("../evaluations", 'ground_truth', name + ".gteval"))
+    g.save(os.path.join("evaluations", 'ground_truth', name + ".gteval"))
     return g
 
 
 def create_model_evaluation(gt_name, model_name):
-    gt_path = os.path.join("../evaluations", 'ground_truth', gt_name + ".gteval")
-    dest_path = os.path.join("../evaluations", 'models', gt_name)
+    gt_path = os.path.join("evaluations", 'ground_truth', gt_name + ".gteval")
+    dest_path = os.path.join("evaluations", 'models', gt_name)
     if not os.path.exists(dest_path):
         os.mkdir(dest_path)
     config = load_config_file(os.path.join(MODELS_DIR, model_name, model_name + ".config"))
@@ -537,8 +537,8 @@ def evaluate_auc_of_models(name:str,replace_regex:str, *args: EvaluationData):
                 data_dict[name]=[i.get_ROC_data()[0]]
             else:
                 data_dict[name].append(i.get_ROC_data()[0])
-    if not os.path.exists(os.path.join("../evaluations", 'auc_curve')): os.mkdir(os.path.join("../evaluations", ''))
-    with open(os.path.join("../evaluations", 'auc_curve', name), 'x') as file:
+    if not os.path.exists(os.path.join("evaluations", 'auc_curve')): os.mkdir(os.path.join("evaluations", ''))
+    with open(os.path.join("evaluations", 'auc_curve', name), 'x') as file:
         file.write(json.dumps(data_dict))
 
 def run_test():
@@ -559,8 +559,8 @@ def run_test():
     from utils.general_aid_function import load_files_names
     g=[]
     b_p = r"..C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project"
-    g0 = GroundTruthData.load(r"../evaluations/ground_truth/davids_ergodic_validation.gteval")
-    g1 = GroundTruthData.load(r"../evaluations/ground_truth/reduction_ergodic_validation.gteval")
+    g0 = GroundTruthData.load(r"evaluations/ground_truth/davids_ergodic_validation.gteval")
+    g1 = GroundTruthData.load(r"evaluations/ground_truth/reduction_ergodic_validation.gteval")
     for p in [r"..\evaluations\models\davids_ergodic_validation",r"..\evaluations\models\reduction_ergodic_validation"]:
         for i in os.listdir(p):
            g.append(EvaluationData.load(os.path.join(p,i)))
