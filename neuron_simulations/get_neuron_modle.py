@@ -7,7 +7,7 @@ from enum import Enum
 
 from pathlib import Path
 script_dir = Path( __file__ ).parent.absolute()
-
+script_dir= str(script_dir).replace('\\','/')
 class ModelName(Enum):
     L5PC=str(script_dir)+r"/L5PC_NEURON_simulation"
     L5PC_ERGODIC=str(script_dir)+r"/L5PC_NEURON_simulation_ergodic"
@@ -37,8 +37,8 @@ def get_L5PC(model_name:ModelName=ModelName.L5PC):
     # if not hasattr(h, "L5PCtemplate"):
     if platform.system() == 'Windows':
         h.nrn_load_dll(model_name.value+DLL_FILE_PATH)
-
-    neuron.load_mechanisms(model_name.value)
+    else:
+        neuron.load_mechanisms(model_name.value)
 
 
     h.load_file(model_name.value+biophysicalModelFilename)

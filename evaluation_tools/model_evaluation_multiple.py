@@ -10,7 +10,7 @@ from dash import dcc, callback_context
 from dash import html
 from dash.dependencies import Input, Output
 from plotly.subplots import make_subplots
-from scipy.ndimage.filters import uniform_filter1d
+from scipy.ndimage import uniform_filter1d
 import train_nets.neuron_network.recursive_neuronal_model as recursive_neuronal_model
 from neuron_simulations.simulation_data_generator_new import parse_sim_experiment_file
 from train_nets.neuron_network import fully_connected_temporal_seperated
@@ -558,10 +558,10 @@ def run_test():
 
     from utils.general_aid_function import load_files_names
     g=[]
-    b_p = r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project"
+    b_p = r"..C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project"
     g0 = GroundTruthData.load(r"../evaluations/ground_truth/davids_ergodic_validation.gteval")
     g1 = GroundTruthData.load(r"../evaluations/ground_truth/reduction_ergodic_validation.gteval")
-    for p in [r"evaluations\models\davids_ergodic_validation",r"evaluations\models\reduction_ergodic_validation"]:
+    for p in [r"..\evaluations\models\davids_ergodic_validation",r"..\evaluations\models\reduction_ergodic_validation"]:
         for i in os.listdir(p):
            g.append(EvaluationData.load(os.path.join(p,i)))
     # g2 = EvaluationData.load(
