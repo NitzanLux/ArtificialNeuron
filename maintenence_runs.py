@@ -31,6 +31,5 @@ for i,s in enumerate(runs_array):
     print(f"Now running command: {s}")
     s=re.split(f"[\s]+",s)
     result = subprocess.run(s, stderr=subprocess.PIPE, stdout=sys.stdout)#,input=str.encode('y'))
-    if result.returncode==0 :
-        raise Exception(result.stderr)
+    assert result.returncode==0 ,result.stderr
     time.sleep(1)
