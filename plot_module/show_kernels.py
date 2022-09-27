@@ -35,5 +35,6 @@ def show_kernels(model:recursive_neuronal_model.RecursiveNeuronModel,model_type:
     plt.show()
 
 
-model = recursive_neuronal_model.RecursiveNeuronModel.load(load_config_file(r'C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\models\NMDA\morph_7___2022-09-07__23_01__ID_42876\morph_7___2022-09-07__23_01__ID_42876.config'))
+model = recursive_neuronal_model.RecursiveNeuronModel.load(load_config_file(
+    r'/models/NMDA/morph_7___2022-09-07__23_01__ID_42876/morph_7___2022-09-07__23_01__ID_42876.config'))
 show_kernels(model,ModelType.LEAF)

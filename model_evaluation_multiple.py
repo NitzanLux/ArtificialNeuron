@@ -162,11 +162,13 @@ class GroundTruthData(SimulationData):
     def __eq__(self, item: 'GroundTruthData'):
         return self.data_files == item.data_files
 
-    def get_evaluation_input_per_file(self, f, batch_size=8):
+    def get_evaluation_input_per_file(self, f, batch_size=8, sim_index=None):
         assert f in self.data_files, "file not exists in this simulation."
         X, _, __ = parse_sim_experiment_file(f)
         X = torch.from_numpy(X)
         X = np.transpose(X, axes=[2, 0, 1])
+        if sim_index is not None:
+            return self[sim_index,:,:]
         for i in range(0, self.files_size_dict[f], batch_size):
             l_range = i
             h_range = min(l_range + batch_size, self.files_size_dict[f])
