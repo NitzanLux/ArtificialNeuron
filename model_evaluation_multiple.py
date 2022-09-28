@@ -24,6 +24,9 @@ import plotly.express as px
 from utils.general_variables import *
 from typing import Callable
 import ntpath
+
+base_path=os.path.dirname(__file__)
+
 BATCH_SIZE = 32
 
 cols = px.colors.qualitative.Alphabet
@@ -71,7 +74,7 @@ class SimulationData():
         return self.data_keys[index]
 
     def save(self, path):
-        with open(path, 'wb') as f:
+        with open(os.path.join(base_path,path), 'wb') as f:
             pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
 
     def __in__(self, key):
@@ -79,7 +82,7 @@ class SimulationData():
 
     @staticmethod
     def load(path):
-        with open(path, 'rb') as f:
+        with open(os.path.join(base_path,path), 'rb') as f:
             out = pickle.load(f)
         return out
 
