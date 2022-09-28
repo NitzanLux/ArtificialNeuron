@@ -23,7 +23,7 @@ import os
 import plotly.express as px
 from utils.general_variables import *
 from typing import Callable
-
+import ntpath
 BATCH_SIZE = 32
 
 cols = px.colors.qualitative.Alphabet
@@ -92,18 +92,24 @@ class GroundTruthData(SimulationData):
         s, v = [], []
         if sort:
             data_files = sorted(data_files)
+        self.path=None
         for f in data_files:
             X, y_spike, y_soma = parse_sim_experiment_file(f)
             if len(X.shape) == 3:
                 X = np.transpose(X, axes=[2, 0, 1])
             else:
                 X = X[np.newaxis, ...]
+            path,f=ntpath.split(f)
+            if self.path is not None:
+                assert self.path==path ,"cannot use different sources[path] of files"
+            else:
+                self.path=path
             self.files_size_dict[f] = X.shape[0]
             for i in range(X.shape[0]):
                 s.append(y_spike.T[i, ...])
                 v.append(y_soma.T[i, ...])
                 data_keys.append((f, i))
-        self.data_files = tuple(data_files)
+        self.data_files = tuple([ntpath.split(i)[1] for i in data_files])
         self.files_short_names = {i: i for i in self.data_files}
         self.crete_dense_representation_of_files()
         self.files_short_names = {v: k for k, v in self.files_short_names.items()}
@@ -157,14 +163,18 @@ class GroundTruthData(SimulationData):
         return res
 
     def __hash__(self):
-        return self.data_files.__hash__()
+        key =list(self.data_files)+[self.path]
+        return tuple(key).__hash__()
 
     def __eq__(self, item: 'GroundTruthData'):
-        return self.data_files == item.data_files
+        return self.data_files == item.data_files and self.path==item.path
 
-    def get_evaluation_input_per_file(self, f, batch_size=8, sim_index=None):
+    def get_evaluation_input_per_file(self, f, batch_size=8, sim_index=None,source_path=None):
+        path,f= ntpath.split(f)
+        if source_path is not None:
+            path=source_path
         assert f in self.data_files, "file not exists in this simulation."
-        X, _, __ = parse_sim_experiment_file(f)
+        X, _, __ = parse_sim_experiment_file(os.path.join(path,f))
         X = torch.from_numpy(X)
         X = np.transpose(X, axes=[2, 0, 1])
         if sim_index is not None:
