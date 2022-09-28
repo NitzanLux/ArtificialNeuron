@@ -12,8 +12,8 @@ from model_evaluation_multiple import GroundTruthData,ModelEvaluator
 import numpy as np
 # '/ems/elsc-labs/segev-i/nitzan.luxembourg/projects/dendritic_tree/ArtificialNeuron'
 #%% pipline plot parameters
-gt_reduction_name = 'davids_ergodic_validation'
-gt_original_name = 'reduction_ergodic_validation'
+gt_original_name= 'davids_ergodic_validation'
+gt_reduction_name= 'reduction_ergodic_validation'
 module_reduction_name= "d_r_comparison_7_reduction___2022-09-07__22_59__ID_31437"
 module_original_name= "d_r_comparison_7___2022-09-07__22_59__ID_57875"
 file_original=''
@@ -22,10 +22,10 @@ sim_index=0
 data_points_start=0
 data_points_end=0
 #%% pipline plot
-gt_reduction = model_evaluation_multiple.GroundTruthData.load(os.path.join('evaluations','ground_truth', gt_reduction_name))
-gt_original = model_evaluation_multiple.GroundTruthData.load(os.path.join('evaluations','ground_truth', gt_reduction_name))
-model_reduction = model_evaluation_multiple.EvaluationData.load(os.path.join('evaluations','models', module_reduction_name))
-model_original = model_evaluation_multiple.EvaluationData.load(os.path.join('evaluations','models', module_original_name))
+gt_reduction = model_evaluation_multiple.GroundTruthData.load(os.path.join('evaluations','ground_truth', gt_reduction_name+'.gteval'))
+gt_original = model_evaluation_multiple.GroundTruthData.load(os.path.join('evaluations','ground_truth', gt_original_name+'.gteval'))
+model_reduction = model_evaluation_multiple.EvaluationData.load(os.path.join('evaluations','models',gt_reduction_name ,module_reduction_name+'.meval'))
+model_original = model_evaluation_multiple.EvaluationData.load(os.path.join('evaluations','models', gt_original_name,module_original_name+'.meval'))
 evaluation_input_0 = gt_reduction.get_evaluation_input_per_file(file_reduction,sim_index=sim_index)[:,data_points_start:data_points_end]
 evaluation_input_1 = gt_original.get_evaluation_input_per_file(file_original,sim_index=sim_index)[:,data_points_start:data_points_end]
 
