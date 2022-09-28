@@ -174,6 +174,7 @@ class GroundTruthData(SimulationData):
 
     def get_single_input(self,f,sim_index,source_path=None):
         path,f= ntpath.split(f)
+        print(path,f)
         if source_path is not None:
             path=source_path
         X, _, __ = parse_sim_experiment_file(os.path.join(path, f))
