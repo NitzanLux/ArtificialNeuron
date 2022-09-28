@@ -25,8 +25,8 @@ from utils.general_variables import *
 from typing import Callable
 import ntpath
 
-base_path=os.path.dirname(__file__)
-
+# base_path=os.path.dirname(__file__)
+base_path='/ems/elsc-labs/segev-i/nitzan.luxembourg/projects/dendritic_tree/ArtificialNeuron'
 BATCH_SIZE = 32
 
 cols = px.colors.qualitative.Alphabet
