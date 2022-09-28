@@ -177,6 +177,8 @@ class GroundTruthData(SimulationData):
         print(path,f)
         if source_path is not None:
             path=source_path
+        else:
+            path=self.path
         X, _, __ = parse_sim_experiment_file(os.path.join(path, f))
         X = torch.from_numpy(X)
         X = np.transpose(X, axes=[2, 0, 1])
@@ -186,6 +188,8 @@ class GroundTruthData(SimulationData):
         path,f= ntpath.split(f)
         if source_path is not None:
             path=source_path
+        else:
+            path=self.path
         assert f in self.data_files, "file not exists in this simulation."
         X, _, __ = parse_sim_experiment_file(os.path.join(path,f))
         X = torch.from_numpy(X)
