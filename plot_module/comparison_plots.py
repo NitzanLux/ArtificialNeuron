@@ -16,8 +16,8 @@ gt_original_name= 'davids_ergodic_validation'
 gt_reduction_name= 'reduction_ergodic_validation'
 module_reduction_name= "d_r_comparison_7_reduction___2022-09-07__22_59__ID_31437"
 module_original_name= "d_r_comparison_7___2022-09-07__22_59__ID_57875"
-file_original=''
-file_reduction=''
+file_original='L5PC_sim__Output_spikes_0948__Input_ranges_Exc_[0148,1149]_Inh_[0061,1274]_per100ms__simXsec_128x6_randseed_1110182.p'
+file_reduction='L5PC_sim__Output_spikes_0948__Input_ranges_Exc_[0148,1149]_Inh_[0061,1274]_per100ms__simXsec_128x6_randseed_1110182_reduction_0w.p'
 sim_index=0
 data_points_start=0
 data_points_end=0
@@ -26,8 +26,8 @@ gt_reduction = model_evaluation_multiple.GroundTruthData.load(os.path.join('eval
 gt_original = model_evaluation_multiple.GroundTruthData.load(os.path.join('evaluations','ground_truth', gt_original_name+'.gteval'))
 model_reduction = model_evaluation_multiple.EvaluationData.load(os.path.join('evaluations','models',gt_reduction_name ,module_reduction_name+'.meval'))
 model_original = model_evaluation_multiple.EvaluationData.load(os.path.join('evaluations','models', gt_original_name,module_original_name+'.meval'))
-evaluation_input_0 = gt_reduction.get_evaluation_input_per_file(file_reduction,sim_index=sim_index)[:,data_points_start:data_points_end]
-evaluation_input_1 = gt_original.get_evaluation_input_per_file(file_original,sim_index=sim_index)[:,data_points_start:data_points_end]
+evaluation_input_0 = gt_reduction.get_single_input(file_reduction,sim_index=sim_index)[:,data_points_start:data_points_end]
+evaluation_input_1 = gt_original.get_single_input(file_original,sim_index=sim_index)[:,data_points_start:data_points_end]
 
 #data validataion
 assert np.all(evaluation_input_1==evaluation_input_0), "two input are different"
