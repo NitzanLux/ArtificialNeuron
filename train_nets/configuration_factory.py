@@ -135,7 +135,7 @@ def load_config_file(path: str) -> AttrDict:
     # config.prediction_length = (6000 - 600) // 4
     # config.
     congif.lr_scheduler='ReduceLROnPlateau'
-    config.lr_scheduler_params=dict(factor=0.5,cooldown=500,patience =5000,eps=1e-7),
+    config.lr_scheduler_params=dict(factor=0.5,cooldown=500,patience =3000,eps=1e-7),
     # config.lr_scheduler_params = dict(factor=0.5, cooldown=500, threshold=1e-2, patience=1000, eps=1e-5)
     # config.lr_scheduler_params=dict()
     # config.lr_scheduler=None
