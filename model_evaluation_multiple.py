@@ -26,7 +26,7 @@ from typing import Callable
 import ntpath
 
 # base_path=os.path.dirname(__file__)
-base_path='/ems/elsc-labs/segev-i/nitzan.luxembourg/projects/dendritic_tree/ArtificialNeuron'
+# base_path='/ems/elsc-labs/segev-i/nitzan.luxembourg/projects/dendritic_tree/ArtificialNeuron'
 BATCH_SIZE = 32
 
 cols = px.colors.qualitative.Alphabet
@@ -74,7 +74,8 @@ class SimulationData():
         return self.data_keys[index]
 
     def save(self, path):
-        with open(os.path.join(base_path,path), 'wb') as f:
+        with open(path, 'wb') as f:
+        # with open(os.path.join(base_path,path), 'wb') as f:
             pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
 
     def __in__(self, key):
@@ -82,7 +83,8 @@ class SimulationData():
 
     @staticmethod
     def load(path):
-        with open(os.path.join(base_path,path), 'rb') as f:
+        with open(path, 'rb') as f:
+        # with open(os.path.join(base_path,path), 'rb') as f:
             out = pickle.load(f)
         return out
 
@@ -587,9 +589,9 @@ def run_test():
     from utils.general_aid_function import load_files_names
     g=[]
     b_p = r"..C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project"
-    g0 = GroundTruthData.load(r"evaluations/ground_truth/davids_ergodic_validation.gteval")
-    g1 = GroundTruthData.load(r"evaluations/ground_truth/reduction_ergodic_validation.gteval")
-    for p in [r"..\evaluations\models\davids_ergodic_validation",r"..\evaluations\models\reduction_ergodic_validation"]:
+    g0 = GroundTruthData.load(r"evaluations\ground_truth\davids_ergodic_validation.gteval")
+    g1 = GroundTruthData.load(r"evaluations\ground_truth\reduction_ergodic_validation.gteval")
+    for p in [r"evaluations\models\davids_ergodic_validation",r"evaluations\models\reduction_ergodic_validation"]:
         for i in os.listdir(p):
            g.append(EvaluationData.load(os.path.join(p,i)))
     # g2 = EvaluationData.load(

@@ -5,8 +5,8 @@ import matplotlib.image as mpimg
 
 import os
 import sys
-os.chdir('/ems/elsc-labs/segev-i/nitzan.luxembourg/projects/dendritic_tree/ArtificialNeuron')
-sys.path.append('/ems/elsc-labs/segev-i/nitzan.luxembourg/projects/dendritic_tree/ArtificialNeuron')
+# os.chdir('/ems/elsc-labs/segev-i/nitzan.luxembourg/projects/dendritic_tree/ArtificialNeuron')
+# sys.path.append('/ems/elsc-labs/segev-i/nitzan.luxembourg/projects/dendritic_tree/ArtificialNeuron')
 import model_evaluation_multiple
 from model_evaluation_multiple import GroundTruthData,ModelEvaluator
 import numpy as np
@@ -19,8 +19,8 @@ module_original_name= "d_r_comparison_7___2022-09-07__22_59__ID_57875"
 file_original='L5PC_sim__Output_spikes_0948__Input_ranges_Exc_[0148,1149]_Inh_[0061,1274]_per100ms__simXsec_128x6_randseed_1110182.p'
 file_reduction='L5PC_sim__Output_spikes_0948__Input_ranges_Exc_[0148,1149]_Inh_[0061,1274]_per100ms__simXsec_128x6_randseed_1110182_reduction_0w.p'
 sim_index=0
-data_points_start=0
-data_points_end=0
+data_points_start=200
+data_points_end=400
 #%% pipline plot
 gt_reduction = model_evaluation_multiple.GroundTruthData.load(os.path.join('evaluations','ground_truth', gt_reduction_name+'.gteval'))
 gt_original = model_evaluation_multiple.GroundTruthData.load(os.path.join('evaluations','ground_truth', gt_original_name+'.gteval'))
@@ -30,9 +30,9 @@ evaluation_input_0 = gt_reduction.get_single_input(file_reduction,sim_index=sim_
 evaluation_input_1 = gt_original.get_single_input(file_original,sim_index=sim_index)[:,data_points_start:data_points_end]
 
 #data validataion
-assert np.all(evaluation_input_1==evaluation_input_0), "two input are different"
-del evaluation_input_1
-evaluation_input= evaluation_input_0
+# assert np.all(evaluation_input_1==evaluation_input_0), "two input are different"
+# del evaluation_input_1
+# evaluation_input= evaluation_input_0
 
 #%%
 
@@ -108,7 +108,7 @@ fig.axes[4].plot(gt_original[(file,sim_index)][1][data_points_start:data_points_
 
 # path =''
 ax5_pos = fig.axes[5].get_position()
-fig.axes[5].imshow(mpimg.imread(r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\plot_module\L5PC_IMAGE.jpg"))
+fig.axes[5].imshow(mpimg.imread(r"plot_module/L5PC_IMAGE.jpg"))
 fig.axes[5].set_position([(ax0_pos.x0+ax0_pos.width+right_margin_position-ax5_pos.width)/2,ax2_pos.y0+(ax1_pos.height+ax2_pos.height)/2-ax5_pos.height/2,ax5_pos.width,ax5_pos.height])
 fig.axes[5].spines['top'].set_visible(False)
 fig.axes[5].spines['right'].set_visible(False)
@@ -118,7 +118,7 @@ fig.axes[5].get_xaxis().set_ticks([])
 fig.axes[5].get_yaxis().set_ticks([])
 
 ax6_pos = fig.axes[6].get_position()
-fig.axes[6].imshow(mpimg.imread(r'C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project\plot_module\reduction_IMAGE.png'))
+fig.axes[6].imshow(mpimg.imread(r'plot_module/reduction_IMAGE.png'))
 fig.axes[6].set_position([(ax0_pos.x0+ax0_pos.width+right_margin_position-ax6_pos.width)/2,ax4_pos.y0+(ax3_pos.height+ax4_pos.height)/2-ax6_pos.height/2,ax6_pos.width,ax6_pos.height])
 fig.axes[6].spines['top'].set_visible(False)
 fig.axes[6].spines['right'].set_visible(False)
@@ -138,3 +138,4 @@ mng.full_screen_toggle()
 
 
 #%%
+
