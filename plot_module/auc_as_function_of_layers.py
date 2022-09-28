@@ -41,11 +41,13 @@ layers=[]
 cur_layer=-1
 for i in original_auc:
     if i[1]!=cur_layer:
+        if len(new_auc_data_original)>0: new_auc_data_original[-1]=np.array(new_auc_data_original)
         new_auc_data_original.append([i[0]])
         layers.append(i[1])
         cur_layer=i[1]
     else:
-        n
+
+
 
 #%%
 
