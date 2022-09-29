@@ -518,7 +518,6 @@ def load_and_train(config):
 
 def save_best_model(config_path):
     config = configuration_factory.load_config_file(config_path)
-    model=load_model(config)
     data_base_path = config.data_base_path
     model_gt = None
     for f in os.listdir(os.path.join('evaluations','ground_truth')):
@@ -538,15 +537,17 @@ def save_best_model(config_path):
     if not os.path.exists(best_result_path):
         os.mkdir(best_result_path)
         np.save(os.path.join(best_result_path,"auc_history"),np.array(auc))
+        model = load_model(config)
         model.save(os.path.join(best_result_path,'model.pkl'))
-        config.save(os.path.join(best_result_path,'config.pkl'))
+        configuration_factory.save_config(config, os.path.join(best_result_path, 'config.pkl'))
         g.save(os.path.join(best_result_path,"eval.gteval"))
 
     else:
         auc_arr = np.load(os.path.join(best_result_path,"auc_history"))
         if np.max(auc_arr)<auc:
+            model = load_model(config)
             model.save(os.path.join(best_result_path, 'model.pkl'))
-            config.save(os.path.join(best_result_path, 'config.pkl'))
+            configuration_factory.save_config(config,os.path.join(best_result_path, 'config.pkl'))
             g.save(os.path.join(best_result_path,"eval.gteval"))
         auc_arr =np.append(auc_arr,auc)
         np.save(os.path.join(best_result_path,"auc_history"),auc_arr)
