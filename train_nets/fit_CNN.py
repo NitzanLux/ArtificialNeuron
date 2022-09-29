@@ -199,9 +199,7 @@ def plot_grad_flow(model=None):
 
 def train_network(config, model, optimizer):
     DVT_PCA_model = None
-
-    SavingAndEvaluationScheduler.save_best_model_scaduler(config)
-    exit()
+    SavingAndEvaluationScheduler.save_best_model_scaduler(config,first_run=True)
     model.cuda() if USE_CUDA else model.cpu()
     model.train()
     if DATA_TYPE == torch.cuda.FloatTensor or DATA_TYPE == torch.FloatTensor:
@@ -419,14 +417,14 @@ class SavingAndEvaluationScheduler():
             self.previous_process = self.save_best_model_scaduler(config)
 
     @staticmethod
-    def save_best_model_scaduler(config, use_slurm=False):
+    def save_best_model_scaduler(config, use_slurm=False,first_run=False):
         if use_slurm:
             print('evaluate best model')
             job_factory = SlurmJobFactory("cluster_logs_best_model")
             job_command = f'import time;from fit_CNN import save_best_model;t = time.time() ;save_best_model({os.path.join(MODELS_DIR, *config.config_path)});print(time.time()-t)'
             job_factory.send_job(f'best_model_eval_{config.model_tag}', f"python3 -c '{job_command}'")
         else:
-            p = Process(target=save_best_model, args=(os.path.join(MODELS_DIR, *config.config_path),))
+            p = Process(target=save_best_model, args=(os.path.join(MODELS_DIR, *config.config_path),first_run))
             p.start()
             return p
 
@@ -521,7 +519,7 @@ def load_and_train(config):
         raise e
 
 
-def save_best_model(config_path):
+def save_best_model(config_path,first_run=false):
     config = configuration_factory.load_config_file(config_path)
     data_base_path = config.data_base_path
     model_gt = None
@@ -554,7 +552,7 @@ def save_best_model(config_path):
 
     if not os.path.exists(os.path.join(best_result_path, "auc_history")):
         np.save(os.path.join(best_result_path, "auc_history"), np.array(auc))
-    else:
+    elif not first_run:
         auc_arr = np.load(os.path.join(best_result_path, "auc_history"))
         auc_arr = np.append(auc_arr, auc)
         np.save(os.path.join(best_result_path, "auc_history"), auc_arr)
