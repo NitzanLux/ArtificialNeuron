@@ -409,8 +409,9 @@ class SavingAndEvaluationScheduler():
         if (delta_time.total_seconds() / 60) / 60 > self.time_in_hours_for_saving:
             self.save_model(model, config, optimizer)
             self.last_time_saving = datetime.now()
-
-    def save_best_model(self,config):
+            self.save_best_model_scaduler(config)
+    @staticmethod
+    def save_best_model_scaduler(config):
         job_factory = SlurmJobFactory("cluster_logs_best_model")
         job_command=f"import time;from fit_CNN import save_best_model;t = time.time() ;save_best_model({os.path.join(MODELS_DIR,*config.config_path)});print('time it took',time.time()-t,'ms')"
         job_factory.send_job('best_model_eval',f'python3 -c "{job_command}"')
@@ -418,6 +419,7 @@ class SavingAndEvaluationScheduler():
     @staticmethod
     def flush_all(config, model, optimizer):
         SavingAndEvaluationScheduler.save_model(model, config, optimizer)
+        SavingAndEvaluationScheduler.save_best_model_scaduler(config)
         # ModelEvaluator.build_and_save(config=config, model=model)
 
     @staticmethod
