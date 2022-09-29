@@ -392,7 +392,8 @@ class SavingAndEvaluationScheduler():
     def __init__(self, time_in_hours_for_saving=NUMBER_OF_HOURS_FOR_SAVING_MODEL_AND_CONFIG):
         # time_in_hours_for_evaluation=NUMBER_OF_HOURS_FOR_PLOTTING_EVALUATIONS_PLOTS):
         self.last_time_evaluation = datetime.now()
-        self.last_time_saving = datetime.now()
+        # self.last_time_saving = datetime.now()
+        self.last_time_saving = -100000
         self.time_in_hours_for_saving = time_in_hours_for_saving
         # self.time_in_hours_for_evaluation = time_in_hours_for_evaluation
 
