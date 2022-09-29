@@ -198,6 +198,7 @@ def plot_grad_flow(model=None):
 
 def train_network(config, model, optimizer):
     DVT_PCA_model = None
+
     SavingAndEvaluationScheduler.save_best_model_scaduler(config)
 
     model.cuda() if USE_CUDA else model.cpu()
