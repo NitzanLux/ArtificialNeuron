@@ -218,10 +218,10 @@ class GroundTruthData(SimulationData):
 
 
 class EvaluationData(SimulationData):
-    def __init__(self, ground_truth: GroundTruthData, config):
+    def __init__(self, ground_truth: GroundTruthData, config,use_cuda):
         self.config = config
         self.ground_truth: ['GroundTruthData'] = ground_truth
-        v, s, data_keys = self.__evaluate_model()
+        v, s, data_keys = self.__evaluate_model(use_cuda)
         s = np.vstack(s)
         v = np.vstack(v)
         assert sum([i != j for i, j in zip(data_keys,
@@ -231,10 +231,10 @@ class EvaluationData(SimulationData):
         super().__init__(v, s, data_keys, config.model_tag)
         # self.data_per_recording = [] if recoreded_data is None else recoreded_data
 
-    def __evaluate_model(self):
+    def __evaluate_model(self,use_cuda):
         # assert not self.is_recording(), "evaluation had been done in this object"
         model = self.load_model()
-        model.cuda().eval() if USE_CUDA else model.cpu().eval()
+        model.cuda().eval() if use_cuda else model.cpu().eval()
         if DATA_TYPE == torch.cuda.FloatTensor or DATA_TYPE == torch.FloatTensor:
             model.float()
         elif DATA_TYPE == torch.cuda.DoubleTensor or DATA_TYPE==torch.DoubleTensor:
@@ -541,14 +541,14 @@ def create_gt_and_save(folder, name):
     return g
 
 
-def create_model_evaluation(gt_name, model_name):
+def create_model_evaluation(gt_name, model_name,use_cuda=USE_CUDA):
     gt_path = os.path.join("evaluations", 'ground_truth', gt_name + ".gteval")
     dest_path = os.path.join("evaluations", 'models', gt_name)
     if not os.path.exists(dest_path):
         os.mkdir(dest_path)
     config = load_config_file(os.path.join(MODELS_DIR, model_name, model_name + ".config"))
     print('load config for %s' % model_name)
-    g = EvaluationData(GroundTruthData.load(gt_path), config)
+    g = EvaluationData(GroundTruthData.load(gt_path), config,use_cuda)
 
     g.save(os.path.join(dest_path, model_name + ".meval"))
     return g
