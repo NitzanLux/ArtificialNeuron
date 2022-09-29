@@ -20,7 +20,7 @@ from train_nets.parameters_factories import dynamic_learning_parameters_factory 
 from utils.general_aid_function import *
 from utils.general_variables import *
 from utils.slurm_job import *
-
+from multiprocessing import Process
 if USE_CUDA:
     torch.cuda.empty_cache()
     print(torch.cuda.get_device_name(0))
@@ -396,6 +396,7 @@ class SavingAndEvaluationScheduler():
         self.last_time_evaluation = datetime.now()
         self.last_time_saving = datetime.now()
         self.time_in_hours_for_saving = time_in_hours_for_saving
+        self.previous_process=None
         # self.time_in_hours_for_evaluation = time_in_hours_for_evaluation
 
     def create_evaluation_schduler(self, config, model=None):
@@ -409,16 +410,22 @@ class SavingAndEvaluationScheduler():
         current_time = datetime.now()
         delta_time = current_time - self.last_time_saving
         if (delta_time.total_seconds() / 60) / 60 > self.time_in_hours_for_saving:
+            if self.previous_process is not None:
+                self.previous_process.join()
             self.save_model(model, config, optimizer)
             self.last_time_saving = datetime.now()
-            self.save_best_model_scaduler(config)
+            self.previous_process = self.save_best_model_scaduler(config)
     @staticmethod
-    def save_best_model_scaduler(config):
-        print('evaluate best model')
-        job_factory = SlurmJobFactory("cluster_logs_best_model")
-        job_command=f'import time;from fit_CNN import save_best_model;t = time.time() ;save_best_model({os.path.join(MODELS_DIR,*config.config_path)});print(time.time()-t)'
-        job_factory.send_job(f'best_model_eval_{config.model_tag}',f"python3 -c '{job_command}'")
-
+    def save_best_model_scaduler(config,use_slurm=False):
+        if use_slurm:
+            print('evaluate best model')
+            job_factory = SlurmJobFactory("cluster_logs_best_model")
+            job_command=f'import time;from fit_CNN import save_best_model;t = time.time() ;save_best_model({os.path.join(MODELS_DIR,*config.config_path)});print(time.time()-t)'
+            job_factory.send_job(f'best_model_eval_{config.model_tag}',f"python3 -c '{job_command}'")
+        else:
+            p = Process(target=save_best_model, args=(os.path.join(MODELS_DIR,*config.config_path),))
+            p.start()
+            return p
     @staticmethod
     def flush_all(config, model, optimizer):
         SavingAndEvaluationScheduler.save_model(model, config, optimizer)
