@@ -32,7 +32,6 @@ print("done")
 WANDB_API_KEY = "2725e59f8f4484605300fdf4da4c270ff0fe44a3"
 
 WANDB_PROJECT_NAME = "ArtificialNeuron1"
-mp.set_start_method("spawn")
 DOCUMENT_ON_WANDB = True
 WATCH_MODEL = False
 SAVE_MODEL=True
@@ -628,6 +627,8 @@ def run_fit_cnn():
     # raise e
 
 if __name__ == "__main__":
+    mp.set_start_method("spawn")
+
     run_fit_cnn()
 
 # send_mail("nitzan.luxembourg@mail.huji.ac.il","finished run","finished run")
