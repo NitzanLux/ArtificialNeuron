@@ -20,6 +20,7 @@ from train_nets.parameters_factories import dynamic_learning_parameters_factory 
 from utils.general_aid_function import *
 from utils.general_variables import *
 from utils.slurm_job import *
+import torch.multiprocessing as mp
 from torch.multiprocessing import Process
 
 if USE_CUDA:
@@ -31,7 +32,7 @@ print("done")
 WANDB_API_KEY = "2725e59f8f4484605300fdf4da4c270ff0fe44a3"
 
 WANDB_PROJECT_NAME = "ArtificialNeuron1"
-
+mp.set_start_method("spawn")
 DOCUMENT_ON_WANDB = True
 WATCH_MODEL = False
 SAVE_MODEL=True
