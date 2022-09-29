@@ -20,7 +20,8 @@ from train_nets.parameters_factories import dynamic_learning_parameters_factory 
 from utils.general_aid_function import *
 from utils.general_variables import *
 from utils.slurm_job import *
-from multiprocessing import Process
+from torch.multiprocessing import Process
+
 if USE_CUDA:
     torch.cuda.empty_cache()
     print(torch.cuda.get_device_name(0))
