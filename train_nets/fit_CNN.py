@@ -200,7 +200,7 @@ def train_network(config, model, optimizer):
     DVT_PCA_model = None
 
     SavingAndEvaluationScheduler.save_best_model_scaduler(config)
-
+    exit(0)
     model.cuda() if USE_CUDA else model.cpu()
     model.train()
     if DATA_TYPE == torch.cuda.FloatTensor or DATA_TYPE == torch.FloatTensor:
