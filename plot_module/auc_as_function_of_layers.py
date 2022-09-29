@@ -73,8 +73,8 @@ original_auc_plotting = [np.mean(i) for i in new_auc_data_original]
 reduction_auc_plotting_err = [np.std(i) for i in new_auc_data_reduction]
 reduction_auc_plotting = [np.mean(i) for i in new_auc_data_reduction]
 
-plt.errorbar(layers_original, original_auc_plotting, yerr=original_auc_plotting_err,label='original',alpha=0.7)
-plt.errorbar(layers_reduction, reduction_auc_plotting, yerr=reduction_auc_plotting_err,label='reduction',alpha=0.7)
+plt.errorbar(layers_original, original_auc_plotting, uplims=True, lolims=True,yerr=original_auc_plotting_err,label='original',alpha=0.7)
+plt.errorbar(layers_reduction, reduction_auc_plotting,uplims=True, lolims=True, yerr=reduction_auc_plotting_err,label='reduction',alpha=0.7)
 plt.legend()
 plt.show()
 plt.savefig('comparison.png')
