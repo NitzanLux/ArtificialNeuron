@@ -1,6 +1,4 @@
-import argparse
 import gc
-import pickle
 from copy import copy
 from datetime import datetime
 
@@ -9,20 +7,19 @@ import sklearn.metrics as skm
 import torch.optim as optim
 import torch.optim.lr_scheduler as lr_scheduler
 import wandb
-from utils.general_variables import *
 
 import train_nets.configuration_factory as configuration_factory
+from model_evaluation_multiple import GroundTruthData, create_gt_and_save, create_model_evaluation
+from neuron_simulations.simulation_data_generator_new import *
 # from model_evaluation import ModelEvaluator
 from train_nets.neuron_network import davids_network
 from train_nets.neuron_network import fully_connected_temporal_seperated
 from train_nets.neuron_network import neuronal_model
 from train_nets.neuron_network import recursive_neuronal_model
-from neuron_simulations.simulation_data_generator_new import *
 from train_nets.parameters_factories import dynamic_learning_parameters_factory as dlpf, loss_function_factory
-from project_path import *
 from utils.general_aid_function import *
-
-
+from utils.general_variables import *
+from utils.slurm_job import *
 
 if USE_CUDA:
     torch.cuda.empty_cache()
@@ -413,6 +410,11 @@ class SavingAndEvaluationScheduler():
             self.save_model(model, config, optimizer)
             self.last_time_saving = datetime.now()
 
+    def save_best_model(self,config):
+        job_factory = SlurmJobFactory("cluster_logs_best_model")
+        job_command=f"import time;from fit_CNN import save_best_model;t = time.time() ;save_best_model({os.path.join(MODELS_DIR,*config.config_path)});print('time it took',time.time()-t,'ms')"
+        job_factory.send_job('best_model_eval',f'python3 -c "{job_command}"')
+
     @staticmethod
     def flush_all(config, model, optimizer):
         SavingAndEvaluationScheduler.save_model(model, config, optimizer)
@@ -446,7 +448,6 @@ class SavingAndEvaluationScheduler():
     def __call__(self, model, config, optimizer):
         self.create_evaluation_schduler(config, model)
         self.save_model_schduler(config, model, optimizer)
-
 
 def load_optimizer(config, model):
     if "lr" in (config.optimizer_params):
@@ -502,7 +503,40 @@ def load_and_train(config):
         if SAVE_MODEL: SavingAndEvaluationScheduler.flush_all(config, model, optimizer)
         raise e
 
+def save_best_model(config_path):
+    config = configuration_factory.load_config_file(config_path)
+    model=load_model(config)
+    data_base_path = model.model_base_path
+    model_gt = None
+    for f in os.listdir(os.path.join('evaluations','ground_truth')):
+        if 'valid' not in f:
+            continue
+        current_model=GroundTruthData.load(os.path.join('evaluations','ground_truth',f))
+        if data_base_path in current_model.path:
+            model_gt=current_model
+            break
+    else:
+        path = glob.glob(os.path.join(data_base_path,"*valid*"))
+        bpath,name=ntpath.split(path)
+        model_gt = create_gt_and_save(path,name)
+    cur_model_evaluation = create_model_evaluation(model_gt.data_label,config.model_tag)
+    auc = cur_model_evaluation.get_ROC_data()[0]
+    best_result_path=os.path.join(MODELS_DIR, *config.model_path)+'_best'
+    if not os.path.exist(best_result_path):
+        os.mkdir(best_result_path)
+        np.save(os.path.join(best_result_path,"auc_history"),np.array(auc))
+        model.save(os.path.join(best_result_path,'model.pkl'))
+        config.save(os.path.join(best_result_path,'config.pkl'))
+        g.save(os.path.join(best_result_path,"eval.gteval"))
 
+    else:
+        auc_arr = np.load(os.path.join(best_result_path,"auc_history"))
+        if np.max(auc_arr)<auc:
+            model.save(os.path.join(best_result_path, 'model.pkl'))
+            config.save(os.path.join(best_result_path, 'config.pkl'))
+            g.save(os.path.join(best_result_path,"eval.gteval"))
+        auc_arr =np.append(auc_arr,auc)
+        np.save(os.path.join(best_result_path,"auc_history"),auc_arr)
 
 def train_log(loss, step, epoch=None, learning_rate=None, sigma=None, weights=None, additional_str='', commit=False):
     general_loss, loss_bcel, loss_mse, loss_dvt, blur_loss = loss

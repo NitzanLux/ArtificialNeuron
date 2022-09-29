@@ -73,3 +73,29 @@ def get_works_on_cluster(match_filter:str):
             print(arr[index])
             filterd_names.append(arr[index])
     return filterd_names
+
+def cheack_job_id():
+    result = subprocess.run(['squeue', '--me', '-o', '"%.1i %.1P %100j %1T %.1M  %.R"'], stdout=subprocess.PIPE)
+    result = result.stdout.decode('utf-8')
+    result = str(result)
+    result = result.split('\n')
+    for i, s in enumerate(result):
+        result[i] = re.split('[\s]+', s)
+    index = result[0].index("JOBID")
+    job_ids = set()
+    for i, arr in enumerate(result):
+        if i == 0 or len(arr) < index + 1:
+            continue
+        job_ids.add(arr[index])
+    return job_ids
+
+# def generate_unique_work_id_on_cluster(name:ster):
+#     jobs_names = get_works_on_cluster(f'{name}_[0-9]+')
+#     id=0
+#     jobs_id=[int(i[len('name_'):]) for i in jobs_names]
+#     jobs_id = sorted(jobs_id)
+#     if len(jobs_id)>
+#     # for i in sorted(jobs_names,key=lambda x:int(x[len('name_'):])):
+
+def is_work_exists_on_cluster(name:str):
+    return len(get_works_on_cluster(name))>0

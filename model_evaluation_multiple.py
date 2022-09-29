@@ -551,7 +551,7 @@ def create_model_evaluation(gt_name, model_name):
     g = EvaluationData(GroundTruthData.load(gt_path), config)
 
     g.save(os.path.join(dest_path, model_name + ".meval"))
-
+    return g
 def evaluate_auc_of_models(name:str,replace_regex:str, *args: EvaluationData):
     gt_dict=dict()
     for i in args:
