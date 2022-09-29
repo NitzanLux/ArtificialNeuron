@@ -7,7 +7,7 @@ import sklearn.metrics as skm
 import torch.optim as optim
 import torch.optim.lr_scheduler as lr_scheduler
 import wandb
-
+import shutil
 import train_nets.configuration_factory as configuration_factory
 from model_evaluation_multiple import GroundTruthData, create_gt_and_save, create_model_evaluation
 from neuron_simulations.simulation_data_generator_new import *
@@ -201,7 +201,7 @@ def train_network(config, model, optimizer):
     DVT_PCA_model = None
 
     SavingAndEvaluationScheduler.save_best_model_scaduler(config)
-    exit(0)
+    exit()
     model.cuda() if USE_CUDA else model.cpu()
     model.train()
     if DATA_TYPE == torch.cuda.FloatTensor or DATA_TYPE == torch.FloatTensor:
@@ -534,21 +534,20 @@ def save_best_model(config_path):
     cur_model_evaluation = create_model_evaluation(model_gt.data_label,config.model_filename)
     auc = cur_model_evaluation.get_ROC_data()[0]
     best_result_path=os.path.join(MODELS_DIR, *config.model_path)+'_best'
+
     if True and not os.path.exists(best_result_path):
         os.mkdir(best_result_path)
         np.save(os.path.join(best_result_path,"auc_history"),np.array(auc))
-        model = load_model(config)
-        model.save(os.path.join(best_result_path,'model.pkl'))
-        configuration_factory.save_config(config, os.path.join(best_result_path, 'config.pkl'))
-        g.save(os.path.join(best_result_path,"eval.gteval"))
+        shutil.copyfile(os.path.join(MODELS_DIR, *config.model_path),os.path.join(best_result_path,'model.pkl'))
+        shutil.copyfile(os.path.join(MODELS_DIR, *config.config_path),os.path.join(best_result_path,'model.pkl'))
+        cur_model_evaluation.save(os.path.join(best_result_path,"eval.gteval"))
 
     else:
         auc_arr = np.load(os.path.join(best_result_path,"auc_history"))
         if np.max(auc_arr)<auc:
-            model = load_model(config)
-            model.save(os.path.join(best_result_path, 'model.pkl'))
-            configuration_factory.save_config(config,os.path.join(best_result_path, 'config.pkl'))
-            g.save(os.path.join(best_result_path,"eval.gteval"))
+            shutil.copyfile(os.path.join(MODELS_DIR, *config.model_path), os.path.join(best_result_path, 'model.pkl'))
+            shutil.copyfile(os.path.join(MODELS_DIR, *config.config_path), os.path.join(best_result_path, 'model.pkl'))
+            cur_model_evaluation.save(os.path.join(best_result_path,"eval.gteval"))
         auc_arr =np.append(auc_arr,auc)
         np.save(os.path.join(best_result_path,"auc_history"),auc_arr)
 
