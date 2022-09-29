@@ -519,7 +519,7 @@ def load_and_train(config):
 def save_best_model(config_path):
     config = configuration_factory.load_config_file(config_path)
     model=load_model(config)
-    data_base_path = config.model_base_path
+    data_base_path = config.data_base_path
     model_gt = None
     for f in os.listdir(os.path.join('evaluations','ground_truth')):
         if 'valid' not in f:
