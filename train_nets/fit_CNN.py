@@ -34,8 +34,8 @@ WANDB_API_KEY = "2725e59f8f4484605300fdf4da4c270ff0fe44a3"
 WANDB_PROJECT_NAME = "ArtificialNeuron1"
 DOCUMENT_ON_WANDB = True
 WATCH_MODEL = False
-SAVE_MODEL=True
-INCLUDE_OPTIMIZER_AT_LOADING=False
+SAVE_MODEL = True
+INCLUDE_OPTIMIZER_AT_LOADING = False
 NUMBER_OF_HOURS_FOR_PLOTTING_EVALUATIONS_PLOTS = 6000
 NUMBER_OF_HOURS_FOR_SAVING_MODEL_AND_CONFIG = 1
 VALIDATION_EVALUATION_FREQUENCY = 100
@@ -255,7 +255,8 @@ def train_network(config, model, optimizer):
                 train_loss = batch_train(model, optimizer, custom_loss, data_arr, config.clip_gradients_factor,
                                          config.accumulate_loss_batch_factor, optimizer_scheduler, scaler)
                 lr = log_lr(config, optimizer)
-                train_log(train_loss, config.batch_counter, config.epoch_counter, lr, sigma, loss_weights, additional_str="train")
+                train_log(train_loss, config.batch_counter, config.epoch_counter, lr, sigma, loss_weights,
+                          additional_str="train")
                 data_arr = []
             evaluate_validation(config, custom_loss, model, validation_data_iterator)
 
@@ -397,7 +398,7 @@ class SavingAndEvaluationScheduler():
         self.last_time_evaluation = datetime.now()
         self.last_time_saving = datetime.now()
         self.time_in_hours_for_saving = time_in_hours_for_saving
-        self.previous_process=None
+        self.previous_process = None
         # self.time_in_hours_for_evaluation = time_in_hours_for_evaluation
 
     def create_evaluation_schduler(self, config, model=None):
@@ -416,17 +417,19 @@ class SavingAndEvaluationScheduler():
             self.save_model(model, config, optimizer)
             self.last_time_saving = datetime.now()
             self.previous_process = self.save_best_model_scaduler(config)
+
     @staticmethod
-    def save_best_model_scaduler(config,use_slurm=False):
+    def save_best_model_scaduler(config, use_slurm=False):
         if use_slurm:
             print('evaluate best model')
             job_factory = SlurmJobFactory("cluster_logs_best_model")
-            job_command=f'import time;from fit_CNN import save_best_model;t = time.time() ;save_best_model({os.path.join(MODELS_DIR,*config.config_path)});print(time.time()-t)'
-            job_factory.send_job(f'best_model_eval_{config.model_tag}',f"python3 -c '{job_command}'")
+            job_command = f'import time;from fit_CNN import save_best_model;t = time.time() ;save_best_model({os.path.join(MODELS_DIR, *config.config_path)});print(time.time()-t)'
+            job_factory.send_job(f'best_model_eval_{config.model_tag}', f"python3 -c '{job_command}'")
         else:
-            p = Process(target=save_best_model, args=(os.path.join(MODELS_DIR,*config.config_path),))
+            p = Process(target=save_best_model, args=(os.path.join(MODELS_DIR, *config.config_path),))
             p.start()
             return p
+
     @staticmethod
     def flush_all(config, model, optimizer):
         SavingAndEvaluationScheduler.save_model(model, config, optimizer)
@@ -462,6 +465,7 @@ class SavingAndEvaluationScheduler():
         self.create_evaluation_schduler(config, model)
         self.save_model_schduler(config, model, optimizer)
 
+
 def load_optimizer(config, model):
     if "lr" in (config.optimizer_params):
         config.update(dict(constant_learning_rate=float(config.optimizer_params["lr"])), allow_val_change=True)
@@ -478,7 +482,7 @@ def load_optimizer(config, model):
             state_dict = pickle.load(f)
         optimizer.load_state_dict(state_dict)
         for g in optimizer.param_groups:
-            g['lr'] =torch.tensor([0.01],dtype=DATA_TYPE_TENSOR)[0]
+            g['lr'] = torch.tensor([0.01], dtype=DATA_TYPE_TENSOR)[0]
     return optimizer
 
 
@@ -512,44 +516,53 @@ def load_and_train(config):
     optimizer = load_optimizer(config, model.cuda() if USE_CUDA else model.cpu())
     try:
         train_network(config, model, optimizer)
-    except KeyboardInterrupt :
+    except KeyboardInterrupt:
         if SAVE_MODEL: SavingAndEvaluationScheduler.flush_all(config, model, optimizer)
         raise e
+
 
 def save_best_model(config_path):
     config = configuration_factory.load_config_file(config_path)
     data_base_path = config.data_base_path
     model_gt = None
-    for f in os.listdir(os.path.join('evaluations','ground_truth')):
+    for f in os.listdir(os.path.join('evaluations', 'ground_truth')):
         if 'valid' not in f:
             continue
-        current_model=GroundTruthData.load(os.path.join('evaluations','ground_truth',f))
+        current_model = GroundTruthData.load(os.path.join('evaluations', 'ground_truth', f))
         if data_base_path in current_model.path:
-            model_gt=current_model
+            model_gt = current_model
             break
     else:
-        path = glob.glob(os.path.join(data_base_path,"*valid*"))
-        bpath,name=ntpath.split(path)
-        model_gt = create_gt_and_save(path,name)
-    cur_model_evaluation = create_model_evaluation(model_gt.data_label,config.model_filename)
+        path = glob.glob(os.path.join(data_base_path, "*valid*"))
+        bpath, name = ntpath.split(path)
+        model_gt = create_gt_and_save(path, name)
+    cur_model_evaluation = create_model_evaluation(model_gt.data_label, config.model_filename)
     auc = cur_model_evaluation.get_ROC_data()[0]
-    best_result_path=os.path.join(MODELS_DIR, *config.model_path)+'_best'
+    best_result_path = os.path.join(MODELS_DIR, *config.model_path) + '_best'
 
-    if True or not os.path.exists(best_result_path):
+    if not os.path.exists(best_result_path):
         os.mkdir(best_result_path)
-        np.save(os.path.join(best_result_path,"auc_history"),np.array(auc))
-        shutil.copyfile(os.path.join(MODELS_DIR, *config.model_path),os.path.join(best_result_path,'model.pkl'))
-        shutil.copyfile(os.path.join(MODELS_DIR, *config.config_path),os.path.join(best_result_path,'model.pkl'))
-        cur_model_evaluation.save(os.path.join(best_result_path,"eval.gteval"))
 
+    if not os.path.exists(os.path.join(best_result_path, 'model.pkl')):
+        shutil.copyfile(os.path.join(MODELS_DIR, *config.model_path), os.path.join(best_result_path, 'model.pkl'))
+
+    if not os.path.exists(os.path.join(best_result_path, 'config.pkl')):
+        shutil.copyfile(os.path.join(MODELS_DIR, *config.config_path), os.path.join(best_result_path, 'config.pkl'))
+
+    if not os.path.exists(os.path.join(best_result_path, "eval.gteval")):
+        cur_model_evaluation.save(os.path.join(best_result_path, "eval.gteval"))
+
+    if not os.path.exists(os.path.join(best_result_path, "auc_history")):
+        np.save(os.path.join(best_result_path, "auc_history"), np.array(auc))
     else:
-        auc_arr = np.load(os.path.join(best_result_path,"auc_history"))
-        if np.max(auc_arr)<auc:
+        auc_arr = np.load(os.path.join(best_result_path, "auc_history"))
+        auc_arr = np.append(auc_arr, auc)
+        np.save(os.path.join(best_result_path, "auc_history"), auc_arr)
+        if np.max(auc_arr) < auc:
             shutil.copyfile(os.path.join(MODELS_DIR, *config.model_path), os.path.join(best_result_path, 'model.pkl'))
-            shutil.copyfile(os.path.join(MODELS_DIR, *config.config_path), os.path.join(best_result_path, 'model.pkl'))
-            cur_model_evaluation.save(os.path.join(best_result_path,"eval.gteval"))
-        auc_arr =np.append(auc_arr,auc)
-        np.save(os.path.join(best_result_path,"auc_history"),auc_arr)
+            shutil.copyfile(os.path.join(MODELS_DIR, *config.config_path), os.path.join(best_result_path, 'config.pkl'))
+            cur_model_evaluation.save(os.path.join(best_result_path, "eval.gteval"))
+
 
 def train_log(loss, step, epoch=None, learning_rate=None, sigma=None, weights=None, additional_str='', commit=False):
     general_loss, loss_bcel, loss_mse, loss_dvt, blur_loss = loss
@@ -611,7 +624,7 @@ def run_fit_cnn():
     print(args)
     config = configuration_factory.load_config_file(args.config_path)
     # set SEED
-    if config.batch_counter==0:
+    if config.batch_counter == 0:
         torch.manual_seed(int(config.torch_seed))
         np.random.seed(int(config.numpy_seed))
         random.seed(int(config.random_seed))
@@ -625,6 +638,7 @@ def run_fit_cnn():
     # except Exception as e:
     # send_mail("nitzan.luxembourg@mail.huji.ac.il","somthing went wrong",e)
     # raise e
+
 
 if __name__ == "__main__":
     mp.set_start_method("spawn")
