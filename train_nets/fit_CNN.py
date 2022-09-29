@@ -532,7 +532,7 @@ def save_best_model(config_path):
         path = glob.glob(os.path.join(data_base_path,"*valid*"))
         bpath,name=ntpath.split(path)
         model_gt = create_gt_and_save(path,name)
-    cur_model_evaluation = create_model_evaluation(model_gt.data_label,config.model_tag)
+    cur_model_evaluation = create_model_evaluation(model_gt.data_label,config.model_filename)
     auc = cur_model_evaluation.get_ROC_data()[0]
     best_result_path=os.path.join(MODELS_DIR, *config.model_path)+'_best'
     if not os.path.exist(best_result_path):
