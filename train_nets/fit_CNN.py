@@ -198,13 +198,14 @@ def plot_grad_flow(model=None):
 
 def train_network(config, model, optimizer):
     DVT_PCA_model = None
+    SavingAndEvaluationScheduler.save_best_model_scaduler(config)
+
     model.cuda() if USE_CUDA else model.cpu()
     model.train()
     if DATA_TYPE == torch.cuda.FloatTensor or DATA_TYPE == torch.FloatTensor:
         model.float()
     elif DATA_TYPE == torch.cuda.DoubleTensor or DATA_TYPE == torch.DoubleTensor:
         model.double()
-
     train_data_generator, validation_data_generator = get_data_generators(config)
     validation_data_iterator = iter(validation_data_generator)
     batch_counter = 0
@@ -392,8 +393,7 @@ class SavingAndEvaluationScheduler():
     def __init__(self, time_in_hours_for_saving=NUMBER_OF_HOURS_FOR_SAVING_MODEL_AND_CONFIG):
         # time_in_hours_for_evaluation=NUMBER_OF_HOURS_FOR_PLOTTING_EVALUATIONS_PLOTS):
         self.last_time_evaluation = datetime.now()
-        # self.last_time_saving = datetime.now()
-        self.last_time_saving = -100000
+        self.last_time_saving = datetime.now()
         self.time_in_hours_for_saving = time_in_hours_for_saving
         # self.time_in_hours_for_evaluation = time_in_hours_for_evaluation
 
