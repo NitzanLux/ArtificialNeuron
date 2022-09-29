@@ -417,7 +417,7 @@ class SavingAndEvaluationScheduler():
         print('evaluate best model')
         job_factory = SlurmJobFactory("cluster_logs_best_model")
         job_command=f'import time;from fit_CNN import save_best_model;t = time.time() ;save_best_model({os.path.join(MODELS_DIR,*config.config_path)});print(time.time()-t)'
-        job_factory.send_job(f'best_model_eval_{config.model_name}',f"python3 -c '{job_command}'")
+        job_factory.send_job(f'best_model_eval_{config.model_tag}',f"python3 -c '{job_command}'")
 
     @staticmethod
     def flush_all(config, model, optimizer):
