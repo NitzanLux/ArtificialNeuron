@@ -519,7 +519,7 @@ def load_and_train(config):
         raise e
 
 
-def save_best_model(config_path,first_run=false):
+def save_best_model(config_path,first_run=False):
     config = configuration_factory.load_config_file(config_path)
     data_base_path = config.data_base_path
     model_gt = None
