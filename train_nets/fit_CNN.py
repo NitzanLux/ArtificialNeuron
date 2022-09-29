@@ -413,6 +413,7 @@ class SavingAndEvaluationScheduler():
             self.save_best_model_scaduler(config)
     @staticmethod
     def save_best_model_scaduler(config):
+        print('evaluate best model')
         job_factory = SlurmJobFactory("cluster_logs_best_model")
         job_command=f'import time;from fit_CNN import save_best_model;t = time.time() ;save_best_model({os.path.join(MODELS_DIR,*config.config_path)});print(time.time()-t)'
         job_factory.send_job(f'best_model_eval_{config.model_name}',f"python3 -c '{job_command}'")
