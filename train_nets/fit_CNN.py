@@ -535,7 +535,7 @@ def save_best_model(config_path):
     cur_model_evaluation = create_model_evaluation(model_gt.data_label,config.model_filename)
     auc = cur_model_evaluation.get_ROC_data()[0]
     best_result_path=os.path.join(MODELS_DIR, *config.model_path)+'_best'
-    if not os.path.exist(best_result_path):
+    if not os.path.exists(best_result_path):
         os.mkdir(best_result_path)
         np.save(os.path.join(best_result_path,"auc_history"),np.array(auc))
         model.save(os.path.join(best_result_path,'model.pkl'))
