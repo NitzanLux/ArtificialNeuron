@@ -596,10 +596,10 @@ def run_test():
 
     from utils.general_aid_function import load_files_names
     g = []
-    b_p = r"..C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project"
-    g0 = GroundTruthData.load(r"evaluations\ground_truth\davids_ergodic_validation.gteval")
-    g1 = GroundTruthData.load(r"evaluations\ground_truth\reduction_ergodic_validation.gteval")
-    for p in [r"evaluations\models\davids_ergodic_validation", r"evaluations\models\reduction_ergodic_validation"]:
+    # b_p = r"..C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project"
+    g0 = GroundTruthData.load(os.path.join("evaluations","ground_truth","davids_ergodic_validation.gteval"))
+    g1 = GroundTruthData.load(os.path.join("evaluations","ground_truth","reduction_ergodic_validation.gteval"))
+    for p in [os.path.join("evaluations","models","davids_ergodic_validation"), os.path.join("evaluations","models","reduction_ergodic_validation")]:
         for i in os.listdir(p):
             if '_ss' in i:
                 continue
