@@ -224,11 +224,10 @@ class RecursiveNeuronModel(nn.Module):
         path = os.path.join(MODELS_DIR, *config.model_path)
         path = '%s.pkl' % path if path[-len(".pkl"):] != ".pkl" else path
         with open(path, 'rb') as outp:
-            print(DEVICE)
-            neuronal_model_data = torch.load(outp,map_location=DEVICE)
+            neuronal_model_data = pickle.load(outp)
         L5PC = get_L5PC()
         model = RecursiveNeuronModel.build_david_data_model(config, L5PC)
-        model.load_state_dict(neuronal_model_data)
+        model.load_state_dict(neuronal_model_data,map_location=DEVICE)
         return model
 
     @abc.abstractmethod
