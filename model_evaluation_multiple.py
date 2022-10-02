@@ -188,15 +188,16 @@ class GroundTruthData(SimulationData):
         X = np.transpose(X, axes=[2, 0, 1])
         return X[sim_index, :, :]
 
-    def get_evaluation_input_per_file(self, f, batch_size=8, source_path=None):
-        path, f = ntpath.split(f)
-        if source_path is not None:
-            path = source_path
-        else:
-            path = self.path
+    def get_evaluation_input_per_file(self, f, batch_size=8):
+        # path, f = ntpath.split(f)
+        # if not source_path is  None:
+        #     path = source_path
+        # else:
+        #     path = self.path
+
         assert f in self.data_files, "file not exists in this simulation."
         print(self.path,path,f,flush=True)
-        X, _, __ = parse_sim_experiment_file(os.path.join(path, f))
+        X, _, __ = parse_sim_experiment_file(os.path.join(self.path, f))
         X = torch.from_numpy(X)
         X = np.transpose(X, axes=[2, 0, 1])
 
