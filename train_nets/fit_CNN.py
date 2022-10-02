@@ -200,7 +200,7 @@ def plot_grad_flow(model=None):
 
 def train_network(config, model, optimizer):
     DVT_PCA_model = None
-    SavingAndEvaluationScheduler.save_best_model_scaduler(config,first_run=True)
+    SavingAndEvaluationScheduler.save_best_model_scaduler(config,first_run=True,use_slurm=True if not USE_CUDA else False)
     model.cuda() if USE_CUDA else model.cpu()
     model.train()
     if DATA_TYPE == torch.cuda.FloatTensor or DATA_TYPE == torch.FloatTensor:
@@ -415,7 +415,7 @@ class SavingAndEvaluationScheduler():
                 self.previous_process.join()
             self.save_model(model, config, optimizer)
             self.last_time_saving = datetime.now()
-            self.previous_process = self.save_best_model_scaduler(config)
+            self.previous_process = self.save_best_model_scaduler(config,use_slurm=True if not USE_CUDA else False)
 
     @staticmethod
     def save_best_model_scaduler(config, use_slurm=False,first_run=False):
