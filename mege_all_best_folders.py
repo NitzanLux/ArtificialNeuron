@@ -4,12 +4,12 @@ from project_path import *
 
 if __name__ == '__main__':
     for i in os.listdir(MODELS_DIR):
-        if not os.path.isdir(i):
+        if not os.path.isdir(os.path.join(MODELS_DIR,i)):
             continue
         print(i)
         best_arr=[]
         creat_folder_flag=True
-        for f in os.listdir(i):
+        for f in os.listdir(os.path.join(MODELS_DIR,i)):
             if 'best' in f and 'temp' in f:
                 print(f)
 
