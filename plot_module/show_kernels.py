@@ -7,7 +7,7 @@ from typing import List
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 from project_path import *
-
+import os
 class ModelType(Enum):
     LEAF=recursive_neuronal_model.LeafNetwork
     BRANCH=recursive_neuronal_model.BranchNetwork
@@ -37,7 +37,8 @@ def show_kernels(model:recursive_neuronal_model.RecursiveNeuronModel,model_type:
 
     mng.full_screen_toggle()
     fig.show()
-    fig.savefig("comparison_pipline.png")
+    fig.savefig("show_kernels.png")
+
     mng.full_screen_toggle()
 
 
