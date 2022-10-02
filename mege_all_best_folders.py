@@ -11,6 +11,7 @@ if __name__ == '__main__':
 
         for f in os.listdir(os.path.join(MODELS_DIR,i)):
             if 'best' in f:
+                print(f)
                 for k in os.listdir(os.path.join(MODELS_DIR,i,f)):
                     cur_path = os.path.join(MODELS_DIR,i,f,k)
                     if os.path.isdir(cur_path):
