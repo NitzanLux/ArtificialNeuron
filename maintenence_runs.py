@@ -19,7 +19,7 @@ runs_array=[
             # rf"python -c ' {rf'from maintenence_runs import reduce_lr; reduce_lr({str(models_jsons)})'} '",
             # r'python evaluation_datasets.py -j d_r_comparison -j d_r_comparison_ss -j morph  -n 15 -g False']+[
             r"python fit_CNN_execution.py d_r_comparison -g True",
-            r"python fit_CNN_execution.py d_r_comparison_ss -g False -mem 160000",
+            r"python fit_CNN_execution.py d_r_comparison_ss -g False -mem 200000",
             r"python fit_CNN_execution.py morph -g True",
             r"python fit_CNN_execution.py morph_linear -g True",
             ]
