@@ -8,6 +8,8 @@ for i in os.listdir(MODELS_DIR):
     creat_folder_flag=True
     for f in os.listdir(i):
         if 'best' in f and 'temp' in f:
+            print(f)
+
             best_arr.append(f)
         elif 'best' in f and 'temp' not in f:
             creat_folder_flag=False
