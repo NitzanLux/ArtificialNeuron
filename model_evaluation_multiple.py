@@ -104,7 +104,7 @@ class GroundTruthData(SimulationData):
                 X = np.transpose(X, axes=[2, 0, 1])
             else:
                 X = X[np.newaxis, ...]
-            self.path, f = ntpath.split(f)
+            path, f = ntpath.split(f)
             if self.path is not None:
                 assert self.path == path, "cannot use different sources[path] of files"
             else:
@@ -177,7 +177,7 @@ class GroundTruthData(SimulationData):
 
     def get_single_input(self, f, sim_index, source_path=None):
         path, f = ntpath.split(f)
-        print(path, f)
+        print(path, f,self.path)
         if source_path is not None:
             path = source_path
         else:
