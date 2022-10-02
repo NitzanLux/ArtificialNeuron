@@ -3,6 +3,7 @@ import os.path
 from copy import copy
 from datetime import datetime
 
+import art
 import matplotlib.pyplot as plt
 import sklearn.metrics as skm
 import torch.optim as optim
@@ -429,6 +430,7 @@ class SavingAndEvaluationScheduler():
             job_factory.send_job(f'best_model_eval_{config.model_tag}', f"python3 -c '{job_command}'")
         elif not run_at_the_same_process:
             p = Process(target=save_best_model, args=(os.path.join(MODELS_DIR, *config.config_path),first_run))
+            art.tprint("process")
             p.start()
             return p
         else:
