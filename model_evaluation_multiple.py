@@ -105,7 +105,7 @@ class GroundTruthData(SimulationData):
             else:
                 X = X[np.newaxis, ...]
             path, f = ntpath.split(f)
-            if self.path is not None:
+            if not self.path is None:
                 assert self.path == path, "cannot use different sources[path] of files"
             else:
                 self.path = path
