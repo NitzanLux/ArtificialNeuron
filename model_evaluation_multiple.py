@@ -168,11 +168,12 @@ class GroundTruthData(SimulationData):
         return res
 
     def __hash__(self):
-        key = list(self.data_files) + [self.path]
+        # key = list(self.data_files) + [self.path]#todo fix
+        key = list(self.data_files)
         return tuple(key).__hash__()
 
     def __eq__(self, item: 'GroundTruthData'):
-        return self.data_files == item.data_files and self.path == item.path
+        return self.data_files == item.data_files #todo fix and self.path == item.path
 
     def get_single_input(self, f, sim_index, source_path=None):
         path, f = ntpath.split(f)
@@ -221,6 +222,8 @@ class EvaluationData(SimulationData):
     def __init__(self, ground_truth: GroundTruthData, config, use_cuda):
         self.config = config
         self.ground_truth: ['GroundTruthData'] = ground_truth
+        if hasattr(ground_truth,'path'):
+            self.ground_truth.path=None
         v, s, data_keys = self.__evaluate_model(use_cuda)
         s = np.vstack(s)
         v = np.vstack(v)
