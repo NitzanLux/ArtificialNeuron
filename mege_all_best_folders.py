@@ -17,4 +17,5 @@ for i in os.listdir(MODELS_DIR):
     if creat_folder_flag:
         os.path.mkdir(os.path.join(MODELS_DIR,i,dest))
     for f in best_arr:
+        print(dest)
         shutil.move(os.path.join(MODELS_DIR,i,f),os.path.join(MODELS_DIR,i,dest))
