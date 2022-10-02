@@ -451,11 +451,11 @@ class SavingAndEvaluationScheduler():
         for fn in files_path:
             fn = str(fn)
             filename, file_extension = os.path.splitext(fn)
-            if 'temp' not in file_extension or (os.path.isdir(os.path.join(base_path,fn))and 'temp' not in filename):
+            if 'temp' not in file_extension or (os.path.isdir(os.path.join(base_path,fn)) and 'temp' not in fn):
                 if os.path.exists(os.path.join(base_path, fn) + 'temp'):
                     os.remove(os.path.join(base_path, fn) + 'temp')
                 os.rename(os.path.join(base_path, fn), os.path.join(base_path, fn) + 'temp')
-            elif os.path.isdir(os.path.join(base_path,fn) )and  'temp' in filename:
+            elif os.path.isdir(os.path.join(base_path,fn) ) and  'temp' in fn:
                 os.remove(os.path.join(base_path, fn))
         model.save(os.path.join(MODELS_DIR, *config.model_path))
         if INCLUDE_OPTIMIZER_AT_LOADING:
