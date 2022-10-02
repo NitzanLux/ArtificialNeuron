@@ -10,12 +10,12 @@ if __name__ == '__main__':
         creat_folder_flag=True
 
         for f in os.listdir(os.path.join(MODELS_DIR,i)):
-            if 'best' in f and 'temp' in f and os.path.isdir(os.path.join(MODELS_DIR,i,f)):
+            if 'best' in f and 'temp' in f and os.isdir(os.path.join(MODELS_DIR,i,f)):
                 cur_path = os.path.join(MODELS_DIR,i,f)
                 dest=cur_path.replace('temp','')
                 #     if os.path.isdir(cur_path):
                 #         for h in os.listdir(cur_path):
-                for k in os.path.listdir(cur_path):
+                for k in os.listdir(cur_path):
                     shutil.move(os.path.join(cur_path,k),dest)
                 if len(os.listdir(cur_path))==0:
                     os.rmdir(cur_path)
