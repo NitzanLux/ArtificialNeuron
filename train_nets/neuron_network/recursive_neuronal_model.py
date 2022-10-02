@@ -224,7 +224,7 @@ class RecursiveNeuronModel(nn.Module):
         path = os.path.join(MODELS_DIR, *config.model_path)
         path = '%s.pkl' % path if path[-len(".pkl"):] != ".pkl" else path
         with open(path, 'rb') as outp:
-            neuronal_model_data = torch.load(outp)
+            neuronal_model_data = torch.load(outp,map_location=DEVICE)
         L5PC = get_L5PC()
         model = RecursiveNeuronModel.build_david_data_model(config, L5PC)
         model.load_state_dict(neuronal_model_data)
