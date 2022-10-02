@@ -280,7 +280,8 @@ def restore_configs_from_temp(configs_json):
     for conf in configs:
         conf[-1]=conf[-1]+'temp'
         path = os.path.join(MODELS_DIR, *conf)
-        shutil.copyfile(path,path[:-len('temp')])
+        if not os.path.exists(path) or os.path.getsize(path)==0:
+            shutil.copyfile(path,path[:-len('temp')])
 def restore_optimizers_from_temp(configs_json):
     with open(os.path.join(MODELS_DIR, "%s.json" % configs_json), 'r') as file:
         configs = json.load(file)
