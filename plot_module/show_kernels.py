@@ -5,6 +5,8 @@ from train_nets.configuration_factory import load_config_file
 from enum import Enum
 from typing import List
 import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
+
 class ModelType(Enum):
     LEAF=recursive_neuronal_model.LeafNetwork
     BRANCH=recursive_neuronal_model.BranchNetwork
@@ -32,7 +34,10 @@ def show_kernels(model:recursive_neuronal_model.RecursiveNeuronModel,model_type:
         ax[i//c,i%c].imshow(matrix[0,...],cmap='jet',interpolation='nearest')
         ax[i // c, i % c].set_title(m.section_name)
 
-    plt.show()
+    mng.full_screen_toggle()
+    fig.show()
+    fig.savefig("comparison_pipline.png")
+    mng.full_screen_toggle()
 
 
 model = recursive_neuronal_model.RecursiveNeuronModel.load(load_config_file(
