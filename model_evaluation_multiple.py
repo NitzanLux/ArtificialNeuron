@@ -225,7 +225,7 @@ class EvaluationData(SimulationData):
     def __init__(self, ground_truth: GroundTruthData, config, use_cuda):
         self.config = config
         self.ground_truth: ['GroundTruthData'] = ground_truth
-        if hasattr(ground_truth,'path'):
+        if not hasattr(ground_truth,'path'):
             self.ground_truth.path=None
         v, s, data_keys = self.__evaluate_model(use_cuda)
         s = np.vstack(s)
