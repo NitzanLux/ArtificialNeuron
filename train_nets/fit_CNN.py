@@ -201,7 +201,8 @@ def plot_grad_flow(model=None):
 
 def train_network(config, model, optimizer):
     DVT_PCA_model = None
-    SavingAndEvaluationScheduler.save_best_model_scaduler(config,first_run=True,use_slurm=True if not USE_CUDA else False)
+    SavingAndEvaluationScheduler.save_best_model_scaduler(config, first_run=True,
+                                                          use_slurm=True if not USE_CUDA else False)
     model.cuda() if USE_CUDA else model.cpu()
     model.train()
     if DATA_TYPE == torch.cuda.FloatTensor or DATA_TYPE == torch.FloatTensor:
@@ -416,10 +417,10 @@ class SavingAndEvaluationScheduler():
                 self.previous_process.join()
             self.save_model(model, config, optimizer)
             self.last_time_saving = datetime.now()
-            self.previous_process = self.save_best_model_scaduler(config,use_slurm=True if not USE_CUDA else False)
+            self.previous_process = self.save_best_model_scaduler(config, use_slurm=True if not USE_CUDA else False)
 
     @staticmethod
-    def save_best_model_scaduler(config, use_slurm=False,first_run=False,run_at_the_same_process=False):
+    def save_best_model_scaduler(config, use_slurm=False, first_run=False, run_at_the_same_process=False):
         if use_slurm:
             print('evaluate best model')
             job_factory = SlurmJobFactory("cluster_logs_best_model")
@@ -427,15 +428,15 @@ class SavingAndEvaluationScheduler():
             dname = os.path.dirname(abspath)
             dname = os.path.dirname(dname)
             job_command = f'import os;os.chdir("{dname}");import time;from train_nets.fit_CNN import save_best_model;t = time.time() ;save_best_model("{os.path.join(MODELS_DIR, *config.config_path)}");print(time.time()-t)'
-            job_factory.send_job(f'best_model_eval_{config.model_tag}', f"python3 -c '{job_command}'",mem=120000)
+            job_factory.send_job(f'best_model_eval_{config.model_tag}', f"python3 -c '{job_command}'", mem=120000)
         elif not run_at_the_same_process:
-            p = Process(target=save_best_model, args=(os.path.join(MODELS_DIR, *config.config_path),first_run))
+            p = Process(target=save_best_model, args=(os.path.join(MODELS_DIR, *config.config_path), first_run))
             art.tprint("process")
             p.start()
             return p
         else:
             exit(0)
-            save_best_model(os.path.join(MODELS_DIR, *config.config_path),first_run)
+            save_best_model(os.path.join(MODELS_DIR, *config.config_path), first_run)
 
     @staticmethod
     def flush_all(config, model, optimizer):
@@ -456,11 +457,11 @@ class SavingAndEvaluationScheduler():
         for fn in files_path:
             fn = str(fn)
             filename, file_extension = os.path.splitext(fn)
-            if 'temp' not in file_extension or (os.path.isdir(os.path.join(base_path,fn)) and 'temp' not in fn):
+            if 'temp' not in file_extension or (os.path.isdir(os.path.join(base_path, fn)) and 'temp' not in fn):
                 if os.path.exists(os.path.join(base_path, fn) + 'temp'):
                     os.remove(os.path.join(base_path, fn) + 'temp')
                 os.rename(os.path.join(base_path, fn), os.path.join(base_path, fn) + 'temp')
-            elif os.path.isdir(os.path.join(base_path,fn) ) and  'temp' in fn:
+            elif os.path.isdir(os.path.join(base_path, fn)) and 'temp' in fn:
                 os.remove(os.path.join(base_path, fn))
         model.save(os.path.join(MODELS_DIR, *config.model_path))
         if INCLUDE_OPTIMIZER_AT_LOADING:
@@ -529,7 +530,7 @@ def load_and_train(config):
         raise e
 
 
-def save_best_model(config_path,first_run=False):
+def save_best_model(config_path, first_run=False):
     config = configuration_factory.load_config_file(config_path)
 
     data_base_path = config.data_base_path
@@ -547,7 +548,8 @@ def save_best_model(config_path,first_run=False):
         model_gt = create_gt_and_save(path, name)
 
     model = load_model(config)
-    cur_model_evaluation = create_model_evaluation(model_gt.data_label, config.model_filename,config = config , model = model)
+    cur_model_evaluation = create_model_evaluation(model_gt.data_label, config.model_filename, config=config,
+                                                   model=model)
     auc = cur_model_evaluation.get_ROC_data()[0]
     best_result_path = os.path.join(MODELS_DIR, *config.model_path) + '_best'
 
