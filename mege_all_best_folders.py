@@ -3,11 +3,10 @@ import  shutil
 from project_path import *
 
 if __name__ == '__main__':
-    print('start')
     for i in os.listdir(MODELS_DIR):
-        print(i)
         if not os.path.isdir(i):
             continue
+        print(i)
         best_arr=[]
         creat_folder_flag=True
         for f in os.listdir(i):
