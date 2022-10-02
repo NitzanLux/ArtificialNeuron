@@ -15,7 +15,7 @@ if __name__ == '__main__':
                 dest=cur_path.replace('temp','')
                 #     if os.path.isdir(cur_path):
                 #         for h in os.listdir(cur_path):
-                for k in os.listdir(cur_path):
+                for k in os.path.listdir(cur_path):
                     shutil.move(os.path.join(cur_path,k),dest)
                 if len(os.listdir(cur_path))==0:
                     os.rmdir(cur_path)
