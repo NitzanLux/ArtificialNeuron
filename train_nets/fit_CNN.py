@@ -434,6 +434,7 @@ class SavingAndEvaluationScheduler():
             p.start()
             return p
         else:
+            exit(0)
             save_best_model(os.path.join(MODELS_DIR, *config.config_path),first_run)
 
     @staticmethod
