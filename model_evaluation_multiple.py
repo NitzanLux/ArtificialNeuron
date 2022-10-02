@@ -194,6 +194,7 @@ class GroundTruthData(SimulationData):
         else:
             path = self.path
         assert f in self.data_files, "file not exists in this simulation."
+        print(path,f)
         X, _, __ = parse_sim_experiment_file(os.path.join(path, f))
         X = torch.from_numpy(X)
         X = np.transpose(X, axes=[2, 0, 1])
@@ -207,7 +208,7 @@ class GroundTruthData(SimulationData):
     def get_evaluation_input(self, batch_size=8):
         buffer = []
         for f in self.data_files:
-            for i, cond in self.get_evaluation_input_per_file(f, batch_size):
+            for i, cond in self.get_evaluation_input_per_file(self.path,f, batch_size):
                 if cond:
                     yield i
                 else:
