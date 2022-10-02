@@ -16,7 +16,7 @@ if __name__ == '__main__':
                     cur_path = os.path.join(MODELS_DIR,i,f,k)
                     if os.path.isdir(cur_path):
                         for h in os.listdir(cur_path):
-                            shutil.move(cur_path,os.path.join(MODELS_DIR, i, f))
+                            shutil.move(os.path.join(cur_path,h),os.path.join(MODELS_DIR, i, f))
                         if len(os.listdir(cur_path))==0:
                             os.remove(cur_path)
         # for f in os.listdir(os.path.join(MODELS_DIR,i)):
