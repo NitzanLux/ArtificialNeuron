@@ -196,7 +196,6 @@ class GroundTruthData(SimulationData):
         #     path = self.path
 
         assert f in self.data_files, "file not exists in this simulation."
-        print(self.path,path,f,flush=True)
         X, _, __ = parse_sim_experiment_file(os.path.join(self.path, f))
         X = torch.from_numpy(X)
         X = np.transpose(X, axes=[2, 0, 1])
