@@ -104,7 +104,7 @@ class GroundTruthData(SimulationData):
                 X = np.transpose(X, axes=[2, 0, 1])
             else:
                 X = X[np.newaxis, ...]
-            path, f = ntpath.split(f)
+            self.path, f = ntpath.split(f)
             if self.path is not None:
                 assert self.path == path, "cannot use different sources[path] of files"
             else:
@@ -194,7 +194,7 @@ class GroundTruthData(SimulationData):
         else:
             path = self.path
         assert f in self.data_files, "file not exists in this simulation."
-        print(path,f,flush=True)
+        print(self.path,path,f,flush=True)
         X, _, __ = parse_sim_experiment_file(os.path.join(path, f))
         X = torch.from_numpy(X)
         X = np.transpose(X, axes=[2, 0, 1])
