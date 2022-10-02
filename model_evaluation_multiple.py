@@ -188,7 +188,6 @@ class GroundTruthData(SimulationData):
         return X[sim_index, :, :]
 
     def get_evaluation_input_per_file(self, f, batch_size=8, source_path=None):
-        print(f, flush=True)
         path, f = ntpath.split(f)
         if source_path is not None:
             path = source_path
