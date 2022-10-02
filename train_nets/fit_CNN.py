@@ -200,7 +200,7 @@ def plot_grad_flow(model=None):
 
 def train_network(config, model, optimizer):
     DVT_PCA_model = None
-    SavingAndEvaluationScheduler.save_best_model_scaduler(config,first_run=True,use_slurm=False,run_at_the_same_process=True)#,use_slurm=True if not USE_CUDA else False)
+    SavingAndEvaluationScheduler.save_best_model_scaduler(config,first_run=True,use_slurm=True if not USE_CUDA else False)
     model.cuda() if USE_CUDA else model.cpu()
     model.train()
     if DATA_TYPE == torch.cuda.FloatTensor or DATA_TYPE == torch.FloatTensor:
