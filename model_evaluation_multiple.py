@@ -120,6 +120,7 @@ class GroundTruthData(SimulationData):
         self.files_short_names = {v: k for k, v in self.files_short_names.items()}
         s = np.vstack(s)
         v = np.vstack(v)
+        assert not self.path is None,"path is None"
         super().__init__(v, s, data_keys, data_label)
 
     def translate_tuple_to_files(self, f, i):
