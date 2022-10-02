@@ -227,7 +227,7 @@ class RecursiveNeuronModel(nn.Module):
             neuronal_model_data = pickle.load(outp)
         L5PC = get_L5PC()
         model = RecursiveNeuronModel.build_david_data_model(config, L5PC)
-        model.load_state_dict(neuronal_model_data,map_location=DEVICE)
+        model.load_state_dict(neuronal_model_data)
         return model
 
     @abc.abstractmethod
