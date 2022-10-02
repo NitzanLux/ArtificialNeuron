@@ -22,7 +22,7 @@ import train_nets.neuron_network.temporal_convolution_blocks_narrow_skip_connect
 from neuron_simulations.get_neuron_modle import get_L5PC
 from project_path import MODELS_DIR
 from train_nets.synapse_tree import SectionType
-
+from utils.general_variables import *
 BRANCHES = 'branches'
 
 UPSTREAM_MODEL = 'upstream_model'
