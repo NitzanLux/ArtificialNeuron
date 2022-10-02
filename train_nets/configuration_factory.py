@@ -316,13 +316,14 @@ if __name__ == '__main__':
             kernels = arange_kernel_by_layers(base_layer, i, False)
             for data in [DAVID_BASE_PATH, REDUCTION_BASE_PATH]:
                 config = config_factory(
-                    # architecture_type='FullNeuronNetwork',
-                    architecture_type='LAYERED_TEMPORAL_CONV_N', clip_gradients_factor=2.5,
+                    architecture_type='FullNeuronNetwork',
+                    # architecture_type='LAYERED_TEMPORAL_CONV_N', clip_gradients_factor=2.5,
                     # model_tag="%s_%d%s" % (configurations_name, i, "_reduction" if data == REDUCTION_BASE_PATH else ''),
                     model_tag="%s_%s" % (configurations_name, "_reduction" if data == REDUCTION_BASE_PATH else ''),
                     kernel_sizes=kernels, number_of_layers_space=len(kernels), data_base_path=data,trim_last_nonlinear=True,
                     accumulate_loss_batch_factor=1, prediction_length=700,torch_seed=torch_seed,numpy_seed=numpy_seed,random_seed=random_seed,
                     batch_size_validation=30, batch_size_train=80,
+                    batch_size_validation=30, batch_size_train=5,
                     # batch_size_validation=30, batch_size_train=160,
                     constant_learning_rate=0.03)
                 configs.append(config)
