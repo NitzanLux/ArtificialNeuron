@@ -18,7 +18,7 @@ if __name__ == '__main__':
                         for h in os.listdir(cur_path):
                             shutil.move(os.path.join(cur_path,h),os.path.join(MODELS_DIR, i, f))
                         if len(os.listdir(cur_path))==0:
-                            os.remove(cur_path)
+                            os.rmdir(cur_path)
         # for f in os.listdir(os.path.join(MODELS_DIR,i)):
         #     if 'best' in f and 'temp' in f:
         #         print(f)
