@@ -427,7 +427,7 @@ class SavingAndEvaluationScheduler():
             dname = os.path.dirname(abspath)
             dname = os.path.dirname(dname)
             job_command = f'import os;os.chdir("{dname}");import time;from train_nets.fit_CNN import save_best_model;t = time.time() ;save_best_model("{os.path.join(MODELS_DIR, *config.config_path)}");print(time.time()-t)'
-            job_factory.send_job(f'best_model_eval_{config.model_tag}', f"python3 -c '{job_command}'")
+            job_factory.send_job(f'best_model_eval_{config.model_tag}', f"python3 -c '{job_command}'",mem=120000)
         elif not run_at_the_same_process:
             p = Process(target=save_best_model, args=(os.path.join(MODELS_DIR, *config.config_path),first_run))
             art.tprint("process")
