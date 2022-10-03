@@ -67,18 +67,18 @@ for i,m in enumerate(model_original_names):
 v,s=gt_original[(file_original,sim_index)]
 x_axis_gt = v.shape[0]
 
-
+gap=x_axis_gt-reduction_x_range
 data_points_start_input=data_points_start-data_points_start_input_interval
 
-original_output_v = v[data_points_start:data_points_end]
-original_output_s = s[data_points_start:data_points_end]
+original_output_v = v[data_points_start+gap:data_points_end+gap]
+original_output_s = s[gap+data_points_start:gap+data_points_end]
 
 v,s=gt_reduction[(file_reduction,sim_index)]
-reduction_output_v = v[data_points_start:data_points_end]
-reduction_output_s = s[data_points_start:data_points_end]
+reduction_output_v = v[gap+data_points_start:gap+data_points_end]
+reduction_output_s = s[gap+data_points_start:gap+data_points_end]
 # for m_re,m_ori in zip(models_reduction,models_original):
-evaluation_input_reduction = gt_reduction.get_single_input(file_reduction,sim_index=sim_index)[:,data_points_start_input:data_points_end].cpu().numpy()
-evaluation_input_original = gt_original.get_single_input(file_original,sim_index=sim_index)[:,data_points_start_input:data_points_end].cpu().numpy()
+evaluation_input_reduction = gt_reduction.get_single_input(file_reduction,sim_index=sim_index)[:,gap+data_points_start_input:gap+data_points_end].cpu().numpy()
+evaluation_input_original = gt_original.get_single_input(file_original,sim_index=sim_index)[:,gap+data_points_start_input:gap+data_points_end].cpu().numpy()
 
 #data validataion
 assert np.all(evaluation_input_reduction==evaluation_input_original), "two input are different"
@@ -141,7 +141,7 @@ fig.axes[1].set_position([right_margin_position,ax1_pos.y0,ax1_pos.width,ax1_pos
 ax1_pos = fig.axes[1].get_position()
 fig.axes[1].get_xaxis().set_ticks([])
 
-fig.axes[1].plot(output_x_range,reduction_output_v,color='blue')
+fig.axes[1].plot(output_x_range+gap,reduction_output_v,color='blue')
 for v,s,l in model_evaluation_reduction:
     fig.axes[1].plot(output_x_range,v,color=color_function(l),label=f"{l} layers")
 
@@ -151,7 +151,7 @@ ax2_pos = fig.axes[2].get_position()
 fig.axes[2].set_position([right_margin_position,ax1_pos.y0-ax2_pos.height-twin_graph_margin,ax2_pos.width,ax2_pos.height])
 ax2_pos = fig.axes[2].get_position()
 
-fig.axes[2].plot(output_x_range,reduction_output_s,color='blue')
+fig.axes[2].plot(output_x_range+gap,reduction_output_s,color='blue')
 for v,s,l in model_evaluation_reduction:
     fig.axes[2].plot(output_x_range,s,color=color_function(l),label=f"{l} layers")
 
