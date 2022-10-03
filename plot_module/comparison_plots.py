@@ -24,8 +24,8 @@ model_reduction_names= ["d_r_comparison_1_reduction___2022-09-07__22_59__ID_1494
                         "d_r_comparison_5_reduction___2022-09-07__22_59__ID_9020.meval",
                         "d_r_comparison_7_reduction___2022-09-07__22_59__ID_31437.meval"]
 
-file_original='L5PC_sim__Output_spikes_0948__Input_ranges_Exc_[0148,1149]_Inh_[0061,1274]_per100ms__simXsec_128x6_randseed_1110182.p'
-file_reduction='L5PC_sim__Output_spikes_0948__Input_ranges_Exc_[0148,1149]_Inh_[0061,1274]_per100ms__simXsec_128x6_randseed_1110182_reduction_0w.p'
+file_original="L5PC_sim__Output_spikes_0848__Input_ranges_Exc_[0120,1159]_Inh_[0034,1294]_per100ms__simXsec_128x6_randseed_1110001.p"
+file_reduction="L5PC_sim__Output_spikes_0848__Input_ranges_Exc_[0120,1159]_Inh_[0034,1294]_per100ms__simXsec_128x6_randseed_1110001_reduction_0w.p"
 sim_index=0
 data_points_start_input=75
 data_points_start=200
@@ -64,7 +64,7 @@ v,s=gt_original[(file_original,sim_index)]
 original_output_v = v[data_points_start:data_points_end]
 original_output_s = s[data_points_start:data_points_end]
 
-v,s=gt_original[(file_reduction,sim_index)]
+v,s=gt_reduction[(file_reduction,sim_index)]
 reduction_output_v = v[data_points_start:data_points_end]
 reduction_output_s = s[data_points_start:data_points_end]
 # for m_re,m_ori in zip(models_reduction,models_original):
