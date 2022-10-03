@@ -219,6 +219,7 @@ def train_network(config, model, optimizer):
     evaluation_plotter_scheduler = SavingAndEvaluationScheduler()
     evaluation_plotter_scheduler.save_best_model_scaduler(config, first_run=True,
                                                           use_slurm=True if not USE_CUDA else False)
+    exit(0)
     if not config.dynamic_learning_params:
         learning_rate, loss_weights, sigma, custom_loss = generate_constant_learning_parameters(config)
         if config.lr_scheduler is not None:
@@ -467,7 +468,6 @@ class SavingAndEvaluationScheduler():
             p.start()
             return p
         else:
-            exit(0)
             save_best_model(os.path.join(MODELS_DIR, *config.config_path), first_run)
 
     @staticmethod
@@ -587,7 +587,8 @@ def save_best_model(config_path, first_run=False):
                                                        model=model)
         auc = cur_model_evaluation.get_ROC_data()[0]
         cur_model_evaluation.save(os.path.join(best_result_path, "eval.gteval"))
-
+        if not os.path.exists(os.path.join(best_result_path, "auc_history")):
+            np.save(os.path.join(best_result_path, "auc_history"), np.array(auc))
 
     if not os.path.exists(best_result_path):
         os.mkdir(best_result_path)
@@ -598,8 +599,8 @@ def save_best_model(config_path, first_run=False):
     if not os.path.exists(os.path.join(best_result_path, 'config.pkl')):
         # shutil.copyfile(os.path.join(MODELS_DIR, *config.config_path), os.path.join(best_result_path, 'config.pkl'))
         configuration_factory.save_config(config, os.path.join(best_result_path, 'config.pkl'))
-    if not os.path.exists(os.path.join(best_result_path, "auc_history")):
-        np.save(os.path.join(best_result_path, "auc_history"), np.array(auc))
+    # if not os.path.exists(os.path.join(best_result_path, "auc_history")):
+    #     np.save(os.path.join(best_result_path, "auc_history"), np.array(auc))
 
     elif not first_run:
         cur_model_evaluation = create_model_evaluation(model_gt.data_label, config.model_filename, config=config,
