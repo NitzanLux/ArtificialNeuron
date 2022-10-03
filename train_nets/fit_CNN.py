@@ -591,8 +591,7 @@ def save_best_model(config_path, first_run=False):
         if not os.path.exists(os.path.join(best_result_path, "auc_history")):
             auc=cur_model_evaluation.get_ROC_data()[0]
             np.save(os.path.join(best_result_path, "auc_history"), np.array(auc))
-    if not os.path.exists(os.path.join(best_result_path, "auc_history")):
-        np.save(os.path.join(best_result_path, "auc_history"), np.array(auc))
+
 
     if not os.path.exists(best_result_path):
         os.mkdir(best_result_path)
@@ -612,8 +611,8 @@ def save_best_model(config_path, first_run=False):
 
         auc = g.get_ROC_data()[0]
 
-
-
+        if not os.path.exists(os.path.join(best_result_path, "auc_history")):
+            np.save(os.path.join(best_result_path, "auc_history"), np.array(auc))
         auc_arr = np.load(os.path.join(best_result_path, "auc_history"))
         auc_arr = np.append(auc_arr, auc)
         np.save(os.path.join(best_result_path, "auc_history"), auc_arr)
