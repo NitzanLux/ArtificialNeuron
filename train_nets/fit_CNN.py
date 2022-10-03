@@ -203,8 +203,7 @@ def plot_grad_flow(model=None):
 
 def train_network(config, model, optimizer):
     DVT_PCA_model = None
-    SavingAndEvaluationScheduler.save_best_model_scaduler(config, first_run=True,
-                                                          use_slurm=True if not USE_CUDA else False)
+
     model.cuda() if USE_CUDA else model.cpu()
     model.train()
     if DATA_TYPE == torch.cuda.FloatTensor or DATA_TYPE == torch.FloatTensor:
@@ -218,6 +217,8 @@ def train_network(config, model, optimizer):
     optimizer_scheduler = None
     custom_loss = None
     evaluation_plotter_scheduler = SavingAndEvaluationScheduler()
+    evaluation_plotter_scheduler.save_best_model_scaduler(config, first_run=True,
+                                                          use_slurm=True if not USE_CUDA else False)
     if not config.dynamic_learning_params:
         learning_rate, loss_weights, sigma, custom_loss = generate_constant_learning_parameters(config)
         if config.lr_scheduler is not None:
@@ -268,7 +269,7 @@ def train_network(config, model, optimizer):
                 return
             # save model every once a while
             elif saving_counter % 10 == 0:
-                evaluation_plotter_scheduler(model, config, optimizer)
+                evaluation_plotter_scheduler(model, config, optimizer, use_slurm=True if not USE_CUDA else False)
             # if our model finnished its steps
 
 
@@ -419,7 +420,7 @@ class SavingAndEvaluationScheduler():
             self.pause_state=False
 
 
-    def create_evaluation_schduler(self, config, first_run=first_run,run_at_the_same_process=run_at_the_same_process,use_slurm=use_slurm):
+    def create_evaluation_schduler(self, config, run_at_the_same_process,use_slurm):
         # if pause_state:
         #     return
         if run_at_the_same_process:
@@ -428,8 +429,7 @@ class SavingAndEvaluationScheduler():
         delta_time = current_time - self.last_time_evaluation
         self.last_time_evaluation = datetime.now()
         if (delta_time.total_seconds() / 60) / 60 > self.time_in_hours_for_eval:
-            save_best_model_scaduler(self, config, use_slurm=False, first_run=False, run_at_the_same_process=False)
-
+            self.save_best_model_scaduler(config, use_slurm=run_at_the_same_process, run_at_the_same_process=use_slurm)
         if run_at_the_same_process:
             self.retry()
 
@@ -502,8 +502,8 @@ class SavingAndEvaluationScheduler():
                 pickle.dump(optimizer.state_dict(), fo)
         configuration_factory.overwrite_config(AttrDict(config))
 
-    def __call__(self, model, config, optimizer):
-        self.create_evaluation_schduler(config, model)
+    def __call__(self, model, config, optimizer,run_at_the_same_process,use_slurm):
+        self.create_evaluation_schduler(config, run_at_the_same_process,use_slurm)
         self.save_model_schduler(config, model, optimizer)
 
 
