@@ -50,9 +50,9 @@ for i,m in enumerate(model_reduction_names):
     model_evaluation_reduction.append((v,s,m.config.number_of_layers_space))
 
 for i,m in enumerate(model_original_names):
-    if not os.path.exists(os.path.join('evaluations', 'models', gt_original_name, m + '.meval')):
+    if not os.path.exists(os.path.join('evaluations', 'models', gt_original_name, m + '.meval' if not m.endswith('.meval') else '')):
         continue
-    m=model_evaluation_multiple.EvaluationData.load(os.path.join('evaluations','models', gt_original_name,m+'.meval'))
+    m=model_evaluation_multiple.EvaluationData.load(os.path.join('evaluations','models', gt_original_name,m+ '.meval' if not m.endswith('.meval') else ''))
     v,s=m[(file_original,sim_index)]
     v=v[data_points_start:data_points_end]
     s=s[data_points_start:data_points_end]
@@ -93,7 +93,7 @@ colors_steps=(max_layer)/(255)
 alpha=0.5
 color_function= lambda l:(1.,(255-l*colors_steps)/255.,(255-l*colors_steps)/255.,alpha)
 # margins
-right_margin=0.05
+right_margin=0.1
 left_margin=0.05
 twin_graph_margin=0.01
 
