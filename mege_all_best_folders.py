@@ -19,7 +19,7 @@ if __name__ == '__main__':
                     if os.path.getsize(os.path.join(cur_path, k)) == 0 or \
                             (os.path.exists(os.path.join(dest, k)) and os.path.getsize(
                                 os.path.join(dest, k)) != 0 and os.path.getmtime(
-                                os.path.join(dest, k)) > os.path.getmtime(os.path.join(cur_path, k)) - 1000):
+                                os.path.join(dest, k)) <os.path.getmtime(os.path.join(cur_path, k)) - 1000):
                         continue
                     else:
                         print("aaa")
