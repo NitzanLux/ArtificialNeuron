@@ -247,7 +247,7 @@ class EvaluationData(SimulationData):
         data_keys, s_out, v_out = [], [], []
         i = 0
         for inputs, keys in self.ground_truth.get_evaluation_input(batch_size=BATCH_SIZE):
-            print(keys)
+            print(keys,flush=True)
             i += 1
             with torch.no_grad():
                 inputs.cuda() if USE_CUDA else inputs.cpu()
