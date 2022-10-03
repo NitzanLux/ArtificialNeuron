@@ -219,7 +219,6 @@ def train_network(config, model, optimizer):
     evaluation_plotter_scheduler = SavingAndEvaluationScheduler()
     evaluation_plotter_scheduler.save_best_model_scaduler(config, first_run=True,
                                                           use_slurm=True if not USE_CUDA else False)
-    exit(0)
     if not config.dynamic_learning_params:
         learning_rate, loss_weights, sigma, custom_loss = generate_constant_learning_parameters(config)
         if config.lr_scheduler is not None:
