@@ -80,16 +80,13 @@ for i,m in enumerate(model_original_names):
 
 
 
-data_points_start_input=data_points_start-data_points_start_input_interval
-
-
 
 # v,s=gt_reduction[(file_reduction,sim_index)]
 # reduction_output_v = v[data_points_start:data_points_end]
 # reduction_output_s = s[data_points_start:data_points_end]
 # for m_re,m_ori in zip(models_reduction,models_original):
-evaluation_input_reduction = gt_reduction.get_single_input(file_reduction,sim_index=sim_index)[:,data_points_start_input:data_points_end].cpu().numpy()
-evaluation_input_original = gt_original.get_single_input(file_original,sim_index=sim_index)[:,data_points_start_input:data_points_end].cpu().numpy()
+evaluation_input_reduction = gt_reduction.get_single_input(file_reduction,sim_index=sim_index).T[:,data_points_start_input:data_points_end].cpu().numpy()
+evaluation_input_original = gt_original.get_single_input(file_original,sim_index=sim_index).T[:,data_points_start_input:data_points_end].cpu().numpy()
 
 #data validataion
 assert np.all(evaluation_input_reduction==evaluation_input_original), "two input are different"
