@@ -57,8 +57,7 @@ for i,m in enumerate(model_reduction_names):
     m = model_evaluation_multiple.EvaluationData.load(os.path.join('evaluations', 'models', gt_reduction_name, m + ( '.meval' if not m.endswith('.meval') else '')))
     v,s=m[(file_reduction,sim_index)]
     if gap is None:
-        gap =x_axis_gt - v.shape[0]
-        gap=800
+        gap =v.shape[0]-x_axis_gt
         print(gap)
         # gap = 0
     print(v.shape,'eval')
