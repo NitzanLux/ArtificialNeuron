@@ -29,7 +29,7 @@ file_reduction=f"{file_original[:-len('.p')]}_reduction_0w.p"
 sim_index=0
 data_points_start_input_interval=1000
 data_points_start=2500
-data_points_end=5500
+data_points_end=3500
 data_points_start_input=data_points_start-data_points_start_input_interval
 #%% pipline plot data
 gt_reduction = model_evaluation_multiple.GroundTruthData.load(os.path.join('evaluations','ground_truth', gt_reduction_name+'.gteval'))
@@ -58,11 +58,12 @@ for i,m in enumerate(model_reduction_names):
     v,s=m[(file_reduction,sim_index)]
     if gap is None:
         gap =x_axis_gt - v.shape[0]
+        gap=1000
         print(gap)
         # gap = 0
     print(v.shape,'eval')
-    v=v[data_points_start+gap:data_points_end]
-    s=s[data_points_start+gap:data_points_end]
+    v=v[data_points_start+gap:data_points_end+gap]
+    s=s[data_points_start+gap:data_points_end+gap]
     if max_layer<m.config.number_of_layers_space:
         max_layer=m.config.number_of_layers_space
     model_evaluation_reduction.append((v,s,m.config.number_of_layers_space))
