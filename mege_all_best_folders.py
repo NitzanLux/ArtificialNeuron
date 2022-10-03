@@ -20,7 +20,7 @@ if __name__ == '__main__':
                             (os.path.exists(os.path.join(dest, k)) and os.path.getsize(
                                 os.path.join(dest, k)) != 0 and os.path.getmtime(
                                 os.path.join(dest, k)) >os.path.getmtime(os.path.join(cur_path, k)) - 1000):
-                        os.remove(os.path.join(cur_path, k))
+                        continue
                     else:
                         # print("aaa")
                         # print(k,dest)
