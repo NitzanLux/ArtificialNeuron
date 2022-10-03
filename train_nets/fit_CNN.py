@@ -583,7 +583,7 @@ def save_best_model(config_path, first_run=False):
     best_result_path = os.path.join(MODELS_DIR, *config.model_path) + '_best'
 
     if (first_run and not os.path.exists(os.path.join(best_result_path, "eval.gteval"))):
-        cur_model_evaluation = EvaluationData(GroundTruthData.load(model_gt.data_label), config, USE_CUDA, model)
+        cur_model_evaluation = EvaluationData(model_gt, config, USE_CUDA, model)
         auc = cur_model_evaluation.get_ROC_data()[0]
         cur_model_evaluation.save(os.path.join(best_result_path, "eval.gteval"))
         if not os.path.exists(os.path.join(best_result_path, "auc_history")):
