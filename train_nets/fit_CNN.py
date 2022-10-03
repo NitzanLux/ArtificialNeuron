@@ -11,7 +11,7 @@ import torch.optim.lr_scheduler as lr_scheduler
 import wandb
 import shutil
 import train_nets.configuration_factory as configuration_factory
-from model_evaluation_multiple import GroundTruthData, create_gt_and_save, create_model_evaluation
+from model_evaluation_multiple import GroundTruthData, create_gt_and_save, EvaluationData
 from neuron_simulations.simulation_data_generator_new import *
 # from model_evaluation import ModelEvaluator
 from train_nets.neuron_network import davids_network
@@ -583,8 +583,7 @@ def save_best_model(config_path, first_run=False):
     best_result_path = os.path.join(MODELS_DIR, *config.model_path) + '_best'
 
     if (first_run and not os.path.exists(os.path.join(best_result_path, "eval.gteval"))):
-        cur_model_evaluation = create_model_evaluation(model_gt.data_label, config.model_filename, config=config,
-                                                       model=model)
+        cur_model_evaluation = EvaluationData(GroundTruthData.load(model_gt.data_label), config, USE_CUDA, model)
         auc = cur_model_evaluation.get_ROC_data()[0]
         cur_model_evaluation.save(os.path.join(best_result_path, "eval.gteval"))
         if not os.path.exists(os.path.join(best_result_path, "auc_history")):
@@ -603,9 +602,10 @@ def save_best_model(config_path, first_run=False):
     #     np.save(os.path.join(best_result_path, "auc_history"), np.array(auc))
 
     elif not first_run:
-        cur_model_evaluation = create_model_evaluation(model_gt.data_label, config.model_filename, config=config,
-                                                       model=model)
-        auc = cur_model_evaluation.get_ROC_data()[0]
+        g = EvaluationData(GroundTruthData.load(model_gt.data_label), config, USE_CUDA, model)
+
+
+        auc = g.get_ROC_data()[0]
 
         auc_arr = np.load(os.path.join(best_result_path, "auc_history"))
         auc_arr = np.append(auc_arr, auc)
@@ -613,9 +613,7 @@ def save_best_model(config_path, first_run=False):
         if np.max(auc_arr) < auc:
             model.save(os.path.join(best_result_path, 'model'))
             configuration_factory.save_config(config, os.path.join(best_result_path, 'config.pkl'))
-            # shutil.copyfile(os.path.join(MODELS_DIR, *config.model_path), os.path.join(best_result_path, 'model.pkl'))
-            # shutil.copyfile(os.path.join(MODELS_DIR, *config.config_path), os.path.join(best_result_path, 'config.pkl'))
-            cur_model_evaluation.save(os.path.join(best_result_path, "eval.gteval"))
+            g.save(os.path.join(best_result_path, "eval.meval"))
 
 
 def train_log(loss, step, epoch=None, learning_rate=None, sigma=None, weights=None, additional_str='', commit=False):
