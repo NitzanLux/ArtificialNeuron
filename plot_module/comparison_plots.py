@@ -58,7 +58,7 @@ for i,m in enumerate(model_reduction_names):
     v,s=m[(file_reduction,sim_index)]
     if gap is None:
         gap =x_axis_gt - v.shape[0]
-        gap=1000
+        gap=800
         print(gap)
         # gap = 0
     print(v.shape,'eval')
