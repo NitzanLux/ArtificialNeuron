@@ -47,7 +47,7 @@ class SimulationDataGenerator():
     'Characterizes a dataset for PyTorch'
 
     def __init__(self, sim_experiment_files, buffer_size_in_files=12,
-                 batch_size=8, sample_ratio_to_shuffle=1, prediction_length=1, window_size_ms=300,
+                 batch_size=8, sample_ratio_to_shuffle=1, prediction_length=1, window_size_ms=200,
 
                  ignore_time_from_start=20, y_train_soma_bias=-67.7, y_soma_threshold=Y_SOMA_THRESHOLD,
                  y_DTV_threshold=3.0, generator_name='',

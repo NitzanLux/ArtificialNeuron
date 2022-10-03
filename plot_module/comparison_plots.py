@@ -23,9 +23,9 @@ model_reduction_names= ["d_r_comparison_1_reduction___2022-09-07__22_59__ID_1494
                         "d_r_comparison_3_reduction___2022-09-07__22_59__ID_44648.meval",
                         "d_r_comparison_5_reduction___2022-09-07__22_59__ID_9020.meval",
                         "d_r_comparison_7_reduction___2022-09-07__22_59__ID_31437.meval"]
+file_original='L5PC_sim__Output_spikes_0909__Input_ranges_Exc_[0119,1140]_Inh_[0047,1302]_per100ms__simXsec_128x6_randseed_1110264.p'
 
-file_original="L5PC_sim__Output_spikes_0889__Input_ranges_Exc_[0119,1163]_Inh_[0051,1327]_per100ms__simXsec_128x6_randseed_500207.p"
-file_reduction="L5PC_sim__Output_spikes_0889__Input_ranges_Exc_[0119,1163]_Inh_[0051,1327]_per100ms__simXsec_128x6_randseed_500207_reduction_0w.p"
+file_reduction=f"{file_original[:-len('.p')]}_reduction_0w.p"
 sim_index=0
 data_points_start_input_interval=200
 data_points_start=1150
@@ -39,11 +39,14 @@ gt_original = model_evaluation_multiple.GroundTruthData.load(os.path.join('evalu
 max_layer = 0
 model_evaluation_reduction=[]
 model_evaluation_original=[]
+reduction_x_range=None
 for i,m in enumerate(model_reduction_names):
     if not os.path.exists(os.path.join('evaluations', 'models', gt_reduction_name, m + ('.meval' if not m.endswith('.meval') else ''))):
         continue
     m = model_evaluation_multiple.EvaluationData.load(os.path.join('evaluations', 'models', gt_reduction_name, m + ( '.meval' if not m.endswith('.meval') else '')))
     v,s=m[(file_reduction,sim_index)]
+    if reduction_x_range is None:
+        reduction_x_range = v.shape[0]
     v=v[data_points_start:data_points_end]
     s=s[data_points_start:data_points_end]
     if max_layer<m.config.number_of_layers_space:
@@ -62,6 +65,11 @@ for i,m in enumerate(model_original_names):
     model_evaluation_original.append((v,s,m.config.number_of_layers_space))
 
 v,s=gt_original[(file_original,sim_index)]
+x_axis_gt = v.shape[0]
+data_points_start=3000-x_axis_gt+reduction_x_range
+data_points_end=4600-x_axis_gt+reduction_x_range
+data_points_start_input=data_points_start-data_points_start_input_interval-x_axis_gt+reduction_x_range
+
 original_output_v = v[data_points_start:data_points_end]
 original_output_s = s[data_points_start:data_points_end]
 
