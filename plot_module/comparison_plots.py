@@ -112,10 +112,11 @@ path =os.path.abspath(os.getcwd())
 x_scatter,y_scatter=np.where(evaluation_input)
 
 
-
-fig.axes[0].scatter(input_x_range[x_scatter],y_scatter+1,c='black',s=0.01,marker ='*',alpha=1)
+x_scatter+=data_points_start_input
+fig.axes[0].scatter(x_scatter,y_scatter+1,c='black',s=0.01,marker ='*',alpha=1)
 fig.axes[0].set_ylim([0-0.001,np.max(y_scatter)+2+0.001])
 fig.axes[0].set_xlabel('time(ms)')
+
 fig.axes[0].set_ylabel('Synapse number')
 
 ax0_pos = fig.axes[0].get_position()
