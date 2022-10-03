@@ -164,7 +164,6 @@ ax2_pos = fig.axes[2].get_position()
 fig.axes[2].plot(output_x_range,reduction_output_s,color='red')
 for v,s,l in model_evaluation_reduction:
     fig.axes[2].plot(output_x_range,s,color=color_function(l),label=f"{l} layers",alpha=alpha)
-fig.axes[2].legend()
 
 
 ax3_pos = fig.axes[3].get_position()
@@ -182,7 +181,8 @@ ax4_pos = fig.axes[4].get_position()
 fig.axes[4].plot(output_x_range,original_output_s,color='red')
 for v,s,l in model_evaluation_original:
     fig.axes[4].plot(output_x_range,s,color=color_function(l),label=f"{l} layers",alpha=alpha)
-fig.axes[4].legend()
+fig.axes[4].legend(loc='center left', bbox_to_anchor=(1, 0.5))
+
 # plt.tight_layout()
 
 
