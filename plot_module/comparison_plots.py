@@ -29,8 +29,8 @@ file_reduction="L5PC_sim__Output_spikes_0848__Input_ranges_Exc_[0120,1159]_Inh_[
 sim_index=0
 data_points_start_input=75
 data_points_start=200
-data_points_end=400
-#%% pipline plot
+data_points_end=1000
+#%% pipline plot data
 gt_reduction = model_evaluation_multiple.GroundTruthData.load(os.path.join('evaluations','ground_truth', gt_reduction_name+'.gteval'))
 gt_original = model_evaluation_multiple.GroundTruthData.load(os.path.join('evaluations','ground_truth', gt_original_name+'.gteval'))
 
