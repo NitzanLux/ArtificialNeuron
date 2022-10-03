@@ -500,7 +500,7 @@ class ModelEvaluator():
         fig.update_layout(title_text="ROC", showlegend=True)
         return fig, AUC_arr
 
-    def display_window(self, indexes, mse_window_size):
+    def display_window(self, indexes, mse_window_size,trim_top=False):
         fig = make_subplots(rows=3, cols=1,
                             shared_xaxes=True,  # specs = [{}, {},{}],
                             vertical_spacing=0.05, start_cell='top-left',
@@ -538,8 +538,9 @@ class ModelEvaluator():
             fig.add_heatmap(z=mse_matrix, row=3, col=1, y=y)
         fig.update_layout(  # height=600, width=600,
             # title_text="model %s index %d" % (self.config.model_path[-1], index),
-            yaxis_range=[-83, -52], yaxis2_range=[0, 1]  # , legend_orientation="h"
-            , yaxis2=dict(ticks="", showticklabels=False))
+            **{yaxis_range:[-83, -52]} if trim_top else {}
+            , yaxis2_range=[0, 1],xaxis2=dict(showticklabels= True,title='time(ms)') ) # , legend_orientation="h"
+        #, yaxis2=dict(ticks="", showticklabels=False),xaxis2=dict(showticklabels=True))
         return fig
 
 
