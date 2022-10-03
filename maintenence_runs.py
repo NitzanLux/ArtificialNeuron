@@ -2,7 +2,7 @@ import subprocess
 import re
 import time
 import sys
-from train_nets.configuration_factory import change_configs_in_json ,restore_configs_from_temp,restore_optimizers_from_temp
+from train_nets.configuration_factory import change_configs_in_json ,restore_configs_from_temp,restore_optimizers_from_temp,restore_all_from_temp
 models_jsons=["d_r_comparison","d_r_comparison_ss","morph","morph_linear"]
 def reduce_lr(models_jsons):
     def update_lr_function(config):
@@ -14,7 +14,8 @@ def reduce_lr(models_jsons):
         # return "constant_learning_rate",config.constant_learning_rate, config.optimizer_params
     for i in models_jsons:
         change_configs_in_json(i,update_funnction=update_lr_function)
-
+for i in models_jsons:
+    restore_all_from_temp(i)
 runs_array=[
             # rf"python -c ' {rf'from maintenence_runs import reduce_lr; reduce_lr({str(models_jsons)})'} '",
             # r'python evaluation_datasets.py -j d_r_comparison -j d_r_comparison_ss -j morph  -n 15 -g False']+[
