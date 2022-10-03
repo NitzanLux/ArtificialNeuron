@@ -41,7 +41,9 @@ model_evaluation_reduction=[]
 model_evaluation_original=[]
 gap=None
 v,s=gt_original[(file_original,sim_index)]
+
 x_axis_gt = v.shape[0]
+
 original_output_v = v[data_points_start:data_points_end]
 original_output_s = s[data_points_start:data_points_end]
 
@@ -77,12 +79,11 @@ for i,m in enumerate(model_original_names):
 
 data_points_start_input=data_points_start-data_points_start_input_interval
 
-original_output_v = v[data_points_start:data_points_end]
-original_output_s = s[data_points_start:data_points_end]
 
-v,s=gt_reduction[(file_reduction,sim_index)]
-reduction_output_v = v[data_points_start:data_points_end]
-reduction_output_s = s[data_points_start:data_points_end]
+
+# v,s=gt_reduction[(file_reduction,sim_index)]
+# reduction_output_v = v[data_points_start:data_points_end]
+# reduction_output_s = s[data_points_start:data_points_end]
 # for m_re,m_ori in zip(models_reduction,models_original):
 evaluation_input_reduction = gt_reduction.get_single_input(file_reduction,sim_index=sim_index)[:,data_points_start_input:data_points_end].cpu().numpy()
 evaluation_input_original = gt_original.get_single_input(file_original,sim_index=sim_index)[:,data_points_start_input:data_points_end].cpu().numpy()
