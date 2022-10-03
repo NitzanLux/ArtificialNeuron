@@ -85,8 +85,8 @@ for i,m in enumerate(model_original_names):
 # reduction_output_v = v[data_points_start:data_points_end]
 # reduction_output_s = s[data_points_start:data_points_end]
 # for m_re,m_ori in zip(models_reduction,models_original):
-evaluation_input_reduction = gt_reduction.get_single_input(file_reduction,sim_index=sim_index).T[:,data_points_start_input:data_points_end].cpu().numpy()
-evaluation_input_original = gt_original.get_single_input(file_original,sim_index=sim_index).T[:,data_points_start_input:data_points_end].cpu().numpy()
+evaluation_input_reduction = gt_reduction.get_single_input(file_reduction,sim_index=sim_index)[:,data_points_start_input:data_points_end].cpu().numpy()
+evaluation_input_original = gt_original.get_single_input(file_original,sim_index=sim_index)[:,data_points_start_input:data_points_end].cpu().numpy()
 
 #data validataion
 assert np.all(evaluation_input_reduction==evaluation_input_original), "two input are different"
@@ -125,7 +125,7 @@ fig.add_subplot(ax_reduction[:2,0])
 path =os.path.abspath(os.getcwd())
 
 #data
-x_scatter,y_scatter=np.where(evaluation_input)
+y_scatter,x_scatter=np.where(evaluation_input)
 
 
 x_scatter+=data_points_start_input
