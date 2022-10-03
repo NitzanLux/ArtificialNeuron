@@ -132,7 +132,6 @@ fig.axes[1].set_position([right_margin_position,ax1_pos.y0,ax1_pos.width,ax1_pos
 ax1_pos = fig.axes[1].get_position()
 fig.axes[1].get_xaxis().set_ticks([])
 
-fig.axes[1].plot(model_reduction[(file,sim_index)][0][data_points_start:data_points_end])
 fig.axes[1].plot(output_x_range,reduction_output_v,color='blue')
 for v,s,l in model_evaluation_reduction:
     fig.axes[1].plot(output_x_range,v,color=color_function(l),label=f"{l} layers")
