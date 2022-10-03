@@ -106,8 +106,9 @@ ax_reduction = grid[5:9,2:].subgridspec(3, 4)
 
 
 colors_steps=255./max_layer
-alpha=0.9
+alpha=0.5
 color_function= lambda l:(1.,(255-l*colors_steps)/255.,(255-l*colors_steps)/255.,alpha)
+color_function= lambda l:cm.get_cmap('PiYG', 11)[l]
 # margins
 right_margin=0.1
 left_margin=0.05
