@@ -91,7 +91,7 @@ ax_reduction = grid[5:9,2:].subgridspec(3, 3)
 
 colors_steps=(max_layer)/(255)
 alpha=1
-color_function= lambda l:(1.,(255-l*colors_steps)/255.,(255-l*colors_steps)/255.,alpha)
+color_function= lambda l:(1.,(255-l*colors_steps)/255.,(255-l*colors_steps)/255.)
 # margins
 right_margin=0.1
 left_margin=0.05
