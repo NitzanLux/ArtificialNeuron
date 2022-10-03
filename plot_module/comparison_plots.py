@@ -109,8 +109,8 @@ ax_reduction = grid[5:9,2:].subgridspec(3, 4)
 colors_steps=255./max_layer
 alpha=0.5
 color_function= lambda l:(1.,(255-l*colors_steps)/255.,(255-l*colors_steps)/255.,alpha)
-c = matplotlib.cm.get_cmap('GnBu', max_layer)
-color_function= lambda l: c(l+1/max_layer)
+c = matplotlib.cm.get_cmap('plasma', max_layer)
+color_function= lambda l: c(l/max_layer)
 # margins
 right_margin=0.1
 left_margin=0.05
