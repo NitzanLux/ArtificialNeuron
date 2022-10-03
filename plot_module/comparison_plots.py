@@ -66,9 +66,9 @@ for i,m in enumerate(model_original_names):
 
 v,s=gt_original[(file_original,sim_index)]
 x_axis_gt = v.shape[0]
-data_points_start=300
-data_points_end=5500
-data_points_start_input=data_points_start-data_points_start_input_interval-x_axis_gt+reduction_x_range
+
+
+data_points_start_input=data_points_start-data_points_start_input_interval
 
 original_output_v = v[data_points_start:data_points_end]
 original_output_s = s[data_points_start:data_points_end]
