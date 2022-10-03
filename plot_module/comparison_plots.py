@@ -57,7 +57,8 @@ for i,m in enumerate(model_reduction_names):
     m = model_evaluation_multiple.EvaluationData.load(os.path.join('evaluations', 'models', gt_reduction_name, m + ( '.meval' if not m.endswith('.meval') else '')))
     v,s=m[(file_reduction,sim_index)]
     if gap is None:
-        gap =x_axis_gt- v.shape[0]
+        gap =x_axis_gt - v.shape[0]
+        print(gap)
     v=v[data_points_start+gap:data_points_end+gap]
     s=s[data_points_start+gap:data_points_end+gap]
     if max_layer<m.config.number_of_layers_space:
@@ -95,7 +96,6 @@ evaluation_input= evaluation_input_reduction
 
 
 output_x_range=np.arange(data_points_start,data_points_end)
-input_x_range=np.arange(data_points_start_input,data_points_end)
 #%%
 
 
