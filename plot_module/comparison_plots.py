@@ -2,7 +2,7 @@
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import matplotlib.image as mpimg
-
+import pickle
 import os
 import sys
 # os.chdir('/ems/elsc-labs/segev-i/nitzan.luxembourg/projects/dendritic_tree/ArtificialNeuron')
@@ -212,7 +212,8 @@ fig.show()
 fig.savefig("comparison_pipline.png")
 mng.full_screen_toggle()
 # plt.show()
-
+with open('fig.pkl','wb') as f:
+    pickle.dump(fig,f,)
 
 
 
