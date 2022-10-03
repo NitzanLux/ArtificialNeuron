@@ -43,7 +43,7 @@ gap=None
 v,s=gt_original[(file_original,sim_index)]
 
 x_axis_gt = v.shape[0]
-
+print(v.shape,'gt')
 original_output_v = v[data_points_start:data_points_end]
 original_output_s = s[data_points_start:data_points_end]
 
@@ -60,6 +60,7 @@ for i,m in enumerate(model_reduction_names):
         gap =x_axis_gt - v.shape[0]
         print(gap)
         # gap = 0
+    print(v.shape,'eval')
     v=v[data_points_start+gap:data_points_end+gap]
     s=s[data_points_start+gap:data_points_end+gap]
     if max_layer<m.config.number_of_layers_space:
