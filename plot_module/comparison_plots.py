@@ -24,12 +24,13 @@ model_reduction_names= ["d_r_comparison_1_reduction___2022-09-07__22_59__ID_1494
                         "d_r_comparison_5_reduction___2022-09-07__22_59__ID_9020.meval",
                         "d_r_comparison_7_reduction___2022-09-07__22_59__ID_31437.meval"]
 
-file_original="L5PC_sim__Output_spikes_0848__Input_ranges_Exc_[0120,1159]_Inh_[0034,1294]_per100ms__simXsec_128x6_randseed_1110001.p"
-file_reduction="L5PC_sim__Output_spikes_0848__Input_ranges_Exc_[0120,1159]_Inh_[0034,1294]_per100ms__simXsec_128x6_randseed_1110001_reduction_0w.p"
+file_original="L5PC_sim__Output_spikes_0889__Input_ranges_Exc_[0119,1163]_Inh_[0051,1327]_per100ms__simXsec_128x6_randseed_500207.p"
+file_reduction="L5PC_sim__Output_spikes_0889__Input_ranges_Exc_[0119,1163]_Inh_[0051,1327]_per100ms__simXsec_128x6_randseed_500207_reduction_0w.p"
 sim_index=0
-data_points_start_input=75
-data_points_start=200
-data_points_end=1000
+data_points_start_input_interval=200
+data_points_start=1150
+data_points_end=1450
+data_points_start_input=data_points_start-data_points_start_input_interval
 #%% pipline plot data
 gt_reduction = model_evaluation_multiple.GroundTruthData.load(os.path.join('evaluations','ground_truth', gt_reduction_name+'.gteval'))
 gt_original = model_evaluation_multiple.GroundTruthData.load(os.path.join('evaluations','ground_truth', gt_original_name+'.gteval'))
