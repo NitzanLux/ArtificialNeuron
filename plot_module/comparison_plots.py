@@ -151,7 +151,7 @@ fig.axes[1].set_position([right_margin_position,ax1_pos.y0,ax1_pos.width,ax1_pos
 ax1_pos = fig.axes[1].get_position()
 fig.axes[1].get_xaxis().set_ticks([])
 
-fig.axes[1].plot(output_x_range,reduction_output_v,color='blue')
+fig.axes[1].plot(output_x_range,reduction_output_v,color='red')
 for v,s,l in model_evaluation_reduction:
     fig.axes[1].plot(output_x_range,v,color=color_function(l),label=f"{l} layers")
 
@@ -161,7 +161,7 @@ ax2_pos = fig.axes[2].get_position()
 fig.axes[2].set_position([right_margin_position,ax1_pos.y0-ax2_pos.height-twin_graph_margin,ax2_pos.width,ax2_pos.height])
 ax2_pos = fig.axes[2].get_position()
 
-fig.axes[2].plot(output_x_range,reduction_output_s,color='blue')
+fig.axes[2].plot(output_x_range,reduction_output_s,color='red')
 for v,s,l in model_evaluation_reduction:
     fig.axes[2].plot(output_x_range,s,color=color_function(l),label=f"{l} layers")
 fig.axes[2].legend()
@@ -171,7 +171,7 @@ ax3_pos = fig.axes[3].get_position()
 fig.axes[3].set_position([right_margin_position,ax3_pos.y0,ax3_pos.width,ax3_pos.height])
 fig.axes[3].get_xaxis().set_ticks([])
 
-fig.axes[3].plot(output_x_range,original_output_v,color='blue')
+fig.axes[3].plot(output_x_range,original_output_v,color='red')
 for v,s,l in model_evaluation_original:
     fig.axes[3].plot(output_x_range,v,color=color_function(l),label=f"{l} layers")
 
@@ -179,7 +179,7 @@ ax4_pos = fig.axes[4].get_position()
 fig.axes[4].set_position([right_margin_position,ax3_pos.y0-ax4_pos.height-twin_graph_margin,ax4_pos.width,ax4_pos.height])
 ax4_pos = fig.axes[4].get_position()
 
-fig.axes[4].plot(output_x_range,original_output_s,color='blue')
+fig.axes[4].plot(output_x_range,original_output_s,color='red')
 for v,s,l in model_evaluation_original:
     fig.axes[4].plot(output_x_range,s,color=color_function(l),label=f"{l} layers")
 fig.axes[4].legend()
