@@ -236,6 +236,7 @@ class EvaluationData(SimulationData):
         # self.data_per_recording = [] if recoreded_data is None else recoreded_data
 
     def __evaluate_model(self, use_cuda,model=None):
+        print('starting to evaluate model')
         # assert not self.is_recording(), "evaluation had been done in this object"
         if model is None: model = self.load_model()
         model.cuda().eval() if use_cuda else model.cpu().eval()
@@ -246,6 +247,7 @@ class EvaluationData(SimulationData):
         data_keys, s_out, v_out = [], [], []
         i = 0
         for inputs, keys in self.ground_truth.get_evaluation_input(batch_size=BATCH_SIZE):
+            print(keys)
             i += 1
             with torch.no_grad():
                 inputs.cuda() if USE_CUDA else inputs.cpu()
