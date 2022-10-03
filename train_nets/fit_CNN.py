@@ -602,7 +602,7 @@ def save_best_model(config_path, first_run=False):
     #     np.save(os.path.join(best_result_path, "auc_history"), np.array(auc))
 
     elif not first_run:
-        g = EvaluationData(GroundTruthData.load(model_gt.data_label), config, USE_CUDA, model)
+        g = EvaluationData(model_gt, config, USE_CUDA, model)
 
 
         auc = g.get_ROC_data()[0]
