@@ -73,8 +73,8 @@ evaluation_input_original = gt_original.get_single_input(file_original,sim_index
 
 #data validataion
 assert np.all(evaluation_input_reduction==evaluation_input_original), "two input are different"
-del evaluation_input_1
-evaluation_input= evaluation_input_0
+del evaluation_input_original
+evaluation_input= evaluation_input_reduction
 
 
 output_x_range=np.arange(data_points_start,data_points_end)
