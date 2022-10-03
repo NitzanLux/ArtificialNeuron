@@ -22,7 +22,7 @@ if __name__ == '__main__':
                                 os.path.join(dest, k)) > os.path.getmtime(os.path.join(cur_path, k)) - 1000):
                         continue
                     else:
-                        os.path.remove(os.path.join(dest, k))
+                        os.remove(os.path.join(dest, k))
                     shutil.move(os.path.join(cur_path, k), dest)
                 if len(os.listdir(cur_path)) == 0:
                     os.rmdir(cur_path)
