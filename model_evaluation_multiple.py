@@ -24,7 +24,7 @@ import plotly.express as px
 from utils.general_variables import *
 from typing import Callable
 import ntpath
-
+from tqdm import tqdm
 # base_path=os.path.dirname(__file__)
 # base_path='/ems/elsc-labs/segev-i/nitzan.luxembourg/projects/dendritic_tree/ArtificialNeuron'
 BATCH_SIZE = 32
@@ -246,8 +246,7 @@ class EvaluationData(SimulationData):
             model.double()
         data_keys, s_out, v_out = [], [], []
         i = 0
-        for inputs, keys in self.ground_truth.get_evaluation_input(batch_size=BATCH_SIZE):
-            print(keys,flush=True)
+        for inputs, keys in tqdm(self.ground_truth.get_evaluation_input(batch_size=BATCH_SIZE)):
             i += 1
             with torch.no_grad():
                 inputs.cuda() if USE_CUDA else inputs.cpu()
