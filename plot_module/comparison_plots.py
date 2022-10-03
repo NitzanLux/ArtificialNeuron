@@ -39,8 +39,8 @@ max_layer = 0
 model_evaluation_reduction=[]
 model_evaluation_original=[]
 for i,m in enumerate(model_reduction_names):
-    if not os.path.exists(os.path.join('evaluations', 'models', gt_reduction_name, m + '.meval')):
-        continue
+    # if not os.path.exists(os.path.join('evaluations', 'models', gt_reduction_name, m + '.meval')):
+    #     continue
     m = model_evaluation_multiple.EvaluationData.load(os.path.join('evaluations', 'models', gt_reduction_name, m + '.meval'))
     v,s=m[(file_reduction,sim_index)]
     v=v[data_points_start:data_points_end]
