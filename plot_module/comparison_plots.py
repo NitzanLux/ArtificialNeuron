@@ -39,16 +39,25 @@ gt_original = model_evaluation_multiple.GroundTruthData.load(os.path.join('evalu
 max_layer = 0
 model_evaluation_reduction=[]
 model_evaluation_original=[]
-reduction_x_range=None
+gap=None
+v,s=gt_original[(file_original,sim_index)]
+x_axis_gt = v.shape[0]
+original_output_v = v[data_points_start:data_points_end]
+original_output_s = s[data_points_start:data_points_end]
+
+v,s=gt_reduction[(file_reduction,sim_index)]
+reduction_output_v = v[data_points_start:data_points_end]
+reduction_output_s = s[data_points_start:data_points_end]
+
 for i,m in enumerate(model_reduction_names):
     if not os.path.exists(os.path.join('evaluations', 'models', gt_reduction_name, m + ('.meval' if not m.endswith('.meval') else ''))):
         continue
     m = model_evaluation_multiple.EvaluationData.load(os.path.join('evaluations', 'models', gt_reduction_name, m + ( '.meval' if not m.endswith('.meval') else '')))
     v,s=m[(file_reduction,sim_index)]
-    if reduction_x_range is None:
-        reduction_x_range = v.shape[0]
-    v=v[data_points_start:data_points_end]
-    s=s[data_points_start:data_points_end]
+    if gap is None:
+        gap =x_axis_gt- v.shape[0]
+    v=v[data_points_start+gap:data_points_end+gap]
+    s=s[data_points_start+gap:data_points_end+gap]
     if max_layer<m.config.number_of_layers_space:
         max_layer=m.config.number_of_layers_space
     model_evaluation_reduction.append((v,s,m.config.number_of_layers_space))
@@ -58,27 +67,25 @@ for i,m in enumerate(model_original_names):
         continue
     m=model_evaluation_multiple.EvaluationData.load(os.path.join('evaluations','models', gt_original_name,m+ ('.meval' if not m.endswith('.meval') else '')))
     v,s=m[(file_original,sim_index)]
-    v=v[data_points_start:data_points_end]
-    s=s[data_points_start:data_points_end]
+    v=v[data_points_start+gap:data_points_end+gap]
+    s=s[data_points_start+gap:data_points_end+gap]
     if max_layer<m.config.number_of_layers_space:
         max_layer=m.config.number_of_layers_space
     model_evaluation_original.append((v,s,m.config.number_of_layers_space))
 
-v,s=gt_original[(file_original,sim_index)]
-x_axis_gt = v.shape[0]
 
-gap=x_axis_gt-reduction_x_range
+
 data_points_start_input=data_points_start-data_points_start_input_interval
 
-original_output_v = v[data_points_start+gap:data_points_end+gap]
-original_output_s = s[gap+data_points_start:gap+data_points_end]
+original_output_v = v[data_points_start:data_points_end]
+original_output_s = s[data_points_start:data_points_end]
 
 v,s=gt_reduction[(file_reduction,sim_index)]
-reduction_output_v = v[gap+data_points_start:gap+data_points_end]
-reduction_output_s = s[gap+data_points_start:gap+data_points_end]
+reduction_output_v = v[data_points_start:data_points_end]
+reduction_output_s = s[data_points_start:data_points_end]
 # for m_re,m_ori in zip(models_reduction,models_original):
-evaluation_input_reduction = gt_reduction.get_single_input(file_reduction,sim_index=sim_index)[:,gap+data_points_start_input:gap+data_points_end].cpu().numpy()
-evaluation_input_original = gt_original.get_single_input(file_original,sim_index=sim_index)[:,gap+data_points_start_input:gap+data_points_end].cpu().numpy()
+evaluation_input_reduction = gt_reduction.get_single_input(file_reduction,sim_index=sim_index)[:,data_points_start_input:data_points_end].cpu().numpy()
+evaluation_input_original = gt_original.get_single_input(file_original,sim_index=sim_index)[:,data_points_start_input:data_points_end].cpu().numpy()
 
 #data validataion
 assert np.all(evaluation_input_reduction==evaluation_input_original), "two input are different"
