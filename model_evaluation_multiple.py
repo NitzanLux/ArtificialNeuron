@@ -185,7 +185,6 @@ class GroundTruthData(SimulationData):
         X, _, __ = parse_sim_experiment_file(os.path.join(path, f))
         X = torch.from_numpy(X)
         X = np.transpose(X, axes=[2, 0, 1])
-        print(X)
         return X[sim_index, :, :]
 
     def get_evaluation_input_per_file(self, f, batch_size=8):
