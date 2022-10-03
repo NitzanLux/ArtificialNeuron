@@ -20,11 +20,11 @@ if __name__ == '__main__':
                             (os.path.exists(os.path.join(dest, k)) and os.path.getsize(
                                 os.path.join(dest, k)) != 0 and os.path.getmtime(
                                 os.path.join(dest, k)) >os.path.getmtime(os.path.join(cur_path, k)) - 1000):
-                        continue
+                        os.remove(os.path.join(cur_path, k))
                     else:
-                        print("aaa")
-                        print(k,dest)
-                        # os.remove(os.path.join(dest, k))
+                        # print("aaa")
+                        # print(k,dest)
+                        os.remove(os.path.join(dest, k))
                     shutil.move(os.path.join(cur_path, k), dest)
                 if len(os.listdir(cur_path)) == 0:
                     os.rmdir(cur_path)
