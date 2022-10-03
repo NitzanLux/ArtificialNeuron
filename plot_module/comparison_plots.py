@@ -14,26 +14,63 @@ import numpy as np
 #%% pipline plot parameters
 gt_original_name= 'davids_ergodic_validation'
 gt_reduction_name= 'reduction_ergodic_validation'
-module_reduction_name= "d_r_comparison_7_reduction___2022-09-07__22_59__ID_31437"
-module_original_name= "d_r_comparison_7___2022-09-07__22_59__ID_57875"
+model_reduction_names= ["d_r_comparison_7_reduction___2022-09-07__22_59__ID_31437"]
+model_original_names= ["d_r_comparison_7___2022-09-07__22_59__ID_57875"]
 file_original='L5PC_sim__Output_spikes_0948__Input_ranges_Exc_[0148,1149]_Inh_[0061,1274]_per100ms__simXsec_128x6_randseed_1110182.p'
 file_reduction='L5PC_sim__Output_spikes_0948__Input_ranges_Exc_[0148,1149]_Inh_[0061,1274]_per100ms__simXsec_128x6_randseed_1110182_reduction_0w.p'
 sim_index=0
+data_points_start_input=75
 data_points_start=200
 data_points_end=400
 #%% pipline plot
 gt_reduction = model_evaluation_multiple.GroundTruthData.load(os.path.join('evaluations','ground_truth', gt_reduction_name+'.gteval'))
 gt_original = model_evaluation_multiple.GroundTruthData.load(os.path.join('evaluations','ground_truth', gt_original_name+'.gteval'))
-model_reduction = model_evaluation_multiple.EvaluationData.load(os.path.join('evaluations','models',gt_reduction_name ,module_reduction_name+'.meval'))
-model_original = model_evaluation_multiple.EvaluationData.load(os.path.join('evaluations','models', gt_original_name,module_original_name+'.meval'))
-evaluation_input_0 = gt_reduction.get_single_input(file_reduction,sim_index=sim_index)[:,data_points_start:data_points_end]
-evaluation_input_1 = gt_original.get_single_input(file_original,sim_index=sim_index)[:,data_points_start:data_points_end]
+
+
+max_layer = 0
+model_evaluation_reduction=[]
+model_evaluation_original=[]
+for i,m in enumerate(model_reduction_names):
+    if not os.path.exists(os.path.join('evaluations', 'models', gt_reduction_name, m + '.meval')):
+        continue
+    m = model_evaluation_multiple.EvaluationData.load(os.path.join('evaluations', 'models', gt_reduction_name, m + '.meval'))
+    v,s=m[(file_reduction,sim_index)]
+    v=v[data_points_start:data_points_end]
+    s=s[data_points_start:data_points_end]
+    if max_layer<m.config.number_of_layers_space:
+        max_layer=m.config.number_of_layers_space
+    model_evaluation_reduction.append((v,s,m.config.number_of_layers_space))
+
+for i,m in enumerate(model_original_names):
+    if not os.path.exists(os.path.join('evaluations', 'models', gt_original_name, m + '.meval')):
+        continue
+    m=model_evaluation_multiple.EvaluationData.load(os.path.join('evaluations','models', gt_original_name,m+'.meval'))
+    v,s=m[(file_original,sim_index)]
+    v=v[data_points_start:data_points_end]
+    s=s[data_points_start:data_points_end]
+    if max_layer<m.config.number_of_layers_space:
+        max_layer=m.config.number_of_layers_space
+    model_evaluation_original.append((v,s,m.config.number_of_layers_space))
+
+v,s=gt_original[(file_original,sim_index)]
+original_output_v = v[data_points_start:data_points_end]
+original_output_s = s[data_points_start:data_points_end]
+
+v,s=gt_original[(file_reduction,sim_index)]
+reduction_output_v = v[data_points_start:data_points_end]
+reduction_output_s = s[data_points_start:data_points_end]
+# for m_re,m_ori in zip(models_reduction,models_original):
+evaluation_input_reduction = gt_reduction.get_single_input(file_reduction,sim_index=sim_index)[:,data_points_start_input:data_points_end]
+evaluation_input_original = gt_original.get_single_input(file_original,sim_index=sim_index)[:,data_points_start_input:data_points_end]
 
 #data validataion
-# assert np.all(evaluation_input_1==evaluation_input_0), "two input are different"
-# del evaluation_input_1
-# evaluation_input= evaluation_input_0
+assert np.all(evaluation_input_reduction==evaluation_input_original), "two input are different"
+del evaluation_input_1
+evaluation_input= evaluation_input_0
 
+
+output_x_range=np.arange(data_points_start,data_points_end)
+input_x_range=np.arange(data_points_start_input,data_points_end)
 #%%
 
 
@@ -43,6 +80,10 @@ ax_raster = grid[0:,0:1].subgridspec(1,1)
 ax_original = grid[0:4,2:].subgridspec(3, 3)
 ax_reduction = grid[5:9,2:].subgridspec(3, 3)
 
+
+colors_steps=(max_layer)/(255)
+alpha=0.5
+color_function= lambda l:(1.,(255-l*colors_steps)/255.,(255-l*colors_steps)/255.,alpha)
 # margins
 right_margin=0.05
 left_margin=0.05
@@ -60,11 +101,11 @@ fig.add_subplot(ax_reduction[:2,0])
 path =os.path.abspath(os.getcwd())
 
 #data
-x_scatter,y_scatter=np.where(evaluation_input[sim_index,:,data_points_start:data_points_end])
+x_scatter,y_scatter=np.where(evaluation_input)
 
 
 
-fig.axes[0].scatter(x_scatter,y_scatter+1,c='black',s=0.01,marker ='*',alpha=1)
+fig.axes[0].scatter(input_x_range[x_scatter],y_scatter+1,c='black',s=0.01,marker ='*',alpha=1)
 fig.axes[0].set_ylim([0-0.001,np.max(y_scatter)+2+0.001])
 fig.axes[0].set_xlabel('time(ms)')
 fig.axes[0].set_ylabel('Synapse number')
@@ -80,27 +121,40 @@ right_margin_position=1-ax1_pos.width-right_margin
 
 fig.axes[1].set_position([right_margin_position,ax1_pos.y0,ax1_pos.width,ax1_pos.height])
 ax1_pos = fig.axes[1].get_position()
-fig.axes[1].plot(model_reduction[(file,sim_index)][0][data_points_start:data_points_end])
-fig.axes[1].plot(gt_reduction[(file,sim_index)][0][data_points_start:data_points_end])
 fig.axes[1].get_xaxis().set_ticks([])
+
+fig.axes[1].plot(model_reduction[(file,sim_index)][0][data_points_start:data_points_end])
+fig.axes[1].plot(output_x_range,reduction_output_v,color='blue')
+for v,s,l in model_evaluation_reduction:
+    fig.axes[1].plot(output_x_range,v,color=color_function(l),label=f"{l} layers")
+
+
 
 ax2_pos = fig.axes[2].get_position()
 fig.axes[2].set_position([right_margin_position,ax1_pos.y0-ax2_pos.height-twin_graph_margin,ax2_pos.width,ax2_pos.height])
 ax2_pos = fig.axes[2].get_position()
-fig.axes[2].plot(model_reduction[(file,sim_index)][1][data_points_start:data_points_end])
-fig.axes[2].plot(gt_reduction[(file,sim_index)][1][data_points_start:data_points_end])
+
+fig.axes[2].plot(output_x_range,reduction_output_s,color='blue')
+for v,s,l in model_evaluation_reduction:
+    fig.axes[2].plot(output_x_range,s,color=color_function(l),label=f"{l} layers")
+
 
 ax3_pos = fig.axes[3].get_position()
 fig.axes[3].set_position([right_margin_position,ax3_pos.y0,ax3_pos.width,ax3_pos.height])
-fig.axes[3].plot(model_original[(file,sim_index)][0][data_points_start:data_points_end])
-fig.axes[3].plot(gt_original[(file,sim_index)][0][data_points_start:data_points_end])
 fig.axes[3].get_xaxis().set_ticks([])
+
+fig.axes[3].plot(output_x_range,original_output_v,color='blue')
+for v,s,l in model_evaluation_original:
+    fig.axes[3].plot(output_x_range,v,color=color_function(l),label=f"{l} layers")
 
 ax4_pos = fig.axes[4].get_position()
 fig.axes[4].set_position([right_margin_position,ax3_pos.y0-ax4_pos.height-twin_graph_margin,ax4_pos.width,ax4_pos.height])
 ax4_pos = fig.axes[4].get_position()
-fig.axes[4].plot(model_original[(file,sim_index)][1][data_points_start:data_points_end])
-fig.axes[4].plot(gt_original[(file,sim_index)][1][data_points_start:data_points_end])
+
+fig.axes[4].plot(output_x_range,original_output_s,color='blue')
+for v,s,l in model_evaluation_original:
+    fig.axes[4].plot(output_x_range,s,color=color_function(l),label=f"{l} layers")
+
 # plt.tight_layout()
 
 

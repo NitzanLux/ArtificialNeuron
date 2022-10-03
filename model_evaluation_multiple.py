@@ -178,7 +178,6 @@ class GroundTruthData(SimulationData):
 
     def get_single_input(self, f, sim_index, source_path=None):
         path, f = ntpath.split(f)
-        print(path, f,self.path)
         if source_path is not None:
             path = source_path
         else:
@@ -515,8 +514,20 @@ class ModelEvaluator():
                            line=dict(width=2, color=cols[j])),
                 row=1, col=1)
 
-            fig.add_trace(go.Scatter(x=x_axis_gt, y=s, legendgroup='gt%d' % j, showlegend=False, name="(%d)" % (j),
-                                     line=dict(width=2, color=cols[j])), row=2, col=1)
+            fig.add_trace(go.Scatter(x=x_axis_gt[s==1], y=s[s==1]*(j+1)/(len(self.ground_truths)+1), legendgroup='gt%d' % j, showlegend=False, name="(%d)" % (j),
+                                     #line=dict(width=10, color=cols[j]),
+                                     mode='markers',
+                                     marker=dict(
+                                         color='black',
+                                         size=10,
+                                         opacity=0.75,
+                                         symbol='asterisk',
+                                         line=dict(
+                                             color=cols[j],
+                                             width=2
+                                         )
+
+                                     )), row=2, col=1)
             # fig['data'][j*2+1]['line']['color']=fig['data'][j*2]['line']['color']
         mse_matrix = []
         y = []
