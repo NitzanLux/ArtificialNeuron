@@ -264,6 +264,22 @@ def change_configs_in_json(configs_json,update_funnction=None,**kwargs):
             update_funnction(config)
         overwrite_config(config,**kwargs)
 
+def restore_all_from_temp(configs_json):
+    with open(os.path.join(MODELS_DIR, "%s.json" % configs_json), 'r') as file:
+        configs = json.load(file)
+    for conf in configs:
+        conf=conf[:-1]
+        path = os.path.join(MODELS_DIR,*conf)
+        dirs = os.listdir(path)
+        temps=set()
+        for f in dirs:
+            if 'temp' in str(f):
+                temps.add(f)
+        for f in temps:
+            f_path =  str(os.path.join(path,f))
+            if (not os.path.exists(f_path[:-len('temp')])) or os.path.getsize(f_path[:-len('temp')])==0:
+                shutil.copyfile(f_path, f_path[:-len('temp')])
+
 def restore_last_n_configs(n=10):
     search_dir = "../wandb"
     search_dir = os.path.abspath(search_dir)
