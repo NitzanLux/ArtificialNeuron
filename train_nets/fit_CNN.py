@@ -25,6 +25,8 @@ from utils.slurm_job import *
 import torch.multiprocessing as mp
 from torch.multiprocessing import Process
 
+NUMBER_OF_HOURS_FOR_EVAL_BEST = 3
+
 if USE_CUDA:
     torch.cuda.empty_cache()
     print(torch.cuda.get_device_name(0))
@@ -39,7 +41,7 @@ WATCH_MODEL = False
 SAVE_MODEL = True
 INCLUDE_OPTIMIZER_AT_LOADING = False
 NUMBER_OF_HOURS_FOR_PLOTTING_EVALUATIONS_PLOTS = 6000
-NUMBER_OF_HOURS_FOR_SAVING_MODEL_AND_CONFIG = 1 if USE_CUDA else 3
+NUMBER_OF_HOURS_FOR_SAVING_MODEL_AND_CONFIG = 1
 VALIDATION_EVALUATION_FREQUENCY = 100
 ACCURACY_EVALUATION_FREQUENCY = 100
 BATCH_LOG_UPDATE_FREQ = 100
@@ -394,33 +396,62 @@ class SavingAndEvaluationScheduler():
     :return: evaluation
     """
 
-    def __init__(self, time_in_hours_for_saving=NUMBER_OF_HOURS_FOR_SAVING_MODEL_AND_CONFIG):
+    def __init__(self, time_in_hours_for_saving=NUMBER_OF_HOURS_FOR_SAVING_MODEL_AND_CONFIG, time_in_hours_for_eval=NUMBER_OF_HOURS_FOR_EVAL_BEST):
         # time_in_hours_for_evaluation=NUMBER_OF_HOURS_FOR_PLOTTING_EVALUATIONS_PLOTS):
         self.last_time_evaluation = datetime.now()
         self.last_time_saving = datetime.now()
         self.time_in_hours_for_saving = time_in_hours_for_saving
+        self.time_in_hours_for_eval = time_in_hours_for_eval
         self.previous_process = None
+        self.pause_time=datetime.now()
+        self.pause_state=False
         # self.time_in_hours_for_evaluation = time_in_hours_for_evaluation
 
-    def create_evaluation_schduler(self, config, model=None):
+    def pause(self):
+        if not self.pause_state:
+            self.pause_time=datetime.now()
+            self.pause_state=True
+    def retry(self):
+        if self.pause_state:
+            pause_time=datetime.now()-self.pause_time
+            self.last_time_evaluation += pause_time
+            self.last_time_evaluation += pause_time
+            self.pause_state=False
+
+
+    def create_evaluation_schduler(self, config, first_run=first_run,run_at_the_same_process=run_at_the_same_process,use_slurm=use_slurm):
+        # if pause_state:
+        #     return
+        if run_at_the_same_process:
+            self.pause()
         current_time = datetime.now()
         delta_time = current_time - self.last_time_evaluation
-        # if (delta_time.total_seconds() / 60) / 60 > self.time_in_hours_for_evaluation:
-        # ModelEvaluator.build_and_save(config=config, model=model)todo removed
-        # self.last_time_evaluation = datetime.now()
+        self.last_time_evaluation = datetime.now()
+        if (delta_time.total_seconds() / 60) / 60 > self.time_in_hours_for_eval:
+            save_best_model_scaduler(self, config, use_slurm=False, first_run=False, run_at_the_same_process=False)
+
+        if run_at_the_same_process:
+            self.retry()
+
+    def save_best_model_scaduler(self,config,use_slurm=False, first_run=False, run_at_the_same_process=False):
+        if self.previous_process is not None:
+            self.previous_process.join()
+        self.previous_process = self.save_best_model_p(config, first_run=first_run,run_at_the_same_process=run_at_the_same_process,use_slurm=use_slurm)
+
 
     def save_model_schduler(self, config, model, optimizer):
+        if pause_state:
+            return
+        self.pause()
         current_time = datetime.now()
         delta_time = current_time - self.last_time_saving
         if (delta_time.total_seconds() / 60) / 60 > self.time_in_hours_for_saving:
-            if self.previous_process is not None:
-                self.previous_process.join()
             self.save_model(model, config, optimizer)
             self.last_time_saving = datetime.now()
-            self.previous_process = self.save_best_model_scaduler(config, use_slurm=True if not USE_CUDA else False)
+        self.retry()
 
     @staticmethod
-    def save_best_model_scaduler(config, use_slurm=False, first_run=False, run_at_the_same_process=False):
+    def save_best_model_p(config, use_slurm=False, first_run=False, run_at_the_same_process=False):
         if use_slurm:
             print('evaluate best model')
             job_factory = SlurmJobFactory("cluster_logs_best_model")
@@ -549,10 +580,14 @@ def save_best_model(config_path, first_run=False):
         model_gt = create_gt_and_save(path, name)
 
     model = load_model(config)
-    cur_model_evaluation = create_model_evaluation(model_gt.data_label, config.model_filename, config=config,
-                                                   model=model)
-    auc = cur_model_evaluation.get_ROC_data()[0]
     best_result_path = os.path.join(MODELS_DIR, *config.model_path) + '_best'
+
+    if (first_run and not os.path.exists(os.path.join(best_result_path, "eval.gteval"))):
+        cur_model_evaluation = create_model_evaluation(model_gt.data_label, config.model_filename, config=config,
+                                                       model=model)
+        auc = cur_model_evaluation.get_ROC_data()[0]
+        cur_model_evaluation.save(os.path.join(best_result_path, "eval.gteval"))
+
 
     if not os.path.exists(best_result_path):
         os.mkdir(best_result_path)
@@ -563,12 +598,14 @@ def save_best_model(config_path, first_run=False):
     if not os.path.exists(os.path.join(best_result_path, 'config.pkl')):
         # shutil.copyfile(os.path.join(MODELS_DIR, *config.config_path), os.path.join(best_result_path, 'config.pkl'))
         configuration_factory.save_config(config, os.path.join(best_result_path, 'config.pkl'))
-    if not os.path.exists(os.path.join(best_result_path, "eval.gteval")):
-        cur_model_evaluation.save(os.path.join(best_result_path, "eval.gteval"))
-
     if not os.path.exists(os.path.join(best_result_path, "auc_history")):
         np.save(os.path.join(best_result_path, "auc_history"), np.array(auc))
+
     elif not first_run:
+        cur_model_evaluation = create_model_evaluation(model_gt.data_label, config.model_filename, config=config,
+                                                       model=model)
+        auc = cur_model_evaluation.get_ROC_data()[0]
+
         auc_arr = np.load(os.path.join(best_result_path, "auc_history"))
         auc_arr = np.append(auc_arr, auc)
         np.save(os.path.join(best_result_path, "auc_history"), auc_arr)
