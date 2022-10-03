@@ -101,8 +101,8 @@ input_x_range=np.arange(data_points_start_input,data_points_end)
 fig = plt.figure()
 grid = gridspec.GridSpec(9, 6, figure=fig)
 ax_raster = grid[0:,0:1].subgridspec(1,1)
-ax_original = grid[0:4,2:].subgridspec(3, 3)
-ax_reduction = grid[5:9,2:].subgridspec(3, 3)
+ax_original = grid[0:4,2:].subgridspec(3, 4)
+ax_reduction = grid[5:9,2:].subgridspec(3, 4)
 
 
 colors_steps=255./max_layer
