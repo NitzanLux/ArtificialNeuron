@@ -39,9 +39,9 @@ max_layer = 0
 model_evaluation_reduction=[]
 model_evaluation_original=[]
 for i,m in enumerate(model_reduction_names):
-    if not os.path.exists(os.path.join('evaluations', 'models', gt_reduction_name, m + '.meval'+ '.meval' if not m.endswith('.meval') else '')):
+    if not os.path.exists(os.path.join('evaluations', 'models', gt_reduction_name, m + ('.meval' if not m.endswith('.meval') else ''))):
         continue
-    m = model_evaluation_multiple.EvaluationData.load(os.path.join('evaluations', 'models', gt_reduction_name, m + '.meval'+ '.meval' if not m.endswith('.meval') else ''))
+    m = model_evaluation_multiple.EvaluationData.load(os.path.join('evaluations', 'models', gt_reduction_name, m + ( '.meval' if not m.endswith('.meval') else '')))
     v,s=m[(file_reduction,sim_index)]
     v=v[data_points_start:data_points_end]
     s=s[data_points_start:data_points_end]
@@ -50,9 +50,9 @@ for i,m in enumerate(model_reduction_names):
     model_evaluation_reduction.append((v,s,m.config.number_of_layers_space))
 
 for i,m in enumerate(model_original_names):
-    if not os.path.exists(os.path.join('evaluations', 'models', gt_original_name, m + '.meval' if not m.endswith('.meval') else '')):
+    if not os.path.exists(os.path.join('evaluations', 'models', gt_original_name, m +( '.meval' if not m.endswith('.meval') else ''))):
         continue
-    m=model_evaluation_multiple.EvaluationData.load(os.path.join('evaluations','models', gt_original_name,m+ '.meval' if not m.endswith('.meval') else ''))
+    m=model_evaluation_multiple.EvaluationData.load(os.path.join('evaluations','models', gt_original_name,m+ ('.meval' if not m.endswith('.meval') else '')))
     v,s=m[(file_original,sim_index)]
     v=v[data_points_start:data_points_end]
     s=s[data_points_start:data_points_end]
