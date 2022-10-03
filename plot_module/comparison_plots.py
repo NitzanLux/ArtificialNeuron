@@ -97,6 +97,7 @@ evaluation_input= evaluation_input_reduction
 output_x_range=np.arange(data_points_start,data_points_end)
 #%%
 
+import matplotlib
 
 fig = plt.figure()
 grid = gridspec.GridSpec(9, 6, figure=fig)
@@ -108,7 +109,8 @@ ax_reduction = grid[5:9,2:].subgridspec(3, 4)
 colors_steps=255./max_layer
 alpha=0.5
 color_function= lambda l:(1.,(255-l*colors_steps)/255.,(255-l*colors_steps)/255.,alpha)
-color_function= lambda l:cm.get_cmap('PiYG', 11)[l]
+c = matplotlib.cm.get_cmap('PiYG', 11)
+color_function= lambda l:c(l/max_layer)
 # margins
 right_margin=0.1
 left_margin=0.05
