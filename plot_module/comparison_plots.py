@@ -59,7 +59,7 @@ for i,m in enumerate(model_reduction_names):
     if gap is None:
         gap =x_axis_gt - v.shape[0]
         print(gap)
-        gap = 0
+        # gap = 0
     v=v[data_points_start+gap:data_points_end+gap]
     s=s[data_points_start+gap:data_points_end+gap]
     if max_layer<m.config.number_of_layers_space:
