@@ -145,7 +145,7 @@ def create_synapse(L5PC,model_name):
         netcons_list =  allExNetCons + allInhNetCons
         if model_name==ModelName.L5PC_ERGODIC:
             L5PC, synapses_list, netcons_list = neuron_reduce.subtree_reductor(L5PC, synapses_list,
-                                                                               netcons_list,
+                                                                               netcons_listy,
                                                                                reduction_frequency)
         return L5PC,synapses_list,netcons_list
 def get_L5PC(model_name:ModelName=ModelName.L5PC,connect_synapses=True):
