@@ -3,16 +3,23 @@ import matplotlib.pyplot as plt
 from neuron_simulations.get_neuron_modle import get_L5PC,ModelName,get_model
 def map_cell_to_xyzd(cell):
     from neuron import h
-    listOfBasalSections = [cell.dend[x] for x in (range(len(cell.dend)) if type(cell.dend)==list else range(1))]
-    listOfApicalSections = [cell.apic[x] for x in (range(len(cell.apic)) if type(cell.apic)==list else range(1))]
+    # apic=cell.apic
+    # dend = cell.dend
+    # soma = cell.soma
+    # axon = cell.axon
+    section_list_by_morph = [cell.apic, cell.dend,cell.soma,cell.axon]
+    for i,s in enumerate(section_list_by_morph):
+        if isinstance(s,list):
+            continue
+        else:
+            section_list_by_morph[i]=[s]
     all_segment_coords, all_section_coords = {}, {}
     soma = {"x": np.mean([h.x3d(i, sec=cell.soma[0]) for i in range(int(h.n3d(sec=cell.soma[0])))]),
             "y": np.mean([h.y3d(i, sec=cell.soma[0]) for i in range(int(h.n3d(sec=cell.soma[0])))]),
             "z": np.mean([h.z3d(i, sec=cell.soma[0]) for i in range(int(h.n3d(sec=cell.soma[0])))]),
             "d": np.mean([h.diam3d(i, sec=cell.soma[0]) for i in range(int(h.n3d(sec=cell.soma[0])))])}
     for what, sections_list in zip(["apical", "basal", "soma"],#, "axon"],
-                                   [listOfApicalSections,listOfBasalSections,
-                                    cell.soma]):#, cell.axon]):
+                                   section_list_by_morph):
         for sec_ind, sec in enumerate(sections_list):
             print(type(sec))
             x_path = [h.x3d(i, sec=sec) for i in range(int(h.n3d(sec=sec)))]
