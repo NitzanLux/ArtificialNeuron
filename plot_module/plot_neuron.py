@@ -1,6 +1,8 @@
+import nrn
 import numpy as np
 import matplotlib.pyplot as plt
 from neuron_simulations.get_neuron_modle import get_L5PC,ModelName,get_model
+import nrn
 def map_cell_to_xyzd(cell):
     from neuron import h
     # apic=cell.apic
@@ -9,9 +11,7 @@ def map_cell_to_xyzd(cell):
     # axon = cell.axon
     section_list_by_morph = [cell.apic, cell.dend,cell.soma,cell.axon]
     for i,s in enumerate(section_list_by_morph):
-        if isinstance(s,list):
-            continue
-        else:
+        if isinstance(s,nrn.Section):
             section_list_by_morph[i]=[s]
     all_segment_coords, all_section_coords = {}, {}
     soma = {"x": np.mean([h.x3d(i, sec=cell.soma[0]) for i in range(int(h.n3d(sec=cell.soma[0])))]),
