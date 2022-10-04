@@ -501,7 +501,7 @@ class SavingAndEvaluationScheduler():
                 pickle.dump(optimizer.state_dict(), fo)
         configuration_factory.overwrite_config(AttrDict(config))
 
-    def __call__(self, model, config, optimizer,run_at_the_same_process,use_slurm):
+    def __call__(self, model, config, optimizer,use_slurm,run_at_the_same_process=False):
         self.create_evaluation_schduler(config, run_at_the_same_process,use_slurm)
         self.save_model_schduler(config, model, optimizer)
 
