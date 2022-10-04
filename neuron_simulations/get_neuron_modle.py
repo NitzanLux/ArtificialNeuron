@@ -132,10 +132,7 @@ def create_synapse(L5PC,reduction_frequency=None):
 
         # update lists
         allInhNetCons.append(netConnection)
-        if segInd in inhSpikeTimesMap.keys():
-            allInhNetConEventLists.append(inhSpikeTimesMap[segInd])
-        else:
-            allInhNetConEventLists.append([])  # insert empty list if no event
+
         synapses_list=allExSynapses + allInhSynapses
         netcons_list =  allExNetCons + allInhNetCons
         if reduction_frequency is not None:
