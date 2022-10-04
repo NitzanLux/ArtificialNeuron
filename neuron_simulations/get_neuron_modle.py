@@ -3,6 +3,7 @@ import platform
 import sys
 import os
 from enum import Enum
+import neuron_reduce
 
 
 from pathlib import Path
