@@ -73,7 +73,7 @@ def ConnectEmptyEventGenerator(synapse):
 
     return netConnection
 
-def create_synapse(L5PC,model_name):
+def create_synapse(L5PC,reduction_frequency=None):
     listOfBasalSections = [L5PC.dend[x] for x in range(len(L5PC.dend))]
     listOfApicalSections = [L5PC.apic[x] for x in range(len(L5PC.apic))]
     allSections = listOfBasalSections + listOfApicalSections
@@ -143,15 +143,18 @@ def create_synapse(L5PC,model_name):
             allInhNetConEventLists.append([])  # insert empty list if no event
         synapses_list=allExSynapses + allInhSynapses
         netcons_list =  allExNetCons + allInhNetCons
-        if model_name==ModelName.L5PC_ERGODIC:
+        if reduction_frequency is not None:
             L5PC, synapses_list, netcons_list = neuron_reduce.subtree_reductor(L5PC, synapses_list,
                                                                                netcons_listy,
                                                                                reduction_frequency)
         return L5PC,synapses_list,netcons_list
-def get_L5PC(model_name:ModelName=ModelName.L5PC,connect_synapses=True):
+
+
+def get_L5PC(model_name:ModelName=ModelName.L5PC_ERGODIC):
     import neuron
     from neuron import gui, h
 
+    # if not loaded_already:
     h.load_file('nrngui.hoc')
     h.load_file("import3d.hoc")
 
@@ -171,4 +174,9 @@ def get_L5PC(model_name:ModelName=ModelName.L5PC,connect_synapses=True):
     sys.stdout = open(os.devnull, "w")
     L5PC = h.L5PCtemplate(model_name.value+morphologyFilename)
     sys.stdout = old_stdout
+
     return L5PC
+
+def get_model(model,reduction_frequency=None):
+    L5PC, synapses_list, netcons_list = create_synapse(model, reduction_frequency)
+    return L5PC, synapses_list, netcons_list

@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from neuron_simulations.get_neuron_modle import get_L5PC,ModelName
+from neuron_simulations.get_neuron_modle import get_L5PC,ModelName,get_model
 def map_cell_to_xyzd(cell):
     from neuron import h
 
@@ -93,13 +93,15 @@ def plot_morphology_from_cell(ax, cell, segment_colors=None, width_mult_factors=
             ax.add_artist(
                 ScaleBar(1, "um", fixed_value=fixed_value, location="lower left", width_fraction=width_fraction,
                          pad=0, frameon=False, border_pad=0, sep=5, ))
-l5pc=get_L5PC(connect_synapses=False)
+l5pc=get_L5PC()
+l5pc,_,_ = get_model(l5pc)
 fig,ax = plt.subplots()
 plot_morphology_from_cell(ax,l5pc)
 plt.savefig('neuron_model.png')
 plt.show()
-l5pc=get_L5PC(ModelName.L5PC_ERGODIC,connect_synapses=False)
+
+l5pc_reduction,_,_ = get_model(l5pc,0)
 fig,ax = plt.subplots()
-plot_morphology_from_cell(ax,l5pc)
+plot_morphology_from_cell(ax,l5pc_reduction)
 plt.savefig('neuron_model_reduction.png')
 plt.show()
