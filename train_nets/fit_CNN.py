@@ -484,7 +484,7 @@ class SavingAndEvaluationScheduler():
     @staticmethod
     def flush_all(config, model, optimizer):
         SavingAndEvaluationScheduler.save_model(model, config, optimizer)
-        SavingAndEvaluationScheduler.save_best_model_scaduler(config)
+        SavingAndEvaluationScheduler.save_best_model_scaduler(config,use_slurm=True if not USE_CUDA else False)
         # ModelEvaluator.build_and_save(config=config, model=model)
 
     @staticmethod
@@ -514,6 +514,7 @@ class SavingAndEvaluationScheduler():
         configuration_factory.overwrite_config(AttrDict(config))
 
     def __call__(self, model, config, optimizer, use_slurm, run_at_the_same_process=False):
+
         self.create_evaluation_schduler(config, run_at_the_same_process, use_slurm)
         self.save_model_schduler(config, model, optimizer)
 
