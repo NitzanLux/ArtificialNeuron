@@ -397,30 +397,41 @@ class SavingAndEvaluationScheduler():
     :return: evaluation
     """
 
-    def __init__(self, time_in_hours_for_saving=NUMBER_OF_HOURS_FOR_SAVING_MODEL_AND_CONFIG, time_in_hours_for_eval=NUMBER_OF_HOURS_FOR_EVAL_BEST):
+    def __init__(self, time_in_hours_for_saving=NUMBER_OF_HOURS_FOR_SAVING_MODEL_AND_CONFIG,
+                 time_in_hours_for_eval=NUMBER_OF_HOURS_FOR_EVAL_BEST):
         # time_in_hours_for_evaluation=NUMBER_OF_HOURS_FOR_PLOTTING_EVALUATIONS_PLOTS):
         self.last_time_evaluation = datetime.now()
         self.last_time_saving = datetime.now()
         self.time_in_hours_for_saving = time_in_hours_for_saving
         self.time_in_hours_for_eval = time_in_hours_for_eval
         self.previous_process = None
-        self.pause_time=datetime.now()
-        self.pause_state=False
+        self.pause_time_eval = datetime.now()
+        self.pause_time_save = datetime.now()
+        self.pause_state_eval = False
+        self.pause_state_save = False
         # self.time_in_hours_for_evaluation = time_in_hours_for_evaluation
 
-    def pause(self):
-        if not self.pause_state:
-            self.pause_time=datetime.now()
-            self.pause_state=True
+    def pause(self, is_evaluation=True):
+        if not self.pause_state_eval and is_evaluation:
+            self.pause_time_eval = datetime.now()
+            self.pause_state_eval = True
+        elif not self.pause_state_save:
+            self.pause_time_save = datetime.now()
+            self.pause_state_save = True
+
     def retry(self):
-        if self.pause_state:
-            pause_time=datetime.now()-self.pause_time
-            self.last_time_evaluation += pause_time
-            self.last_time_evaluation += pause_time
-            self.pause_state=False
 
+        if self.pause_state_eval:
+            pause_time = datetime.now() - self.pause_time_eval
+            self.last_time_evaluation += pause_time
+            self.pause_state_eval = False
 
-    def create_evaluation_schduler(self, config, run_at_the_same_process,use_slurm):
+        elif self.pause_state_save:
+            pause_time = datetime.now() - self.pause_time_save
+            self.last_time_saving += pause_time
+            self.pause_state_save = False
+
+    def create_evaluation_schduler(self, config, run_at_the_same_process, use_slurm):
         # if pause_state:
         #     return
         if run_at_the_same_process:
@@ -433,11 +444,12 @@ class SavingAndEvaluationScheduler():
         if run_at_the_same_process:
             self.retry()
 
-    def save_best_model_scaduler(self,config,use_slurm=False, first_run=False, run_at_the_same_process=False):
+    def save_best_model_scaduler(self, config, use_slurm=False, first_run=False, run_at_the_same_process=False):
         if self.previous_process is not None:
             self.previous_process.join()
-        self.previous_process = self.save_best_model_p(config, first_run=first_run,run_at_the_same_process=run_at_the_same_process,use_slurm=use_slurm)
-
+        self.previous_process = self.save_best_model_p(config, first_run=first_run,
+                                                       run_at_the_same_process=run_at_the_same_process,
+                                                       use_slurm=use_slurm)
 
     def save_model_schduler(self, config, model, optimizer):
         if pause_state:
@@ -458,7 +470,7 @@ class SavingAndEvaluationScheduler():
             abspath = os.path.abspath(__file__)
             dname = os.path.dirname(abspath)
             dname = os.path.dirname(dname)
-            name=config.config_path[-2]
+            name = config.config_path[-2]
             job_command = f'import os;os.chdir("{dname}");import time;from train_nets.fit_CNN import save_best_model;t = time.time() ;save_best_model("{os.path.join(MODELS_DIR, *config.config_path)}");print(time.time()-t)'
             job_factory.send_job(f'best_model_eval_{name}', f"python3 -c '{job_command}'", mem=120000)
         elif not run_at_the_same_process:
@@ -501,8 +513,8 @@ class SavingAndEvaluationScheduler():
                 pickle.dump(optimizer.state_dict(), fo)
         configuration_factory.overwrite_config(AttrDict(config))
 
-    def __call__(self, model, config, optimizer,use_slurm,run_at_the_same_process=False):
-        self.create_evaluation_schduler(config, run_at_the_same_process,use_slurm)
+    def __call__(self, model, config, optimizer, use_slurm, run_at_the_same_process=False):
+        self.create_evaluation_schduler(config, run_at_the_same_process, use_slurm)
         self.save_model_schduler(config, model, optimizer)
 
 
@@ -582,15 +594,14 @@ def save_best_model(config_path, first_run=False):
     best_result_path = os.path.join(MODELS_DIR, *config.model_path) + '_best'
 
     if first_run:
-        if  not os.path.exists(os.path.join(best_result_path, "eval.gteval")):
+        if not os.path.exists(os.path.join(best_result_path, "eval.gteval")):
             cur_model_evaluation = EvaluationData(model_gt, config, USE_CUDA, model)
             cur_model_evaluation.save(os.path.join(best_result_path, "eval.gteval"))
         else:
             cur_model_evaluation = EvaluationData.load(os.path.join(best_result_path, "eval.gteval"))
         if not os.path.exists(os.path.join(best_result_path, "auc_history")):
-            auc=cur_model_evaluation.get_ROC_data()[0]
+            auc = cur_model_evaluation.get_ROC_data()[0]
             np.save(os.path.join(best_result_path, "auc_history"), np.array(auc))
-
 
     if not os.path.exists(best_result_path):
         os.mkdir(best_result_path)
@@ -606,7 +617,6 @@ def save_best_model(config_path, first_run=False):
 
     elif not first_run:
         g = EvaluationData(model_gt, config, USE_CUDA, model)
-
 
         auc = g.get_ROC_data()[0]
 
