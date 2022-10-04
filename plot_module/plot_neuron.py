@@ -13,6 +13,7 @@ def map_cell_to_xyzd(cell):
                                    [cell.apic, cell.dend,
                                     cell.soma]):#, cell.axon]):
         for sec_ind, sec in enumerate(sections_list):
+            print(sec)
             x_path = [h.x3d(i, sec=sec) for i in range(int(h.n3d(sec=sec)))]
             y_path = [h.y3d(i, sec=sec) for i in range(int(h.n3d(sec=sec)))]
             z_path = [h.z3d(i, sec=sec) for i in range(int(h.n3d(sec=sec)))]
