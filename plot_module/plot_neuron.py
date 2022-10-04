@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from neuron_simulations.get_neuron_modle import get_L5PC
+from neuron_simulations.get_neuron_modle import get_L5PC,ModelName
 def map_cell_to_xyzd(cell):
     from neuron import h
 
