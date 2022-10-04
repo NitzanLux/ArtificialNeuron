@@ -138,7 +138,7 @@ def create_synapse(L5PC,reduction_frequency=None):
         netcons_list =  allExNetCons + allInhNetCons
         if reduction_frequency is not None:
             L5PC, synapses_list, netcons_list = neuron_reduce.subtree_reductor(L5PC, synapses_list,
-                                                                               netcons_listy,
+                                                                               netcons_list,
                                                                                reduction_frequency)
         return L5PC,synapses_list,netcons_list
 
