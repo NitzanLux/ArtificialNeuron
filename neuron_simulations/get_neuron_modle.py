@@ -121,11 +121,6 @@ def create_synapse(L5PC,reduction_frequency=None):
 
         # update lists
         allExNetCons.append(netConnection)
-        if segInd in exSpikeTimesMap.keys():
-            allExNetConEventLists.append(exSpikeTimesMap[segInd])
-        else:
-            allExNetConEventLists.append([])  # insert empty list if no event
-
         ###### inhibition ######
 
         # define synapse and connect it to a segment
