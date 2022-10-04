@@ -10,7 +10,7 @@ def map_cell_to_xyzd(cell):
     # axon = cell.axon
     section_list_by_morph = [cell.apic, cell.dend,cell.soma,cell.axon]
     for i,s in enumerate(section_list_by_morph):
-        if isinstance(s,h.Section):
+        if isinstance(s,type(h.Section())):
             section_list_by_morph[i]=[s]
     all_segment_coords, all_section_coords = {}, {}
     soma = {"x": np.mean([h.x3d(i, sec=cell.soma[0]) for i in range(int(h.n3d(sec=cell.soma[0])))]),
