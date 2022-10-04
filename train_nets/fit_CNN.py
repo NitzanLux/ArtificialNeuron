@@ -419,9 +419,9 @@ class SavingAndEvaluationScheduler():
             self.pause_time_save = datetime.now()
             self.pause_state_save = True
 
-    def retry(self):
+    def retry(self,is_evaluation=True):
 
-        if self.pause_state_eval:
+        if self.pause_state_eval and is_evaluation:
             pause_time = datetime.now() - self.pause_time_eval
             self.last_time_evaluation += pause_time
             self.pause_state_eval = False
@@ -434,33 +434,31 @@ class SavingAndEvaluationScheduler():
     def create_evaluation_schduler(self, config, run_at_the_same_process, use_slurm):
         # if pause_state:
         #     return
-        if run_at_the_same_process:
-            self.pause()
+        # if run_at_the_same_process:
+        self.pause(True)
         current_time = datetime.now()
         delta_time = current_time - self.last_time_evaluation
         self.last_time_evaluation = datetime.now()
         if (delta_time.total_seconds() / 60) / 60 > self.time_in_hours_for_eval:
             self.save_best_model_scaduler(config, use_slurm=run_at_the_same_process, run_at_the_same_process=use_slurm)
-        if run_at_the_same_process:
-            self.retry()
+
 
     def save_best_model_scaduler(self, config, use_slurm=False, first_run=False, run_at_the_same_process=False):
         if self.previous_process is not None:
             self.previous_process.join()
+            self.retry(True)
         self.previous_process = self.save_best_model_p(config, first_run=first_run,
                                                        run_at_the_same_process=run_at_the_same_process,
                                                        use_slurm=use_slurm)
 
     def save_model_schduler(self, config, model, optimizer):
-        if pause_state:
-            return
-        self.pause()
+        self.pause(False)
         current_time = datetime.now()
         delta_time = current_time - self.last_time_saving
         if (delta_time.total_seconds() / 60) / 60 > self.time_in_hours_for_saving:
             self.save_model(model, config, optimizer)
             self.last_time_saving = datetime.now()
-        self.retry()
+        self.retry(False)
 
     @staticmethod
     def save_best_model_p(config, use_slurm=False, first_run=False, run_at_the_same_process=False):
