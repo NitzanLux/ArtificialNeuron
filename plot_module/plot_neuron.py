@@ -18,9 +18,9 @@ def map_cell_to_xyzd(cell):
             z_path = [h.z3d(i, sec=sec) for i in range(int(h.n3d(sec=sec)))]
             d_path = [h.diam3d(i, sec=sec) for i in range(int(h.n3d(sec=sec)))]
             sec_name = sec.name().split('.')[-1].replace('[', '_')[:-1]
-
+            sec_type=['t']
             # sec_type = "trunk" if sec in cell.trunk else "oblique" if sec in cell.oblique else what
-            all_section_coords[(what, sec_ind, 'all')] = {'sec name': sec_name, 'seg index': 0, #'what': sec_type,
+            all_section_coords[(what, sec_ind, 'all')] = {'sec name': sec_name, 'seg index': 0, 'what': sec_type,
                                                           'x': x_path, 'y': y_path, 'z': z_path, 'd': d_path}
         # for seg_ind in range(sec.nseg):  # this needs to be calculated
         #     all_segment_coords[(sec_ind, seg_ind)] = {}
