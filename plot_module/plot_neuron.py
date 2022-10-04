@@ -5,10 +5,10 @@ def map_cell_to_xyzd(cell):
     from neuron import h
 
     all_segment_coords, all_section_coords = {}, {}
-    soma = {"x": np.mean([h.x3d(i, sec=cell.soma) for i in range(int(h.n3d(sec=cell.soma)))]),
-            "y": np.mean([h.y3d(i, sec=cell.soma) for i in range(int(h.n3d(sec=cell.soma)))]),
-            "z": np.mean([h.z3d(i, sec=cell.soma) for i in range(int(h.n3d(sec=cell.soma)))]),
-            "d": np.mean([h.diam3d(i, sec=cell.soma) for i in range(int(h.n3d(sec=cell.soma)))])}
+    soma = {"x": np.mean([h.x3d(i, sec=cell.soma[0]) for i in range(int(h.n3d(sec=cell.soma[0])))]),
+            "y": np.mean([h.y3d(i, sec=cell.soma[0]) for i in range(int(h.n3d(sec=cell.soma[0])))]),
+            "z": np.mean([h.z3d(i, sec=cell.soma[0]) for i in range(int(h.n3d(sec=cell.soma[0])))]),
+            "d": np.mean([h.diam3d(i, sec=cell.soma[0]) for i in range(int(h.n3d(sec=cell.soma[0])))])}
     for what, sections_list in zip(["apical", "basal", "soma", "axon"],
                                    [cell.apic, cell.dend,
                                     cell.soma, cell.axon]):
