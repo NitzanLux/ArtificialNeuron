@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 from neuron_simulations.get_neuron_modle import get_L5PC,ModelName,get_model
 def map_cell_to_xyzd(cell):
     from neuron import h
-    listOfBasalSections = [L5PC.dend[x] for x in range(len(L5PC.dend))]
-    listOfApicalSections = [L5PC.apic[x] for x in range(len(L5PC.apic))]
+    listOfBasalSections = [cell.dend[x] for x in range(len(cell.dend))]
+    listOfApicalSections = [cell.apic[x] for x in range(len(cell.apic))]
     all_segment_coords, all_section_coords = {}, {}
     soma = {"x": np.mean([h.x3d(i, sec=cell.soma[0]) for i in range(int(h.n3d(sec=cell.soma[0])))]),
             "y": np.mean([h.y3d(i, sec=cell.soma[0]) for i in range(int(h.n3d(sec=cell.soma[0])))]),
