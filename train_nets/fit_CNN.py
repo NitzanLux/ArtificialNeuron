@@ -435,13 +435,13 @@ class SavingAndEvaluationScheduler():
         # if pause_state:
         #     return
         # if run_at_the_same_process:
-        self.pause(True)
+
         current_time = datetime.now()
         delta_time = current_time - self.last_time_evaluation
         self.last_time_evaluation = datetime.now()
-        if (delta_time.total_seconds() / 60) / 60 > self.time_in_hours_for_eval:
+        if (delta_time.total_seconds() / 60) / 60 > self.time_in_hours_for_eval and not self.pause_time_eval:
+            self.pause(True)
             self.save_best_model_scaduler(config, use_slurm=run_at_the_same_process, run_at_the_same_process=use_slurm)
-
 
     def save_best_model_scaduler(self, config, use_slurm=False, first_run=False, run_at_the_same_process=False):
         if self.previous_process is not None:
@@ -452,16 +452,17 @@ class SavingAndEvaluationScheduler():
                                                        use_slurm=use_slurm)
 
     def save_model_schduler(self, config, model, optimizer):
-        self.pause(False)
+
         current_time = datetime.now()
         delta_time = current_time - self.last_time_saving
-        if (delta_time.total_seconds() / 60) / 60 > self.time_in_hours_for_saving:
+        if (delta_time.total_seconds() / 60) / 60 > self.time_in_hours_for_saving and not self.pause_time_save :
+            self.pause(False)
             self.save_model(model, config, optimizer)
             self.last_time_saving = datetime.now()
-        self.retry(False)
+            self.retry(False)
 
-    @staticmethod
-    def save_best_model_p(config, use_slurm=False, first_run=False, run_at_the_same_process=False):
+    # @staticmethod
+    def save_best_model_p(self,config, use_slurm=False, first_run=False, run_at_the_same_process=False):
         if use_slurm:
             print('evaluate best model')
             job_factory = SlurmJobFactory("cluster_logs_best_model")
@@ -471,6 +472,7 @@ class SavingAndEvaluationScheduler():
             name = config.config_path[-2]
             job_command = f'import os;os.chdir("{dname}");import time;from train_nets.fit_CNN import save_best_model;t = time.time() ;save_best_model("{os.path.join(MODELS_DIR, *config.config_path)}");print(time.time()-t)'
             job_factory.send_job(f'best_model_eval_{name}', f"python3 -c '{job_command}'", mem=120000)
+            self.retry(True)
         elif not run_at_the_same_process:
             p = Process(target=save_best_model, args=(os.path.join(MODELS_DIR, *config.config_path), first_run))
             art.tprint("process")
@@ -478,7 +480,7 @@ class SavingAndEvaluationScheduler():
             return p
         else:
             save_best_model(os.path.join(MODELS_DIR, *config.config_path), first_run)
-
+            self.retry(False)
     @staticmethod
     def flush_all(config, model, optimizer):
         SavingAndEvaluationScheduler.save_model(model, config, optimizer)
