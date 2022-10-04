@@ -18,7 +18,7 @@ def map_cell_to_xyzd(cell):
             "y": np.mean([h.y3d(i, sec=cell.soma[0]) for i in range(int(h.n3d(sec=cell.soma[0])))]),
             "z": np.mean([h.z3d(i, sec=cell.soma[0]) for i in range(int(h.n3d(sec=cell.soma[0])))]),
             "d": np.mean([h.diam3d(i, sec=cell.soma[0]) for i in range(int(h.n3d(sec=cell.soma[0])))])}
-    for what, sections_list in zip(["apical", "basal", "soma"],#, "axon"],
+    for what, sections_list in zip(["apical", "basal", "soma", "axon"],
                                    section_list_by_morph):
         for sec_ind, sec in enumerate(sections_list):
             print(type(sec))
