@@ -16,8 +16,10 @@ se_r, se_o = None, None
 number_of_samples = min(number_of_samples, len(gt_reduction)) if number_of_samples>0 else len(gt_reduction)
 se_r_arr = []
 se_o_arr = []
+cur_t=time.time()
 for i, ro in enumerate(zip(gt_reduction, gt_original)):
-    print(i)
+    print(f"current sample number {i}  time: {time.time()-cur_t} seconds          total: {time.time()-t} seconds")
+    cur_t=time.time()
     if i >= number_of_samples:
         break
     r, o = ro
