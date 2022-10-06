@@ -8,8 +8,8 @@ MAX_INTERVAL = 20
 t = time.time()
 gt_original_name = 'davids_ergodic_validation'
 gt_reduction_name = 'reduction_ergodic_validation'
-gt_reduction = GroundTruthData.load(os.path.join( 'evaluations', 'ground_truth', gt_reduction_name + '.gteval'))
-gt_original = GroundTruthData.load(os.path.join('evaluations', 'ground_truth', gt_original_name + '.gteval'))
+gt_reduction = GroundTruthData.load(os.path.join("..", 'evaluations', 'ground_truth', gt_reduction_name + '.gteval'))
+gt_original = GroundTruthData.load(os.path.join("..",'evaluations', 'ground_truth', gt_original_name + '.gteval'))
 
 number_of_samples = -1
 se_r, se_o = None, None
@@ -18,7 +18,7 @@ se_r_arr = []
 se_o_arr = []
 cur_t=time.time()
 for i, ro in enumerate(zip(gt_reduction, gt_original)):
-    print(f"current sample number {i}  time: {time.time()-cur_t} seconds          total: {time.time()-t} seconds")
+    print(f"current sample number {i}  time: {time.time()-cur_t} seconds          total: {time.time()-t} seconds",flush=True)
     cur_t=time.time()
     if i >= number_of_samples:
         break
