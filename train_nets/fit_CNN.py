@@ -600,9 +600,9 @@ def save_best_model(config_path, first_run=False):
             cur_model_evaluation.save(os.path.join(best_result_path, "eval.gteval"))
         else:
             cur_model_evaluation = EvaluationData.load(os.path.join(best_result_path, "eval.gteval"))
-        if not os.path.exists(os.path.join(best_result_path, "auc_history.npz")):
+        if not os.path.exists(os.path.join(best_result_path, "auc_history.npy")):
             auc = cur_model_evaluation.get_ROC_data()[0]
-            np.save(os.path.join(best_result_path, "auc_history.npz"), np.array(auc))
+            np.save(os.path.join(best_result_path, "auc_history.npy"), np.array(auc))
 
     if not os.path.exists(best_result_path):
         os.mkdir(best_result_path)
@@ -621,11 +621,11 @@ def save_best_model(config_path, first_run=False):
 
         auc = g.get_ROC_data()[0]
 
-        if not os.path.exists(os.path.join(best_result_path, "auc_history.npz")):
-            np.save(os.path.join(best_result_path, "auc_history.npz"), np.array(auc))
-        auc_arr = np.load(os.path.join(best_result_path, "auc_history.npz"))
+        if not os.path.exists(os.path.join(best_result_path, "auc_history.npy")):
+            np.save(os.path.join(best_result_path, "auc_history.npy"), np.array(auc))
+        auc_arr = np.load(os.path.join(best_result_path, "auc_history.npy"))
         new_auc_arr = np.append(auc_arr, auc)
-        np.save(os.path.join(best_result_path, "auc_history.npz"), new_auc_arr)
+        np.save(os.path.join(best_result_path, "auc_history.npy"), new_auc_arr)
         if np.max(auc_arr) < auc:
             model.save(os.path.join(best_result_path, 'model'))
             configuration_factory.save_config(config, os.path.join(best_result_path, 'config.pkl'))
