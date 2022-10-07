@@ -35,7 +35,7 @@ def get_sample_entropy():
     np.save("sample_entropy_original.npz",np.array(se_o_arr))
     t=time.time()-t
     print(t)
-if __name__ == "__main":
+if __name__ == "__main__":
     from utils.slurm_job import *
     job_factory = SlurmJobFactory("cluster_logs")
     print('send_job')
