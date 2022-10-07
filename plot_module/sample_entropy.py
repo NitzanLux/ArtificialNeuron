@@ -55,7 +55,7 @@ def get_sample_entropy(indexes:[int,List[int]]):
 
 if __name__ == "__main__":
     from utils.slurm_job import *
-    number_of_clusters=10
+    number_of_clusters=20
     job_factory = SlurmJobFactory("cluster_logs")
     gt_reduction_name = 'reduction_ergodic_validation'
     size = len(GroundTruthData.load(os.path.join( 'evaluations', 'ground_truth', gt_reduction_name + '.gteval')))
