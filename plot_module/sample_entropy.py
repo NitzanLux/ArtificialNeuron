@@ -38,6 +38,5 @@ def get_sample_entropy():
 if __name__ == "__main__":
     from utils.slurm_job import *
     job_factory = SlurmJobFactory("cluster_logs")
-    print('send_job')
-    job_factory.send_job("sample_entropy_1", "python -c from plot_module.sample_entropy import get_sample_entropy ; get_sample_entropy() ")
-    print('a')
+    job_factory.send_job("sample_entropy_1", 'python -c "from plot_module.sample_entropy import get_sample_entropy; get_sample_entropy()"')
+    print('job sent')
