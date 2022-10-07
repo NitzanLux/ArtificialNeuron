@@ -4,39 +4,64 @@ import EntropyHub as EH
 import os
 import numpy as np
 import time
+import multiprocessing
+from typing import List
+from multiprocessing import Process,Queue
+number_of_cpus = multiprocessing.cpu_count()
+import queue
 MAX_INTERVAL = 200
 print("start job")
-def get_sample_entropy():
+number_of_jobs=number_of_cpus-1
+def create_sample_entropy_file(q):
+    while True:
+        try:
+            sr, so, i = q.get(block=60)
+            se_r, _, _ = EH.SampEn(sr, m=MAX_INTERVAL)
+            se_o, _, _ = EH.SampEn(so, m=MAX_INTERVAL)
+            np.save(os.path.join(sample_entropy,f"sample_entropy_reduction_{i}.npz"), np.array(se_r_arr))
+            np.save(os.path.join(sample_entropy,f"sample_entropy_original_{i}.npz"), np.array(se_o_arr))
+        except queue.Empty as e:
+            return
+def get_sample_entropy(indexes:[int,List[int]]):
+    if isinstance(indexes,int):
+        indexes=[indexes]
+
     t = time.time()
     gt_original_name = 'davids_ergodic_validation'
     gt_reduction_name = 'reduction_ergodic_validation'
     gt_reduction = GroundTruthData.load(os.path.join( 'evaluations', 'ground_truth', gt_reduction_name + '.gteval'))
     gt_original = GroundTruthData.load(os.path.join('evaluations', 'ground_truth', gt_original_name + '.gteval'))
 
-    number_of_samples = -1
-    se_r, se_o = None, None
-    number_of_samples = min(number_of_samples, len(gt_reduction)) if number_of_samples>0 else len(gt_reduction)
-    se_r_arr = []
-    se_o_arr = []
     cur_t=time.time()
-    for i, ro in enumerate(zip(gt_reduction, gt_original)):
-        print(f"current sample number {i}  time: {time.time()-cur_t} seconds          total: {time.time()-t} seconds",flush=True)
+
+    queue=Queue(maxsize=number_of_jobs*2)
+    process = [mp.Process(target=create_sample_entropy_file, args=(queue,)) for i in range(number_of_jobs)]
+
+    for j,index in enumerate(indexes):
+        print(f"current sample number {index}  time: {time.time()-cur_t} seconds          total: {time.time()-t} seconds",flush=True)
         cur_t=time.time()
-        if i >= number_of_samples:
-            break
-        r, o = ro
+        r,o = gt_reduction.get_by_index(index), gt_original.get_by_index(index)
         vr, sr = r
         vo, so = o
-        se_r, _, _ = EH.SampEn(sr, m=MAX_INTERVAL)
-        se_o, _, _ = EH.SampEn(so, m=MAX_INTERVAL)
-        se_r_arr.append(se_r)
-        se_o_arr.append(se_o)
-    np.save("sample_entropy_reduction.npz",np.array(se_r_arr))
-    np.save("sample_entropy_original.npz",np.array(se_o_arr))
+        queue.put((sr,so,index))
+        if j<len(process):
+            process[j].start()
+
+
+    for p in process:
+        p.join()
     t=time.time()-t
     print(t)
+
 if __name__ == "__main__":
     from utils.slurm_job import *
+    number_of_clusters=10
     job_factory = SlurmJobFactory("cluster_logs")
-    job_factory.send_job("sample_entropy_1", 'python -c "from plot_module.sample_entropy import get_sample_entropy; get_sample_entropy()"')
-    print('job sent')
+    gt_reduction_name = 'reduction_ergodic_validation'
+    size = len(GroundTruthData.load(os.path.join( 'evaluations', 'ground_truth', gt_reduction_name + '.gteval')))
+    jumps=number_of_clusters//size
+
+    for i in range(number_of_clusters):
+        indexes=list(range(i*jumps,min((i+1)*jumps,size)))
+        job_factory.send_job(f"sample_entropy_{i}", f'python -c "from plot_module.sample_entropy import get_sample_entropy; get_sample_entropy({indexes})"')
+        print('job sent')
