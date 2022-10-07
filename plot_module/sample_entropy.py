@@ -4,7 +4,7 @@ import EntropyHub as EH
 import os
 import numpy as np
 import time
-MAX_INTERVAL = 20
+MAX_INTERVAL = 200
 def get_sample_entropy():
     t = time.time()
     gt_original_name = 'davids_ergodic_validation'
