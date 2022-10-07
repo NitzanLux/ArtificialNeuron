@@ -15,31 +15,32 @@ number_of_jobs=number_of_cpus-1
 def create_sample_entropy_file(q):
     while True:
         try:
-            sr, so, i = q.get(block=60)
+            sr, so, i = q.get(block=120)
+            t = time.time()
             se_r, _, _ = EH.SampEn(sr, m=MAX_INTERVAL)
             se_o, _, _ = EH.SampEn(so, m=MAX_INTERVAL)
             np.save(os.path.join(sample_entropy,f"sample_entropy_reduction_{i}.npz"), np.array(se_r_arr))
             np.save(os.path.join(sample_entropy,f"sample_entropy_original_{i}.npz"), np.array(se_o_arr))
+            print(
+                f"current sample number {i}   total: {time.time() - t} seconds",
+                flush=True)
         except queue.Empty as e:
             return
 def get_sample_entropy(indexes:[int,List[int]]):
     if isinstance(indexes,int):
         indexes=[indexes]
 
-    t = time.time()
+
     gt_original_name = 'davids_ergodic_validation'
     gt_reduction_name = 'reduction_ergodic_validation'
     gt_reduction = GroundTruthData.load(os.path.join( 'evaluations', 'ground_truth', gt_reduction_name + '.gteval'))
     gt_original = GroundTruthData.load(os.path.join('evaluations', 'ground_truth', gt_original_name + '.gteval'))
 
-    cur_t=time.time()
 
     queue=Queue(maxsize=number_of_jobs*2)
     process = [mp.Process(target=create_sample_entropy_file, args=(queue,)) for i in range(number_of_jobs)]
 
     for j,index in enumerate(indexes):
-        print(f"current sample number {index}  time: {time.time()-cur_t} seconds          total: {time.time()-t} seconds",flush=True)
-        cur_t=time.time()
         r,o = gt_reduction.get_by_index(index), gt_original.get_by_index(index)
         vr, sr = r
         vo, so = o
@@ -47,11 +48,9 @@ def get_sample_entropy(indexes:[int,List[int]]):
         if j<len(process):
             process[j].start()
 
-
     for p in process:
         p.join()
-    t=time.time()-t
-    print(t)
+
 
 if __name__ == "__main__":
     from utils.slurm_job import *
