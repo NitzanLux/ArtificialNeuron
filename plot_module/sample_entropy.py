@@ -29,7 +29,7 @@ def create_sample_entropy_file(q):
 def get_sample_entropy(indexes:[int,List[int]]):
     if isinstance(indexes,int):
         indexes=[indexes]
-
+    number_of_jobs = min(number_of_cpus - 1,len(indexes))
 
     gt_original_name = 'davids_ergodic_validation'
     gt_reduction_name = 'reduction_ergodic_validation'
