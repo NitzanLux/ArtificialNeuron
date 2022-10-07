@@ -58,7 +58,7 @@ if __name__ == "__main__":
     job_factory = SlurmJobFactory("cluster_logs")
     gt_reduction_name = 'reduction_ergodic_validation'
     size = len(GroundTruthData.load(os.path.join( 'evaluations', 'ground_truth', gt_reduction_name + '.gteval')))
-    jumps=number_of_clusters//size
+    jumps=size//number_of_clusters
 
     for i in range(number_of_clusters):
         indexes=list(range(i*jumps,min((i+1)*jumps,size)))
