@@ -5,6 +5,7 @@ import os
 import numpy as np
 import time
 MAX_INTERVAL = 200
+print("start job")
 def get_sample_entropy():
     t = time.time()
     gt_original_name = 'davids_ergodic_validation'
