@@ -19,8 +19,8 @@ def create_sample_entropy_file(q):
             t = time.time()
             se_r, _, _ = EH.SampEn(sr, m=MAX_INTERVAL)
             se_o, _, _ = EH.SampEn(so, m=MAX_INTERVAL)
-            np.save(os.path.join(sample_entropy,f"sample_entropy_reduction_{i}.npy"), np.array(se_r_arr))
-            np.save(os.path.join(sample_entropy,f"sample_entropy_original_{i}.npy"), np.array(se_o_arr))
+            np.save(os.path.join("sample_entropy",f"sample_entropy_reduction_{i}_{MAX_INTERVAL}d.npy"), np.array(se_r_arr))
+            np.save(os.path.join("sample_entropy",f"sample_entropy_original_{i}_{MAX_INTERVAL}d.npy"), np.array(se_o_arr))
             print(
                 f"current sample number {i}   total: {time.time() - t} seconds",
                 flush=True)
