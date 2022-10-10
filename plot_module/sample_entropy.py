@@ -6,10 +6,11 @@ import numpy as np
 import time
 import multiprocessing
 from typing import List
+import argparse
 from multiprocessing import Process,Queue
 number_of_cpus = multiprocessing.cpu_count()
 import queue
-MAX_INTERVAL = 200
+MAX_INTERVAL = 50
 print("start job")
 number_of_jobs=number_of_cpus-1
 def create_sample_entropy_file(q):
@@ -53,6 +54,10 @@ def get_sample_entropy(indexes:[int,List[int]]):
 
 
 if __name__ == "__main__":
+    # parser = argparse.ArgumentParser(description='Add configuration file')
+    # parser.add_argument('-mem', dest="memory", type=int,
+    #                     help='set memory', default=-1)
+    # args = parser.parse_args()
     from utils.slurm_job import *
     number_of_clusters=20
     job_factory = SlurmJobFactory("cluster_logs")
