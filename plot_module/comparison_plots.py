@@ -70,10 +70,10 @@ for i,m in enumerate(model_reduction_names):
     if use_costume_threshold:
         number_of_spikes=np.sum(s)
         auc, fpr, tpr,optimal_threshold,thresholds =  m.get_ROC_data()
-        best_fpr=fpr[fpr<=number_of_spikes/s.shape[0]]
-        print(best_fpr)
-        best_fpr=best_fpr[-1]
-        optimal_threshold=thresholds[np.where(best_fpr[0]==fpr)]
+        best_tpr=tpr[tpr<=number_of_spikes/s.shape[0]]
+        print(best_tpr)
+        best_fpr=best_tpr[-1]
+        optimal_threshold=thresholds[np.where(best_tpr[0]==tpr)]
     optimal_threshold = m.get_ROC_data()[3]
     model_evaluation_reduction.append((v,s,m.config.number_of_layers_space,optimal_threshold))
 
