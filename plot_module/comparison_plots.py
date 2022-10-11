@@ -28,8 +28,8 @@ file_original='L5PC_sim__Output_spikes_0868__Input_ranges_Exc_[0148,1202]_Inh_[0
 file_reduction=f"{file_original[:-len('.p')]}_reduction_0w.p"
 sim_index=63
 data_points_start_input_interval=300
-data_points_start=1500
-data_points_end=3300
+data_points_start=1600
+data_points_end=1900
 data_points_start_input=data_points_start-data_points_start_input_interval
 tag = f"{file_original[:len('.p')]}_{sim_index}_[{data_points_start}_{data_points_end}_{data_points_start_input_interval}]"
 #%% pipline plot data
