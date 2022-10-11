@@ -103,6 +103,8 @@ def save_large_plot(fig,name):
     mng.full_screen_toggle()
     if '.' in name:
         name = name[:name.find('.')]+tag+name[name.find('.'):]
+    else:
+        name +=tag
     fig.savefig(name)
 
 #%%
