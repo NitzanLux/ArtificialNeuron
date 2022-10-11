@@ -28,7 +28,7 @@ model_reduction_names= ["d_r_comparison_1_reduction___2022-09-07__22_59__ID_1494
 file_original='L5PC_sim__Output_spikes_0909__Input_ranges_Exc_[0119,1140]_Inh_[0047,1302]_per100ms__simXsec_128x6_randseed_1110264.p'
 
 file_reduction=f"{file_original[:-len('.p')]}_reduction_0w.p"
-sim_index=61
+sim_index=0
 data_points_start_input_interval=300
 data_points_start=1970
 data_points_end=2200
