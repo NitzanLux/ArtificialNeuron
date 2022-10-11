@@ -149,7 +149,7 @@ ax.set_ylim([0-0.001,np.max(y_scatter)+2+0.001])
 ax.set_xlabel('time(ms)')
 ax.set_ylabel('Synapse number')
 plt.show()
-save_large_plot(fig,'plot_module/raster_pipline.png')
+save_large_plot(fig,'evaluation_plots/raster_pipline.png')
 # ax0_pos = fig.axes[0].get_position()
 # fig.axes[0].set_position([right_margin,ax0_pos.y0,ax0_pos.width+ax0_pos.x0,ax0_pos.height])
 # ax0_pos = fig.axes[0].get_position()
@@ -170,7 +170,7 @@ for v,s,l in model_evaluation_reduction:
     ax.plot(output_x_range,v,color=color_function(l),label=f"{l} layers",alpha=alpha)
 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 plt.show()
-save_large_plot(fig,'plot_module/pipeline_reduction_v.png')
+save_large_plot(fig,'evaluation_plots/pipeline_reduction_v.png')
 
 
 # ax2_pos = fig.axes[2].get_position()
@@ -183,7 +183,7 @@ for v,s,l in model_evaluation_reduction:
 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 
 plt.show()
-save_large_plot(fig,'plot_module/pipeline_reduction_s.png')
+save_large_plot(fig,'evaluation_plots/pipeline_reduction_s.png')
 
 
 # ax3_pos = fig.axes[3].get_position()
@@ -195,7 +195,7 @@ for v,s,l in model_evaluation_original:
     ax.plot(output_x_range,v,color=color_function(l),label=f"{l} layers",alpha=alpha)
 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 plt.show()
-save_large_plot(fig,'plot_module/pipeline_original_v.png')
+save_large_plot(fig,'evaluation_plots/pipeline_original_v.png')
 
 # ax4_pos = fig.axes[4].get_position()
 # fig.axes[4].set_position([right_margin_position,ax3_pos.y0-ax4_pos.height-twin_graph_margin,ax4_pos.width,ax4_pos.height])
@@ -206,7 +206,7 @@ for v,s,l in model_evaluation_original:
     ax.plot(output_x_range,s,color=color_function(l),label=f"{l} layers",alpha=alpha)
 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 plt.show()
-save_large_plot(fig,'plot_module/pipeline_original_s.png')
+save_large_plot(fig,'evaluation_plots/pipeline_original_s.png')
 # plt.tight_layout()
 
 
@@ -214,7 +214,7 @@ save_large_plot(fig,'plot_module/pipeline_original_s.png')
 
 # # path =''
 # ax5_pos = fig.axes[5].get_position()
-# fig.axes[5].imshow(mpimg.imread(r"plot_module/L5PC_IMAGE.jpg"))
+# fig.axes[5].imshow(mpimg.imread(r"evaluation_plots/L5PC_IMAGE.jpg"))
 # fig.axes[5].set_position([(ax0_pos.x0+ax0_pos.width+right_margin_position-ax5_pos.width)/2,ax2_pos.y0+(ax1_pos.height+ax2_pos.height)/2-ax5_pos.height/2,ax5_pos.width,ax5_pos.height])
 # fig.axes[5].spines['top'].set_visible(False)
 # fig.axes[5].spines['right'].set_visible(False)
@@ -224,7 +224,7 @@ save_large_plot(fig,'plot_module/pipeline_original_s.png')
 # fig.axes[5].get_yaxis().set_ticks([])
 #
 # ax6_pos = fig.axes[6].get_position()
-# fig.axes[6].imshow(mpimg.imread(r'plot_module/reduction_IMAGE.png'))
+# fig.axes[6].imshow(mpimg.imread(r'evaluation_plots/reduction_IMAGE.png'))
 # fig.axes[6].set_position([(ax0_pos.x0+ax0_pos.width+right_margin_position-ax6_pos.width)/2,ax4_pos.y0+(ax3_pos.height+ax4_pos.height)/2-ax6_pos.height/2,ax6_pos.width,ax6_pos.height])
 # fig.axes[6].spines['top'].set_visible(False)
 # fig.axes[6].spines['right'].set_visible(False)
