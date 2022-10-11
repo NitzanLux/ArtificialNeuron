@@ -30,6 +30,7 @@ sim_index=61
 data_points_start_input_interval=300
 data_points_start=1550
 data_points_end=1850
+use_costume_threshold=True
 data_points_start_input=data_points_start-data_points_start_input_interval
 tag = f"{file_original[:len('.p')]}_{sim_index}_[{data_points_start}_{data_points_end}_{data_points_start_input_interval}]"
 #%% pipline plot data
@@ -66,7 +67,13 @@ for i,m in enumerate(model_reduction_names):
     s=s[data_points_start+gap:data_points_end+gap]
     if max_layer<m.config.number_of_layers_space:
         max_layer=m.config.number_of_layers_space
-    optimal_threshold=m.get_ROC_data()[3]
+    if use_costume_threshold:
+        number_of_spikes=np.sum(s)
+        auc, fpr, tpr,optimal_threshold,thresholds =  m.get_ROC_data()
+        best_fpr=fpr[fpr<=number_of_spikes/s.shape[0]]
+        best_fpr=best_fpr[best_fpr>=number_of_spikes/s.shape[0]]
+        optimal_threshold=thresholds[best_fpr[0]==fpr]
+    optimal_threshold = m.get_ROC_data()[3]
     model_evaluation_reduction.append((v,s,m.config.number_of_layers_space,optimal_threshold))
 
 for i,m in enumerate(model_original_names):
@@ -78,6 +85,11 @@ for i,m in enumerate(model_original_names):
     s=s[data_points_start+gap:data_points_end+gap]
     if max_layer<m.config.number_of_layers_space:
         max_layer=m.config.number_of_layers_space
+    if use_costume_threshold:
+        number_of_spikes=np.sum(s)
+        best_fpr = fpr[fpr <= number_of_spikes / s.shape[0]]
+        best_fpr = best_fpr[best_fpr >= number_of_spikes / s.shape[0]]
+        optimal_threshold = thresholds[best_fpr[0] == fpr]
     optimal_threshold = m.get_ROC_data()[3]
     model_evaluation_original.append((v,s,m.config.number_of_layers_space,optimal_threshold))
 
