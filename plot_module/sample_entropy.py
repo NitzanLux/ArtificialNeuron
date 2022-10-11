@@ -10,7 +10,7 @@ import argparse
 from multiprocessing import Process,Queue
 number_of_cpus = multiprocessing.cpu_count()
 import queue
-MAX_INTERVAL = 40
+MAX_INTERVAL = 200
 print("start job")
 number_of_jobs=number_of_cpus-1
 def create_sample_entropy_file(q):
