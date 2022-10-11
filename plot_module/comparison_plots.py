@@ -138,7 +138,7 @@ import matplotlib
 colors_steps=255./max_layer
 alpha=0.5
 color_function= lambda l:(1.,(255-l*colors_steps)/255.,(255-l*colors_steps)/255.,alpha)
-c = matplotlib.cm.get_cmap('plasma', max_layer)
+c = matplotlib.cm.get_cmap('jet', max_layer)
 color_function= lambda l: c(l/max_layer)
 # margins
 right_margin=0.1
@@ -191,7 +191,6 @@ fig,ax=plt.subplots()
 
 ax.plot(output_x_range,reduction_output_v,color='red')
 for v,s,l,th in model_evaluation_reduction:
-    ax.scatter(np.where(v[s>=th]),np.ones((np.where(v[s>=th])))*20)
     ax.plot(output_x_range,v,color=color_function(l),label=f"{l} layers",alpha=alpha)
 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 plt.show()
