@@ -405,36 +405,9 @@ class SavingAndEvaluationScheduler():
         self.time_in_hours_for_saving = time_in_hours_for_saving
         self.time_in_hours_for_eval = time_in_hours_for_eval
         self.previous_process = None
-        # self.pause_time_eval = datetime.now()
-        # self.pause_time_save = datetime.now()
-        # self.pause_state_eval = False
-        # self.pause_state_save = False
-        # self.time_in_hours_for_evaluation = time_in_hours_for_evaluation
-    #
-    # def pause(self, is_evaluation=True):
-    #     if not self.pause_state_eval and is_evaluation:
-    #         self.pause_time_eval = datetime.now()
-    #         self.pause_state_eval = True
-    #     elif not self.pause_state_save:
-    #         self.pause_time_save = datetime.now()
-    #         self.pause_state_save = True
-    #
-    # def retry(self,is_evaluation=True):
-    #
-    #     if self.pause_state_eval and is_evaluation:
-    #         pause_time = datetime.now() - self.pause_time_eval
-    #         self.last_time_evaluation += pause_time
-    #         self.pause_state_eval = False
-    #
-    #     elif self.pause_state_save:
-    #         pause_time = datetime.now() - self.pause_time_save
-    #         self.last_time_saving += pause_time
-    #         self.pause_state_save = False
+
 
     def create_evaluation_schduler(self, config, run_at_the_same_process, use_slurm):
-        # if pause_state:
-        #     return
-        # if run_at_the_same_process:
 
         current_time = datetime.now()
         delta_time = current_time - self.last_time_evaluation
