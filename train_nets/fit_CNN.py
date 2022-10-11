@@ -234,9 +234,9 @@ def train_network(config, model, optimizer):
     if DOCUMENT_ON_WANDB and WATCH_MODEL:
         wandb.watch(model, log='all', log_freq=1, log_graph=True)
     model_level_training_scadualer = None
-    if isinstance(model, recursive_neuronal_model.RecursiveNeuronModel):
-        model_level_training_scadualer = model.train_random_subtree(
-            config.freeze_node_factor if config.freeze_node_factor is not None else 0)
+    # if isinstance(model, recursive_neuronal_model.RecursiveNeuronModel):
+    #     model_level_training_scadualer = model.train_random_subtree(
+    #         config.freeze_node_factor if config.freeze_node_factor is not None else 0)
     print("start training...", flush=True)
     while config.number_of_steps > config.batch_counter:
         config.update(dict(epoch_counter=config.epoch_counter + 1), allow_val_change=True)
@@ -245,8 +245,8 @@ def train_network(config, model, optimizer):
                                                                                       loss_weights, model, optimizer,
                                                                                       custom_loss, sigma)
         train_data_iterator = iter(train_data_generator)
-        if model_level_training_scadualer is not None:
-            next(model_level_training_scadualer)
+        # if model_level_training_scadualer is not None:
+        #     next(model_level_training_scadualer)
         data_arr = []
         for i, data in enumerate(train_data_iterator):
             saving_counter += 1
