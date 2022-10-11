@@ -5,6 +5,8 @@ import matplotlib.image as mpimg
 import pickle
 import os
 import sys
+import sklearn.metrics as skm
+
 # os.chdir('/ems/elsc-labs/segev-i/nitzan.luxembourg/projects/dendritic_tree/ArtificialNeuron')
 # sys.path.append('/ems/elsc-labs/segev-i/nitzan.luxembourg/projects/dendritic_tree/ArtificialNeuron')
 import model_evaluation_multiple
@@ -68,13 +70,11 @@ for i,m in enumerate(model_reduction_names):
     if max_layer<m.config.number_of_layers_space:
         max_layer=m.config.number_of_layers_space
     if use_costume_threshold:
-        number_of_spikes=np.sum(s)
-        auc, fpr, tpr,optimal_threshold,thresholds =  m.get_ROC_data()
-        best_tpr=tpr[tpr<=number_of_spikes/s.shape[0]]
-        print(best_tpr)
-        best_fpr=best_tpr[-1]
-        optimal_threshold=thresholds[np.where(best_tpr[0]==tpr)]
-    optimal_threshold = m.get_ROC_data()[3]
+        fpr, tpr, thresholds = skm.roc_curve(reduction_output_s, s)
+        optimal_idx = np.argmax(tpr - fpr)
+        optimal_threshold = thresholds[optimal_idx]
+    else:
+        optimal_threshold = m.get_ROC_data()[3]
     model_evaluation_reduction.append((v,s,m.config.number_of_layers_space,optimal_threshold))
 
 for i,m in enumerate(model_original_names):
@@ -87,12 +87,11 @@ for i,m in enumerate(model_original_names):
     if max_layer<m.config.number_of_layers_space:
         max_layer=m.config.number_of_layers_space
     if use_costume_threshold:
-        number_of_spikes=np.sum(s)
-        auc, fpr, tpr, optimal_threshold, thresholds = m.get_ROC_data()
-        best_fpr = fpr[fpr <= number_of_spikes / s.shape[0]]
-        best_fpr = best_fpr[best_fpr >= number_of_spikes / s.shape[0]]
-        optimal_threshold = thresholds[best_fpr[0] == fpr]
-    optimal_threshold = m.get_ROC_data()[3]
+        fpr, tpr, thresholds = skm.roc_curve(original_output_s, s)
+        optimal_idx = np.argmax(tpr - fpr)
+        optimal_threshold = thresholds[optimal_idx]
+    else:
+        optimal_threshold = m.get_ROC_data()[3]
     model_evaluation_original.append((v,s,m.config.number_of_layers_space,optimal_threshold))
 
 
