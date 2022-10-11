@@ -31,6 +31,7 @@ data_points_start_input_interval=300
 data_points_start=3100
 data_points_end=4400
 data_points_start_input=data_points_start-data_points_start_input_interval
+tag = f"{file_original[:len('.p')]}_{data_points_start}_{data_points_end}_{data_points_start_input_interval}"
 #%% pipline plot data
 gt_reduction = model_evaluation_multiple.GroundTruthData.load(os.path.join('evaluations','ground_truth', gt_reduction_name+'.gteval'))
 gt_original = model_evaluation_multiple.GroundTruthData.load(os.path.join('evaluations','ground_truth', gt_original_name+'.gteval'))
@@ -100,6 +101,8 @@ output_x_range=np.arange(data_points_start,data_points_end)
 def save_large_plot(fig,name):
     mng = plt.get_current_fig_manager()
     mng.full_screen_toggle()
+    if '.' in name:
+        name = name[:name.find('.')]+tag+name[name.find('.'):]
     fig.savefig(name)
 
 #%%
