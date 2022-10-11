@@ -95,15 +95,20 @@ evaluation_input= evaluation_input_reduction
 
 
 output_x_range=np.arange(data_points_start,data_points_end)
+def save_large_plot(fig,name):
+    mng = plt.get_current_fig_manager()
+    mng.full_screen_toggle()
+    fig.savefig(name)
+
 #%%
 
 import matplotlib
 
-fig = plt.figure()
-grid = gridspec.GridSpec(9, 6, figure=fig)
-ax_raster = grid[0:,0:1].subgridspec(1,1)
-ax_original = grid[0:4,2:].subgridspec(3, 4)
-ax_reduction = grid[5:9,2:].subgridspec(3, 4)
+# fig = plt.figure()
+# grid = gridspec.GridSpec(9, 6, figure=fig)
+# ax_raster = grid[0:,0:1].subgridspec(1,1)
+# ax_original = grid[0:4,2:].subgridspec(3, 4)
+# ax_reduction = grid[5:9,2:].subgridspec(3, 4)
 
 
 colors_steps=255./max_layer
@@ -117,14 +122,14 @@ left_margin=0.05
 twin_graph_margin=0.01
 
 
-fig.add_subplot(ax_raster[0,0])
-fig.add_subplot(ax_original[:2,1:])
-fig.add_subplot(ax_original[2,1:])
-fig.add_subplot(ax_reduction[:2,1:])
-fig.add_subplot(ax_reduction[2,1:])
+# fig.add_subplot(ax_raster[0,0])
+# fig.add_subplot(ax_original[:2,1:])
+# fig.add_subplot(ax_original[2,1:])
+# fig.add_subplot(ax_reduction[:2,1:])
+# fig.add_subplot(ax_reduction[2,1:])
 #image
-fig.add_subplot(ax_original[:2,0])
-fig.add_subplot(ax_reduction[:2,0])
+# fig.add_subplot(ax_original[:2,0])
+# fig.add_subplot(ax_reduction[:2,0])
 path =os.path.abspath(os.getcwd())
 
 #data
@@ -132,90 +137,109 @@ y_scatter,x_scatter=np.where(evaluation_input)
 
 
 x_scatter+=data_points_start_input
-fig.axes[0].scatter(x_scatter,y_scatter+1,c='black',s=0.001,marker ='*',alpha=1)
-fig.axes[0].set_ylim([0-0.001,np.max(y_scatter)+2+0.001])
-fig.axes[0].set_xlabel('time(ms)')
+fig,ax = plt.figure()
+ax.scatter(x_scatter,y_scatter+1,c='black',s=0.001,marker ='*',alpha=1)
 
-fig.axes[0].set_ylabel('Synapse number')
+# fig.axes[0].scatter(x_scatter,y_scatter+1,c='black',s=0.001,marker ='*',alpha=1)
+# fig.axes[0].set_ylim([0-0.001,np.max(y_scatter)+2+0.001])
+# fig.axes[0].set_xlabel('time(ms)')
+# fig.axes[0].set_ylabel('Synapse number')
+ax.scatter(x_scatter,y_scatter+1,c='black',s=0.001,marker ='*',alpha=1)
+ax.set_ylim([0-0.001,np.max(y_scatter)+2+0.001])
+ax.set_xlabel('time(ms)')
+ax.set_ylabel('Synapse number')
+plt.show()
+save_large_plot(fig,'plot_module/raster_pipline.png')
+# ax0_pos = fig.axes[0].get_position()
+# fig.axes[0].set_position([right_margin,ax0_pos.y0,ax0_pos.width+ax0_pos.x0,ax0_pos.height])
+# ax0_pos = fig.axes[0].get_position()
 
-ax0_pos = fig.axes[0].get_position()
-fig.axes[0].set_position([right_margin,ax0_pos.y0,ax0_pos.width+ax0_pos.x0,ax0_pos.height])
-ax0_pos = fig.axes[0].get_position()
+
+# ax1_pos = fig.axes[1].get_position()
+# right_margin_position=1-ax1_pos.width-right_margin
 
 
-ax1_pos = fig.axes[1].get_position()
-right_margin_position=1-ax1_pos.width-right_margin
+# fig.axes[1].set_position([right_margin_position,ax1_pos.y0,ax1_pos.width,ax1_pos.height])
+# ax1_pos = fig.axes[1].get_position()
 
+fig,ax=plt.subplots()
+# ax.get_xaxis().set_ticks([])
 
-fig.axes[1].set_position([right_margin_position,ax1_pos.y0,ax1_pos.width,ax1_pos.height])
-ax1_pos = fig.axes[1].get_position()
-fig.axes[1].get_xaxis().set_ticks([])
-
-fig.axes[1].plot(output_x_range,reduction_output_v,color='red')
+ax.plot(output_x_range,reduction_output_v,color='red')
 for v,s,l in model_evaluation_reduction:
-    fig.axes[1].plot(output_x_range,v,color=color_function(l),label=f"{l} layers",alpha=alpha)
+    ax.plot(output_x_range,v,color=color_function(l),label=f"{l} layers",alpha=alpha)
+ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+plt.show()
+save_large_plot(fig,'plot_module/pipeline_reduction_v.png')
 
 
-
-ax2_pos = fig.axes[2].get_position()
-fig.axes[2].set_position([right_margin_position,ax1_pos.y0-ax2_pos.height-twin_graph_margin,ax2_pos.width,ax2_pos.height])
-ax2_pos = fig.axes[2].get_position()
-
-fig.axes[2].plot(output_x_range,reduction_output_s,color='red')
+# ax2_pos = fig.axes[2].get_position()
+# fig.axes[2].set_position([right_margin_position,ax1_pos.y0-ax2_pos.height-twin_graph_margin,ax2_pos.width,ax2_pos.height])
+# ax2_pos = fig.axes[2].get_position()
+fig,ax=plt.subplots()
+ax.plot(output_x_range,reduction_output_s,color='red')
 for v,s,l in model_evaluation_reduction:
-    fig.axes[2].plot(output_x_range,s,color=color_function(l),label=f"{l} layers",alpha=alpha)
+    ax.plot(output_x_range,s,color=color_function(l),label=f"{l} layers",alpha=alpha)
+ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+
+plt.show()
+save_large_plot(fig,'plot_module/pipeline_reduction_s.png')
 
 
-ax3_pos = fig.axes[3].get_position()
-fig.axes[3].set_position([right_margin_position,ax3_pos.y0,ax3_pos.width,ax3_pos.height])
-fig.axes[3].get_xaxis().set_ticks([])
-
-fig.axes[3].plot(output_x_range,original_output_v,color='red')
+# ax3_pos = fig.axes[3].get_position()
+# fig.axes[3].set_position([right_margin_position,ax3_pos.y0,ax3_pos.width,ax3_pos.height])
+# fig.axes[3].get_xaxis().set_ticks([])
+fig,ax=plt.subplots()
+ax.plot(output_x_range,original_output_v,color='red')
 for v,s,l in model_evaluation_original:
-    fig.axes[3].plot(output_x_range,v,color=color_function(l),label=f"{l} layers",alpha=alpha)
+    ax.plot(output_x_range,v,color=color_function(l),label=f"{l} layers",alpha=alpha)
+ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+plt.show()
+save_large_plot(fig,'plot_module/pipeline_original_v.png')
 
-ax4_pos = fig.axes[4].get_position()
-fig.axes[4].set_position([right_margin_position,ax3_pos.y0-ax4_pos.height-twin_graph_margin,ax4_pos.width,ax4_pos.height])
-ax4_pos = fig.axes[4].get_position()
-
-fig.axes[4].plot(output_x_range,original_output_s,color='red')
+# ax4_pos = fig.axes[4].get_position()
+# fig.axes[4].set_position([right_margin_position,ax3_pos.y0-ax4_pos.height-twin_graph_margin,ax4_pos.width,ax4_pos.height])
+# ax4_pos = fig.axes[4].get_position()
+fig,ax=plt.subplots()
+ax.plot(output_x_range,original_output_s,color='red')
 for v,s,l in model_evaluation_original:
-    fig.axes[4].plot(output_x_range,s,color=color_function(l),label=f"{l} layers",alpha=alpha)
-fig.axes[4].legend(loc='center left', bbox_to_anchor=(1, 0.5))
-
+    ax.plot(output_x_range,s,color=color_function(l),label=f"{l} layers",alpha=alpha)
+ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+plt.show()
+save_large_plot(fig,'plot_module/pipeline_original_s.png')
 # plt.tight_layout()
 
 
 
 
-# path =''
-ax5_pos = fig.axes[5].get_position()
-fig.axes[5].imshow(mpimg.imread(r"plot_module/L5PC_IMAGE.jpg"))
-fig.axes[5].set_position([(ax0_pos.x0+ax0_pos.width+right_margin_position-ax5_pos.width)/2,ax2_pos.y0+(ax1_pos.height+ax2_pos.height)/2-ax5_pos.height/2,ax5_pos.width,ax5_pos.height])
-fig.axes[5].spines['top'].set_visible(False)
-fig.axes[5].spines['right'].set_visible(False)
-fig.axes[5].spines['bottom'].set_visible(False)
-fig.axes[5].spines['left'].set_visible(False)
-fig.axes[5].get_xaxis().set_ticks([])
-fig.axes[5].get_yaxis().set_ticks([])
-
-ax6_pos = fig.axes[6].get_position()
-fig.axes[6].imshow(mpimg.imread(r'plot_module/reduction_IMAGE.png'))
-fig.axes[6].set_position([(ax0_pos.x0+ax0_pos.width+right_margin_position-ax6_pos.width)/2,ax4_pos.y0+(ax3_pos.height+ax4_pos.height)/2-ax6_pos.height/2,ax6_pos.width,ax6_pos.height])
-fig.axes[6].spines['top'].set_visible(False)
-fig.axes[6].spines['right'].set_visible(False)
-fig.axes[6].spines['bottom'].set_visible(False)
-fig.axes[6].spines['left'].set_visible(False)
-fig.axes[6].get_xaxis().set_ticks([])
-fig.axes[6].get_yaxis().set_ticks([])
-mng = plt.get_current_fig_manager()
-mng.full_screen_toggle()
-fig.show()
-fig.savefig("comparison_pipline.png")
-mng.full_screen_toggle()
-# plt.show()
-with open('fig.pkl','wb') as f:
-    pickle.dump(fig,f,)
+# # path =''
+# ax5_pos = fig.axes[5].get_position()
+# fig.axes[5].imshow(mpimg.imread(r"plot_module/L5PC_IMAGE.jpg"))
+# fig.axes[5].set_position([(ax0_pos.x0+ax0_pos.width+right_margin_position-ax5_pos.width)/2,ax2_pos.y0+(ax1_pos.height+ax2_pos.height)/2-ax5_pos.height/2,ax5_pos.width,ax5_pos.height])
+# fig.axes[5].spines['top'].set_visible(False)
+# fig.axes[5].spines['right'].set_visible(False)
+# fig.axes[5].spines['bottom'].set_visible(False)
+# fig.axes[5].spines['left'].set_visible(False)
+# fig.axes[5].get_xaxis().set_ticks([])
+# fig.axes[5].get_yaxis().set_ticks([])
+#
+# ax6_pos = fig.axes[6].get_position()
+# fig.axes[6].imshow(mpimg.imread(r'plot_module/reduction_IMAGE.png'))
+# fig.axes[6].set_position([(ax0_pos.x0+ax0_pos.width+right_margin_position-ax6_pos.width)/2,ax4_pos.y0+(ax3_pos.height+ax4_pos.height)/2-ax6_pos.height/2,ax6_pos.width,ax6_pos.height])
+# fig.axes[6].spines['top'].set_visible(False)
+# fig.axes[6].spines['right'].set_visible(False)
+# fig.axes[6].spines['bottom'].set_visible(False)
+# fig.axes[6].spines['left'].set_visible(False)
+# fig.axes[6].get_xaxis().set_ticks([])
+# fig.axes[6].get_yaxis().set_ticks([])
+# mng = plt.get_current_fig_manager()
+# mng.full_screen_toggle()
+# fig.show()
+# fig.savefig("comparison_pipline.png")
+# mng.full_screen_toggle()
+# # plt.show()
+# with open('fig.pkl','wb') as f:
+#     pickle.dump(fig,f,)
 
 
 
