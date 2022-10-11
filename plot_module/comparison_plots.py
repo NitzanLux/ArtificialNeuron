@@ -191,7 +191,7 @@ fig,ax=plt.subplots()
 
 ax.plot(output_x_range,reduction_output_v,color='red')
 for v,s,l,th in model_evaluation_reduction:
-    v[s>=th]=20
+    ax.scatter(np.where(v[s>=th]),np.ones((np.where(v[s>=th])))*20)
     ax.plot(output_x_range,v,color=color_function(l),label=f"{l} layers",alpha=alpha)
 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 plt.show()
