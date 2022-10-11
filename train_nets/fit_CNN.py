@@ -268,8 +268,8 @@ def train_network(config, model, optimizer):
                 SavingAndEvaluationScheduler.flush_all(config, models, optimizer)
                 return
             # save model every once a while
-            elif saving_counter % 10 == 0:
-                evaluation_plotter_scheduler(model, config, optimizer, use_slurm=True if not USE_CUDA else False)
+            # elif saving_counter % 10 == 0:
+            evaluation_plotter_scheduler(model, config, optimizer, use_slurm=True if not USE_CUDA else False)
             # if our model finnished its steps
 
 
@@ -405,10 +405,10 @@ class SavingAndEvaluationScheduler():
         self.time_in_hours_for_saving = time_in_hours_for_saving
         self.time_in_hours_for_eval = time_in_hours_for_eval
         self.previous_process = None
-        self.pause_time_eval = datetime.now()
-        self.pause_time_save = datetime.now()
-        self.pause_state_eval = False
-        self.pause_state_save = False
+        # self.pause_time_eval = datetime.now()
+        # self.pause_time_save = datetime.now()
+        # self.pause_state_eval = False
+        # self.pause_state_save = False
         # self.time_in_hours_for_evaluation = time_in_hours_for_evaluation
     #
     # def pause(self, is_evaluation=True):
@@ -438,15 +438,14 @@ class SavingAndEvaluationScheduler():
 
         current_time = datetime.now()
         delta_time = current_time - self.last_time_evaluation
-        self.last_time_evaluation = datetime.now()
-        if (delta_time.total_seconds() / 60) / 60 > self.time_in_hours_for_eval and not self.pause_time_eval:
-            # self.pause(True)
+        if (delta_time.total_seconds() / 60) / 60 > self.time_in_hours_for_eval: #and not self.pause_time_eval:
+            print("evaluating....")
             self.save_best_model_scaduler(config, use_slurm=run_at_the_same_process, run_at_the_same_process=use_slurm)
+            self.last_time_evaluation = datetime.now()
 
     def save_best_model_scaduler(self, config, use_slurm=False, first_run=False, run_at_the_same_process=False):
         if self.previous_process is not None:
             self.previous_process.join()
-            # self.retry(True)
         self.previous_process = self.save_best_model_p(config, first_run=first_run,
                                                        run_at_the_same_process=run_at_the_same_process,
                                                        use_slurm=use_slurm)
@@ -455,11 +454,9 @@ class SavingAndEvaluationScheduler():
 
         current_time = datetime.now()
         delta_time = current_time - self.last_time_saving
-        if (delta_time.total_seconds() / 60) / 60 > self.time_in_hours_for_saving and not self.pause_time_save :
-            # self.pause(False)
+        if (delta_time.total_seconds() / 60) / 60 > self.time_in_hours_for_saving: #and not self.pause_time_save :
             self.save_model(model, config, optimizer)
             self.last_time_saving = datetime.now()
-            # self.retry(False)
 
     # @staticmethod
     def save_best_model_p(self,config, use_slurm=False, first_run=False, run_at_the_same_process=False):
@@ -514,7 +511,6 @@ class SavingAndEvaluationScheduler():
         configuration_factory.overwrite_config(AttrDict(config))
 
     def __call__(self, model, config, optimizer, use_slurm, run_at_the_same_process=False):
-
         self.create_evaluation_schduler(config, run_at_the_same_process, use_slurm)
         self.save_model_schduler(config, model, optimizer)
 
