@@ -599,7 +599,7 @@ def evaluate_auc_of_models(name: str, replace_regex: str, *args: EvaluationData)
         file.write(json.dumps(data_dict))
 
 
-def run_test():
+def run_test(include_models=True):
     #
     # if __name__ == '__main__':
     # from utils.general_aid_function import load_files_names
@@ -619,17 +619,18 @@ def run_test():
     # b_p = r"..C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project"
     g0 = GroundTruthData.load(os.path.join("evaluations","ground_truth","david_ergodic_validation.gteval"))
     g1 = GroundTruthData.load(os.path.join("evaluations","ground_truth","reduction_ergodic_validation.gteval"))
-    number_of_models=2
-    for p in [os.path.join("evaluations","models","davids_ergodic_validation"), os.path.join("evaluations","models","reduction_ergodic_validation")]:
-        # continue
-        counter=0
-        for i in os.listdir(p):
-            counter+=1
-            if '_ss' in i:
-                continue
-            if counter>number_of_models:
-                break
-            g.append(EvaluationData.load(os.path.join(p, i)))
+    if include_models:
+        number_of_models=2
+        for p in [os.path.join("evaluations","models","davids_ergodic_validation"), os.path.join("evaluations","models","reduction_ergodic_validation")]:
+            # continue
+            counter=0
+            for i in os.listdir(p):
+                counter+=1
+                if '_ss' in i:
+                    continue
+                if counter>number_of_models:
+                    break
+                g.append(EvaluationData.load(os.path.join(p, i)))
     # g2 = EvaluationData.load(
     #     "evaluations/models/davids_ergodic_test/davids_2_NAdam___2022-08-15__15_02__ID_64341.meval")
     me = ModelEvaluator(g0, g1, *g)

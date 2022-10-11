@@ -8,7 +8,7 @@ import argparse
 import logging
 if __name__ == '__main__':
     if platform.system() == 'Windows':
-        run_test()
+        run_test(False)
     else:
         parser = argparse.ArgumentParser(description='json files')
 

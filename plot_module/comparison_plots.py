@@ -25,16 +25,18 @@ model_reduction_names= ["d_r_comparison_1_reduction___2022-09-07__22_59__ID_1494
                         "d_r_comparison_3_reduction___2022-09-07__22_59__ID_44648.meval",
                         "d_r_comparison_5_reduction___2022-09-07__22_59__ID_9020.meval",
                         "d_r_comparison_7_reduction___2022-09-07__22_59__ID_31437.meval"]
-file_original='L5PC_sim__Output_spikes_0868__Input_ranges_Exc_[0148,1202]_Inh_[0053,1351]_per100ms__simXsec_128x6_randseed_100028.p'
+file_original='L5PC_sim__Output_spikes_0909__Input_ranges_Exc_[0119,1140]_Inh_[0047,1302]_per100ms__simXsec_128x6_randseed_1110264.p'
 
 file_reduction=f"{file_original[:-len('.p')]}_reduction_0w.p"
 sim_index=61
 data_points_start_input_interval=300
 data_points_start=1550
 data_points_end=1850
-use_costume_threshold=True
+use_custom_threshold=True
 data_points_start_input=data_points_start-data_points_start_input_interval
 tag = f"{file_original[:len('.p')]}_{sim_index}_[{data_points_start}_{data_points_end}_{data_points_start_input_interval}]"
+if use_custom_threshold:
+    tag+="_custom_threshold"
 #%% pipline plot data
 gt_reduction = model_evaluation_multiple.GroundTruthData.load(os.path.join('evaluations','ground_truth', gt_reduction_name+'.gteval'))
 gt_original = model_evaluation_multiple.GroundTruthData.load(os.path.join('evaluations','ground_truth', gt_original_name+'.gteval'))
@@ -69,7 +71,7 @@ for i,m in enumerate(model_reduction_names):
     s=s[data_points_start+gap:data_points_end+gap]
     if max_layer<m.config.number_of_layers_space:
         max_layer=m.config.number_of_layers_space
-    if use_costume_threshold:
+    if use_custom_threshold:
         fpr, tpr, thresholds = skm.roc_curve(reduction_output_s, s)
         optimal_idx = np.argmax(tpr - fpr)
         optimal_threshold = thresholds[optimal_idx]
@@ -86,7 +88,7 @@ for i,m in enumerate(model_original_names):
     s=s[data_points_start+gap:data_points_end+gap]
     if max_layer<m.config.number_of_layers_space:
         max_layer=m.config.number_of_layers_space
-    if use_costume_threshold:
+    if use_custom_threshold:
         fpr, tpr, thresholds = skm.roc_curve(original_output_s, s)
         optimal_idx = np.argmax(tpr - fpr)
         optimal_threshold = thresholds[optimal_idx]
