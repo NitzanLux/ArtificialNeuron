@@ -216,6 +216,7 @@ save_large_plot(fig,'evaluation_plots/pipeline_reduction_s.png')
 fig,ax=plt.subplots()
 ax.plot(output_x_range,original_output_v,color='black')
 for v,s,l,th in model_evaluation_original:
+    print(th,l)
     v[s >= th] = 20
     ax.plot(output_x_range,v,color=color_function(l),label=f"{l} layers",alpha=alpha)
 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
