@@ -73,10 +73,12 @@ for i,m in enumerate(model_reduction_names):
         max_layer=m.config.number_of_layers_space
     if use_custom_threshold:
         fpr, tpr, thresholds = skm.roc_curve(reduction_output_s, s)
-        optimal_idx = np.argmax(tpr*np.sum(reduction_output_s) - fpr*reduction_output_s.shape[0])
-        optimal_threshold = thresholds[optimal_idx]
+        gmean = np.sqrt(tpr * (1 - fpr))
+        optimal_threshold = thresholds[np.argmax(gmean)]
     else:
-        optimal_threshold = m.get_ROC_data()[3]*np.sum(reduction_output_s)/reduction_output_s.shape[0]
+        auc, fpr, tpr,optimal_threshold,thresholds= m.get_ROC_data()
+        gmean = np.sqrt(tpr * (1 - fpr))
+        optimal_threshold = thresholds[np.argmax(gmean)]
     model_evaluation_reduction.append((v,s,m.config.number_of_layers_space,optimal_threshold))
 
 for i,m in enumerate(model_original_names):
