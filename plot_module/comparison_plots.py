@@ -65,7 +65,8 @@ for i,m in enumerate(model_reduction_names):
     s=s[data_points_start+gap:data_points_end+gap]
     if max_layer<m.config.number_of_layers_space:
         max_layer=m.config.number_of_layers_space
-    model_evaluation_reduction.append((v,s,m.config.number_of_layers_space))
+    optimal_threshold=m.get_ROC_data()[3]
+    model_evaluation_reduction.append((v,s,m.config.number_of_layers_space,optimal_threshold))
 
 for i,m in enumerate(model_original_names):
     if not os.path.exists(os.path.join('evaluations', 'models', gt_original_name, m +( '.meval' if not m.endswith('.meval') else ''))):
@@ -76,7 +77,8 @@ for i,m in enumerate(model_original_names):
     s=s[data_points_start+gap:data_points_end+gap]
     if max_layer<m.config.number_of_layers_space:
         max_layer=m.config.number_of_layers_space
-    model_evaluation_original.append((v,s,m.config.number_of_layers_space))
+    optimal_threshold = m.get_ROC_data()[3]
+    model_evaluation_original.append((v,s,m.config.number_of_layers_space,optimal_threshold))
 
 
 
@@ -166,7 +168,8 @@ fig,ax=plt.subplots()
 # ax.get_xaxis().set_ticks([])
 
 ax.plot(output_x_range,reduction_output_v,color='red')
-for v,s,l in model_evaluation_reduction:
+for v,s,l,th in model_evaluation_reduction:
+    v[s>=th]=20
     ax.plot(output_x_range,v,color=color_function(l),label=f"{l} layers",alpha=alpha)
 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 plt.show()
@@ -178,7 +181,7 @@ save_large_plot(fig,'evaluation_plots/pipeline_reduction_v.png')
 # ax2_pos = fig.axes[2].get_position()
 fig,ax=plt.subplots()
 ax.plot(output_x_range,reduction_output_s,color='red')
-for v,s,l in model_evaluation_reduction:
+for v,s,l,th in model_evaluation_reduction:
     ax.plot(output_x_range,s,color=color_function(l),label=f"{l} layers",alpha=alpha)
 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 
@@ -191,7 +194,8 @@ save_large_plot(fig,'evaluation_plots/pipeline_reduction_s.png')
 # fig.axes[3].get_xaxis().set_ticks([])
 fig,ax=plt.subplots()
 ax.plot(output_x_range,original_output_v,color='red')
-for v,s,l in model_evaluation_original:
+for v,s,l,th in model_evaluation_original:
+    v[s >= th] = 20
     ax.plot(output_x_range,v,color=color_function(l),label=f"{l} layers",alpha=alpha)
 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 plt.show()
@@ -202,7 +206,7 @@ save_large_plot(fig,'evaluation_plots/pipeline_original_v.png')
 # ax4_pos = fig.axes[4].get_position()
 fig,ax=plt.subplots()
 ax.plot(output_x_range,original_output_s,color='red')
-for v,s,l in model_evaluation_original:
+for v,s,l,th in model_evaluation_original:
     ax.plot(output_x_range,s,color=color_function(l),label=f"{l} layers",alpha=alpha)
 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 plt.show()

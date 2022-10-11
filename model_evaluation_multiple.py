@@ -299,7 +299,9 @@ class EvaluationData(SimulationData):
         prediction = prediction.squeeze().flatten()
         auc = skm.roc_auc_score(target, prediction)
         fpr, tpr, _ = skm.roc_curve(target, prediction)
-        return auc, fpr, tpr
+        optimal_idx = np.argmax(tpr - fpr)
+        optimal_threshold = thresholds[optimal_idx]
+        return auc, fpr, tpr,optimal_threshold
 
 
 class ModelEvaluator():
