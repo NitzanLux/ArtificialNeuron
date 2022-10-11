@@ -26,12 +26,12 @@ model_reduction_names= ["d_r_comparison_1_reduction___2022-09-07__22_59__ID_1494
 file_original='L5PC_sim__Output_spikes_0868__Input_ranges_Exc_[0148,1202]_Inh_[0053,1351]_per100ms__simXsec_128x6_randseed_100028.p'
 
 file_reduction=f"{file_original[:-len('.p')]}_reduction_0w.p"
-sim_index=0
+sim_index=63
 data_points_start_input_interval=300
-data_points_start=3100
-data_points_end=4400
+data_points_start=1500
+data_points_end=3300
 data_points_start_input=data_points_start-data_points_start_input_interval
-tag = f"{file_original[:len('.p')]}_{data_points_start}_{data_points_end}_{data_points_start_input_interval}"
+tag = f"{file_original[:len('.p')]}_{sim_index}_[{data_points_start}_{data_points_end}_{data_points_start_input_interval}]"
 #%% pipline plot data
 gt_reduction = model_evaluation_multiple.GroundTruthData.load(os.path.join('evaluations','ground_truth', gt_reduction_name+'.gteval'))
 gt_original = model_evaluation_multiple.GroundTruthData.load(os.path.join('evaluations','ground_truth', gt_original_name+'.gteval'))
@@ -102,9 +102,9 @@ def save_large_plot(fig,name):
     mng = plt.get_current_fig_manager()
     mng.full_screen_toggle()
     if '.' in name:
-        name = name[:name.find('.')]+tag+name[name.find('.'):]
+        name = f"{name[:name.find('.')]}_{tag}_{name[name.find('.'):]}"
     else:
-        name +=tag
+        name =f"{name}_{tag}"
     fig.savefig(name)
 
 #%%
