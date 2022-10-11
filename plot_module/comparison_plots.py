@@ -26,10 +26,10 @@ model_reduction_names= ["d_r_comparison_1_reduction___2022-09-07__22_59__ID_1494
 file_original='L5PC_sim__Output_spikes_0868__Input_ranges_Exc_[0148,1202]_Inh_[0053,1351]_per100ms__simXsec_128x6_randseed_100028.p'
 
 file_reduction=f"{file_original[:-len('.p')]}_reduction_0w.p"
-sim_index=63
+sim_index=61
 data_points_start_input_interval=300
-data_points_start=1600
-data_points_end=1900
+data_points_start=1550
+data_points_end=1850
 data_points_start_input=data_points_start-data_points_start_input_interval
 tag = f"{file_original[:len('.p')]}_{sim_index}_[{data_points_start}_{data_points_end}_{data_points_start_input_interval}]"
 #%% pipline plot data
