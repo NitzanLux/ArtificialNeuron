@@ -491,7 +491,7 @@ class ModelEvaluator():
         fig = go.Figure()
         AUC_arr = []
         for i, m in enumerate(self.models):
-            auc, fpr, tpr = m.get_ROC_data()
+            auc, fpr, tpr,_ = m.get_ROC_data()
             fig.add_trace(go.Scatter(x=fpr, y=tpr, name="(gt: %s model: %s)" % (
             self.gt_index_dict[m.ground_truth], self.models[i].data_label)))
             AUC_arr.append((auc, "(gt: %s model: %s) AUC: %.4f" % (
