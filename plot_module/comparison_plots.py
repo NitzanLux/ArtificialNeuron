@@ -87,6 +87,7 @@ for i,m in enumerate(model_original_names):
         max_layer=m.config.number_of_layers_space
     if use_costume_threshold:
         number_of_spikes=np.sum(s)
+        auc, fpr, tpr, optimal_threshold, thresholds = m.get_ROC_data()
         best_fpr = fpr[fpr <= number_of_spikes / s.shape[0]]
         best_fpr = best_fpr[best_fpr >= number_of_spikes / s.shape[0]]
         optimal_threshold = thresholds[best_fpr[0] == fpr]
