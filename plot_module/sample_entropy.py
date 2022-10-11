@@ -10,7 +10,7 @@ import argparse
 from multiprocessing import Process,Queue
 number_of_cpus = multiprocessing.cpu_count()
 import queue
-MAX_INTERVAL = 5
+MAX_INTERVAL = 1
 print("start job")
 number_of_jobs=number_of_cpus//5
 def create_sample_entropy_file(q):
@@ -20,8 +20,9 @@ def create_sample_entropy_file(q):
             t = time.time()
             se_r, _, _ = EH.SampEn(sr, m=MAX_INTERVAL)
             se_o, _, _ = EH.SampEn(so, m=MAX_INTERVAL)
-            np.save(os.path.join("..","sample_entropy",f"sample_entropy_reduction_{i}_{MAX_INTERVAL}d.npy"), np.array(se_r))
-            np.save(os.path.join("..","sample_entropy",f"sample_entropy_original_{i}_{MAX_INTERVAL}d.npy"), np.array(se_o))
+            print(os.getcwd())
+            np.save(os.path.join("sample_entropy",f"sample_entropy_reduction_{i}_{MAX_INTERVAL}d.npy"), np.array(se_r))
+            np.save(os.path.join("sample_entropy",f"sample_entropy_original_{i}_{MAX_INTERVAL}d.npy"), np.array(se_o))
             print(
                 f"current sample number {i}   total: {time.time() - t} seconds",
                 flush=True)
@@ -36,7 +37,6 @@ def get_sample_entropy(indexes:[int,List[int]]):
     gt_reduction_name = 'reduction_ergodic_validation'
     gt_reduction = GroundTruthData.load(os.path.join( 'evaluations', 'ground_truth', gt_reduction_name + '.gteval'))
     gt_original = GroundTruthData.load(os.path.join('evaluations', 'ground_truth', gt_original_name + '.gteval'))
-
 
     queue=Queue(maxsize=number_of_jobs*2)
     process = [Process(target=create_sample_entropy_file, args=(queue,)) for i in range(number_of_jobs)]
