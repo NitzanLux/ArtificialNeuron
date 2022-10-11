@@ -137,7 +137,7 @@ y_scatter,x_scatter=np.where(evaluation_input)
 
 
 x_scatter+=data_points_start_input
-fig,ax = plt.figure()
+fig,ax = plt.subplots()
 ax.scatter(x_scatter,y_scatter+1,c='black',s=0.001,marker ='*',alpha=1)
 
 # fig.axes[0].scatter(x_scatter,y_scatter+1,c='black',s=0.001,marker ='*',alpha=1)
