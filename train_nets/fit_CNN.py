@@ -217,7 +217,7 @@ def train_network(config, model, optimizer):
     optimizer_scheduler = None
     custom_loss = None
     evaluation_plotter_scheduler = SavingAndEvaluationScheduler()
-    evaluation_plotter_scheduler.save_best_model_scaduler(config, first_run=True,
+    evaluation_plotter_scheduler.save_best_model_scaduler(config,
                                                           use_slurm=True if not USE_CUDA else False)
     if not config.dynamic_learning_params:
         learning_rate, loss_weights, sigma, custom_loss = generate_constant_learning_parameters(config)
@@ -444,7 +444,7 @@ class SavingAndEvaluationScheduler():
             job_factory.send_job(f'best_model_eval_{name}', f"python3 -c '{job_command}'", mem=120000)
             # self.retry(True)
         elif not run_at_the_same_process:
-            p = Process(target=save_best_model, args=(os.path.join(MODELS_DIR, *config.config_path), first_run))
+            p = Process(target=save_best_model, args=(os.path.join(MODELS_DIR, *config.config_path),))
             art.tprint("process")
             p.start()
             return p
