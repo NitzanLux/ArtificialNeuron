@@ -16,14 +16,14 @@ import numpy as np
 #%% pipline plot parameters
 gt_original_name= 'davids_ergodic_validation'
 gt_reduction_name= 'reduction_ergodic_validation'
-model_original_names= ["d_r_comparison_1___2022-09-07__22_59__ID_14835.meval",
-                        "d_r_comparison_3___2022-09-07__22_59__ID_53410.meval",
-                        "d_r_comparison_5___2022-09-07__22_59__ID_65381.meval",
+model_original_names= [  #"d_r_comparison_1___2022-09-07__22_59__ID_14835.meval",
+                        # "d_r_comparison_3___2022-09-07__22_59__ID_53410.meval",
+                        # "d_r_comparison_5___2022-09-07__22_59__ID_65381.meval",
                         "d_r_comparison_7___2022-09-07__22_59__ID_57875.meval"]
 
-model_reduction_names= ["d_r_comparison_1_reduction___2022-09-07__22_59__ID_14945.meval",
-                        "d_r_comparison_3_reduction___2022-09-07__22_59__ID_44648.meval",
-                        "d_r_comparison_5_reduction___2022-09-07__22_59__ID_9020.meval",
+model_reduction_names= [#"d_r_comparison_1_reduction___2022-09-07__22_59__ID_14945.meval",
+                        # "d_r_comparison_3_reduction___2022-09-07__22_59__ID_44648.meval",
+                        # "d_r_comparison_5_reduction___2022-09-07__22_59__ID_9020.meval",
                         "d_r_comparison_7_reduction___2022-09-07__22_59__ID_31437.meval"]
 file_original='L5PC_sim__Output_spikes_0909__Input_ranges_Exc_[0119,1140]_Inh_[0047,1302]_per100ms__simXsec_128x6_randseed_1110264.p'
 

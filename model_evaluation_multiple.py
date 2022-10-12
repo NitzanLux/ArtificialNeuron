@@ -36,6 +36,10 @@ GOOD_AND_BAD_SIZE = 8
 I = 8
 BUFFER_SIZE_IN_FILES_VALID = 1
 
+def find_nearest(array, value):
+    array = np.asarray(array)
+    idx = (np.abs(array - value)).argmin()
+    return idx,array[idx]
 
 class SimulationData():
     def __init__(self, v, s, data_keys: List, data_label: str):
@@ -223,6 +227,7 @@ class EvaluationData(SimulationData):
     def __init__(self, ground_truth: GroundTruthData, config, use_cuda,model=None):
         self.config = config
         self.ground_truth: ['GroundTruthData'] = ground_truth
+
         if not hasattr(ground_truth,'path'):
             self.ground_truth.path=None
         v, s, data_keys = self.__evaluate_model(use_cuda,model=model)
@@ -302,7 +307,28 @@ class EvaluationData(SimulationData):
         optimal_idx = np.argmax(tpr - fpr)
         optimal_threshold = thresholds[optimal_idx]
         return auc, fpr, tpr,optimal_threshold,thresholds
-
+    def get_optimal_threshold(self):
+        if not hasattr(self,'__optimal_threshold'):
+            data=self.get_ROC_data()
+            self.__thresholds=data[4]
+            self.__fpr=data[1]
+            self.__tpr=data[2]
+            self.__optimal_threshold= data[3]
+        return self.__optimal_threshold
+    def round_th_fpr_tpr(self,th=None,fpr=None,tpr=None):
+        if th is not None:
+            v=th
+            a=self.__thrreshold
+        elif fpr is not None:
+            v=fpr
+            a=self.__fpr
+        elif tpr is not None:
+            v=tpr
+            a=self.__tpr
+        else:
+            return None,None,None
+        idx,_ = find_nearest(a,v)
+        return self.__thrreshold[idx],self.__fpr[idx],self.__tpr[idx]
 
 class ModelEvaluator():
     def __init__(self, *args: SimulationData):  # , use_only_groundtruth=False):
@@ -368,7 +394,7 @@ class ModelEvaluator():
                 style={'align': 'center', 'width': '96vw', 'display': 'inline-block', "margin-left": "1px"})
                                 ], style={'height': '5vh', 'width': '100vw', "verticalAlign": "top"}) for i, d in
                       enumerate(self.ground_truths)]
-        dives_arr = [
+        dives_arr = ['lock scroll bar:',
             html.Div(id='slider-output-container', style={"white-space": "pre"}), *slider_arr,
             dcc.RadioItems(id='choose_locking', options=[
                 {'label': 'free', 'value': 'free'},
@@ -376,7 +402,12 @@ class ModelEvaluator():
                 {'label': 'file locked', 'value': 'f_locked'}], persistence=True, value='free',
                            style={'display': 'inline-block', 'align': 'center'}),
             html.Div([
-
+                'thresholding options:',
+                dcc.RadioItems(id='thresholding', options=[
+                    {'label': 'optimal', 'value': 'optimal'},
+                    {'label': 'free', 'value': 'free'},
+                    {'label': 'number', 'value': 'number'}], persistence=True, value='free',
+                               style={'display': 'inline-block', 'align': 'center'}),
                 html.Button('-50', id='btn-m50', n_clicks=0,
                             style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',
                                    "margin-left": "10px"}),
@@ -413,9 +444,21 @@ class ModelEvaluator():
                     placeholder="Running mse window size",
                     style={'margin': '10', 'align': 'center', 'vertical-align': 'middle',
                            "margin-left": "10px"}
+                ),'threshold',dcc.Input(
+                    id="threshold_number",
+                    type="number",
+                    value=0.8,
+                    step=0.001,
+                    min=0,
+                    debounce=True,
+                    max=1,
+                    placeholder="threshold",
+                    style={'margin': '10', 'align': 'center', 'vertical-align': 'middle',
+                           "margin-left": "10px"}
                 )
             ], style={'width': '100vw', 'margin': '1', 'border-style': 'solid', 'align': 'center',
                       "verticalAlign": "top"}),
+
             html.Div([dcc.Markdown(('*Ground truth*\t ' + '\t\t\t\n'.join(
                 ["\t(%d) %s" % (i, str(k)) for i, k in enumerate(self.ground_truths)])),
                                    style={"white-space": "pre", 'width': '49vw', 'display': 'inline-block',
@@ -455,10 +498,12 @@ class ModelEvaluator():
                 Input('btn-p10', 'n_clicks'),
                 Input('btn-p50', 'n_clicks'),
                 Input("mse_window_input", "value"),
+                Input("threshold_number", "value"),
                 Input("choose_locking", "value"),
+                Input("thresholding", "value"),
                 *[Input('my-slider%d' % i, 'value') for i in range(len(self.ground_truths))]
             ])
-        def update_output(btnm50, btnm10, btnm5, btnm1, btnp1, btnp5, btnp10, btnp50, mse_window_size, locking,
+        def update_output(btnm50, btnm10, btnm5, btnm1, btnp1, btnp5, btnp10, btnp50, mse_window_size,threshold_number, locking,thresholding,
                           *values):
             changed_id = [p['prop_id'] for p in callback_context.triggered][0][:-len(".n_clicks")]
             values = [int(v) for v in values]
@@ -472,7 +517,15 @@ class ModelEvaluator():
             # values = [v % len(self.ground_truths[i]) for i, v in enumerate(values)]
             values = [min(v, len(self.ground_truths[i]) - 1) for i, v in enumerate(values)]
             values = [max(v, 0) for i, v in enumerate(values)]
-            fig = self.display_window(values, mse_window_size)
+            th=None
+            optimal_threshold=False
+            if thresholding=='optimal':
+                optimal_threshold=True
+            elif thresholding=='number':
+                th=threshold_number
+            print(th,optimal_threshold)
+            fig = self.display_window(values, mse_window_size,thresholding=th,is_optimal_thresholding=optimal_threshold)
+
             # if restyleData is not None:
             #     print(restyleData)
             #     for i,v in enumerate(restyleData[1]):
@@ -502,7 +555,7 @@ class ModelEvaluator():
         fig.update_layout(title_text="ROC", showlegend=True)
         return fig, AUC_arr
 
-    def display_window(self, indexes, mse_window_size,trim_top=False):
+    def display_window(self, indexes, mse_window_size,thresholding=None,is_optimal_thresholding=False,trim_top=False):
         fig = make_subplots(rows=3, cols=1,
                             shared_xaxes=True,  # specs = [{}, {},{}],
                             vertical_spacing=0.05, start_cell='top-left',
@@ -536,16 +589,22 @@ class ModelEvaluator():
         y = []
         for j, m in enumerate(self.models):
             v, s = m.get_by_index(indexes[self.gt_index_dict[m.ground_truth]])
+            if is_optimal_thresholding:
+                th = m.get_optimal_threshold()
+                v[s>=th]=20
+            elif thresholding is not None:
+                v[s >= thresholding] = 20
+
             x_axis = np.arange(x_axis_gt.shape[0] - v.shape[0], x_axis_gt.shape[0])
             y.append("(gt: %s model: %d)" % (self.gt_index_dict[m.ground_truth], j))
             fig.add_trace(go.Scatter(x=x_axis, y=v, legendgroup='model%d' % (j + len(self.ground_truths)),
                                      name="(gt: %s model: %s)" % (
                                      self.gt_index_dict[m.ground_truth], self.models[j].data_label),
-                                     line=dict(width=2, color=cols[(j + len(self.ground_truths))])), row=1, col=1)
+                                     line=dict(width=2,opacity=0.4, color=cols[(j + len(self.ground_truths))])), row=1, col=1)
             fig.add_trace(
                 go.Scatter(x=x_axis, y=s, showlegend=False, legendgroup='model%d' % (j + len(self.ground_truths)),
                            name="(gt: %s model: %s)" % (self.gt_index_dict[m.ground_truth], self.models[j].data_label),
-                           line=dict(width=2, color=cols[(j + len(self.ground_truths))])), row=2, col=1)
+                           line=dict(width=2,opacity=0.4, color=cols[(j + len(self.ground_truths))])), row=2, col=1)
             # mse_matrix.append(m.running_mse(indexes[self.gt_index_dict[m.ground_truth]], mse_window_size))
         if len(mse_matrix) > 0:
             mse_matrix = np.vstack(mse_matrix)
@@ -633,5 +692,5 @@ def run_test(include_models=True):
                 g.append(EvaluationData.load(os.path.join(p, i)))
     # g2 = EvaluationData.load(
     #     "evaluations/models/davids_ergodic_test/davids_2_NAdam___2022-08-15__15_02__ID_64341.meval")
-    me = ModelEvaluator(g0, g1, *g)
+    me = ModelEvaluator(*g)
     me.display()
