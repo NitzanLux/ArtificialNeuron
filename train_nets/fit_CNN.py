@@ -416,10 +416,10 @@ class SavingAndEvaluationScheduler():
             self.save_best_model_scaduler(config, use_slurm=use_slurm, run_at_the_same_process=run_at_the_same_process)
             self.last_time_evaluation = datetime.now()
 
-    def save_best_model_scaduler(self, config, use_slurm=False, first_run=False, run_at_the_same_process=False):
+    def save_best_model_scaduler(self, config, use_slurm=False, run_at_the_same_process=False):
         if self.previous_process is not None:
             self.previous_process.join()
-        self.previous_process = self.save_best_model_p(config, first_run=first_run,
+        self.previous_process = self.save_best_model_p(config,
                                                        run_at_the_same_process=run_at_the_same_process,
                                                        use_slurm=use_slurm)
 
@@ -431,8 +431,8 @@ class SavingAndEvaluationScheduler():
             self.save_model(model, config, optimizer)
             self.last_time_saving = datetime.now()
 
-    # @staticmethod
-    def save_best_model_p(self,config, use_slurm=False, first_run=False, run_at_the_same_process=False):
+    @staticmethod
+    def save_best_model_p(config, use_slurm=False, run_at_the_same_process=False):
         if use_slurm:
             print('evaluate best model')
             job_factory = SlurmJobFactory("cluster_logs_best_model")
@@ -449,12 +449,12 @@ class SavingAndEvaluationScheduler():
             p.start()
             return p
         else:
-            save_best_model(os.path.join(MODELS_DIR, *config.config_path), first_run)
+            save_best_model(os.path.join(MODELS_DIR, *config.config_path))
             # self.retry(False)
     @staticmethod
     def flush_all(config, model, optimizer):
         SavingAndEvaluationScheduler.save_model(model, config, optimizer)
-        SavingAndEvaluationScheduler.save_best_model_scaduler(config,use_slurm=True if not USE_CUDA else False)
+        SavingAndEvaluationScheduler.save_best_model_p(config,use_slurm=True if not USE_CUDA else False)
         # ModelEvaluator.build_and_save(config=config, model=model)
 
     @staticmethod
@@ -549,7 +549,7 @@ def load_and_train(config):
         raise e
 
 
-def save_best_model(config_path, first_run=False):
+def save_best_model(config_path):
     config = configuration_factory.load_config_file(config_path)
 
     data_base_path = config.data_base_path
@@ -591,20 +591,17 @@ def save_best_model(config_path, first_run=False):
     # if not os.path.exists(os.path.join(best_result_path, "auc_history")):
     #     np.save(os.path.join(best_result_path, "auc_history"), np.array(auc))
 
-    elif not first_run:
-        g = EvaluationData(model_gt, config, USE_CUDA, model)
-
-        auc = g.get_ROC_data()[0]
-
-        if not os.path.exists(os.path.join(best_result_path, "auc_history.npy")):
-            np.save(os.path.join(best_result_path, "auc_history.npy"), np.array(auc))
-        auc_arr = np.load(os.path.join(best_result_path, "auc_history.npy"))
-        new_auc_arr = np.append(auc_arr, auc)
-        np.save(os.path.join(best_result_path, "auc_history.npy"), new_auc_arr)
-        if np.max(auc_arr) < auc:
-            model.save(os.path.join(best_result_path, 'model'))
-            configuration_factory.save_config(config, os.path.join(best_result_path, 'config.pkl'))
-            g.save(os.path.join(best_result_path, "eval.meval"))
+    g = EvaluationData(model_gt, config, USE_CUDA, model)
+    auc = g.get_ROC_data()[0]
+    if not os.path.exists(os.path.join(best_result_path, "auc_history.npy")):
+        np.save(os.path.join(best_result_path, "auc_history.npy"), np.array(auc))
+    auc_arr = np.load(os.path.join(best_result_path, "auc_history.npy"))
+    new_auc_arr = np.append(auc_arr, auc)
+    np.save(os.path.join(best_result_path, "auc_history.npy"), new_auc_arr)
+    if np.max(auc_arr) < auc:
+        model.save(os.path.join(best_result_path, 'model'))
+        configuration_factory.save_config(config, os.path.join(best_result_path, 'config.pkl'))
+        g.save(os.path.join(best_result_path, "eval.meval"))
 
 
 def train_log(loss, step, epoch=None, learning_rate=None, sigma=None, weights=None, additional_str='', commit=False):
