@@ -568,35 +568,32 @@ def save_best_model(config_path):
 
     model = load_model(config)
     best_result_path = os.path.join(MODELS_DIR, *config.model_path) + '_best'
-
-    if first_run:
-        if not os.path.exists(os.path.join(best_result_path, "eval.meval")):
-            cur_model_evaluation = EvaluationData(model_gt, config, USE_CUDA, model)
-            cur_model_evaluation.save(os.path.join(best_result_path, "eval.gteval"))
-        else:
-            cur_model_evaluation = EvaluationData.load(os.path.join(best_result_path, "eval.meval"))
-        if not os.path.exists(os.path.join(best_result_path, "auc_history.npy")):
-            auc = cur_model_evaluation.get_ROC_data()[0]
-            np.save(os.path.join(best_result_path, "auc_history.npy"), np.array(auc))
-
     if not os.path.exists(best_result_path):
         os.mkdir(best_result_path)
 
-    if not os.path.exists(os.path.join(best_result_path, 'model.pkl')):
-        model.save(os.path.join(best_result_path, 'model'))
-        # shutil.copyfile(os.path.join(MODELS_DIR, *config.model_path), os.path.join(best_result_path, 'model.pkl'))
-    if not os.path.exists(os.path.join(best_result_path, 'config.pkl')):
-        # shutil.copyfile(os.path.join(MODELS_DIR, *config.config_path), os.path.join(best_result_path, 'config.pkl'))
-        configuration_factory.save_config(config, os.path.join(best_result_path, 'config.pkl'))
-    # if not os.path.exists(os.path.join(best_result_path, "auc_history")):
-    #     np.save(os.path.join(best_result_path, "auc_history"), np.array(auc))
+    # if not os.path.exists(os.path.join(best_result_path, 'model.pkl')):
+    #     model.save(os.path.join(best_result_path, 'model'))
+    #
+    # if not os.path.exists(os.path.join(best_result_path, 'config.pkl')):
+    #     configuration_factory.save_config(config, os.path.join(best_result_path, 'config.pkl'))
+    # if not os.path.exists(os.path.join(best_result_path, "eval.meval")):
+    #     cur_model_evaluation = EvaluationData(model_gt, config, USE_CUDA, model)
+    #     cur_model_evaluation.save(os.path.join(best_result_path, "eval.gteval"))
 
     g = EvaluationData(model_gt, config, USE_CUDA, model)
     auc = g.get_ROC_data()[0]
+
     if not os.path.exists(os.path.join(best_result_path, "auc_history.npy")):
-        np.save(os.path.join(best_result_path, "auc_history.npy"), np.array(auc))
-    auc_arr = np.load(os.path.join(best_result_path, "auc_history.npy"))
-    new_auc_arr = np.append(auc_arr, auc)
+        auc_arr=np.array([])
+        new_auc_arr = np.array([auc])
+    else:
+        auc_arr = np.load(os.path.join(best_result_path, "auc_history.npy"))
+        new_auc_arr = np.append(auc_arr, auc)
+
+
+
+
+
     np.save(os.path.join(best_result_path, "auc_history.npy"), new_auc_arr)
     if np.max(auc_arr) < auc:
         model.save(os.path.join(best_result_path, 'model'))
