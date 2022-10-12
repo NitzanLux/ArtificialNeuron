@@ -571,15 +571,6 @@ def save_best_model(config_path):
     if not os.path.exists(best_result_path):
         os.mkdir(best_result_path)
 
-    # if not os.path.exists(os.path.join(best_result_path, 'model.pkl')):
-    #     model.save(os.path.join(best_result_path, 'model'))
-    #
-    # if not os.path.exists(os.path.join(best_result_path, 'config.pkl')):
-    #     configuration_factory.save_config(config, os.path.join(best_result_path, 'config.pkl'))
-    # if not os.path.exists(os.path.join(best_result_path, "eval.meval")):
-    #     cur_model_evaluation = EvaluationData(model_gt, config, USE_CUDA, model)
-    #     cur_model_evaluation.save(os.path.join(best_result_path, "eval.gteval"))
-
     g = EvaluationData(model_gt, config, USE_CUDA, model)
     auc = g.get_ROC_data()[0]
 
@@ -589,10 +580,6 @@ def save_best_model(config_path):
     else:
         auc_arr = np.load(os.path.join(best_result_path, "auc_history.npy"))
         new_auc_arr = np.append(auc_arr, auc)
-
-
-
-
 
     np.save(os.path.join(best_result_path, "auc_history.npy"), new_auc_arr)
     if np.max(auc_arr) < auc:
