@@ -561,6 +561,7 @@ def save_best_model(config_path):
         if data_base_path in current_model.path:
             model_gt = current_model
             break
+
     else:
         path = glob.glob(os.path.join(data_base_path, "*valid*"))
         bpath, name = ntpath.split(path)
