@@ -329,6 +329,10 @@ class EvaluationData(SimulationData):
             return None,None,None
         idx,_ = find_nearest(a,v)
         return self.__thrreshold[idx],self.__fpr[idx],self.__tpr[idx]
+    @staticmethod
+    def load_best(model_name):
+        path = os.path.join(MODELS_DIR,model_name,model_name+'_best','eval.meval')
+        return EvaluationData.load(path)
 
 class ModelEvaluator():
     def __init__(self, *args: SimulationData):  # , use_only_groundtruth=False):
