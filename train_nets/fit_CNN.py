@@ -413,7 +413,7 @@ class SavingAndEvaluationScheduler():
         delta_time = current_time - self.last_time_evaluation
         if (delta_time.total_seconds() / 60) / 60 > self.time_in_hours_for_eval: #and not self.pause_time_eval:
             print("evaluating....")
-            self.save_best_model_scaduler(config, use_slurm=run_at_the_same_process, run_at_the_same_process=use_slurm)
+            self.save_best_model_scaduler(config, use_slurm=use_slurm, run_at_the_same_process=run_at_the_same_process)
             self.last_time_evaluation = datetime.now()
 
     def save_best_model_scaduler(self, config, use_slurm=False, first_run=False, run_at_the_same_process=False):
