@@ -474,9 +474,14 @@ class SavingAndEvaluationScheduler():
                 if os.path.exists(os.path.join(base_path, fn) + 'temp'):
                     os.remove(os.path.join(base_path, fn) + 'temp')
                 os.rename(os.path.join(base_path, fn), os.path.join(base_path, fn) + 'temp')
-            elif os.path.isdir(os.path.join(base_path, fn)) and 'temp' in fn:
-                os.rmdir(os.path.join(base_path, fn))
-                os.rename(os.path.join(base_path, fn), os.path.join(base_path, fn) + 'temp')
+            elif os.path.isdir(os.path.join(base_path, fn)) and 'temp' not in fn:
+                if not os.path.exists(os.path.join(base_path, fn+'temp')):
+                    os.rename(os.path.join(base_path, fn), os.path.join(base_path, fn+'temp'))
+                else:
+                    for i in os.listdir(os.path.join(base_path, fn)):
+                        if os.path.getsize(os.path.join(base_path, fn,i))>0:
+                            os.replace(os.path.join(base_path, fn,i),os.path.join(base_path, fn+'temp',i))
+
         model.save(os.path.join(MODELS_DIR, *config.model_path))
         if INCLUDE_OPTIMIZER_AT_LOADING:
             opt_file_path = os.path.join(MODELS_DIR, *config.model_path) + ".optim"
