@@ -2,6 +2,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from neuron_simulations.get_neuron_modle import get_L5PC,ModelName,get_model
+from matplotlib_scalebar.scalebar import ScaleBar
 
 def map_cell_to_xyzd(cell):
     from neuron import h
@@ -58,14 +59,15 @@ def map_cell_to_xyzd(cell):
         #     all_segment_coords[(sec_ind, seg_ind)]['y'] = y_path  # [y_path[k] for k in curr_seg_inds]
         #     all_segment_coords[(sec_ind, seg_ind)]['z'] = z_path  # [z_path[k] for k in curr_seg_inds]
         #     all_segment_coords[(sec_ind, seg_ind)]['d'] = d_path  #[d_path[k] for k in curr_seg_inds]
-    return soma, all_section_coords, all_segment_coords,electrical_distance
+    return soma, all_section_coords, all_segment_coords#,electrical_distance
 
 def plot_morphology_from_cell(ax, cell,spread_dend=False,remove_axon=True,segment_colors=None, width_mult_factors=None, colors_dict={},
                               fontsize=4, plot_per_segment=False, color_by_type=False, soma_as_cylinder=False,
                               with_legend=False, with_text=False, is_scalebar=False, text_dict={}, with_markers=True,
                               shift_x=0, shift_y=0, seg_colors_cmap=plt.cm.jet, is_electrode=False,
-                              width_fraction=0.01 / 5, fixed_value=100, no_scalebar_no_ax=False):
-    soma_mean, all_section_coords, all_segment_coords,electrical_distance = map_cell_to_xyzd(cell)
+                              width_fraction=0.01 /1, fixed_value=100, no_scalebar_no_ax=False):
+    soma_mean, all_section_coords, all_segment_coords = map_cell_to_xyzd(cell)
+    # soma_mean, all_section_coords, all_segment_coords,electrical_distance = map_cell_to_xyzd(cell)
     data_dict = all_section_coords  # all_segment_coords if plot_per_segment else all_section_coords
 
     if segment_colors is None:
@@ -163,7 +165,7 @@ l5pc=get_L5PC(ModelName.L5PC)
 l5pc,_,_ = get_model(l5pc)
 from neuron import h
 fig,ax = plt.subplots()
-plot_morphology_from_cell(ax,l5pc)
+plot_morphology_from_cell(ax,l5pc,is_scalebar=True)
 plt.savefig('neuron_model_original.png')
 plt.show()
 
@@ -171,7 +173,7 @@ l5pc,_,_ = get_model(l5pc,0)
 from neuron import h
 h.define_shape()
 fig,ax = plt.subplots()
-plot_morphology_from_cell(ax,l5pc,spread_dend=True,remove_axon=False)
+plot_morphology_from_cell(ax,l5pc,spread_dend=True,remove_axon=False,is_scalebar=True,fixed_value=10)
 plt.savefig('neuron_model_reduction.png')
 plt.show()
 # ps = h.PlotShape(False).plot(plt)
