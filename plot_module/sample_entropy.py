@@ -10,7 +10,7 @@ import argparse
 from multiprocessing import Process,Queue
 number_of_cpus = multiprocessing.cpu_count()
 import queue
-MAX_INTERVAL = 200
+MAX_INTERVAL = 9
 print("start job")
 import cpickle as pickle
 number_of_jobs=number_of_cpus-1
