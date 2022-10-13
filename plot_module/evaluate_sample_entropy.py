@@ -2,28 +2,34 @@
 import os
 import matplotlib.pyplot as plt
 import numpy as np
+import pickle
 #%%
 dim_size=200
 #%%
 reduction_data=dict()
+reduction_ci=dict()
 original_data=dict()
+original_ci=dict()
 file_list=[]
 key_list=set()
 for i in os.listdir(os.path.join('sample_entropy')):
-    if not str(dim_size)+'d' in i:
+    if not str(dim_size)+'d.mse' in i:
         continue
     s = i.replace('original_','')
     s = s.replace('sample_entropy_','')
     s = s.replace('reduction_','')
     s = s.replace(f'_{dim_size}d','')
-    s = s.replace(f'.npy','')
+    s = s.replace(f'.mse','')
     s = int(s)
     key_list.add(s)
     file_list.append(i)
     if 'reduction' in i:
-        reduction_data[s]=np.load(os.path.join('sample_entropy',i))
+        with open(os.path.join('sample_entropy',i),'rb') as f:
+            reduction_data[s],reduction_ci[s]=pickle.load(f)
     elif 'original' in i:
-        original_data[s]=np.load(os.path.join('sample_entropy',i))
+        with open(os.path.join('sample_entropy',i),'rb') as f:
+            original_data[s],original_ci[s]=pickle.load(f)
+        # original_data[s]=np.load(os.path.join('sample_entropy',i))
 file_list = sorted(file_list,key=lambda x: int(x[len('sample_entropy_')+(len('reduction_') if 'reduction' in x else len('original_')):-len('_200d.npy')]))
 
 print(len(key_list))

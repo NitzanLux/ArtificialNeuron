@@ -12,7 +12,7 @@ number_of_cpus = multiprocessing.cpu_count()
 import queue
 MAX_INTERVAL = 200
 print("start job")
-import pickle
+import cpickle as pickle
 number_of_jobs=number_of_cpus-1
 def create_sample_entropy_file(q):
     while True:
@@ -28,9 +28,9 @@ def create_sample_entropy_file(q):
             print(
                 f"current sample number {i}   total: {time.time() - t} seconds",
                 flush=True)
-            with open(os.path.join("sample_entropy",f"sample_entropy_reduction_{i}_{MAX_INTERVAL}d.mse"),'wb') as f:
+            with open(os.path.join("sample_entropy",f"sample_entropy_reduction_{i}_{MAX_INTERVAL}d.p"),'wb') as f:
                 pickle.dump((r_MSx,r_Ci),f)
-            with open(os.path.join("sample_entropy",f"sample_entropy_original_{i}_{MAX_INTERVAL}d.mse"),'wb') as f:
+            with open(os.path.join("sample_entropy",f"sample_entropy_original_{i}_{MAX_INTERVAL}d.p"),'wb') as f:
                 pickle.dump((o_MSx,o_Ci),f)
             # np.save(os.path.join("sample_entropy",f"sample_entropy_reduction_{i}_{MAX_INTERVAL}d.npy"), np.array(se_r))
             # np.save(os.path.join("sample_entropy",f"sample_entropy_original_{i}_{MAX_INTERVAL}d.npy"), np.array(se_o))
