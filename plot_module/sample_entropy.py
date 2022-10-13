@@ -17,6 +17,8 @@ number_of_jobs=number_of_cpus-1
 def create_sample_entropy_file(q):
     while True:
         try:
+            if q.empty():
+                return
             sr, so, i = q.get(block=120)
             sr= sr.astype(np.float64)
             so= so.astype(np.float64)

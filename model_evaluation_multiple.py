@@ -25,6 +25,7 @@ from utils.general_variables import *
 from typing import Callable
 import ntpath
 from tqdm import tqdm
+
 # base_path=os.path.dirname(__file__)
 # base_path='/ems/elsc-labs/segev-i/nitzan.luxembourg/projects/dendritic_tree/ArtificialNeuron'
 BATCH_SIZE = 32
@@ -420,6 +421,7 @@ class ModelEvaluator():
                     {'label': 'free', 'value': 'free'},
                     {'label': 'number', 'value': 'number'}], persistence=True, value='free',
                                style={'display': 'inline-block', 'align': 'center'}),
+
                 html.Button('-50', id='btn-m50', n_clicks=0,
                             style={'margin': '1', 'align': 'center', 'vertical-align': 'middle',
                                    "margin-left": "10px"}),
@@ -467,7 +469,10 @@ class ModelEvaluator():
                     placeholder="threshold",
                     style={'margin': '10', 'align': 'center', 'vertical-align': 'middle',
                            "margin-left": "10px"}
-                )
+                ),
+                dcc.Checklist(options=[{'label': 'use refractory_period', 'value': 'use_refractory_period'}],
+                              id='use_refractory_period',
+                              style={'display': 'inline-block', 'align': 'center'})
             ], style={'width': '100vw', 'margin': '1', 'border-style': 'solid', 'align': 'center',
                       "verticalAlign": "top"}),
 
@@ -513,13 +518,13 @@ class ModelEvaluator():
                 Input("threshold_number", "value"),
                 Input("choose_locking", "value"),
                 Input("thresholding", "value"),
+                Input("use_refractory_period", "value"),
                 *[Input('my-slider%d' % i, 'value') for i in range(len(self.ground_truths))]
             ])
-        def update_output(btnm50, btnm10, btnm5, btnm1, btnp1, btnp5, btnp10, btnp50, mse_window_size,threshold_number, locking,thresholding,
+        def update_output(btnm50, btnm10, btnm5, btnm1, btnp1, btnp5, btnp10, btnp50, mse_window_size,threshold_number, locking,thresholding,use_refractory_period,
                           *values):
             changed_id = [p['prop_id'] for p in callback_context.triggered][0][:-len(".n_clicks")]
             values = [int(v) for v in values]
-            print(locking)
             if 'btn-m' in changed_id:
                 values = [v - int(changed_id[len('btn-m'):]) for v in values]
             elif 'btn-p' in changed_id:
@@ -535,8 +540,9 @@ class ModelEvaluator():
                 optimal_threshold=True
             elif thresholding=='number':
                 th=threshold_number
-            print(th,optimal_threshold,thresholding)
-            fig = self.display_window(values, mse_window_size,thresholding=th,is_optimal_thresholding=optimal_threshold)
+            # print(th,optimal_threshold,thresholding)
+            use_refractory_period = use_refractory_period is not None and len(use_refractory_period)>0
+            fig = self.display_window(values, mse_window_size,thresholding=th,is_optimal_thresholding=optimal_threshold,use_refractory_period=use_refractory_period)
 
             # if restyleData is not None:
             #     print(restyleData)
@@ -567,7 +573,7 @@ class ModelEvaluator():
         fig.update_layout(title_text="ROC", showlegend=True)
         return fig, AUC_arr
 
-    def display_window(self, indexes, mse_window_size,thresholding=None,is_optimal_thresholding=False,trim_top=False):
+    def display_window(self, indexes, mse_window_size,thresholding=None,is_optimal_thresholding=False,trim_top=False,use_refractory_period=False):
         fig = make_subplots(rows=3, cols=1,
                             shared_xaxes=True,  # specs = [{}, {},{}],
                             vertical_spacing=0.05, start_cell='top-left',
@@ -603,12 +609,19 @@ class ModelEvaluator():
         for j, m in enumerate(self.models):
             v, s = m.get_by_index(indexes[self.gt_index_dict[m.ground_truth]])
             if is_optimal_thresholding:
-                th = m.get_optimal_threshold()
-                v[s>=th]=20
-            elif thresholding is not None:
+                thresholding = m.get_optimal_threshold()
+
+            if thresholding is not None:
                 # th,fpr,tpr = m.round_th_fpr_tpr(tpr=thresholding)
-                print(thresholding)
-                v[s >= thresholding] = 20
+                # print(thresholding)
+                v=np.copy(v)
+                spike_arr = s >= thresholding
+
+                if use_refractory_period:
+                    for i in range(spike_arr.shape[0]):
+                        if spike_arr[i]:
+                            spike_arr[i+1:i+3]=False
+                v[np.where(spike_arr)] = 20
 
             x_axis = np.arange(x_axis_gt.shape[0] - v.shape[0], x_axis_gt.shape[0])
             y.append("(gt: %s model: %d)" % (self.gt_index_dict[m.ground_truth], j))
@@ -691,10 +704,10 @@ def run_test(include_models=True):
     from utils.general_aid_function import load_files_names
     g = []
     # b_p = r"..C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project"
-    g0 = GroundTruthData.load(os.path.join("evaluations","ground_truth","david_ergodic_validation.gteval"))
-    g1 = GroundTruthData.load(os.path.join("evaluations","ground_truth","reduction_ergodic_validation.gteval"))
+    # g0 = GroundTruthData.load(os.path.join("evaluations","ground_truth","david_ergodic_validation.gteval"))
+    # g1 = GroundTruthData.load(os.path.join("evaluations","ground_truth","reduction_ergodic_validation.gteval"))
     if include_models:
-        # number_of_models=2
+        number_of_models=1
         for p in [os.path.join("evaluations","models","davids_ergodic_validation"), os.path.join("evaluations","models","reduction_ergodic_validation")]:
             # continue
             counter=0
@@ -702,8 +715,8 @@ def run_test(include_models=True):
                 counter+=1
                 if '_ss' in i:
                     continue
-                # if counter>number_of_models:
-                #     break
+                if counter>number_of_models:
+                    break
                 g.append(EvaluationData.load(os.path.join(p, i)))
     # g2 = EvaluationData.load(
     #     "evaluations/models/davids_ergodic_test/davids_2_NAdam___2022-08-15__15_02__ID_64341.meval")
