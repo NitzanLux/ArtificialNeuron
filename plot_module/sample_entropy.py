@@ -18,6 +18,8 @@ def create_sample_entropy_file(q):
     while True:
         try:
             sr, so, i = q.get(block=120)
+            sr= sr.astype(np.float64)
+            so= so.astype(np.float64)
             t = time.time()
             r_Mobj = EH.MSobject('SampEn', m=2,tau =1,r=np.std(sr)*0.2)
             o_Mobj = EH.MSobject('SampEn', m=2,tau =1,r=np.std(so)*0.2)
