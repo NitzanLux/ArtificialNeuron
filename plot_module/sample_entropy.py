@@ -12,19 +12,28 @@ number_of_cpus = multiprocessing.cpu_count()
 import queue
 MAX_INTERVAL = 200
 print("start job")
+import pickle
 number_of_jobs=number_of_cpus-1
 def create_sample_entropy_file(q):
     while True:
         try:
             sr, so, i = q.get(block=120)
             t = time.time()
-            se_r, _, _ = EH.SampEn(sr, m=MAX_INTERVAL)
-            se_o, _, _ = EH.SampEn(so, m=MAX_INTERVAL)
+            r_Mobj = EH.MSobject('SampEn', m=2,tau =1,r=np.std(sr)*0.2)
+            o_Mobj = EH.MSobject('SampEn', m=2,tau =1,r=np.std(so)*0.2)
+            r_MSx, r_Ci = EH.rMSEn(sr, r_Mobj, Scales=MAX_INTERVAL, F_Order=3, F_Num=0.6, RadNew=4)
+            o_MSx, r_Ci = EH.rMSEn(so, o_Mobj, Scales=MAX_INTERVAL, F_Order=3, F_Num=0.6, RadNew=4)
+            # se_r, _, _ = EH.SampEn(sr, m=MAX_INTERVAL)
+            # se_o, _, _ = EH.SampEn(so, m=MAX_INTERVAL)
             print(
                 f"current sample number {i}   total: {time.time() - t} seconds",
                 flush=True)
-            np.save(os.path.join("sample_entropy",f"sample_entropy_reduction_{i}_{MAX_INTERVAL}d.npy"), np.array(se_r))
-            np.save(os.path.join("sample_entropy",f"sample_entropy_original_{i}_{MAX_INTERVAL}d.npy"), np.array(se_o))
+            with open(os.path.join("sample_entropy",f"sample_entropy_reduction_{i}_{MAX_INTERVAL}d.mse"),'wb') as f:
+                pickle.dump((r_MSx,r_Ci),f)
+            with open(os.path.join("sample_entropy",f"sample_entropy_original_{i}_{MAX_INTERVAL}d.mse"),'wb') as f:
+                pickle.dump((o_MSx,o_Ci),f)
+            # np.save(os.path.join("sample_entropy",f"sample_entropy_reduction_{i}_{MAX_INTERVAL}d.npy"), np.array(se_r))
+            # np.save(os.path.join("sample_entropy",f"sample_entropy_original_{i}_{MAX_INTERVAL}d.npy"), np.array(se_o))
 
         except queue.Empty as e:
             return
