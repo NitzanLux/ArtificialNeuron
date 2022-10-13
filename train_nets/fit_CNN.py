@@ -583,7 +583,7 @@ def save_best_model(config_path):
         new_auc_arr = np.append(auc_arr, auc)
 
     np.save(os.path.join(best_result_path, "auc_history.npy"), new_auc_arr)
-    if np.max(auc_arr) < auc:
+    if auc_arr.size==0 or np.max(auc_arr) < auc:
         model.save(os.path.join(best_result_path, 'model'))
         configuration_factory.save_config(config, os.path.join(best_result_path, 'config.pkl'))
         g.save(os.path.join(best_result_path, "eval.meval"))

@@ -307,6 +307,8 @@ class EvaluationData(SimulationData):
         optimal_idx = np.argmax(tpr - fpr)
         optimal_threshold = thresholds[optimal_idx]
         return auc, fpr, tpr,optimal_threshold,thresholds
+
+
     def get_optimal_threshold(self):
         if not hasattr(self,'__optimal_threshold'):
             data=self.get_ROC_data()
@@ -316,9 +318,15 @@ class EvaluationData(SimulationData):
             self.__optimal_threshold= data[3]
         return self.__optimal_threshold
     def round_th_fpr_tpr(self,th=None,fpr=None,tpr=None):
+        if not hasattr(self,'__optimal_threshold'):
+            data=self.get_ROC_data()
+            self.__thresholds=data[4]
+            self.__fpr=data[1]
+            self.__tpr=data[2]
+            self.__optimal_threshold= data[3]
         if th is not None:
             v=th
-            a=self.__thrreshold
+            a=self.__thresholds
         elif fpr is not None:
             v=fpr
             a=self.__fpr
@@ -328,7 +336,7 @@ class EvaluationData(SimulationData):
         else:
             return None,None,None
         idx,_ = find_nearest(a,v)
-        return self.__thrreshold[idx],self.__fpr[idx],self.__tpr[idx]
+        return self.__thresholds[idx],self.__fpr[idx],self.__tpr[idx]
     @staticmethod
     def load_best(model_name):
         path = os.path.join(MODELS_DIR,model_name,model_name+'_best','eval.meval')
@@ -451,8 +459,8 @@ class ModelEvaluator():
                 ),'threshold',dcc.Input(
                     id="threshold_number",
                     type="number",
-                    value=0.8,
-                    step=0.001,
+                    value=1,
+                    step=0.01,
                     min=0,
                     debounce=True,
                     max=1,
@@ -527,7 +535,7 @@ class ModelEvaluator():
                 optimal_threshold=True
             elif thresholding=='number':
                 th=threshold_number
-            print(th,optimal_threshold)
+            print(th,optimal_threshold,thresholding)
             fig = self.display_window(values, mse_window_size,thresholding=th,is_optimal_thresholding=optimal_threshold)
 
             # if restyleData is not None:
@@ -580,7 +588,7 @@ class ModelEvaluator():
                                      marker=dict(
                                          color='black',
                                          size=10,
-                                         opacity=0.75,
+
                                          symbol='asterisk',
                                          line=dict(
                                              color=cols[j],
@@ -591,24 +599,27 @@ class ModelEvaluator():
             # fig['data'][j*2+1]['line']['color']=fig['data'][j*2]['line']['color']
         mse_matrix = []
         y = []
+        s=None
         for j, m in enumerate(self.models):
             v, s = m.get_by_index(indexes[self.gt_index_dict[m.ground_truth]])
             if is_optimal_thresholding:
                 th = m.get_optimal_threshold()
                 v[s>=th]=20
             elif thresholding is not None:
+                # th,fpr,tpr = m.round_th_fpr_tpr(tpr=thresholding)
+                print(thresholding)
                 v[s >= thresholding] = 20
 
             x_axis = np.arange(x_axis_gt.shape[0] - v.shape[0], x_axis_gt.shape[0])
             y.append("(gt: %s model: %d)" % (self.gt_index_dict[m.ground_truth], j))
-            fig.add_trace(go.Scatter(x=x_axis, y=v, legendgroup='model%d' % (j + len(self.ground_truths)),
+            fig.add_trace(go.Scatter(x=x_axis, y=v, legendgroup='model%d' % (j + len(self.ground_truths)),opacity=0.8,
                                      name="(gt: %s model: %s)" % (
                                      self.gt_index_dict[m.ground_truth], self.models[j].data_label),
-                                     line=dict(width=2,opacity=0.4, color=cols[(j + len(self.ground_truths))])), row=1, col=1)
+                                     line=dict(width=2, color=cols[(j + len(self.ground_truths))])), row=1, col=1)
             fig.add_trace(
-                go.Scatter(x=x_axis, y=s, showlegend=False, legendgroup='model%d' % (j + len(self.ground_truths)),
+                go.Scatter(x=x_axis, y=s, showlegend=False, legendgroup='model%d' % (j + len(self.ground_truths)),opacity=0.8,
                            name="(gt: %s model: %s)" % (self.gt_index_dict[m.ground_truth], self.models[j].data_label),
-                           line=dict(width=2,opacity=0.4, color=cols[(j + len(self.ground_truths))])), row=2, col=1)
+                           line=dict(width=2, color=cols[(j + len(self.ground_truths))])), row=2, col=1)
             # mse_matrix.append(m.running_mse(indexes[self.gt_index_dict[m.ground_truth]], mse_window_size))
         if len(mse_matrix) > 0:
             mse_matrix = np.vstack(mse_matrix)
@@ -616,7 +627,7 @@ class ModelEvaluator():
         fig.update_layout(  # height=600, width=600,
             # title_text="model %s index %d" % (self.config.model_path[-1], index),
             **{yaxis_range:[-83, -52]} if trim_top else {}
-            , yaxis2_range=[0, 1],xaxis2=dict(showticklabels= True,title='time(ms)') ) # , legend_orientation="h"
+            , yaxis2_range=[0, 1],xaxis2_range=[0, s.shape[0]],xaxis1_range=[0, s.shape[0]],xaxis2=dict(showticklabels= True,title='time(ms)') ) # , legend_orientation="h"
         #, yaxis2=dict(ticks="", showticklabels=False),xaxis2=dict(showticklabels=True))
         return fig
 
@@ -683,7 +694,7 @@ def run_test(include_models=True):
     g0 = GroundTruthData.load(os.path.join("evaluations","ground_truth","david_ergodic_validation.gteval"))
     g1 = GroundTruthData.load(os.path.join("evaluations","ground_truth","reduction_ergodic_validation.gteval"))
     if include_models:
-        number_of_models=2
+        # number_of_models=2
         for p in [os.path.join("evaluations","models","davids_ergodic_validation"), os.path.join("evaluations","models","reduction_ergodic_validation")]:
             # continue
             counter=0
@@ -691,8 +702,8 @@ def run_test(include_models=True):
                 counter+=1
                 if '_ss' in i:
                     continue
-                if counter>number_of_models:
-                    break
+                # if counter>number_of_models:
+                #     break
                 g.append(EvaluationData.load(os.path.join(p, i)))
     # g2 = EvaluationData.load(
     #     "evaluations/models/davids_ergodic_test/davids_2_NAdam___2022-08-15__15_02__ID_64341.meval")
