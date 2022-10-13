@@ -12,7 +12,7 @@ number_of_cpus = multiprocessing.cpu_count()
 import queue
 MAX_INTERVAL = 200
 print("start job")
-import cpickle as pickle
+import pickle as pickle
 number_of_jobs=number_of_cpus-1
 def create_sample_entropy_file(q):
     while True:
