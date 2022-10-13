@@ -22,7 +22,7 @@ def create_sample_entropy_file(q):
             r_Mobj = EH.MSobject('SampEn', m=2,tau =1,r=np.std(sr)*0.2)
             o_Mobj = EH.MSobject('SampEn', m=2,tau =1,r=np.std(so)*0.2)
             r_MSx, r_Ci = EH.rMSEn(sr, r_Mobj, Scales=MAX_INTERVAL, F_Order=3, F_Num=0.6, RadNew=4)
-            o_MSx, r_Ci = EH.rMSEn(so, o_Mobj, Scales=MAX_INTERVAL, F_Order=3, F_Num=0.6, RadNew=4)
+            o_MSx, o_Ci = EH.rMSEn(so, o_Mobj, Scales=MAX_INTERVAL, F_Order=3, F_Num=0.6, RadNew=4)
             # se_r, _, _ = EH.SampEn(sr, m=MAX_INTERVAL)
             # se_o, _, _ = EH.SampEn(so, m=MAX_INTERVAL)
             print(
