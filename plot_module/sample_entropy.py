@@ -13,17 +13,17 @@ import queue
 MAX_INTERVAL = 200
 print("start job")
 import pickle as pickle
-number_of_jobs=number_of_cpus-1//5
+number_of_jobs=number_of_cpus-1//
 def create_sample_entropy_file(q):
 
-    gt_original_name = 'davids_ergodic_train'
-    gt_reduction_name = 'reduction_ergodic_train'
-    gt_reduction = GroundTruthData.load(os.path.join( 'evaluations', 'ground_truth', gt_reduction_name + '.gteval'))
-    gt_original = GroundTruthData.load(os.path.join('evaluations', 'ground_truth', gt_original_name + '.gteval'))
+    # gt_original_name = 'davids_ergodic_train'
+    # gt_reduction_name = 'reduction_ergodic_train'
+    # gt_reduction = GroundTruthData.load(os.path.join( 'evaluations', 'ground_truth', gt_reduction_name + '.gteval'))
+    # gt_original = GroundTruthData.load(os.path.join('evaluations', 'ground_truth', gt_original_name + '.gteval'))
     while True:
         if q.empty():
             return
-        index = q.get(block=120)
+        index,sr,so = q.get(block=120)
         if index is None:
             continue
         r, o = gt_reduction.get_by_index(index), gt_original.get_by_index(index)
@@ -53,17 +53,19 @@ def get_sample_entropy(indexes:[int,List[int]]):
         indexes=[indexes]
     number_of_jobs = min(number_of_cpus - 1,len(indexes))
 
-    # gt_original_name = 'davids_ergodic_train'
-    # gt_reduction_name = 'reduction_ergodic_train'
-    # gt_reduction = GroundTruthData.load(os.path.join( 'evaluations', 'ground_truth', gt_reduction_name + '.gteval'))
-    # gt_original = GroundTruthData.load(os.path.join('evaluations', 'ground_truth', gt_original_name + '.gteval'))
+    gt_original_name = 'davids_ergodic_train'
+    gt_reduction_name = 'reduction_ergodic_train'
+    gt_reduction = GroundTruthData.load(os.path.join( 'evaluations', 'ground_truth', gt_reduction_name + '.gteval'))
+    gt_original = GroundTruthData.load(os.path.join('evaluations', 'ground_truth', gt_original_name + '.gteval'))
 
-    queue=Queue(maxsize=number_of_jobs*2)
+    queue=Queue(maxsize=number_of_jobs)
     process = [Process(target=create_sample_entropy_file, args=(queue,)) for i in range(number_of_jobs)]
 
     for j,index in enumerate(indexes):
-
-        queue.put((index))
+        r,o = gt_reduction.get_by_index(index), gt_original.get_by_index(index)
+        vr, sr = r
+        vo, so = o
+        queue.put((sr,so,index))
         if j<len(process):
             process[j].start()
 
