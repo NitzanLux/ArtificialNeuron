@@ -86,5 +86,5 @@ if __name__ == "__main__":
     for i in range(number_of_clusters):
         indexes=list(range(i*jumps,min((i+1)*jumps,size)))
         print(indexes)
-        job_factory.send_job(f"sample_entropy_{i}_{MAX_INTERVAL}d", f'python -c "from plot_module.sample_entropy import get_sample_entropy; get_sample_entropy({indexes})"',mem=120000)
+        job_factory.send_job(f"sample_entropy_{i}_{MAX_INTERVAL}d", f'python -c "from plot_module.sample_entropy import get_sample_entropy; get_sample_entropy({indexes})"',mem=160000)
         print('job sent')
