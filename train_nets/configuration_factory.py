@@ -273,7 +273,10 @@ def restore_all_from_temp(configs_json):
         dirs = os.listdir(path)
         temps=set()
         for f in dirs:
-            if 'temp' in str(f):
+            if 'temp'== str(f)[-len('temp'):]:
+                if 'temp'==str(f)[-len('temp')*2:-len('temp')]:
+                    print(f)
+                    return
                 temps.add(f)
         for f in temps:
             f_path =  str(os.path.join(path,f))
