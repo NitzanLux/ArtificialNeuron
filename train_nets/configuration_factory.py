@@ -276,7 +276,7 @@ def restore_all_from_temp(configs_json):
             if 'temp'== str(f)[-len('temp'):]:
                 if 'temp'==str(f)[-len('temp')*2:-len('temp')]:
                     if os.path.isdir(os.path.join(path,f)):
-                        os.rmdir(os.path.join(path,f))
+                        shutil.rmtree(os.path.join(path,f))
                     else:
                         os.remove(os.path.join(path,f))
                     continue
