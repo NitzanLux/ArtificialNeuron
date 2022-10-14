@@ -275,7 +275,7 @@ def restore_all_from_temp(configs_json):
         for f in dirs:
             if 'temp'== str(f)[-len('temp'):]:
                 if 'temp'==str(f)[-len('temp')*2:-len('temp')]:
-                    of.remove(os.path.join(path,f))
+                    os.remove(os.path.join(path,f))
                     continue
                 temps.add(f)
         for f in temps:
