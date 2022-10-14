@@ -79,7 +79,7 @@ if __name__ == "__main__":
     #                     help='set memory', default=-1)
     # args = parser.parse_args()
     from utils.slurm_job import *
-    number_of_clusters=10
+    number_of_clusters=30
     job_factory = SlurmJobFactory("cluster_logs")
     gt_reduction_name = 'reduction_ergodic_validation'
     size = len(GroundTruthData.load(os.path.join( 'evaluations', 'ground_truth', gt_reduction_name + '.gteval')))
