@@ -286,9 +286,9 @@ def restore_all_from_temp(configs_json):
                     print(f)
 
                     if (not os.path.exists(os.path.join(f_path[:-len('temp')],f))) or os.path.getsize(os.path.join(f_path[:-len('temp')],f)) == 0:
-                        shutil.copyfile(os.path.join(f_path,f), os.path.join(f_path[:-len('temp')],f))
-            if (not os.path.exists(f_path[:-len('temp')])) or os.path.getsize(f_path[:-len('temp')])==0:
-                shutil.copyfile(f_path, f_path[:-len('temp')])
+                        shutil.copyfile( os.path.join(f_path[:-len('temp')],f),os.path.join(f_path,f))
+            elif (not os.path.exists(f_path[:-len('temp')])) or os.path.getsize(f_path[:-len('temp')])==0:
+                shutil.copyfile(f_path[:-len('temp')],f_path)
 
 def restore_last_n_configs(n=10):
     search_dir = "../wandb"
