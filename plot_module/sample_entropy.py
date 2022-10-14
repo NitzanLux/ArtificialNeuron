@@ -21,34 +21,33 @@ def create_sample_entropy_file(q):
     gt_reduction = GroundTruthData.load(os.path.join( 'evaluations', 'ground_truth', gt_reduction_name + '.gteval'))
     gt_original = GroundTruthData.load(os.path.join('evaluations', 'ground_truth', gt_original_name + '.gteval'))
     while True:
-        try:
-            if q.empty():
-                return
-            index = q.get(block=120)
-            r, o = gt_reduction.get_by_index(index), gt_original.get_by_index(index)
-            vr, sr = r
-            vo, so = o
-            sr= sr.astype(np.float64)
-            so= so.astype(np.float64)
-            t = time.time()
-            r_Mobj = EH.MSobject('SampEn', m=2,tau =1)
-            o_Mobj = EH.MSobject('SampEn', m=2,tau =1)
-            r_MSx, r_Ci = EH.MSEn(sr, r_Mobj, Scales=MAX_INTERVAL)
-            o_MSx, o_Ci = EH.MSEn(so, o_Mobj, Scales=MAX_INTERVAL)
-            # se_r, _, _ = EH.SampEn(sr, m=MAX_INTERVAL)
-            # se_o, _, _ = EH.SampEn(so, m=MAX_INTERVAL)
-            print(
-                f"current sample number {i}   total: {time.time() - t} seconds",
-                flush=True)
-            with open(os.path.join("sample_entropy",f"sample_entropy_reduction_{i}_{MAX_INTERVAL}d.p"),'wb') as f:
-                pickle.dump((r_MSx,r_Ci),f)
-            with open(os.path.join("sample_entropy",f"sample_entropy_original_{i}_{MAX_INTERVAL}d.p"),'wb') as f:
-                pickle.dump((o_MSx,o_Ci),f)
-            # np.save(os.path.join("sample_entropy",f"sample_entropy_reduction_{i}_{MAX_INTERVAL}d.npy"), np.array(se_r))
-            # np.save(os.path.join("sample_entropy",f"sample_entropy_original_{i}_{MAX_INTERVAL}d.npy"), np.array(se_o))
-
-        except queue.Empty as e:
+        if q.empty():
             return
+        index = q.get(block=120)
+        if index is None:
+            continue
+        r, o = gt_reduction.get_by_index(index), gt_original.get_by_index(index)
+        vr, sr = r
+        vo, so = o
+        sr= sr.astype(np.float64)
+        so= so.astype(np.float64)
+        t = time.time()
+        r_Mobj = EH.MSobject('SampEn', m=2,tau =1)
+        o_Mobj = EH.MSobject('SampEn', m=2,tau =1)
+        r_MSx, r_Ci = EH.MSEn(sr, r_Mobj, Scales=MAX_INTERVAL)
+        o_MSx, o_Ci = EH.MSEn(so, o_Mobj, Scales=MAX_INTERVAL)
+        # se_r, _, _ = EH.SampEn(sr, m=MAX_INTERVAL)
+        # se_o, _, _ = EH.SampEn(so, m=MAX_INTERVAL)
+        print(
+            f"current sample number {i}   total: {time.time() - t} seconds",
+            flush=True)
+        with open(os.path.join("sample_entropy",f"sample_entropy_reduction_{i}_{MAX_INTERVAL}d.p"),'wb') as f:
+            pickle.dump((r_MSx,r_Ci),f)
+        with open(os.path.join("sample_entropy",f"sample_entropy_original_{i}_{MAX_INTERVAL}d.p"),'wb') as f:
+            pickle.dump((o_MSx,o_Ci),f)
+        # np.save(os.path.join("sample_entropy",f"sample_entropy_reduction_{i}_{MAX_INTERVAL}d.npy"), np.array(se_r))
+        # np.save(os.path.join("sample_entropy",f"sample_entropy_original_{i}_{MAX_INTERVAL}d.npy"), np.array(se_o))
+
 def get_sample_entropy(indexes:[int,List[int]]):
     if isinstance(indexes,int):
         indexes=[indexes]
