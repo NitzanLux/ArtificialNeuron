@@ -46,8 +46,8 @@ def get_sample_entropy(indexes:[int,List[int]]):
         indexes=[indexes]
     number_of_jobs = min(number_of_cpus - 1,len(indexes))
 
-    gt_original_name = 'davids_ergodic_validation'
-    gt_reduction_name = 'reduction_ergodic_validation'
+    gt_original_name = 'davids_ergodic_train'
+    gt_reduction_name = 'reduction_ergodic_train'
     gt_reduction = GroundTruthData.load(os.path.join( 'evaluations', 'ground_truth', gt_reduction_name + '.gteval'))
     gt_original = GroundTruthData.load(os.path.join('evaluations', 'ground_truth', gt_original_name + '.gteval'))
 
@@ -72,7 +72,7 @@ if __name__ == "__main__":
     #                     help='set memory', default=-1)
     # args = parser.parse_args()
     from utils.slurm_job import *
-    number_of_clusters=80
+    number_of_clusters=10
     job_factory = SlurmJobFactory("cluster_logs")
     gt_reduction_name = 'reduction_ergodic_validation'
     size = len(GroundTruthData.load(os.path.join( 'evaluations', 'ground_truth', gt_reduction_name + '.gteval')))
