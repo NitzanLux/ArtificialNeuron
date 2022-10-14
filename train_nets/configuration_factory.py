@@ -282,7 +282,7 @@ def restore_all_from_temp(configs_json):
                     continue
                 else:
                     temps.add(f)
-                if not os.path.exists(str(f)[:-len('temp')]) and 'temp'!=str(f)[-len('temp')*2:-len('temp')]:
+                if (not os.path.exists(os.path.join(path,str(f)[:-len('temp')]))) and 'temp'!=str(f)[-len('temp')*2:-len('temp')]:
                     if os.path.isdir(os.path.join(path,f)):
                         os.mkdir(os.path.join(path,str(f)[:-len('temp')]))
                         print(f)
