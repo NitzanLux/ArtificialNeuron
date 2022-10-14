@@ -480,7 +480,7 @@ class SavingAndEvaluationScheduler():
                 else:
                     for i in os.listdir(os.path.join(base_path, fn)):
                         if os.path.getsize(os.path.join(base_path, fn,i))>0:
-                            os.replace(os.path.join(base_path, fn,i),os.path.join(base_path, fn+'temp',i))
+                            shutil.copy(os.path.join(base_path, fn,i),os.path.join(base_path, fn+'temp',i))
 
         model.save(os.path.join(MODELS_DIR, *config.model_path))
         if INCLUDE_OPTIMIZER_AT_LOADING:
