@@ -282,6 +282,9 @@ def restore_all_from_temp(configs_json):
                     continue
                 else:
                     temps.add(f)
+                if not os.path.exists(str(f)[:-len('temp')]) and 'temp'!=str(f)[-len('temp')*2:-len('temp')]:
+                    os.mkdir(str(f)[:-len('temp')])
+
         for f in temps:
             f_path =  str(os.path.join(path,f))
             if os.path.isdir(f_path):
@@ -290,7 +293,7 @@ def restore_all_from_temp(configs_json):
                     print(f)
 
                     if (not os.path.exists(os.path.join(f_path[:-len('temp')],f))) or os.path.getsize(os.path.join(f_path[:-len('temp')],f)) == 0:
-                        shutil.copyfile( os.path.join(f_path,f),os.path.join(f_path[:-len('temp')],f))
+                        shutil.copyfile(os.path.join(f_path,f),os.path.join(f_path[:-len('temp')],f))
             elif (not os.path.exists(f_path[:-len('temp')])) or os.path.getsize(f_path[:-len('temp')])==0:
                 shutil.copyfile(f_path,f_path[:-len('temp')])
 
