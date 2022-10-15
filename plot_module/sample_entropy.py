@@ -79,8 +79,8 @@ def get_sample_entropy(indexes:[int,List[int]]):
 
     gt_original_name = 'davids_ergodic_train'
     gt_reduction_name = 'reduction_ergodic_train'
-    gt_reduction = GroundTruthData.load(os.path.join( 'evaluations', 'ground_truth', gt_reduction_name + '.gteval'))
-    # gt_original = GroundTruthData.load(os.path.join('evaluations', 'ground_truth', gt_original_name + '.gteval'))
+    # gt_reduction = GroundTruthData.load(os.path.join( 'evaluations', 'ground_truth', gt_reduction_name + '.gteval'))
+    gt_original = GroundTruthData.load(os.path.join('evaluations', 'ground_truth', gt_original_name + '.gteval'))
     if number_of_jobs>1:
         queue=Queue(maxsize=number_of_jobs)
         process = [Process(target=create_sample_entropy_file, args=(queue,)) for i in range(number_of_jobs)]
