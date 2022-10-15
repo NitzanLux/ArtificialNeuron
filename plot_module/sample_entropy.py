@@ -61,7 +61,7 @@ def get_sample_entropy(gt_name,indexes:[int,List[int]]):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Add ground_truth name')
-    parser.add_argument(dest="gt_name", type=str,
+    parser.add_argument('-gt',dest="gt_name", type=str,
                         help='data ground truth object name')
     parser.add_argument('-mem', dest="memory", type=int,
                         help='set memory', default=-1)
