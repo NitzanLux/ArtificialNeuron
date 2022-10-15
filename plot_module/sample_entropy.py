@@ -84,7 +84,7 @@ def get_sample_entropy(indexes:[int,List[int]]):
     if number_of_jobs>1:
         queue=Queue(maxsize=number_of_jobs)
         process = [Process(target=create_sample_entropy_file, args=(queue,)) for i in range(number_of_jobs)]
-
+    print('starting')
     for j,index in enumerate(indexes):
         r,o = gt_reduction.get_by_index(index), gt_original.get_by_index(index)
         vr, sr = r
