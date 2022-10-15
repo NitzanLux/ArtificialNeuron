@@ -26,9 +26,9 @@ def create_sample_entropy_file(q):
         index,sr,so = q.get(block=120)
         if index is None:
             continue
-        r, o = gt_reduction.get_by_index(index), gt_original.get_by_index(index)
-        vr, sr = r
-        vo, so = o
+        # r, o = gt_reduction.get_by_index(index), gt_original.get_by_index(index)
+        # vr, sr = r
+        # vo, so = o
         sr= sr.astype(np.float64)
         so= so.astype(np.float64)
         t = time.time()
