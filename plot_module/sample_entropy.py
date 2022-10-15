@@ -23,9 +23,10 @@ def create_sample_entropy_file(q):
     while True:
         if q.empty():
             return
-        index,sr,so = q.get(block=120)
-        if index is None:
+        data = q.get(block=120)
+        if data is None:
             return
+        sr, so, index, r_tag,o_tag=data
         # r, o = gt_reduction.get_by_index(index), gt_original.get_by_index(index)
         # vr, sr = r
         # vo, so = o
@@ -41,9 +42,9 @@ def create_sample_entropy_file(q):
         print(
             f"current sample number {i}   total: {time.time() - t} seconds",
             flush=True)
-        with open(os.path.join("sample_entropy",f"sample_entropy_reduction_{i}_{MAX_INTERVAL}d.p"),'wb') as f:
+        with open(os.path.join("sample_entropy",f"sample_entropy_{r_tag}_{i}_{MAX_INTERVAL}d.p"),'wb') as f:
             pickle.dump((r_MSx,r_Ci),f)
-        with open(os.path.join("sample_entropy",f"sample_entropy_original_{i}_{MAX_INTERVAL}d.p"),'wb') as f:
+        with open(os.path.join("sample_entropy",f"sample_entropy_{o_tag}_{i}_{MAX_INTERVAL}d.p"),'wb') as f:
             pickle.dump((o_MSx,o_Ci),f)
         # np.save(os.path.join("sample_entropy",f"sample_entropy_reduction_{i}_{MAX_INTERVAL}d.npy"), np.array(se_r))
         # np.save(os.path.join("sample_entropy",f"sample_entropy_original_{i}_{MAX_INTERVAL}d.npy"), np.array(se_o))
@@ -65,7 +66,7 @@ def get_sample_entropy(indexes:[int,List[int]]):
         r,o = gt_reduction.get_by_index(index), gt_original.get_by_index(index)
         vr, sr = r
         vo, so = o
-        queue.put((sr,so,index))
+        queue.put((sr,so,index,gt_reduction_name,gt_original_name))
         if j<len(process):
             process[j].start()
 
