@@ -83,5 +83,5 @@ if __name__ == "__main__":
         indexes=list(range(i*jumps,min((i+1)*jumps,size)))
         print(indexes)
 
-        job_factory.send_job(f"sample_entropy{gt_name}_{i}_{MAX_INTERVAL}d", f'python -c "from plot_module.sample_entropy import get_sample_entropy; get_sample_entropy('+"'"+gt_name+"'"+'{indexes})"',**keys)
+        job_factory.send_job(f"sample_entropy{gt_name}_{i}_{MAX_INTERVAL}d", f'python -c "from plot_module.sample_entropy import get_sample_entropy; get_sample_entropy('+"'"+gt_name+"'"+f'{indexes})"',**keys)
         print('job sent')
