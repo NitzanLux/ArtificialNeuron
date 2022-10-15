@@ -69,7 +69,7 @@ if __name__ == "__main__":
 
 
     from utils.slurm_job import *
-    number_of_clusters=10
+    number_of_clusters=5
     job_factory = SlurmJobFactory("cluster_logs")
 
 
