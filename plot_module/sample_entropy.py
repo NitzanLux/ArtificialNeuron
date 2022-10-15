@@ -16,7 +16,7 @@ print("start job")
 
 import pickle as pickle
 number_of_jobs=number_of_cpus-1//5
-# number_of_jobs=
+number_of_jobs=1
 def create_sample_entropy_file(q):
 
     while True:
