@@ -343,10 +343,10 @@ def arange_kernel_by_layers(kernels, layers, expend=False):
 if __name__ == '__main__':
     # restore_last_n_configs(100)
     configs = []
-    configurations_name = "comparison_corrected"
+    configurations_name = "comparison_corrected_gpu"
     # configurations_name = 'morph'
     base_layer = [54] + [12] * 6
-    for k in range(4):
+    for k in range(1):
         torch_seed, numpy_seed, random_seed = get_seeds()
         for i in range(7, 0, -2):
             kernels = arange_kernel_by_layers(base_layer, i, False)
