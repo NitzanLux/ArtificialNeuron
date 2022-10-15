@@ -14,7 +14,7 @@ MAX_INTERVAL = 200
 print("start job")
 import pickle as pickle
 number_of_jobs=number_of_cpus-1//5
-number_of_jobs=1
+number_of_jobs=5
 def create_sample_entropy_file(q):
 
     # gt_original_name = 'davids_ergodic_train'
