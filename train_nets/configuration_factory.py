@@ -50,7 +50,8 @@ def save_config(config, path: [str, None] = None):
 
 def surround_with_default_config_values(**kargs):
     ##default values can be overridden by kargs
-    config = AttrDict(config_version=CURRENT_VERSION, input_window_size=120, prediction_length=1,
+    config = AttrDict(config_version=CURRENT_VERSION, input_window_size=120,
+                      prediction_length=1,
                       num_segments=2 * 639,
                       # num_segments=2082,
                       num_syn_types=1, use_mixed_precision=False,
@@ -342,13 +343,12 @@ def arange_kernel_by_layers(kernels, layers, expend=False):
 if __name__ == '__main__':
     # restore_last_n_configs(100)
     configs = []
-    configurations_name = "testing"
+    configurations_name = "comparison_fixed"
     # configurations_name = 'morph'
     base_layer = [54] + [12] * 6
-    for k in range(4):
+    for k in range(1):
         torch_seed, numpy_seed, random_seed = get_seeds()
         for i in range(7, 0, -2):
-            i=1
             kernels = arange_kernel_by_layers(base_layer, i, False)
             for data in [DAVID_BASE_PATH, REDUCTION_BASE_PATH]:
                 config = config_factory(
@@ -357,15 +357,15 @@ if __name__ == '__main__':
                     # model_tag="%s_%d%s" % (configurations_name, i, "_reduction" if data == REDUCTION_BASE_PATH else ''),
                     model_tag="%s_%s" % (configurations_name, "_reduction" if data == REDUCTION_BASE_PATH else ''),
                     kernel_sizes=kernels, number_of_layers_space=len(kernels), data_base_path=data,trim_last_nonlinear=True,
-                    accumulate_loss_batch_factor=1, prediction_length=700,torch_seed=torch_seed,numpy_seed=numpy_seed,random_seed=random_seed,
+                    accumulate_loss_batch_factor=1, prediction_length=700,torch_seed=torch_seed,numpy_seed=numpy_seed,random_seed=random_seed,input_window_size=sum(kernels)-len(kernels)+1,
                     # batch_size_validation=30, batch_size_train=80,
                     # batch_size_validation=30, batch_size_train=5,
                     batch_size_validation=30, batch_size_train=160,
                     constant_learning_rate=0.03)
-                configs.append(config)
-                break
-            break
-        break
+                # configs.append(config)
+                # break
+            # break
+        # break
         # configs.extend(generate_config_files_multiple_seeds(config_morpho_0, 2))
 
     print(configurations_name)
