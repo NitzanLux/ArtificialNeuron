@@ -362,7 +362,7 @@ if __name__ == '__main__':
                     # batch_size_validation=30, batch_size_train=5,
                     batch_size_validation=30, batch_size_train=160,
                     constant_learning_rate=0.03)
-                # configs.append(config)
+                configs.append(config)
                 # break
             # break
         # break
