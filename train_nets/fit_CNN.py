@@ -476,7 +476,7 @@ class SavingAndEvaluationScheduler():
                 shutil.copy(os.path.join(base_path, fn), os.path.join(base_path, fn) + 'temp')
             elif os.path.isdir(os.path.join(base_path, fn)) and 'temp' not in fn:
                 if not os.path.exists(os.path.join(base_path, fn+'temp')):
-                    shutil.copy(os.path.join(base_path, fn), os.path.join(base_path, fn+'temp'))
+                    shutil.copytree(os.path.join(base_path, fn), os.path.join(base_path, fn+'temp'))
                 else:
                     for i in os.listdir(os.path.join(base_path, fn)):
                         if os.path.getsize(os.path.join(base_path, fn,i))>0:
