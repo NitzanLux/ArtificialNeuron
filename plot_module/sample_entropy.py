@@ -35,9 +35,9 @@ def create_sample_entropy_file(q):
 
         _, y_spike, _ = parse_sim_experiment_file(f_path)
         path, f = ntpath.split(f_path)
-        for index in range(y_spike.shape[0]):
+        for index in range(y_spike.shape[1]):
             print(f'start key:{f} index:{index}')
-            s = y_spike[index,:].astype(np.float64)
+            s = y_spike[:,index].astype(np.float64)
             print(s,s.shape)
             t = time.time()
             Mobj = EH.MSobject('SampEn', m=2,tau =1)
