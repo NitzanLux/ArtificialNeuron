@@ -9,6 +9,7 @@ from typing import List
 import argparse
 from multiprocessing import Process,Queue
 from neuron_simulations.simulation_data_generator_new import parse_sim_experiment_file
+import ntpath
 
 import argparse
 number_of_cpus = multiprocessing.cpu_count()
