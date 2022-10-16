@@ -94,5 +94,5 @@ if __name__ == "__main__":
         pathes=list_dir_parent[i*jumps:min((i+1)*jumps,len(list_dir_parent))]
         print(pathes)
 
-        job_factory.send_job(f"sample_entropy{gt_name}_{i}_{MAX_INTERVAL}d", f'python -c "from plot_module.sample_entropy import get_sample_entropy; get_sample_entropy('+"'"+args.tag+"'"+f',{pathes})"',**keys)
+        job_factory.send_job(f"sample_entropy{args.tag}_{i}_{MAX_INTERVAL}d", f'python -c "from plot_module.sample_entropy import get_sample_entropy; get_sample_entropy('+"'"+args.tag+"'"+f',{pathes})"',**keys)
         print('job sent')
