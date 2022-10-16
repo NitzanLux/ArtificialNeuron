@@ -37,7 +37,8 @@ def create_sample_entropy_file(q):
         path, f = ntpath.split(f_path)
         for index in range(y_spike.shape[0]):
             print(f'start key:{f} index:{index}')
-            s= y_spike[index,:].astype(np.float64)
+            s = y_spike[index,:].astype(np.float64)
+            print(s)
             t = time.time()
             Mobj = EH.MSobject('SampEn', m=2,tau =1)
             MSx, Ci = EH.MSEn(s, Mobj, Scales=MAX_INTERVAL)
