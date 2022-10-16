@@ -8,6 +8,8 @@ import multiprocessing
 from typing import List
 import argparse
 from multiprocessing import Process,Queue
+from neuron_simulations.simulation_data_generator_new import parse_sim_experiment_file
+
 import argparse
 number_of_cpus = multiprocessing.cpu_count()
 import queue
@@ -15,8 +17,11 @@ MAX_INTERVAL = 200
 print("start job")
 
 import pickle as pickle
-number_of_jobs=number_of_cpus-1//5
-number_of_jobs=1
+number_of_jobs=number_of_cpus-1
+# number_of_jobs=1
+
+def load_file_path(base_dir):
+    return os.listdir(base_dir)
 def create_sample_entropy_file(q):
 
     while True:
@@ -25,31 +30,32 @@ def create_sample_entropy_file(q):
         data = q.get(block=120)
         if data is None:
             return
-        s,  index, key,tag,=data
-        print(f'start key:{key} index:{index}')
-        s= s.astype(np.float64)
-        t = time.time()
-        Mobj = EH.MSobject('SampEn', m=2,tau =1)
-        MSx, Ci = EH.MSEn(s, Mobj, Scales=MAX_INTERVAL)
-        print(
-            f"current sample number {i}   total: {time.time() - t} seconds",
-            flush=True)
-        with open(os.path.join("sample_entropy",f"sample_entropy_{tag}_{i}_{MAX_INTERVAL}d.p"),'wb') as f:
-            pickle.dump((MSx,Ci,key),f)
+        f_path,tag=data
 
-def get_sample_entropy(gt_name,indexes:[int,List[int]]):
-    if isinstance(indexes,int):
-        indexes=[indexes]
-    number_of_jobs = min(number_of_cpus - 1,len(indexes))
+        _, y_spike, _ = parse_sim_experiment_file(f_path)
+        path, f = ntpath.split(f_path)
+        for index in y_spike.shape[0]:
+            print(f'start key:{f} index:{index}')
+            s= y_spike[index,:].astype(np.float64)
+            t = time.time()
+            Mobj = EH.MSobject('SampEn', m=2,tau =1)
+            MSx, Ci = EH.MSEn(s, Mobj, Scales=MAX_INTERVAL)
+            print(
+                f"current sample number {f} {index}  total: {time.time() - t} seconds",
+                flush=True)
+            with open(os.path.join("sample_entropy",f"sample_entropy_{tag}_{f}_{i}_{MAX_INTERVAL}d.p"),'wb') as f:
+                pickle.dump((MSx,Ci,key),f)
+
+def get_sample_entropy(tag,pathes):
+
+    number_of_jobs = min(number_of_cpus - 1,len(pathes))
 
 
-    gt = GroundTruthData.load(os.path.join('evaluations', 'ground_truth', gt_name + '.gteval'))
     queue=Queue(maxsize=number_of_jobs)
     process = [Process(target=create_sample_entropy_file, args=(queue,)) for i in range(number_of_jobs)]
     print('starting')
-    for j,index in enumerate(indexes):
-        v , s=  gt.get_by_index(index)
-        queue.put((s,index,gt.get_key_by_index(index),gt_name))
+    for j,fp in enumerate(pathes):
+        queue.put((fp,tag))
         if j<len(process):
             process[j].start()
 
@@ -61,8 +67,10 @@ def get_sample_entropy(gt_name,indexes:[int,List[int]]):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Add ground_truth name')
-    parser.add_argument('-gt',dest="gt_name", type=str,
-                        help='data ground truth object name')
+    parser.add_argument('-f',dest="parent_dir_path", type=str,
+                        help='parant directory path')
+    parser.add_argument('-t',dest="tag", type=str,
+                        help='tag for saving')
     parser.add_argument('-mem', dest="memory", type=int,
                         help='set memory', default=-1)
     args = parser.parse_args()
@@ -73,15 +81,19 @@ if __name__ == "__main__":
     job_factory = SlurmJobFactory("cluster_logs")
 
 
-    gt_name = args.gt_name
-    size = len(GroundTruthData.load(os.path.join( 'evaluations', 'ground_truth', gt_name + '.gteval')))
-    jumps=size//number_of_clusters
+    parent_dir_path = args.parent_dir_path
+    # size = len(GroundTruthData.load(os.path.join( 'evaluations', 'ground_truth', gt_name + '.gteval')))
+    list_dir_parent=os.path.listdir(parent_dir_path)
+    list_dir_parent = [os.path.join(parent_dir_path,i) for i in list_dir_parent]
+    jumps=len(list_dir_parent)//number_of_clusters
     keys={}
     if args.memory>0:
         keys['mem']=args.memory
+        print("Mem:",args.memory)
     for i in range(number_of_clusters):
         indexes=list(range(i*jumps,min((i+1)*jumps,size)))
+        pathes=list_dir_parent[i*jumps:min((i+1)*jumps,len(list_dir_parent))]
         print(indexes)
 
-        job_factory.send_job(f"sample_entropy{gt_name}_{i}_{MAX_INTERVAL}d", f'python -c "from plot_module.sample_entropy import get_sample_entropy; get_sample_entropy('+"'"+gt_name+"'"+f',{indexes})"',**keys)
+        job_factory.send_job(f"sample_entropy{gt_name}_{i}_{MAX_INTERVAL}d", f'python -c "from plot_module.sample_entropy import get_sample_entropy; get_sample_entropy('+"'"+args.tag+"'"+f',{pathes})"',**keys)
         print('job sent')
