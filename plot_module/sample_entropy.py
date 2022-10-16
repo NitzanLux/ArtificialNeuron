@@ -77,13 +77,13 @@ if __name__ == "__main__":
 
     print(args)
     from utils.slurm_job import *
-    number_of_clusters=5
+    number_of_clusters=10
     job_factory = SlurmJobFactory("cluster_logs")
 
 
     parent_dir_path = args.parent_dir_path
     # size = len(GroundTruthData.load(os.path.join( 'evaluations', 'ground_truth', gt_name + '.gteval')))
-    list_dir_parent=os.path.listdir(parent_dir_path)
+    list_dir_parent=os.listdir(parent_dir_path)
     list_dir_parent = [os.path.join(parent_dir_path,i) for i in list_dir_parent]
     jumps=len(list_dir_parent)//number_of_clusters
     keys={}
