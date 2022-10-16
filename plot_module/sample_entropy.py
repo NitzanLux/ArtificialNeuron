@@ -91,9 +91,8 @@ if __name__ == "__main__":
         keys['mem']=args.memory
         print("Mem:",args.memory)
     for i in range(number_of_clusters):
-        indexes=list(range(i*jumps,min((i+1)*jumps,size)))
         pathes=list_dir_parent[i*jumps:min((i+1)*jumps,len(list_dir_parent))]
-        print(indexes)
+        print(pathes)
 
         job_factory.send_job(f"sample_entropy{gt_name}_{i}_{MAX_INTERVAL}d", f'python -c "from plot_module.sample_entropy import get_sample_entropy; get_sample_entropy('+"'"+args.tag+"'"+f',{pathes})"',**keys)
         print('job sent')
