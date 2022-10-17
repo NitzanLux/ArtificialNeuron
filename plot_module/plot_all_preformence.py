@@ -19,6 +19,7 @@ def save_large_plot(fig,name):
 best_aucis=dict()
 fig,ax= plt.subplots()
 for i in os.listdir(MODELS_DIR):
+    print(i)
     if os.path.exists(os.path.join(MODELS_DIR,i,i+'best')):
         auc = np.load(os.path.join(MODELS_DIR,i,i+'best','auc_history.npy'))
         best_aucis[i]=np.max(auc)
