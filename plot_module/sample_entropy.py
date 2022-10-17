@@ -45,8 +45,8 @@ def create_sample_entropy_file(q):
             print(
                 f"current sample number {f} {index}  total: {time.time() - t} seconds",
                 flush=True)
-            with open(os.path.join("sample_entropy",f"sample_entropy_{tag}_{f}_{index}_{MAX_INTERVAL}d.p"),'wb') as f:
-                pickle.dump((MSx,Ci,key),f)
+            with open(os.path.join("sample_entropy",f"sample_entropy_{tag}_{f}_{index}_{MAX_INTERVAL}d.p"),'wb') as f_o:
+                pickle.dump((MSx,Ci,f,index),f_o)
 
 def get_sample_entropy(tag,pathes):
 
