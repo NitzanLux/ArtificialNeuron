@@ -357,7 +357,7 @@ if __name__ == '__main__':
                     # model_tag="%s_%d%s" % (configurations_name, i, "_reduction" if data == REDUCTION_BASE_PATH else ''),
                     model_tag="%s_%s" % (configurations_name, "_reduction" if data == REDUCTION_BASE_PATH else ''),
                     kernel_sizes=kernels, number_of_layers_space=len(kernels), data_base_path=data,#trim_last_nonlinear=True,
-                    accumulate_loss_batch_factor=1, prediction_length=700,torch_seed=torch_seed,numpy_seed=numpy_seed,random_seed=random_seed,input_window_size=sum(kernels)-len(kernels)+1,
+                    accumulate_loss_batch_factor=1, prediction_length=700,torch_seed=torch_seed,numpy_seed=numpy_seed,random_seed=random_seed,input_window_size=120,
                     # batch_size_validation=30, batch_size_train=80,
                     # batch_size_validation=30, batch_size_train=5,
                     batch_size_validation=30, batch_size_train=160,
