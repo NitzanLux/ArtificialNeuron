@@ -31,5 +31,5 @@ fig,ax = plt.subplots()
 
 out=np.array(list(best_aucis.values()))
 ax.scatter(np.zeros_like(out),out)
-ax.set_yscale('log')
-save_large_plot(fig,'best_aucis.png')
+# ax.set_yscale('log')
+save_large_plot(fig,f'best_aucis{np.max(best_aucis)}.png')
