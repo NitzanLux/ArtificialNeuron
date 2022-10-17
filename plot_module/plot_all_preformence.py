@@ -26,8 +26,10 @@ for i in os.listdir(MODELS_DIR):
         ax.plot(auc)
 
 save_large_plot(fig,"all_preformence.png")
-
+plt.show()
 fig.ax = plt.subplots()
+
 out=np.array(list(best_aucis.values()))
 ax.scatter(np.zeros_like(out),out)
+ax.yscale('log')
 save_large_plot(fig,'best_aucis.png')
