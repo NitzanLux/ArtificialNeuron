@@ -13,7 +13,7 @@ from model_evaluation_multiple import GroundTruthData, ModelEvaluator
 import numpy as np
 from project_path import *
 import json
-
+FONT_SIZE=6
 
 # '/ems/elsc-labs/segev-i/nitzan.luxembourg/projects/dendritic_tree/ArtificialNeuron'
 # %% pipline plot parameters
