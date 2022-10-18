@@ -42,7 +42,7 @@ SAVE_MODEL = True
 INCLUDE_OPTIMIZER_AT_LOADING = False
 NUMBER_OF_HOURS_FOR_PLOTTING_EVALUATIONS_PLOTS = 6000
 NUMBER_OF_HOURS_FOR_SAVING_MODEL_AND_CONFIG = 1
-NUMBER_OF_HOURS_FOR_EVAL_BEST = 3.5
+NUMBER_OF_HOURS_FOR_EVAL_BEST = 12
 VALIDATION_EVALUATION_FREQUENCY = 100
 ACCURACY_EVALUATION_FREQUENCY = 100
 BATCH_LOG_UPDATE_FREQ = 100
@@ -51,7 +51,7 @@ BUFFER_SIZE_IN_FILES_VALID = 2 if USE_CUDA else 1
 # BUFFER_SIZE_IN_FILES_TRAINING = 8
 BUFFER_SIZE_IN_FILES_TRAINING = 4 if USE_CUDA else 2
 SAMPLE_RATIO_TO_SHUFFLE_TRAINING = 1
-
+RUN_AT_THE_SAME_PROCESS=True
 synapse_type = 'NMDA'
 include_DVT = False
 print_logs = False
@@ -219,7 +219,7 @@ def train_network(config, model, optimizer):
     custom_loss = None
     evaluation_plotter_scheduler = SavingAndEvaluationScheduler()
     evaluation_plotter_scheduler.save_best_model_scaduler(config,
-                                                          use_slurm=True if not USE_CUDA else False)
+                                                          use_slurm=not RUN_AT_THE_SAME_PROCESS if not USE_CUDA else False,run_at_the_same_process=RUN_AT_THE_SAME_PROCESS)
     if not config.dynamic_learning_params:
         learning_rate, loss_weights, sigma, custom_loss = generate_constant_learning_parameters(config)
         if config.lr_scheduler is not None:
@@ -270,7 +270,7 @@ def train_network(config, model, optimizer):
                 return
             # save model every once a while
             # elif saving_counter % 10 == 0:
-            evaluation_plotter_scheduler(model, config, optimizer, use_slurm=True if not USE_CUDA else False)
+            evaluation_plotter_scheduler(model, config, optimizer, use_slurm=not RUN_AT_THE_SAME_PROCESS if not USE_CUDA else False,run_at_the_same_process=RUN_AT_THE_SAME_PROCESS)
             # if our model finnished its steps
 
 

@@ -666,6 +666,17 @@ def create_model_evaluation(gt_name, model_name, use_cuda=USE_CUDA,config=None,m
     g.save(os.path.join(dest_path, model_name + ".meval"))
     return g
 
+def create_model_evaluation_best(gt_name, model_name, use_cuda=USE_CUDA):
+    gt_path = os.path.join("evaluations", 'ground_truth', gt_name + ".gteval")
+    dest_path = os.path.join("evaluations", 'models', gt_name)
+    if not os.path.exists(dest_path):
+        os.mkdir(dest_path)
+    if config is None: config = load_config_file(os.path.join(MODELS_DIR, model_name, model_name + ".config"))
+    print('load config for %s' % model_name)
+    g = EvaluationData(GroundTruthData.load(gt_path), config, use_cuda,model)
+
+    g.save(os.path.join(dest_path, model_name + ".meval"))
+    return g
 
 def evaluate_auc_of_models(name: str, replace_regex: str, *args: EvaluationData):
     gt_dict = dict()
