@@ -74,7 +74,7 @@ for i in original_auc:
         if len(batch_counter_original)>0:
             batch_counter_original[-1] = np.array(batch_counter_original[-1])
         new_auc_data_original.append([i[0]])
-        layers_original.append([i[1]])
+        layers_original.append(i[1])
         batch_counter_original.append([i[2]])
         cur_layer = i[1]
     else:
