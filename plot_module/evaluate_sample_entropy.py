@@ -4,6 +4,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pickle
 #%%
+def save_large_plot(fig,name):
+    mng = plt.get_current_fig_manager()
+    mng.full_screen_toggle()
+    if '.' in name:
+        name = f"{name[:name.find('.')]}_{tag}_{name[name.find('.'):]}"
+    else:
+        name =f"{name}_{tag}"
+    fig.savefig(name)
 dim_size=200
 #%%
 reduction_data=dict()

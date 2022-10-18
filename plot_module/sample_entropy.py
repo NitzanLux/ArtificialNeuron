@@ -40,12 +40,12 @@ def create_sample_entropy_file(q):
             s = y_spike[:,index].astype(np.float64)
             print(s,s.shape)
             t = time.time()
-            Mobj = EH.MSobject('SampEn', m=2,tau =1)
+            Mobj = EH.MSobject('SampEn', m=6,tau =1)
             MSx, Ci = EH.MSEn(s, Mobj, Scales=MAX_INTERVAL)
             print(
                 f"current sample number {f} {index}  total: {time.time() - t} seconds",
                 flush=True)
-            with open(os.path.join("sample_entropy",f"sample_entropy_{tag}_{f}_{index}_{MAX_INTERVAL}d.p"),'wb') as f_o:
+            with open(os.path.join("sample_entropy",f"sample_entropy_{tag}_{index}_{MAX_INTERVAL}d.p"),'wb') as f_o:
                 pickle.dump((MSx,Ci,f,index),f_o)
 
 def get_sample_entropy(tag,pathes):

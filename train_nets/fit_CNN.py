@@ -5,6 +5,7 @@ from datetime import datetime
 
 import art
 import matplotlib.pyplot as plt
+import numpy as np
 import sklearn.metrics as skm
 import torch.optim as optim
 import torch.optim.lr_scheduler as lr_scheduler
@@ -577,13 +578,16 @@ def save_best_model(config_path):
 
     if not os.path.exists(os.path.join(best_result_path, "auc_history.npy")):
         auc_arr=np.array([])
-        new_auc_arr = np.array([auc])
+        new_auc_arr = np.array([[auc],[config.batch_counter]])
     else:
         auc_arr = np.load(os.path.join(best_result_path, "auc_history.npy"))
-        new_auc_arr = np.append(auc_arr, auc)
+        if len(auc_arr.shape)==1:
+            auc_arr=np.vstack((auc_arr,np.zeros_like(auc_arr)))
+
+        new_auc_arr = np.hstack((auc_arr, [[auc],[config.batch_counter]]))
 
     np.save(os.path.join(best_result_path, "auc_history.npy"), new_auc_arr)
-    if auc_arr.size==0 or np.max(auc_arr) < auc:
+    if auc_arr.size==0 or np.max(auc_arr[0,:]) < auc:
         model.save(os.path.join(best_result_path, 'model'))
         configuration_factory.save_config(config, os.path.join(best_result_path, 'config.pkl'))
         g.save(os.path.join(best_result_path, "eval.meval"))
