@@ -129,7 +129,7 @@ plt.errorbar(layers_reduction, reduction_auc_plotting,yerr=reduction_auc_plottin
 print(len(original_auc_plotting),batch_counter_original_mean.shape)
 for i in range(len(layers_original)):
 
-    plt.annotate(str(human_format(batch_counter_original_mean[i])+r" $\pm$ "+human_format(batch_counter_original_std[i])), (layers_original[i]+0.1,original_auc_plotting[i]-0.0005), fontsize=FONT_SIZE,color=(255/255., 57/255., 70/255.))
+    plt.annotate(str(human_format(batch_counter_original_mean[i])+r" $\pm$ "+human_format(batch_counter_original_std[i])), (layers_original[i]+0.1,original_auc_plotting[i]+([-0.0005]*((i==0)*2-1))), fontsize=FONT_SIZE,color=(255/255., 57/255., 70/255.))
 for i in range(len(layers_reduction)):
     plt.annotate(human_format(batch_counter_reduction_mean[i]) +r" $\pm$ " + human_format(batch_counter_reduction_std[i]), (layers_reduction[i]+0.1,reduction_auc_plotting[i]+0.0005), fontsize=FONT_SIZE,color=(0/255., 90/255., 216/255.))
 plt.legend()
