@@ -120,5 +120,5 @@ for i in range(len(layers_original)):
 for i in range(len(layers_reduction)):
     plt.annotate(human_format(batch_counter_reduction_mean[i])+human_format(batch_counter_reduction_std[i]),(layers_reduction[i],reduction_auc_plotting[i]))
 plt.legend()
-plt.show()
 plt.savefig('comparison.png')
+plt.show()
