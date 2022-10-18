@@ -18,7 +18,7 @@ MAX_INTERVAL = 200
 print("start job")
 
 import pickle as pickle
-number_of_jobs=number_of_cpus-1
+number_of_jobs=number_of_cpus-1//5
 # number_of_jobs=1
 
 def load_file_path(base_dir):
