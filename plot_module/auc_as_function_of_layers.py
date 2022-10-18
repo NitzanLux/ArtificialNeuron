@@ -131,9 +131,9 @@ for i in range(len(layers_original)):
     # print(human_format(batch_counter_original_std[i]))
     # print(human_format(batch_counter_original_mean[i]))
     print('hey')
-    plt.annotate(str(human_format(batch_counter_original_mean[i])+r" $\pm$ "+human_format(batch_counter_original_std[i])), (layers_original[i],original_auc_plotting[i]), fontsize=FONT_SIZE,color=(227, 27, 35))
+    plt.annotate(str(human_format(batch_counter_original_mean[i])+r" $\pm$ "+human_format(batch_counter_original_std[i])), (layers_original[i],original_auc_plotting[i]), fontsize=FONT_SIZE,color=(227/255., 27/255., 35/255.))
 for i in range(len(layers_reduction)):
-    plt.annotate(human_format(batch_counter_reduction_mean[i]) +r" $\pm$ " + human_format(batch_counter_reduction_std[i]), (layers_reduction[i],reduction_auc_plotting[i]), fontsize=FONT_SIZE,color=(0, 45, 106))
+    plt.annotate(human_format(batch_counter_reduction_mean[i]) +r" $\pm$ " + human_format(batch_counter_reduction_std[i]), (layers_reduction[i],reduction_auc_plotting[i]), fontsize=FONT_SIZE,color=(0/255., 45/255., 106/255.))
 plt.legend()
 plt.show()
 plt.savefig('comparison__.png')
