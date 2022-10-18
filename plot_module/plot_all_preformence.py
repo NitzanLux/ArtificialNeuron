@@ -39,4 +39,4 @@ fig,ax = plt.subplots()
 for i in best_aucis.keys():
     ax.scatter(best_aucis_data[i][0],best_aucis_data[i][1],c=best_aucis[i] ,cmap = cm.jet)
 # ax.set_yscale('log')
-save_large_plot(fig,f'best_aucis{np.max(out)}.png')
+save_large_plot(fig,f'auc_as_function_of_layers_and_step.png')
