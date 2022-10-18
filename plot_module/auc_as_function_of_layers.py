@@ -110,6 +110,7 @@ original_auc_plotting = [np.mean(i) for i in new_auc_data_original]
 reduction_auc_plotting_err = np.std(np.array(new_auc_data_reduction),axis=1)
 reduction_auc_plotting = np.mean(np.array(new_auc_data_reduction),axis=1)
 p=None
+new_auc_data_original = np.array(new_auc_data_original)
 for i in range(new_auc_data_original.shape[1]):
     if p is None:
         p = plt.scatter(layers_original,np.array(new_auc_data_original[:,i]))
