@@ -30,7 +30,7 @@ for i in os.listdir(MODELS_DIR):
             layers=config.number_of_layers_space
         best_aucis[i]=np.max(auc)
         best_aucis_data[i]=(layers,config.batch_counter*config.batch_size_train)
-        ax.plot(np.log(1-auc))
+        ax.plot(1-auc)
 
 save_large_plot(fig,"all_preformence.png")
 plt.show()
