@@ -37,7 +37,7 @@ plt.show()
 fig,ax = plt.subplots()
 
 for i in best_aucis.keys():
-    ax.scatter(best_aucis_data[i][0],best_aucis[i],c=best_aucis_data[i][1],cmap = cm.jet)
+    ax.scatter(best_aucis_data[i][0]+np.random.normal(0,0.2),best_aucis[i],s=0.2,c=best_aucis_data[i][1],cmap = cm.jet)
 # ax.set_yscale('log')
 ax.color_bar()
 save_large_plot(fig,f'auc_as_function_of_layers_and_step.png')
