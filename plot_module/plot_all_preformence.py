@@ -25,7 +25,8 @@ for i in os.listdir(MODELS_DIR):
         print(i)
         config = load_config_file(os.path.join(MODELS_DIR,i,i+'_best','config.pkl'),suffix='.pkl')
         auc = np.load(os.path.join(MODELS_DIR,i,i+'_best','auc_history.npy'))
-        print(auc.shape)
+        if len(auc.shape)>1:
+            auc=auc[0,:]
         layers=0
         if config.architecture_type=='FullNeuronNetwork':
             layers=config.number_of_layers_space
