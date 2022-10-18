@@ -41,10 +41,10 @@ data_z=[]
 for i in best_aucis.keys():
     if best_aucis[i]<0.94:
         continue
-    data_x.append(best_aucis_data[i][0]+np.random.normal(0,0.2))
+    data_x.append(best_aucis_data[i][0]+np.random.normal(0,0.1))
     data_y.append(best_aucis[i])
     data_z.append(np.log(best_aucis_data[i][1]))
-out = ax.scatter(data_x,data_y,s=0.2,c=data_z,cmap = cm.jet)
+out = ax.scatter(data_x,data_y,s=0.5,c=data_z,cmap = cm.jet)
 # ax.set_yscale('log')
 
 plt.colorbar(out,ax=ax)
