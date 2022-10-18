@@ -602,6 +602,7 @@ class ModelEvaluator():
                                          )
 
                                      )), row=2, col=1)
+
             # fig['data'][j*2+1]['line']['color']=fig['data'][j*2]['line']['color']
         mse_matrix = []
         y = []
