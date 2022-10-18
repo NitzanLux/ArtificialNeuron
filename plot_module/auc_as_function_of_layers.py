@@ -115,9 +115,9 @@ plt.errorbar(layers_reduction, reduction_auc_plotting,uplims=True, lolims=True, 
 for i in range(len(layers_original)):
     print(human_format(batch_counter_original_std[i]))
     print(human_format(batch_counter_original_mean[i]))
-    plt.annotate(human_format(batch_counter_original_mean[i])+r"$\pm$"+human_format(batch_counter_original_std[i]),layers_original[i],original_auc_plotting[i])
+    plt.annotate(human_format(batch_counter_original_mean[i])+r" $\pm$ "+human_format(batch_counter_original_std[i]),layers_original[i],original_auc_plotting[i])
 for i in range(len(layers_reduction)):
-    plt.annotate(human_format(batch_counter_reduction_mean[i])+r"$\pm$"+human_format(batch_counter_reduction_std[i])',layers_reduction[i],reduction_auc_plotting[i])
+    plt.annotate(human_format(batch_counter_reduction_mean[i])+r" $\pm$ "+human_format(batch_counter_reduction_std[i]),layers_reduction[i],reduction_auc_plotting[i])
 plt.legend()
 plt.show()
 plt.savefig('comparison.png')
