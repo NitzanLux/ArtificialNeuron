@@ -109,7 +109,11 @@ original_auc_plotting = [np.mean(i) for i in new_auc_data_original]
 
 reduction_auc_plotting_err = np.std(np.array(new_auc_data_reduction),axis=1)
 reduction_auc_plotting = np.mean(np.array(new_auc_data_reduction),axis=1)
-plt.scatter(layers_original,np.array(new_auc_data_original))
+p=None
+for i in range(new_auc_data_original.shape[1]):
+    if p is None:
+        p = plt.scatter(layers_original,np.array(new_auc_data_original[:,i]))
+    plt.scatter(layers_original, np.array(new_auc_data_original[:, i]),c=p[0].get_color())
 # ax = plt.errorbar(layers_original, original_auc_plotting, yerr=original_auc_plotting_err,label='original',alpha=0.7)
 # plt.errorbar(layers_original, original_auc_plotting, yerr=original_auc_plotting_err,label='original',alpha=0.7)
 # plt.errorbar(layers_reduction, reduction_auc_plotting,yerr=reduction_auc_plotting_err*10,label='reduction',alpha=0.7)
