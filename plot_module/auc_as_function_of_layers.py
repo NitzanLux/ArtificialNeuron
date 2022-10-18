@@ -12,6 +12,7 @@ import model_evaluation_multiple
 from model_evaluation_multiple import GroundTruthData, ModelEvaluator
 import numpy as np
 from project_path import *
+import json
 
 
 # '/ems/elsc-labs/segev-i/nitzan.luxembourg/projects/dendritic_tree/ArtificialNeuron'
