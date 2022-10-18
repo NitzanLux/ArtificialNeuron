@@ -110,7 +110,7 @@ original_auc_plotting = [np.mean(i) for i in new_auc_data_original]
 reduction_auc_plotting_err = np.std(np.array(new_auc_data_reduction),axis=1)
 reduction_auc_plotting = np.mean(np.array(new_auc_data_reduction),axis=1)
 
-plt.errorbar(layers_original, original_auc_plotting, yerr=original_auc_plotting_err,label='original',alpha=0.7)
+fig ,ax = plt.errorbar(layers_original, original_auc_plotting, yerr=original_auc_plotting_err,label='original',alpha=0.7)
 # plt.errorbar(layers_original, original_auc_plotting, yerr=original_auc_plotting_err,label='original',alpha=0.7)
 plt.errorbar(layers_reduction, reduction_auc_plotting,yerr=reduction_auc_plotting_err*10,label='reduction',alpha=0.7)
 print(len(original_auc_plotting),batch_counter_original_mean.shape)
@@ -118,7 +118,7 @@ for i in range(len(layers_original)):
     print(human_format(batch_counter_original_std[i]))
     print(human_format(batch_counter_original_mean[i]))
 
-    plt.annotate(str(i),(layers_original[i],original_auc_plotting[i]))
+    ax.annotate(str(i),(layers_original[i],original_auc_plotting[i]))
     # plt.annotate(str(human_format(batch_counter_original_mean[i])+human_format(batch_counter_original_std[i])),(layers_original[i],original_auc_plotting[i]))
 # for i in range(len(layers_reduction)):
     # plt.annotate(human_format(batch_counter_reduction_mean[i])+human_format(batch_counter_reduction_std[i]),(layers_reduction[i],reduction_auc_plotting[i]))
