@@ -123,9 +123,9 @@ def surround_with_default_config_values(**kargs):
     return config
 
 
-def load_config_file(path: str) -> AttrDict:
-    if path[-len('.config'):] != '.config':
-        path += '.config'
+def load_config_file(path: str,suffix:str='.config') -> AttrDict:
+    if path[-len(suffix):] != suffix:
+        path += suffix
     with open(path, 'r') as file:
         file_s = file.read()
     config = json.loads(file_s)

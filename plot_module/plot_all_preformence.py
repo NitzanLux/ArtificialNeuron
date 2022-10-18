@@ -22,7 +22,7 @@ fig,ax= plt.subplots()
 for i in os.listdir(MODELS_DIR):
     if os.path.exists(os.path.join(MODELS_DIR,i,i+'_best','auc_history.npy')):
         print(i)
-        config = load_config_file(os.path.join(MODELS_DIR,i,i+'_best','config.pkl'))
+        config = load_config_file(os.path.join(MODELS_DIR,i,i+'_best','config.pkl'),suffix='.pkl')
         auc = np.load(os.path.join(MODELS_DIR,i,i+'_best','auc_history.npy'))
         layers=0
         if config.architecture_type=='FullNeuronNetwork':
