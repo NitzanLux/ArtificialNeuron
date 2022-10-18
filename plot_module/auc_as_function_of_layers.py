@@ -38,7 +38,10 @@ for i in jsons_list:
 
 for i in configs:
     conf=load_config_file(os.path.join(MODELS_DIR, i[0],i[0]+'_best','config.pkl'),'.pkl')
-    out=(np.max(np.load(os.path.join(MODELS_DIR, i[0],i[0]+'_best','auc_history.npy'))[0,:]),conf.number_of_layers_space)
+    auc_his=np.load(os.path.join(MODELS_DIR, i[0],i[0]+'_best','auc_history.npy'))
+    if len(auc_his.shape)>1:
+        auc_his=auc_his[0,:]
+    out=(np.max(),conf.number_of_layers_space)
 # for i in tqdm(os.listdir(os.path.join('evaluations', 'models', gt_reduction_name))):
 #     current_model = model_evaluation_multiple.EvaluationData.load(
 #         os.path.join('evaluations', 'models', gt_reduction_name, i))
