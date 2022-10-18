@@ -37,8 +37,8 @@ for i in jsons_list:
         configs+=json.load(file)
 
 for i in configs:
-    conf=load_config_file(os.path.join(MODELS_DIR, i[0],i[0]+'best','config.pkl'),'.pkl')
-    out=(np.max(np.load(os.path.join(MODELS_DIR, i[0],i[0]+'best','auc_history.npy'))[0,:]),conf.number_of_layers_space)
+    conf=load_config_file(os.path.join(MODELS_DIR, i[0],i[0]+'_best','config.pkl'),'.pkl')
+    out=(np.max(np.load(os.path.join(MODELS_DIR, i[0],i[0]+'_best','auc_history.npy'))[0,:]),conf.number_of_layers_space)
 # for i in tqdm(os.listdir(os.path.join('evaluations', 'models', gt_reduction_name))):
 #     current_model = model_evaluation_multiple.EvaluationData.load(
 #         os.path.join('evaluations', 'models', gt_reduction_name, i))
