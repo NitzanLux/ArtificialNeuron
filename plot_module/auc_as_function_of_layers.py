@@ -32,6 +32,15 @@ reduction_auc = []
 original_auc = []
 
 configs=[]
+
+def human_format(num):
+    magnitude = 0
+    while abs(num) >= 1000:
+        magnitude += 1
+        num /= 1000.0
+    # add more suffixes if you need them
+    return '%.2f%s' % (num, ['', 'K', 'M', 'G', 'T', 'P'][magnitude])
+
 for i in jsons_list:
     with open(os.path.join(MODELS_DIR, "%s.json" % i), 'r') as file:
         configs+=json.load(file)
@@ -41,20 +50,10 @@ for i in configs:
     auc_his=np.load(os.path.join(MODELS_DIR, i[0],i[0]+'_best','auc_history.npy'))
     if len(auc_his.shape)>1:
         auc_his=auc_his[0,:]
-    out=(np.max(auc_his),conf.number_of_layers_space)
-# for i in tqdm(os.listdir(os.path.join('evaluations', 'models', gt_reduction_name))):
-#     current_model = model_evaluation_multiple.EvaluationData.load(
-#         os.path.join('evaluations', 'models', gt_reduction_name, i))
-#     if current_model.config.architecture_type != 'FullNeuronNetwork':
-#         continue
+    out=(np.max(auc_his),conf.number_of_layers_space,conf.batch_size*conf.batch_counter)
+
     if conf.data_base_path==REDUCTION_BASE_PATH:
         reduction_auc.append(out)
-
-# for i in tqdm(os.listdir(os.path.join('evaluations', 'models', gt_original_name))):
-#     current_model = model_evaluation_multiple.EvaluationData.load(
-#         os.path.join('evaluations', 'models', gt_original_name, i))
-#     if current_model.config.architecture_type != 'FullNeuronNetwork':
-#         continue
     else:
         original_auc.append(out)
 original_auc = sorted(original_auc, key=lambda x: x[1])
@@ -62,28 +61,48 @@ reduction_auc = sorted(reduction_auc, key=lambda x: x[1])
 
 new_auc_data_original = []
 new_auc_data_reduction = []
+batch_counter_original = []
+batch_counter_reduction = []
+
 layers_original = []
 layers_reduction = []
 cur_layer = -1
 for i in original_auc:
     if i[1] != cur_layer:
-        if len(new_auc_data_original) > 0: new_auc_data_original[-1] = np.array(new_auc_data_original[-1])
+        if len(new_auc_data_original) > 0:
+            new_auc_data_original[-1] = np.array(new_auc_data_original[-1])
+        if len(batch_counter_original)>0:
+            batch_counter_original[-1] = np.array(batch_counter_original[-1])
         new_auc_data_original.append([i[0]])
-        layers_original.append(i[1])
+        layers_original.append([i[1]])
+        batch_counter_original = i[2]
         cur_layer = i[1]
     else:
         new_auc_data_original[-1].append(i[0])
+        batch_counter_original[-1].append(i[2])
+
+
 new_auc_data_original[-1] = np.array(new_auc_data_original[-1])
+batch_counter_original_std=np.std(batch_counter_original,axis=1)
+batch_counter_original_mean=np.mean(batch_counter_original,axis=1)
+
 for i in reduction_auc:
     if i[1] != cur_layer:
         if len(new_auc_data_reduction) > 0: new_auc_data_reduction[-1] = np.array(new_auc_data_reduction[-1])
+        if len(batch_counter_reduction) > 0:
+            batch_counter_reduction[-1] = np.array(batch_counter_reduction[-1])
+
         new_auc_data_reduction.append([i[0]])
         layers_reduction.append(i[1])
+        batch_counter_reduction = i[2]
         cur_layer = i[1]
     else:
         new_auc_data_reduction[-1].append(i[0])
-new_auc_data_reduction[-1] = np.array(new_auc_data_reduction[-1])
+        batch_counter_reduction[-1].append(i[2])
 
+new_auc_data_reduction[-1] = np.array(new_auc_data_reduction[-1])
+batch_counter_reduction_std=np.std(batch_counter_reduction,axis=1)
+batch_counter_reduction_mean=np.mean(batch_counter_reduction,axis=1)
 # %%
 original_auc_plotting_err = [np.std(i) for i in new_auc_data_original]
 original_auc_plotting = [np.mean(i) for i in new_auc_data_original]
@@ -93,6 +112,10 @@ reduction_auc_plotting = [np.mean(i) for i in new_auc_data_reduction]
 
 plt.errorbar(layers_original, original_auc_plotting, uplims=True, lolims=True,yerr=original_auc_plotting_err,label='original',alpha=0.7)
 plt.errorbar(layers_reduction, reduction_auc_plotting,uplims=True, lolims=True, yerr=reduction_auc_plotting_err,label='reduction',alpha=0.7)
+for i in range(len(layers_original)):
+    plt.annotate(f'{human_format(batch_counter_original_mean[i])}$\pm${human_format(batch_counter_original_std[i])}',layers_original[i],original_auc_plotting[i])
+for i in range(len(layers_reduction)):
+    plt.annotate(f'{human_format(batch_counter_reduction_mean[i])}$\pm${human_format(batch_counter_reduction_std[i])}',layers_reduction[i],reduction_auc_plotting[i])
 plt.legend()
 plt.show()
 plt.savefig('comparison.png')
