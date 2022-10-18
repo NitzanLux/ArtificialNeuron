@@ -112,17 +112,17 @@ reduction_auc_plotting = np.mean(np.array(new_auc_data_reduction),axis=1)
 p=None
 new_auc_data_original = np.array(new_auc_data_original)
 new_auc_data_reduction = np.array(new_auc_data_reduction)
-for i in range(new_auc_data_original.shape[1]):
-    if p is None:
-        plt.scatter(layers_original,np.array(new_auc_data_original[:,i]),c='red')
-for i in range(new_auc_data_reduction.shape[1]):
-        if p is None:
-            plt.scatter(layers_reduction, np.array(new_auc_data_reduction[:, i]), c='blue')
+# for i in range(new_auc_data_original.shape[1]):
+#     if p is None:
+#         plt.scatter(layers_original,np.array(new_auc_data_original[:,i]),c='red')
+# for i in range(new_auc_data_reduction.shape[1]):
+#         if p is None:
+#             plt.scatter(layers_reduction, np.array(new_auc_data_reduction[:, i]), c='blue')
         # continue
     # plt.scatter(layers_original, np.array(new_auc_data_original[:, i]),c=p[0].get_color())
 # ax = plt.errorbar(layers_original, original_auc_plotting, yerr=original_auc_plotting_err,label='original',alpha=0.7)
-# plt.errorbar(layers_original, original_auc_plotting, yerr=original_auc_plotting_err,label='original',alpha=0.7)
-# plt.errorbar(layers_reduction, reduction_auc_plotting,yerr=reduction_auc_plotting_err*10,label='reduction',alpha=0.7)
+plt.errorbar(layers_original, original_auc_plotting, yerr=original_auc_plotting_err,label='original',alpha=0.7)
+plt.errorbar(layers_reduction, reduction_auc_plotting,yerr=reduction_auc_plotting_err,label='reduction',alpha=0.7)
 print(len(original_auc_plotting),batch_counter_original_mean.shape)
 for i in range(len(layers_original)):
     print(human_format(batch_counter_original_std[i]))
