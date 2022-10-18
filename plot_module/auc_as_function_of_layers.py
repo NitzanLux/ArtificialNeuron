@@ -112,7 +112,7 @@ reduction_auc_plotting = [np.mean(i) for i in new_auc_data_reduction]
 
 plt.errorbar(layers_original, original_auc_plotting, uplims=True, lolims=True,yerr=original_auc_plotting_err,label='original',alpha=0.7)
 plt.errorbar(layers_reduction, reduction_auc_plotting,uplims=True, lolims=True, yerr=reduction_auc_plotting_err,label='reduction',alpha=0.7)
-print(original_auc_plotting.shape,batch_counter_original_mean.shape)
+print(original_auc_plotting.shape,len(batch_counter_original_mean))
 for i in range(len(layers_original)):
     print(human_format(batch_counter_original_std[i]))
     print(human_format(batch_counter_original_mean[i]))
