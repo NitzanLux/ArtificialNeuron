@@ -31,7 +31,7 @@ def create_sample_entropy_file(q):
         data = q.get(block=120)
         if data is None:
             return
-        f_path,tag=data
+        f_path,f_index,tag=data
 
         _, y_spike, _ = parse_sim_experiment_file(f_path)
         path, f = ntpath.split(f_path)
@@ -45,7 +45,7 @@ def create_sample_entropy_file(q):
             print(
                 f"current sample number {f} {index}  total: {time.time() - t} seconds",
                 flush=True)
-            with open(os.path.join("sample_entropy",f"sample_entropy_{tag}_{index}_{MAX_INTERVAL}d.p"),'wb') as f_o:
+            with open(os.path.join("sample_entropy",f"sample_entropy_{tag}_{f_index}_{index}_{MAX_INTERVAL}d.p"),'wb') as f_o:
                 pickle.dump((MSx,Ci,f,index),f_o)
 
 def get_sample_entropy(tag,pathes):
@@ -57,7 +57,7 @@ def get_sample_entropy(tag,pathes):
     process = [Process(target=create_sample_entropy_file, args=(queue,)) for i in range(number_of_jobs)]
     print('starting')
     for j,fp in enumerate(pathes):
-        queue.put((fp,tag))
+        queue.put((fp,j,tag))
         if j<len(process):
             process[j].start()
 
