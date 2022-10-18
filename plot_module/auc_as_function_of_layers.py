@@ -17,7 +17,7 @@ import json
 
 # '/ems/elsc-labs/segev-i/nitzan.luxembourg/projects/dendritic_tree/ArtificialNeuron'
 # %% pipline plot parameters
-jsons_list=['d_r_comparison','d_r_comparison_ss']
+jsons_list=['d_r_comparison_ss']#,'d_r_comparison']
 # gt_original_name = 'davids_ergodic_validation'
 # gt_reduction_name = 'reduction_ergodic_validation'
 
