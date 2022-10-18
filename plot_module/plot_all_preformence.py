@@ -28,7 +28,7 @@ for i in os.listdir(MODELS_DIR):
         layers=0
         if config.architecture_type=='FullNeuronNetwork':
             layers=config.number_of_layers_space
-        best_aucis[i]=np.max(auc)
+        best_aucis[i]=np.max(auc[0,:])
         best_aucis_data[i]=(layers,config.batch_counter*config.batch_size_train)
         ax.plot(1-auc)
 
