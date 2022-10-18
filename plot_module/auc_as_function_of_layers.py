@@ -114,6 +114,9 @@ new_auc_data_original = np.array(new_auc_data_original)
 for i in range(new_auc_data_original.shape[1]):
     if p is None:
         plt.scatter(layers_original,np.array(new_auc_data_original[:,i]),c='red')
+for i in range(new_auc_data_reduction.shape[1]):
+        if p is None:
+            plt.scatter(layers_reduction, np.array(new_auc_data_reduction[:, i]), c='blue')
         # continue
     # plt.scatter(layers_original, np.array(new_auc_data_original[:, i]),c=p[0].get_color())
 # ax = plt.errorbar(layers_original, original_auc_plotting, yerr=original_auc_plotting_err,label='original',alpha=0.7)
