@@ -17,6 +17,7 @@ import json
 
 # '/ems/elsc-labs/segev-i/nitzan.luxembourg/projects/dendritic_tree/ArtificialNeuron'
 # %% pipline plot parameters
+I = 6
 jsons_list=['d_r_comparison_ss']#,'d_r_comparison']
 # gt_original_name = 'davids_ergodic_validation'
 # gt_reduction_name = 'reduction_ergodic_validation'
@@ -121,16 +122,18 @@ new_auc_data_reduction = np.array(new_auc_data_reduction)
         # continue
     # plt.scatter(layers_original, np.array(new_auc_data_original[:, i]),c=p[0].get_color())
 # ax = plt.errorbar(layers_original, original_auc_plotting, yerr=original_auc_plotting_err,label='original',alpha=0.7)
-plt.errorbar(layers_original, original_auc_plotting, yerr=original_auc_plotting_err,label='original',alpha=0.7)
-plt.errorbar(layers_reduction, reduction_auc_plotting,yerr=reduction_auc_plotting_err,label='reduction',alpha=0.7)
+plt.scatter(layers_original,np.max(new_auc_data_original,axis=1),color='red')
+plt.scatter(layers_reduction,np.max(new_auc_data_reduction,axis=1),color='blue')
+plt.errorbar(layers_original, original_auc_plotting, yerr=original_auc_plotting_err,label='original',alpha=0.7,color='red')
+plt.errorbar(layers_reduction, reduction_auc_plotting,yerr=reduction_auc_plotting_err,label='reduction',alpha=0.7,color='blue')
 print(len(original_auc_plotting),batch_counter_original_mean.shape)
 for i in range(len(layers_original)):
-    print(human_format(batch_counter_original_std[i]))
-    print(human_format(batch_counter_original_mean[i]))
+    # print(human_format(batch_counter_original_std[i]))
+    # print(human_format(batch_counter_original_mean[i]))
     print('hey')
-    plt.annotate(str(human_format(batch_counter_original_mean[i])+r" $\pm$ "+human_format(batch_counter_original_std[i])),(layers_original[i],original_auc_plotting[i]))
+    plt.annotate(str(human_format(batch_counter_original_mean[i])+r" $\pm$ "+human_format(batch_counter_original_std[i])), (layers_original[i],original_auc_plotting[i]), fontsize=FONT_SIZE,color=(227, 27, 35))
 for i in range(len(layers_reduction)):
-    plt.annotate(human_format(batch_counter_reduction_mean[i])+r" $\pm$ "+human_format(batch_counter_reduction_std[i]),(layers_reduction[i],reduction_auc_plotting[i]))
+    plt.annotate(human_format(batch_counter_reduction_mean[i]) +r" $\pm$ " + human_format(batch_counter_reduction_std[i]), (layers_reduction[i],reduction_auc_plotting[i]), fontsize=FONT_SIZE,color=(0, 45, 106))
 plt.legend()
 plt.show()
 plt.savefig('comparison__.png')
