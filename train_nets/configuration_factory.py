@@ -144,6 +144,7 @@ def load_config_file(path: str,suffix:str='.config') -> AttrDict:
     # config.batch_size_train = 8
     if config.config_version < CURRENT_VERSION:
         print("updating config file....")
+        del config.config_version
         config = surround_with_default_config_values(**config)
     return config
 

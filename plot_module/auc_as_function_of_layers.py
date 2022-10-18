@@ -7,16 +7,19 @@ import os
 import sys
 # os.chdir('/ems/elsc-labs/segev-i/nitzan.luxembourg/projects/dendritic_tree/ArtificialNeuron')
 # sys.path.append('/ems/elsc-labs/segev-i/nitzan.luxembourg/projects/dendritic_tree/ArtificialNeuron')
-
+from train_nets.configuration_factory import load_config_file
 import model_evaluation_multiple
 from model_evaluation_multiple import GroundTruthData, ModelEvaluator
 import numpy as np
 from project_path import *
 
+
 # '/ems/elsc-labs/segev-i/nitzan.luxembourg/projects/dendritic_tree/ArtificialNeuron'
 # %% pipline plot parameters
+jsons_list=['d_r_comparison','d_r_comparison_ss']
 gt_original_name = 'davids_ergodic_validation'
 gt_reduction_name = 'reduction_ergodic_validation'
+
 # module_reduction_name= "d_r_comparison_7_reduction___2022-09-07__22_59__ID_31437"
 # module_original_name= "d_r_comparison_7___2022-09-07__22_59__ID_57875"
 # %% pipline plot
@@ -25,20 +28,32 @@ gt_reduction = model_evaluation_multiple.GroundTruthData.load(
 gt_original = model_evaluation_multiple.GroundTruthData.load(
     os.path.join('evaluations', 'ground_truth', gt_original_name + '.gteval'))
 reduction_auc = []
-for i in tqdm(os.listdir(os.path.join('evaluations', 'models', gt_reduction_name))):
-    current_model = model_evaluation_multiple.EvaluationData.load(
-        os.path.join('evaluations', 'models', gt_reduction_name, i))
-    if current_model.config.architecture_type != 'FullNeuronNetwork':
-        continue
-    reduction_auc.append((current_model.get_ROC_data()[0], current_model.config.number_of_layers_space))
-
 original_auc = []
-for i in tqdm(os.listdir(os.path.join('evaluations', 'models', gt_original_name))):
-    current_model = model_evaluation_multiple.EvaluationData.load(
-        os.path.join('evaluations', 'models', gt_original_name, i))
-    if current_model.config.architecture_type != 'FullNeuronNetwork':
-        continue
-    original_auc.append((current_model.get_ROC_data()[0], current_model.config.number_of_layers_space))
+
+configs=[]
+for i in jsons_list:
+    with open(os.path.join(MODELS_DIR, "%s.json" % i), 'r') as file:
+        configs+=json.load(file)
+models=[]
+
+for i in configs:
+    conf=load_config_file(os.path.join(MODELS_DIR, i[0],i[0]+'best','config.pkl'),'.pkl')
+    out=(np.max(np.load(os.path.join(MODELS_DIR, i[0],i[0]+'best','auc_history.npy'))[0,:]),conf.number_of_layers_space)
+# for i in tqdm(os.listdir(os.path.join('evaluations', 'models', gt_reduction_name))):
+#     current_model = model_evaluation_multiple.EvaluationData.load(
+#         os.path.join('evaluations', 'models', gt_reduction_name, i))
+#     if current_model.config.architecture_type != 'FullNeuronNetwork':
+#         continue
+    if conf.data_base_path==REDUCTION_BASE_PATH:
+        reduction_auc.append(out)
+
+# for i in tqdm(os.listdir(os.path.join('evaluations', 'models', gt_original_name))):
+#     current_model = model_evaluation_multiple.EvaluationData.load(
+#         os.path.join('evaluations', 'models', gt_original_name, i))
+#     if current_model.config.architecture_type != 'FullNeuronNetwork':
+#         continue
+    else:
+        original_auc.append(out)
 original_auc = sorted(original_auc, key=lambda x: x[1])
 reduction_auc = sorted(reduction_auc, key=lambda x: x[1])
 
