@@ -35,9 +35,17 @@ for i in os.listdir(MODELS_DIR):
 save_large_plot(fig,"all_preformence.png")
 plt.show()
 fig,ax = plt.subplots()
-
+data_x=[]
+data_y=[]
+data_z=[]
 for i in best_aucis.keys():
-    ax.scatter(best_aucis_data[i][0]+np.random.normal(0,0.2),best_aucis[i],s=0.2,c=best_aucis_data[i][1],cmap = cm.jet)
+    data_x.append(best_aucis_data[i][0]+np.random.normal(0,0.2))
+    data_y.append(best_aucis[i])
+    data_z.append(best_aucis_data[i][1])
+out = ax.scatter(data_x,data_y,s=0.2,c=data_z,cmap = cm.jet)
 # ax.set_yscale('log')
-ax.color_bar()
+
+plt.colorbar(out,ax=ax)
+
+# ax.color_bar()
 save_large_plot(fig,f'auc_as_function_of_layers_and_step.png')
