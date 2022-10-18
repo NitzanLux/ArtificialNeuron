@@ -75,7 +75,7 @@ for i in original_auc:
             batch_counter_original[-1] = np.array(batch_counter_original[-1])
         new_auc_data_original.append([i[0]])
         layers_original.append([i[1]])
-        batch_counter_original = i[2]
+        batch_counter_original.append([i[2]])
         cur_layer = i[1]
     else:
         new_auc_data_original[-1].append(i[0])
@@ -94,7 +94,7 @@ for i in reduction_auc:
 
         new_auc_data_reduction.append([i[0]])
         layers_reduction.append(i[1])
-        batch_counter_reduction = i[2]
+        batch_counter_reduction.append([i[2]])
         cur_layer = i[1]
     else:
         new_auc_data_reduction[-1].append(i[0])
