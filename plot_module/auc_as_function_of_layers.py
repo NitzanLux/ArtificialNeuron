@@ -83,8 +83,8 @@ for i in original_auc:
 
 
 new_auc_data_original[-1] = np.array(new_auc_data_original[-1])
-batch_counter_original_std=np.std(batch_counter_original,axis=1)
-batch_counter_original_mean=np.mean(batch_counter_original,axis=1)
+batch_counter_original_std=np.std(np.array(batch_counter_original),axis=1)
+batch_counter_original_mean=np.mean(np.array(batch_counter_original),axis=1)
 
 for i in reduction_auc:
     if i[1] != cur_layer:
@@ -101,8 +101,8 @@ for i in reduction_auc:
         batch_counter_reduction[-1].append(i[2])
 
 new_auc_data_reduction[-1] = np.array(new_auc_data_reduction[-1])
-batch_counter_reduction_std=np.std(batch_counter_reduction,axis=1)
-batch_counter_reduction_mean=np.mean(batch_counter_reduction,axis=1)
+batch_counter_reduction_std=np.std(np.array(batch_counter_reduction),axis=1)
+batch_counter_reduction_mean=np.mean(np.array(batch_counter_reduction),axis=1)
 # %%
 original_auc_plotting_err = [np.std(i) for i in new_auc_data_original]
 original_auc_plotting = [np.mean(i) for i in new_auc_data_original]
