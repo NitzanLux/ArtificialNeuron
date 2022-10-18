@@ -50,7 +50,7 @@ for i in configs:
     auc_his=np.load(os.path.join(MODELS_DIR, i[0],i[0]+'_best','auc_history.npy'))
     if len(auc_his.shape)>1:
         auc_his=auc_his[0,:]
-    out=(np.max(auc_his),conf.number_of_layers_space,conf.batch_size*conf.batch_counter)
+    out=(np.max(auc_his),conf.number_of_layers_space,conf.batch_size_train*conf.batch_counter)
 
     if conf.data_base_path==REDUCTION_BASE_PATH:
         reduction_auc.append(out)
