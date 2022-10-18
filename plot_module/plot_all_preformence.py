@@ -39,6 +39,8 @@ data_x=[]
 data_y=[]
 data_z=[]
 for i in best_aucis.keys():
+    if best_aucis[i]<0.94:
+        continue
     data_x.append(best_aucis_data[i][0]+np.random.normal(0,0.2))
     data_y.append(best_aucis[i])
     data_z.append(best_aucis_data[i][1])
