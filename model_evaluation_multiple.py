@@ -672,7 +672,7 @@ def create_model_evaluation(gt_name, model_name, use_cuda=USE_CUDA,config=None,m
 def create_model_evaluation_best(gt_name, model_name, use_cuda=USE_CUDA,config=None,model=None):
     gt_path = os.path.join("evaluations", 'ground_truth', gt_name + ".gteval")
     dest_path=os.path.join(MODELS_DIR, model_name, model_name+'_best')
-    if config is None: config = load_config_file(os.path.join(MODELS_DIR, model_name, model_name+'_best' ,"config.pkl"),'.pkl')
+    if config is None: config = load_config_file(os.path.join(MODELS_DIR, model_name, model_name+'_best',"config.pkl"),'.pkl')
     print('load config for %s' % model_name)
     if model is None:model = load_model(config)
     g = EvaluationData(GroundTruthData.load(gt_path), config, use_cuda,model)
