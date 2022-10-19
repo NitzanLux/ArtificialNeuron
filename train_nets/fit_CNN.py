@@ -255,6 +255,7 @@ def train_network(config, model, optimizer):
                 wandb.log({}, commit=True)
             config.update(dict(batch_counter=config.batch_counter + 1), allow_val_change=True)
             # get the inputs for accumulate batch; data is a list of [inputs, labels]
+            model.train()
             data_arr.append(data)
             if i % config.accumulate_loss_batch_factor == 0 or config.number_of_steps == config.batch_counter:
                 train_loss = batch_train(model, optimizer, custom_loss, data_arr, config.clip_gradients_factor,

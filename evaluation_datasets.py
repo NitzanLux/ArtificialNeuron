@@ -32,7 +32,6 @@ if __name__ == '__main__':
 
         job_factory = SlurmJobFactory("cluster_logs")
         configs_lists=[]
-        print(args)
         for json_name in args.json_files_name:
             if isinstance(json_name,list):
                 json_name=json_name[0]
