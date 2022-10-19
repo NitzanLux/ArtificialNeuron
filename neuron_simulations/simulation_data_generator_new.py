@@ -267,13 +267,15 @@ class SimulationDataGenerator():
 
         if self.load_on_parallel and min(CPUS_COUNT,len(self.curr_files_to_use)) > 1:
             q = queue.Queue()
-
+            th=[]
             for i in range(min(CPUS_COUNT,len(self.curr_files_to_use))):
                 # print("start_process")
-                threading.Thread(target=helper_queue_process,args=(q,self), daemon=True).start()
+                th.append(threading.Thread(target=helper_queue_process,args=(q,self), daemon=True))\
+                th[-1].start()
             for i, f in enumerate(self.curr_files_to_use):
                 q.put((f,i))
-            q.join()
+            for i in th:
+                i.join()
             for i in range(1, len(self.curr_files_index)):
                 self.curr_files_index[i] += self.curr_files_index[i - 1]
 
