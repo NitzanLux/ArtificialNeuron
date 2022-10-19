@@ -20,8 +20,9 @@ if __name__ == '__main__':
         parser.add_argument('-g', dest="use_gpu", type=str,
                             help='true if to use gpu false otherwise', default="False")
         print("best_mode")
-        exit(0)
         args = parser.parse_args()
+        print(args)
+        exit(0)
         use_gpu = not args.use_gpu.lower() in {"false", '0', ''}
         m_query=re.compile(f"{args.json_regex_query}")
 
