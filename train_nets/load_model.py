@@ -9,6 +9,7 @@ def load_model_best(config):
         config.model_path[-1] = config.model_path[-1][:-len('.pkl')]
     config.model_path[-1]+='_best'
     config.model_path.append('model.pkl')
+    return load_model(config)
 
 def load_model(config):
     print("loading model...", flush=True)

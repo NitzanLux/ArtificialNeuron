@@ -18,7 +18,7 @@ from train_nets.neuron_network import neuronal_model
 from utils.general_aid_function import *
 from utils.general_variables import *
 from train_nets.configuration_factory import load_config_file
-from train_nets.load_model import load_model
+from train_nets.load_model import load_model,load_model_best
 import plotly
 import os
 import plotly.express as px
@@ -674,7 +674,7 @@ def create_model_evaluation_best(gt_name, model_name, use_cuda=USE_CUDA,config=N
     dest_path=os.path.join(MODELS_DIR, model_name, model_name+'_best')
     if config is None: config = load_config_file(os.path.join(MODELS_DIR, model_name, model_name+'_best',"config.pkl"),'.pkl')
     print('load config for %s' % model_name)
-    if model is None:model = load_model(config)
+    if model is None:model = load_model_best(config)
     g = EvaluationData(GroundTruthData.load(gt_path), config, use_cuda,model)
     g.save(os.path.join(dest_path, model_name+'_'+gt_name+ ".meval"))
     return g
