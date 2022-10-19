@@ -18,7 +18,7 @@ from train_nets.neuron_network import neuronal_model
 from utils.general_aid_function import *
 from utils.general_variables import *
 from train_nets.configuration_factory import load_config_file
-from train_nets.fit_CNN import load_model
+from train_nets.load_model import load_model
 import plotly
 import os
 import plotly.express as px
