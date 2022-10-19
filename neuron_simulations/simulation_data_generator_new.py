@@ -164,7 +164,7 @@ class SimulationDataGenerator():
                     out = self[np.arange(self.sample_counter, self.sample_counter +(self.batch_size)) % self.indexes.shape[0]][:]
                     outs.append(out)
                     self.sample_counter += self.batch_size
-
+                print(outs)
                 t1 = threading.Thread(target=helper_load_in_background,args=(self,), daemon=True)
                 t1.start()
                 for out in outs:
