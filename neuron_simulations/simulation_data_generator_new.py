@@ -270,7 +270,7 @@ class SimulationDataGenerator():
             th=[]
             for i in range(min(CPUS_COUNT,len(self.curr_files_to_use))):
                 # print("start_process")
-                th.append(threading.Thread(target=helper_queue_process,args=(q,self), daemon=True))\
+                th.append(threading.Thread(target=helper_queue_process,args=(q,self), daemon=True))
                 th[-1].start()
             for i, f in enumerate(self.curr_files_to_use):
                 q.put((f,i))
