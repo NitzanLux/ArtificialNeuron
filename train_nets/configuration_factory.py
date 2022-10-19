@@ -344,7 +344,7 @@ def arange_kernel_by_layers(kernels, layers, expend=False):
 if __name__ == '__main__':
     # restore_last_n_configs(100)
     configs = []
-    configurations_name = "comparison_3"
+    configurations_name = "comparison_w"
     # configurations_name = 'morph'
     base_layer = [54] + [12] * 6
     for k in range(1):
