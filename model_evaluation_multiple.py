@@ -676,7 +676,7 @@ def create_model_evaluation_best(gt_name, model_name, use_cuda=USE_CUDA,config=N
     print('load config for %s' % model_name)
     if model is None:model = load_model(config)
     g = EvaluationData(GroundTruthData.load(gt_path), config, use_cuda,model)
-    g.save(os.path.join(dest_path, model_name + ".meval"))
+    g.save(os.path.join(dest_path, model_name+'_'+gt_name+ ".meval"))
     return g
 
 def evaluate_auc_of_models(name: str, replace_regex: str, *args: EvaluationData):

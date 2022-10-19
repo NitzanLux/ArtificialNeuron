@@ -51,7 +51,6 @@ if __name__ == '__main__':
                 gt_name= f'reduction_ergodic_{args.dataset_type}'
             else:
                 gt_name= f'davids_ergodic_validation_{args.dataset_type}'
-            i=i+"_"+args.dataset_type
 
             commands.append('python -c "from model_evaluation_multiple import create_model_evaluation;'
                                                     ' create_model_evaluation(%s,%s,%s)"'%("'" + gt_name + "'", "'" + i + "'",'best_mode='+str(best_mode)) )
