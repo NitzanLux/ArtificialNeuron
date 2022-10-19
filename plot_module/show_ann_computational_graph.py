@@ -42,3 +42,16 @@ def make_dot(var, params=None):
     add_nodes(var)
     return dot
 
+from train_nets.fit_CNN import load_model
+from configuration_factory import load_config_file
+from project_path import *
+import os
+models=[]
+for i in models:
+    conf = load_config_file(os.path.join(MODELS_DIR,i,i+"_best",'config.pkl'),'.pkl')
+    models.append(load_model(conf))
+
+    inputs = torch.randn(1, 2 * 639, 700)
+    y= models[-1](inputs)
+    g = make_dot(y)
+    g.view()
