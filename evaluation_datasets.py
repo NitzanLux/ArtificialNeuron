@@ -19,10 +19,13 @@ if __name__ == '__main__':
         parser.add_argument('-b', dest="best_mode",type=bool, help='use the best model that exists',default=False)
         parser.add_argument('-g', dest="use_gpu", type=bool,
                             help='true if to use gpu false otherwise', default=False)
-        print("best_mode")
         args = parser.parse_args()
         print(args)
-        exit(0)
+
+        ans = input('continue? y/n')
+        while ans not in {'y','n'}:
+            ans = input('continue? y/n')
+        if ans=='n': exist(0)
         use_gpu = args.use_gpu
         m_query=re.compile(f"{args.json_regex_query}")
 
