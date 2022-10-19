@@ -15,7 +15,7 @@ if __name__ == '__main__':
         parser.add_argument('-j', dest="json_files_name",action='append', type=str, nargs='+', help='jsons files names')
         parser.add_argument('-re', dest="json_regex_query", type=str, help='jsons files regex query',default='.*')
         parser.add_argument('-n', dest="jobs_number",type=int, help='number of jobs to use',default=-1)
-        parser.add_argument('-t', dest="dataset_type",type=int, help='train test or validation',default='validation')
+        parser.add_argument('-t', dest="dataset_type",type=str, help='train test or validation',default='validation')
         parser.add_argument('-b', dest="best_mode",type=bool, help='use the best model that exists',default=False)
         parser.add_argument('-g', dest="use_gpu", type=str,
                             help='true if to use gpu false otherwise', default="False")
