@@ -154,8 +154,7 @@ class SimulationDataGenerator():
     def iterate_deterministic_no_repetition(self):
         while self.files_counter * self.buffer_size_in_files < len(
                 self.sim_experiment_files) or self.sample_counter < self.indexes.size or self.state == GeneratorState.VALIDATION:
-            print('cur_file_to',self.curr_files_to_use)
-            print('files',self.sim_experiment_files)
+            print('cur_X',self.X.shape)
             print(self.files_counter*self.buffer_size_in_files)
             print(np.arange(self.sample_counter, self.sample_counter + self.batch_size) % self.indexes.shape[0],'cur_index')
             yield self[np.arange(self.sample_counter, self.sample_counter + self.batch_size) % self.indexes.shape[0]]
@@ -166,8 +165,6 @@ class SimulationDataGenerator():
                     out = self[np.arange(self.sample_counter, self.sample_counter +(self.batch_size)) % self.indexes.shape[0]][:]
                     outs.append(out)
                     self.sample_counter += self.batch_size
-                print('x shape',self.X.shape)
-                print('out shapes',[i.shape for i in outs])
                 t1 = threading.Thread(target=helper_load_in_background,args=(self,), daemon=True)
                 t1.start()
                 for out in outs:
