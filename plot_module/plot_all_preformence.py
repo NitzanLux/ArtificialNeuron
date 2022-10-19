@@ -53,4 +53,4 @@ out = ax.scatter(data_x,data_y,s=0.5,c=data_z,cmap = cm.jet)
 plt.colorbar(out,ax=ax)
 
 # ax.color_bar()
-save_large_plot(fig,f'auc_as_function_of_layers_and_step.png')
+save_large_plot(fig,f'evaluation_plots/auc_as_function_of_layers_and_step.png')

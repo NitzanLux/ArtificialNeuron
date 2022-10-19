@@ -227,7 +227,7 @@ class SimulationDataGenerator():
 
     def reload_files(self):
         'selects new subset of files to draw samples from'
-
+        print('reloding_files')
         self.sample_counter = 0
         if len(self.sim_experiment_files) <= self.buffer_size_in_files and not self.reload_files_once:
             self.curr_files_to_use = self.sim_experiment_files

@@ -166,7 +166,7 @@ l5pc,_,_ = get_model(l5pc)
 from neuron import h
 fig,ax = plt.subplots()
 plot_morphology_from_cell(ax,l5pc,is_scalebar=True)
-plt.savefig('neuron_model_original.png')
+plt.savefig('evaluation_plots/neuron_model_original.png')
 plt.show()
 
 l5pc,_,_ = get_model(l5pc,0)
@@ -174,7 +174,7 @@ from neuron import h
 h.define_shape()
 fig,ax = plt.subplots()
 plot_morphology_from_cell(ax,l5pc,spread_dend=True,remove_axon=False,is_scalebar=True,fixed_value=10)
-plt.savefig('neuron_model_reduction.png')
+plt.savefig('evaluation_plots/neuron_model_reduction.png')
 plt.show()
 # ps = h.PlotShape(False).plot(plt)
 #
