@@ -157,7 +157,7 @@ class SimulationDataGenerator():
             print('cur_file_to',self.curr_files_to_use)
             print('files',self.sim_experiment_files)
             print(self.files_counter*self.buffer_size_in_files)
-
+            print(np.arange(self.sample_counter, self.sample_counter + self.batch_size) % self.indexes.shape[0],'cur_index')
             yield self[np.arange(self.sample_counter, self.sample_counter + self.batch_size) % self.indexes.shape[0]]
             self.sample_counter += self.batch_size
             if self.files_reload_checker(self.start_loading_files_n_batches_from_end) and self.start_loading_while_training:
