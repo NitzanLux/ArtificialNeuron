@@ -4,6 +4,11 @@ from train_nets.neuron_network import fully_connected_temporal_seperated
 from train_nets.neuron_network import neuronal_model
 from train_nets.neuron_network import recursive_neuronal_model
 
+def load_model_best(config):
+    if config.model_path[-1].endswith('.pkl'):
+        config.model_path[-1] = config.model_path[-1][:-len('.pkl')]
+    config.model_path[-1]+='_best'
+    config.model_path.append('model.pkl')
 
 def load_model(config):
     print("loading model...", flush=True)
