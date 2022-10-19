@@ -17,13 +17,13 @@ if __name__ == '__main__':
         parser.add_argument('-n', dest="jobs_number",type=int, help='number of jobs to use',default=-1)
         parser.add_argument('-t', dest="dataset_type",type=str, help='train test or validation',default='validation')
         parser.add_argument('-b', dest="best_mode",type=bool, help='use the best model that exists',default=False)
-        parser.add_argument('-g', dest="use_gpu", type=str,
-                            help='true if to use gpu false otherwise', default="False")
+        parser.add_argument('-g', dest="use_gpu", type=bool,
+                            help='true if to use gpu false otherwise', default=False)
         print("best_mode")
         args = parser.parse_args()
         print(args)
         exit(0)
-        use_gpu = not args.use_gpu.lower() in {"false", '0', ''}
+        use_gpu = args.use_gpu
         m_query=re.compile(f"{args.json_regex_query}")
 
         job_factory = SlurmJobFactory("cluster_logs")
