@@ -167,6 +167,7 @@ class SimulationDataGenerator():
                     outs.append(out)
                     self.sample_counter += self.batch_size
                 print('x shape',self.X.shape)
+                print('out shapes',[i.shape for i in outs])
                 t1 = threading.Thread(target=helper_load_in_background,args=(self,), daemon=True)
                 t1.start()
                 for out in outs:
