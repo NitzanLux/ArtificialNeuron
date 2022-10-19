@@ -137,7 +137,7 @@ class FullNeuronNetwork(nn.Module):
         out = self.model(x)
         out_v = self.v_fc(out)[:, :, self.input_window_size :]
         out_s = self.s_fc(out)[:, :, self.input_window_size :]
-        return out_s.squeeze(1), out_v.squeeze(1)
+        return out_s,out_v#out_s.squeeze(1), out_v.squeeze(1)
 
     def init_weights(self, sd=0.05):
         def init_params(m):

@@ -16,6 +16,7 @@ if __name__ == '__main__':
         parser.add_argument('-re', dest="json_regex_query", type=str, help='jsons files regex query',default='.*')
         parser.add_argument('-n', dest="jobs_number",type=int, help='number of jobs to use',default=-1)
         parser.add_argument('-t', dest="dataset_type",type=int, help='train test or validation',default='validation')
+        parser.add_argument('-b', dest="dataset_type",type=int, help='train test or validation',default='validation')
         parser.add_argument('-g', dest="use_gpu", type=str,
                             help='true if to use gpu false otherwise', default="False")
 
@@ -45,6 +46,7 @@ if __name__ == '__main__':
                 gt_name= f'reduction_ergodic_{args.dataset_type}'
             else:
                 gt_name= f'davids_ergodic_validation_{args.dataset_type}'
+            i=i+"_"+args.dataset_type
             commands.append('python -c "from model_evaluation_multiple import create_model_evaluation;'
                                                     ' create_model_evaluation(%s,%s)"'%("'" + gt_name + "'", "'" + i + "'") )
         assert len(commands)>0, "no files that match regex pattern or exists in the json"

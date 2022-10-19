@@ -18,6 +18,7 @@ from train_nets.neuron_network import neuronal_model
 from utils.general_aid_function import *
 from utils.general_variables import *
 from train_nets.configuration_factory import load_config_file
+from train_nets.fit_CNN import load_model
 import plotly
 import os
 import plotly.express as px
@@ -654,7 +655,9 @@ def create_gt_and_save(folder, name):
     return g
 
 
-def create_model_evaluation(gt_name, model_name, use_cuda=USE_CUDA,config=None,model=None):
+def create_model_evaluation(gt_name, model_name, use_cuda=USE_CUDA,config=None,model=None,best_mode=False):
+    if best_mode:
+        create_model_evaluation_best(gt_name,model_name,use_cuda,config,model)
     gt_path = os.path.join("evaluations", 'ground_truth', gt_name + ".gteval")
     dest_path = os.path.join("evaluations", 'models', gt_name)
     if not os.path.exists(dest_path):
@@ -666,15 +669,13 @@ def create_model_evaluation(gt_name, model_name, use_cuda=USE_CUDA,config=None,m
     g.save(os.path.join(dest_path, model_name + ".meval"))
     return g
 
-def create_model_evaluation_best(gt_name, model_name, use_cuda=USE_CUDA):
+def create_model_evaluation_best(gt_name, model_name, use_cuda=USE_CUDA,config=None,model=None):
     gt_path = os.path.join("evaluations", 'ground_truth', gt_name + ".gteval")
-    dest_path = os.path.join("evaluations", 'models', gt_name)
-    if not os.path.exists(dest_path):
-        os.mkdir(dest_path)
-    if config is None: config = load_config_file(os.path.join(MODELS_DIR, model_name, model_name + ".config"))
+    dest_path=os.path.join(MODELS_DIR, model_name, model_name+'_best')
+    if config is None: config = load_config_file(os.path.join(MODELS_DIR, model_name, model_name+'_best' ,"config.pkl"),'.pkl')
     print('load config for %s' % model_name)
+    if model is None:model = load_model(config)
     g = EvaluationData(GroundTruthData.load(gt_path), config, use_cuda,model)
-
     g.save(os.path.join(dest_path, model_name + ".meval"))
     return g
 
