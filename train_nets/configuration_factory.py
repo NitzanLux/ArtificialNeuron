@@ -50,13 +50,13 @@ def save_config(config, path: [str, None] = None):
 
 def surround_with_default_config_values(**kargs):
     ##default values can be overridden by kargs
-    config = AttrDict(config_version=CURRENT_VERSION, input_window_size=120,
+    config = AttrDict(config_version=CURRENT_VERSION, input_window_size=200,
                       prediction_length=1,
                       num_segments=2 * 639,
                       # num_segments=2082,
                       num_syn_types=1, use_mixed_precision=False,
                       include_spikes=True,
-                      number_of_steps=5760000,
+                      number_of_steps=8000,
                       batch_size_train=5, accumulate_loss_batch_factor=1,
                       batch_size_validation=300,
                       spike_probability=None,
@@ -68,7 +68,7 @@ def surround_with_default_config_values(**kargs):
                       optimizer_type="NAdam", optimizer_params=dict(weight_decay=1e-8), clip_gradients_factor=None,
                       # optimizer_params={'eps':1e-8},
                       # lr_scheduler='CyclicLR',lr_scheduler_params=dict(max_lr=0.05,step_size_up=1000,base_lr=0.00003,cycle_momentum=True),
-                      # lr_scheduler='ReduceLROnPlateau',lr_scheduler_params=dict(factor=0.5,cooldown=300,patience =3000,eps=1e-5, threshold=1e-2),
+                      lr_scheduler='ReduceLROnPlateau',lr_scheduler_params=dict(factor=0.5,cooldown=300,patience =3000,eps=1e-5, threshold=1e-2),
                       lr_scheduler=None,
                       # scheduler_cooldown_factor=150,
                       batch_counter=0, epoch_counter=0,  # default counter
@@ -344,7 +344,7 @@ def arange_kernel_by_layers(kernels, layers, expend=False):
 if __name__ == '__main__':
     # restore_last_n_configs(100)
     configs = []
-    configurations_name = "comparison_corrected"
+    configurations_name = "comparison_2"
     # configurations_name = 'morph'
     base_layer = [54] + [12] * 6
     for k in range(4):
@@ -361,7 +361,7 @@ if __name__ == '__main__':
                     accumulate_loss_batch_factor=1, prediction_length=700,torch_seed=torch_seed,numpy_seed=numpy_seed,random_seed=random_seed,
                     # batch_size_validation=30, batch_size_train=80,
                     # batch_size_validation=30, batch_size_train=5,
-                    batch_size_validation=30, batch_size_train=160,
+                    batch_size_validation=30, batch_size_train=160,channel_number=[256]*len(kernels),
                     constant_learning_rate=0.03)
                 configs.append(config)
                 # break
