@@ -16,17 +16,18 @@ if __name__ == '__main__':
         parser.add_argument('-re', dest="json_regex_query", type=str, help='jsons files regex query',default='.*')
         parser.add_argument('-n', dest="jobs_number",type=int, help='number of jobs to use',default=-1)
         parser.add_argument('-t', dest="dataset_type",type=str, help='train test or validation',default='validation')
-        parser.add_argument('-b', dest="best_mode",type=bool, help='use the best model that exists',default=False)
-        parser.add_argument('-g', dest="use_gpu", type=bool,
+        parser.add_argument('-b', dest="best_mode",type=str, help='use the best model that exists',default=False)
+        parser.add_argument('-g', dest="use_gpu", type=str,
                             help='true if to use gpu false otherwise', default=False)
         args = parser.parse_args()
         print(args)
-
+        best_mode= not args.best_mode.lower() in {"false", '0', ''}
+        use_gpu = not args.use_gpu.lower() in {"false", '0', ''}
+        print(f'best_mode {best_mode} ,use_gpu {use_gpu}')
         ans = input('continue? y/n')
         while ans not in {'y','n'}:
             ans = input('continue? y/n')
-        if ans=='n': exist(0)
-        use_gpu = args.use_gpu
+        if ans=='n': exit(0)
         m_query=re.compile(f"{args.json_regex_query}")
 
         job_factory = SlurmJobFactory("cluster_logs")
@@ -54,7 +55,7 @@ if __name__ == '__main__':
             i=i+"_"+args.dataset_type
 
             commands.append('python -c "from model_evaluation_multiple import create_model_evaluation;'
-                                                    ' create_model_evaluation(%s,%s,%s)"'%("'" + gt_name + "'", "'" + i + "'",'best_mode='+args.best_mode) )
+                                                    ' create_model_evaluation(%s,%s,%s)"'%("'" + gt_name + "'", "'" + i + "'",'best_mode='+str(best_mode)) )
         assert len(commands)>0, "no files that match regex pattern or exists in the json"
         number_of_jobs=min(number_of_jobs, len(commands))
         jumps= len(commands)//number_of_jobs
