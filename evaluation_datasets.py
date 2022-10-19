@@ -68,3 +68,4 @@ if __name__ == '__main__':
             if not use_gpu:
                 keys={'mem':120000}
             job_factory.send_job(f'model_evaluations_{c}',command, run_on_GPU=use_gpu,**keys)
+            print('send_job')
