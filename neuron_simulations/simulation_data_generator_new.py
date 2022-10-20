@@ -285,7 +285,12 @@ class SimulationDataGenerator():
                 self.X[i], self.y_spike[i], self.y_soma[i], self.curr_files_index[i] = self.generate_data_from_file(f)
                 if i != 0:
                     self.curr_files_index[i] += self.curr_files_index[i - 1]
+
         self.X = np.vstack(self.X)
+
+        if self.prediction_length+self.window_size_ms>self.X.shape[2]:
+            self.prediction_length=self.X.shape[2]-self.window_size_ms
+
         self.y_spike = np.vstack(self.y_spike).squeeze(1)
         self.y_soma = np.vstack(self.y_soma).squeeze(1)
         times = ((self.X.shape[2] - self.receptive_filed_size) // self.prediction_length)
@@ -296,7 +301,6 @@ class SimulationDataGenerator():
 
         number_of_indexes = times * self.X.shape[0]
         self.indexes = np.arange(number_of_indexes)
-
         # threshold the signals
         self.y_soma[self.y_soma > self.y_soma_threshold] = self.y_soma_threshold
 

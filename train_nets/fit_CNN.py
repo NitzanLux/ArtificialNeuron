@@ -378,7 +378,7 @@ def get_data_generators(config):
 
     validation_data_generator = SimulationDataGenerator(valid_files,
                                                         buffer_size_in_files=BUFFER_SIZE_IN_FILES_VALID,
-                                                        prediction_length=5500,
+                                                        prediction_length=6000,
                                                         batch_size=config.batch_size_validation,
                                                         generator_name='validation',
                                                         window_size_ms=config.time_domain_shape,
