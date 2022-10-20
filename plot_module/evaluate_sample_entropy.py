@@ -158,9 +158,13 @@ r_ci_arr=[]
 o_ci_arr=[]
 import matplotlib.patches as mpatches
 fig,ax=plt.subplots()
-
+remove_matches=True
+eps= np.std(np.array([reduction_ci[k]-original_ci[k] for k in key_list]))*2
 for i,k in enumerate(key_list):
     # plt.scatter(i,)
+    print( np.abs(reduction_ci[k]-original_ci[k]))
+    if np.abs(reduction_ci[k]-original_ci[k])<eps:
+        continue
     r_ci_arr.append(reduction_ci[k])
     o_ci_arr.append(original_ci[k])
 parts = ax.violinplot(r_ci_arr, showmeans=True,showextrema = True, showmedians = True)
@@ -184,7 +188,7 @@ for pc in ('cbars','cmins','cmaxes','cmeans','cmedians'):
 # pc2=pc['bodies'][0].get_facecolor().flatten()
 
 ax.legend([mpatches.Patch(color='blue'),mpatches.Patch(color='red')], ['reduction','original'])
-save_large_plot(fig,'violinplot_overlap.png')
+# save_large_plot(fig,'violinplot_overlap.png')
 # plt.scatter(np.zeros([len(r_ci_arr)]),r_ci_arr,color='red')
 # plt.scatter(np.ones([len(r_ci_arr)]),o_ci_arr,color='blue')
 plt.show()
@@ -194,4 +198,12 @@ for k in key_list:
     ax.scatter(original_ci[k],reduction_ci[k])
     # avarage_original.append(original_data[k])
     # avarage_reduction.append(reduction_data[k])
+plt.show()
+
+#%%
+fig,ax = plt.subplots()
+original_hist=[original_ci[k] for k in key_list]
+reduction_hist=[reduction_ci[k] for k in key_list]
+ax.hist(original_hist,100,alpha=0.6,color='red')
+ax.hist(reduction_hist,100,alpha=0.6,color='blue')
 plt.show()
