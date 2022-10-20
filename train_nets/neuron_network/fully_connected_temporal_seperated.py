@@ -101,24 +101,24 @@ class FullNeuronNetwork(nn.Module):
         if isinstance(self.channel_number, int):
             self.channel_number = [self.channel_number] * self.number_of_layers_space
 
-        # for i in range(self.number_of_layers_temp):
-        #     # padding_factor = keep_dimensions_by_padding_claculator(self.input_window_size, self.kernel_sizes[i], self.stride,
-        #     #                                                        self.dilation)
-        #     layers_list.append(
-        #         CausalConv1d(self.num_segments,
-        #                   self.num_segments, self.kernel_sizes[i], self.stride,
-        #                   self.dilation, groups=config.num_segments))
-        #     layers_list.append(nn.BatchNorm1d(self.num_segments))
-        #     layers_list.append(activation_function())
-        #     if dropout is not None:
-        #         layers_list.append(dropout())
+        for i in range(self.number_of_layers_temp):
+            # padding_factor = keep_dimensions_by_padding_claculator(self.input_window_size, self.kernel_sizes[i], self.stride,
+            #                                                        self.dilation)
+            layers_list.append(
+                CausalConv1d(self.num_segments,
+                          self.num_segments, self.kernel_sizes[i], self.stride,
+                          self.dilation, groups=config.num_segments))
+            layers_list.append(nn.BatchNorm1d(self.num_segments))
+            layers_list.append(activation_function())
+            if dropout is not None:
+                layers_list.append(dropout())
 
         first_channels_flag = True
 
         for i in range(self.number_of_layers_space):
             layers_list.append(
                 CausalConv1d(self.num_segments if first_channels_flag else self.channel_number[i - 1],
-                          self.channel_number[i], self.kernel_sizes[i] ,#if self.number_of_layers_temp == 0 else self.space_kernel_sizes[i],
+                          self.channel_number[i], self.kernel_sizes[i] if self.number_of_layers_temp == 0 else self.space_kernel_sizes[i],
                           self.stride,
                           self.dilation))
 
@@ -137,7 +137,7 @@ class FullNeuronNetwork(nn.Module):
         out = self.model(x)
         out_v = self.v_fc(out)[:, :, self.input_window_size :]
         out_s = self.s_fc(out)[:, :, self.input_window_size :]
-        return out_s,out_v#out_s.squeeze(1), out_v.squeeze(1)
+        return out_s.squeeze(1), out_v.squeeze(1)
 
     def init_weights(self, sd=0.05):
         def init_params(m):
