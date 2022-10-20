@@ -288,9 +288,9 @@ class SimulationDataGenerator():
 
         self.X = np.vstack(self.X)
 
-        if self.prediction_length+self.window_size_ms>self.X.shape[2]:
-            self.prediction_length=self.X.shape[2]-self.window_size_ms
-
+        if self.window_size_ms>self.X.shape[2]:
+           self.prediction_length=self.X.shape[2]-self.receptive_filed_size
+           self.window_size_ms =self.X.shape[2]
         self.y_spike = np.vstack(self.y_spike).squeeze(1)
         self.y_soma = np.vstack(self.y_soma).squeeze(1)
         times = ((self.X.shape[2] - self.receptive_filed_size) // self.prediction_length)
