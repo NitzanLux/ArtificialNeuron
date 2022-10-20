@@ -47,7 +47,7 @@ VALIDATION_EVALUATION_FREQUENCY = 5
 ACCURACY_EVALUATION_FREQUENCY = 5
 BATCH_LOG_UPDATE_FREQ = 100
 # BUFFER_SIZE_IN_FILES_VALID = 4
-BUFFER_SIZE_IN_FILES_VALID = 2 if USE_CUDA else 1
+BUFFER_SIZE_IN_FILES_VALID = 2 if USE_CUDA else 3
 # BUFFER_SIZE_IN_FILES_TRAINING = 8
 BUFFER_SIZE_IN_FILES_TRAINING = 4 if USE_CUDA else 2
 SAMPLE_RATIO_TO_SHUFFLE_TRAINING = 1
@@ -378,7 +378,7 @@ def get_data_generators(config):
 
     validation_data_generator = SimulationDataGenerator(valid_files,
                                                         buffer_size_in_files=BUFFER_SIZE_IN_FILES_VALID,
-                                                        prediction_length=5780,
+                                                        prediction_length=5500,
                                                         batch_size=config.batch_size_validation,
                                                         generator_name='validation',
                                                         window_size_ms=config.time_domain_shape,

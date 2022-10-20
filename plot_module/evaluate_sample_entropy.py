@@ -6,7 +6,7 @@ import pickle
 #%%
 if not os.path.exists('sample_entropy_plots'):
     os.mkdir('sample_entropy_plots')
-tag = "train"
+tag = ""
 
 
 def save_large_plot(fig,name):
