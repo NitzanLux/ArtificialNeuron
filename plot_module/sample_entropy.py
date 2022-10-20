@@ -23,7 +23,7 @@ number_of_jobs=number_of_cpus-1//5
 
 def load_file_path(base_dir):
     return os.listdir(base_dir)
-def create_sample_entropy_file(q):
+def create_sample_entropy_file(q,use_voltage=True):
 
     while True:
         if q.empty():
@@ -37,7 +37,10 @@ def create_sample_entropy_file(q):
         path, f = ntpath.split(f_path)
         for index in range(y_spike.shape[1]):
             print(f'start key:{f} index:{index}')
-            s = y_spike[:,index].astype(np.float64)
+            if use_voltage:
+                s = y_soma[:,index].astype(np.float64)
+            else:
+                s = y_spike[:,index].astype(np.float64)
             print(s,s.shape)
             t = time.time()
             Mobj = EH.MSobject('SampEn', m=6,tau =1)
@@ -45,16 +48,16 @@ def create_sample_entropy_file(q):
             print(
                 f"current sample number {f} {index}  total: {time.time() - t} seconds",
                 flush=True)
-            with open(os.path.join("sample_entropy",f"sample_entropy_{tag}_{f_index}_{index}_{MAX_INTERVAL}d.p"),'wb') as f_o:
+            with open(os.path.join("sample_entropy",f"sample_entropy_{'v' if use_voltage else 's'}_{tag}_{f_index}_{index}_{MAX_INTERVAL}d.p"),'wb') as f_o:
                 pickle.dump((MSx,Ci,f,index),f_o)
 
-def get_sample_entropy(tag,pathes):
+def get_sample_entropy(tag,pathes,use_voltage):
 
     number_of_jobs = min(number_of_cpus - 1,len(pathes))
 
 
     queue=Queue(maxsize=number_of_jobs)
-    process = [Process(target=create_sample_entropy_file, args=(queue,)) for i in range(number_of_jobs)]
+    process = [Process(target=create_sample_entropy_file, args=(queue,use_voltage)) for i in range(number_of_jobs)]
     print('starting')
     for j,fp in enumerate(pathes):
         queue.put((fp,j,tag))
@@ -73,6 +76,8 @@ if __name__ == "__main__":
                         help='parant directory path')
     parser.add_argument('-t',dest="tag", type=str,
                         help='tag for saving')
+    parser.add_argument('-sv',dest="sv", type=str,
+                        help='somatic voltage or spikes as data')
     parser.add_argument('-mem', dest="memory", type=int,
                         help='set memory', default=-1)
     args = parser.parse_args()
@@ -95,6 +100,6 @@ if __name__ == "__main__":
     for i in range(number_of_clusters):
         pathes=list_dir_parent[i*jumps:min((i+1)*jumps,len(list_dir_parent))]
         print(pathes)
-
-        job_factory.send_job(f"sample_entropy{args.tag}_{i}_{MAX_INTERVAL}d", f'python -c "from plot_module.sample_entropy import get_sample_entropy; get_sample_entropy('+"'"+args.tag+"'"+f',{pathes})"',**keys)
+        use_voltage = not args.use_voltage.lower() in {"false", '0', ''}
+        job_factory.send_job(f"sample_entropy{args.tag}_{i}_{MAX_INTERVAL}d", f'python -c "from plot_module.sample_entropy import get_sample_entropy; get_sample_entropy('+"'"+args.tag+"'"+f',{pathes},{use_voltage})"',**keys)
         print('job sent')
