@@ -167,7 +167,7 @@ for i in range(max(len(layers_original), len(layers_reduction))):
         plt.annotate(out_str,
                      (l, max(np.max(new_auc_data_reduction[i, :]), np.max(new_auc_data_original[i, :])) + 0.001),
                      color='black')
-plt.legend()
+plt.legend(loc=4,)
 plt.title('AUC as a function of layers.')
 plt.xlabel('Number of Layers')
 plt.ylim([np.min((new_auc_data_reduction, new_auc_data_original)),
