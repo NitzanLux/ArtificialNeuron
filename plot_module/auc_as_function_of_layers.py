@@ -154,12 +154,14 @@ for i in range(max(len(layers_original), len(layers_reduction))):
     if layers_original[i] in layers_reduction:
         # print(p_value)
         out_str = ''
-        if p_value[i] < 0.05:
-            out_str += '*'
-        if p_value[i] < 0.005:
-            out_str += '*'
-        if p_value[i] < 0.0005:
-            out_str += '*'
+        flag=True
+        factor=0.01
+        while flag:
+            if p_value[i]<5*factor:
+                out_str += '*'
+            else:
+                flag=False
+
         print((l, max(np.max(new_auc_data_reduction[i, :]), np.max(new_auc_data_original[i, :]))))
         plt.annotate(out_str,
                      (l, max(np.max(new_auc_data_reduction[i, :]), np.max(new_auc_data_original[i, :])) + 0.001),
