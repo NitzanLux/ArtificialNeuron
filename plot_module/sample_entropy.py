@@ -100,6 +100,6 @@ if __name__ == "__main__":
     for i in range(number_of_clusters):
         pathes=list_dir_parent[i*jumps:min((i+1)*jumps,len(list_dir_parent))]
         print(pathes)
-        use_voltage = arga.sv=='v'
+        use_voltage = args.sv=='v'
         job_factory.send_job(f"sample_entropy{args.tag}_{i}_{MAX_INTERVAL}d", f'python -c "from plot_module.sample_entropy import get_sample_entropy; get_sample_entropy('+"'"+args.tag+"'"+f',{pathes},{use_voltage})"',**keys)
         print('job sent')
