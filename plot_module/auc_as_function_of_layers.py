@@ -148,7 +148,7 @@ for i ,l in enumerate(range(max(len(layers_original),len(layers_reduction)))):
             out_str+='*'
         if p_value[i]<0.0005:
             out_str+='*'
-        plt.annotate(out_str,(l,max(np.max(new_auc_data_reduction[:,i]),np.max(new_auc_data_original[:,i]))+0.001),color='black')
+        plt.annotate(out_str,(l,max(np.max(new_auc_data_reduction[i,:]),np.max(new_auc_data_original[i,:]))+0.001),color='black')
 plt.legend()
 plt.title('AUC as a function of layers.')
 plt.xlabel('Number of Layers')
