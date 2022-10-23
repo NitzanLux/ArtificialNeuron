@@ -296,7 +296,7 @@ class SimulationDataGenerator():
         self.y_spike = np.vstack(self.y_spike).squeeze(1)
         self.y_soma = np.vstack(self.y_soma).squeeze(1)
         times = ((self.X.shape[2] - self.receptive_filed_size) // self.prediction_length)
-        self.X = self.X[:, :, :1-((self.X.shape[2] - self.receptive_filed_size) % (self.prediction_length))]
+        # self.X = self.X[:, :, :-((self.X.shape[2] - self.receptive_filed_size) % (self.prediction_length))]
         self.y_spike = self.y_spike[:,
                        :-((self.y_spike.shape[1] - self.receptive_filed_size) // self.prediction_length)]
         self.y_soma = self.y_soma[:, :-((self.y_soma.shape[1] - self.receptive_filed_size) // self.prediction_length)]
