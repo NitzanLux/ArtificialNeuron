@@ -13,12 +13,13 @@ from model_evaluation_multiple import GroundTruthData, ModelEvaluator
 import numpy as np
 from project_path import *
 import json
-FONT_SIZE=6
+
+FONT_SIZE = 6
 
 # '/ems/elsc-labs/segev-i/nitzan.luxembourg/projects/dendritic_tree/ArtificialNeuron'
 # %% pipline plot parameters
 I = 6
-jsons_list=['d_r_comparison_ss']#,'d_r_comparison']
+jsons_list = ['d_r_comparison_ss']  # ,'d_r_comparison']
 # gt_original_name = 'davids_ergodic_validation'
 # gt_reduction_name = 'reduction_ergodic_validation'
 
@@ -32,7 +33,8 @@ jsons_list=['d_r_comparison_ss']#,'d_r_comparison']
 reduction_auc = []
 original_auc = []
 
-configs=[]
+configs = []
+
 
 def human_format(num):
     magnitude = 0
@@ -42,20 +44,21 @@ def human_format(num):
     # add more suffixes if you need them
     return '%.2f%s' % (num, ['', 'K', 'M', 'G', 'T', 'P'][magnitude])
 
+
 for i in jsons_list:
     with open(os.path.join(MODELS_DIR, "%s.json" % i), 'r') as file:
-        configs+=json.load(file)
+        configs += json.load(file)
 
 for i in configs:
-    conf=load_config_file(os.path.join(MODELS_DIR, i[0],i[0]+'_best','config.pkl'),'.pkl')
-    auc_his=np.load(os.path.join(MODELS_DIR, i[0],i[0]+'_best','auc_history.npy'))
-    if len(auc_his.shape)>1:
-        auc_his=auc_his[0,:]
+    conf = load_config_file(os.path.join(MODELS_DIR, i[0], i[0] + '_best', 'config.pkl'), '.pkl')
+    auc_his = np.load(os.path.join(MODELS_DIR, i[0], i[0] + '_best', 'auc_history.npy'))
+    if len(auc_his.shape) > 1:
+        auc_his = auc_his[0, :]
     # if conf.number_of_layers_space==7:
     #     continue
-    out=(np.max(auc_his),conf.number_of_layers_space,conf.batch_counter)
+    out = (np.max(auc_his), conf.number_of_layers_space, conf.batch_counter)
 
-    if conf.data_base_path==REDUCTION_BASE_PATH:
+    if conf.data_base_path == REDUCTION_BASE_PATH:
         reduction_auc.append(out)
     else:
         original_auc.append(out)
@@ -74,7 +77,7 @@ for i in original_auc:
     if i[1] != cur_layer:
         if len(new_auc_data_original) > 0:
             new_auc_data_original[-1] = np.array(new_auc_data_original[-1])
-        if len(batch_counter_original)>0:
+        if len(batch_counter_original) > 0:
             batch_counter_original[-1] = np.array(batch_counter_original[-1])
         new_auc_data_original.append([i[0]])
         layers_original.append(i[1])
@@ -84,10 +87,9 @@ for i in original_auc:
         new_auc_data_original[-1].append(i[0])
         batch_counter_original[-1].append(i[2])
 
-
 new_auc_data_original[-1] = np.array(new_auc_data_original[-1])
-batch_counter_original_std=np.std(np.array(batch_counter_original),axis=1)
-batch_counter_original_mean=np.mean(np.array(batch_counter_original),axis=1)
+batch_counter_original_std = np.std(np.array(batch_counter_original), axis=1)
+batch_counter_original_mean = np.mean(np.array(batch_counter_original), axis=1)
 cur_layer = -1
 
 for i in reduction_auc:
@@ -105,15 +107,15 @@ for i in reduction_auc:
         batch_counter_reduction[-1].append(i[2])
 
 new_auc_data_reduction[-1] = np.array(new_auc_data_reduction[-1])
-batch_counter_reduction_std=np.std(np.array(batch_counter_reduction),axis=1)
-batch_counter_reduction_mean=np.mean(np.array(batch_counter_reduction),axis=1)
+batch_counter_reduction_std = np.std(np.array(batch_counter_reduction), axis=1)
+batch_counter_reduction_mean = np.mean(np.array(batch_counter_reduction), axis=1)
 # %%
 original_auc_plotting_err = [np.std(i) for i in new_auc_data_original]
 original_auc_plotting = [np.mean(i) for i in new_auc_data_original]
 
-reduction_auc_plotting_err = np.std(np.array(new_auc_data_reduction),axis=1)
-reduction_auc_plotting = np.mean(np.array(new_auc_data_reduction),axis=1)
-p=None
+reduction_auc_plotting_err = np.std(np.array(new_auc_data_reduction), axis=1)
+reduction_auc_plotting = np.mean(np.array(new_auc_data_reduction), axis=1)
+p = None
 new_auc_data_original = np.array(new_auc_data_original)
 new_auc_data_reduction = np.array(new_auc_data_reduction)
 # for i in range(new_auc_data_original.shape[1]):
@@ -122,41 +124,51 @@ new_auc_data_reduction = np.array(new_auc_data_reduction)
 # for i in range(new_auc_data_reduction.shape[1]):
 #         if p is None:
 #             plt.scatter(layers_reduction, np.array(new_auc_data_reduction[:, i]), c='blue')
-        # continue
-    # plt.scatter(layers_original, np.array(new_auc_data_original[:, i]),c=p[0].get_color())
+# continue
+# plt.scatter(layers_original, np.array(new_auc_data_original[:, i]),c=p[0].get_color())
 # ax = plt.errorbar(layers_original, original_auc_plotting, yerr=original_auc_plotting_err,label='original',alpha=0.7)
-plt.scatter(layers_original,np.max(new_auc_data_original,axis=1),color='red')
-plt.scatter(layers_reduction,np.max(new_auc_data_reduction,axis=1),color='blue')
-plt.errorbar(layers_original, original_auc_plotting, yerr=original_auc_plotting_err,label='original',alpha=0.7,color='red')
-plt.errorbar(layers_reduction, reduction_auc_plotting,yerr=reduction_auc_plotting_err,label='reduction',alpha=0.7,color='blue')
-print(len(original_auc_plotting),batch_counter_original_mean.shape)
+plt.scatter(layers_original, np.max(new_auc_data_original, axis=1), color='red')
+plt.scatter(layers_reduction, np.max(new_auc_data_reduction, axis=1), color='blue')
+plt.errorbar(layers_original, original_auc_plotting, yerr=original_auc_plotting_err, label='original', alpha=0.7,
+             color='red')
+plt.errorbar(layers_reduction, reduction_auc_plotting, yerr=reduction_auc_plotting_err, label='reduction', alpha=0.7,
+             color='blue')
+print(len(original_auc_plotting), batch_counter_original_mean.shape)
 for i in range(len(layers_original)):
-
-    plt.annotate(str(human_format(batch_counter_original_mean[i])+r" $\pm$ "+human_format(batch_counter_original_std[i])), (layers_original[i]+0.1,original_auc_plotting[i]+(0.0005*((i==0)*2-1))*((i==0)+1)), fontsize=FONT_SIZE,color=(90/255., 20/255., 17/255.))
+    plt.annotate(
+        str(human_format(batch_counter_original_mean[i]) + r" $\pm$ " + human_format(batch_counter_original_std[i])),
+        (layers_original[i] + 0.1, original_auc_plotting[i] + (0.0005 * ((i == 0) * 2 - 1)) * ((i == 0) + 1)),
+        fontsize=FONT_SIZE, color=(90 / 255., 20 / 255., 17 / 255.))
 for i in range(len(layers_reduction)):
-    plt.annotate(human_format(batch_counter_reduction_mean[i]) +r" $\pm$ " + human_format(batch_counter_reduction_std[i]), (layers_reduction[i]+0.1,reduction_auc_plotting[i]-(0.0005*((i==0)*2-1))*((i==0)+1)), fontsize=FONT_SIZE,color=(0/255., 10/255., 77/255.))
+    plt.annotate(
+        human_format(batch_counter_reduction_mean[i]) + r" $\pm$ " + human_format(batch_counter_reduction_std[i]),
+        (layers_reduction[i] + 0.1, reduction_auc_plotting[i] - (0.001 * ((i == 0) * 2 - 1)) * ((i == 0) + 1)),
+        fontsize=FONT_SIZE, color=(0 / 255., 10 / 255., 77 / 255.))
 from scipy.stats import ttest_ind
 
-p_value = ttest_ind(new_auc_data_original, new_auc_data_reduction,axis=1).pvalue#, equal_var=True).pvalue
+p_value = ttest_ind(new_auc_data_original, new_auc_data_reduction, axis=1).pvalue  # , equal_var=True).pvalue
 print(p_value)
-for i in range(max(len(layers_original),len(layers_reduction))):
-    print(i,layers_original,layers_reduction)
-    l=layers_original[i]
+for i in range(max(len(layers_original), len(layers_reduction))):
+    print(i, layers_original, layers_reduction)
+    l = layers_original[i]
     if layers_original[i] in layers_reduction:
         # print(p_value)
-        out_str=''
-        if p_value[i]<0.05:
-            out_str+='*'
-        if p_value[i]<0.005:
-            out_str+='*'
-        if p_value[i]<0.0005:
-            out_str+='*'
-        print((l,max(np.max(new_auc_data_reduction[i,:]),np.max(new_auc_data_original[i,:]))))
-        plt.annotate(out_str,(l,max(np.max(new_auc_data_reduction[i,:]),np.max(new_auc_data_original[i,:]))+0.001),color='black')
+        out_str = ''
+        if p_value[i] < 0.05:
+            out_str += '*'
+        if p_value[i] < 0.005:
+            out_str += '*'
+        if p_value[i] < 0.0005:
+            out_str += '*'
+        print((l, max(np.max(new_auc_data_reduction[i, :]), np.max(new_auc_data_original[i, :]))))
+        plt.annotate(out_str,
+                     (l, max(np.max(new_auc_data_reduction[i, :]), np.max(new_auc_data_original[i, :])) + 0.001),
+                     color='black')
 plt.legend()
 plt.title('AUC as a function of layers.')
 plt.xlabel('Number of Layers')
-plt.ylim([np.min((new_auc_data_reduction,new_auc_data_original)),np.max((new_auc_data_reduction,new_auc_data_original))+0.005])
+plt.ylim([np.min((new_auc_data_reduction, new_auc_data_original)),
+          np.max((new_auc_data_reduction, new_auc_data_original)) + 0.005])
 plt.ylabel('Area Under the Curve')
 plt.show()
 plt.savefig(f'evaluation_plots/comparison_{jsons_list}.png')
