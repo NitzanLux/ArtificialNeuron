@@ -156,7 +156,7 @@ for i in range(max(len(layers_original),len(layers_reduction))):
 plt.legend()
 plt.title('AUC as a function of layers.')
 plt.xlabel('Number of Layers')
-plt.set_ylim([np.min((new_auc_data_reduction,new_auc_data_original)),np.max((new_auc_data_reduction,new_auc_data_original))+0.001])
+plt.set_ylim([np.min((new_auc_data_reduction,new_auc_data_original)),np.max((new_auc_data_reduction,new_auc_data_original))+0.005])
 plt.ylabel('Area Under the Curve')
 plt.show()
 plt.savefig(f'evaluation_plots/comparison_{jsons_list}.png')
