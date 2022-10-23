@@ -60,7 +60,8 @@ for i in configs:
         #     continue
         out = (np.max(auc_his), conf.number_of_layers_space, conf.batch_counter)
     else:
-        model_evaluation_multiple.EvaluationData.load(os.path.join(MODELS_DIR, i[0], i[0] + '_best',i[0] +('_davids_ergodic' if conf.data_base_path==DAVID_BASE_PATH else '_reduction_ergodic')+'_test.meval'))
+        m = model_evaluation_multiple.EvaluationData.load(os.path.join(MODELS_DIR, i[0], i[0] + '_best',i[0] +('_davids_ergodic' if conf.data_base_path==DAVID_BASE_PATH else '_reduction_ergodic')+'_test.meval'))
+        out=m.get_ROC_data[0]
     if conf.data_base_path == REDUCTION_BASE_PATH:
         reduction_auc.append(out)
     else:
