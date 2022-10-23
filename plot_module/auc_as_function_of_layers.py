@@ -20,6 +20,7 @@ FONT_SIZE = 6
 # %% pipline plot parameters
 I = 6
 jsons_list = ['d_r_comparison_ss']  # ,'d_r_comparison']
+use_test_data=True
 # gt_original_name = 'davids_ergodic_validation'
 # gt_reduction_name = 'reduction_ergodic_validation'
 
@@ -51,13 +52,15 @@ for i in jsons_list:
 
 for i in configs:
     conf = load_config_file(os.path.join(MODELS_DIR, i[0], i[0] + '_best', 'config.pkl'), '.pkl')
-    auc_his = np.load(os.path.join(MODELS_DIR, i[0], i[0] + '_best', 'auc_history.npy'))
-    if len(auc_his.shape) > 1:
-        auc_his = auc_his[0, :]
-    # if conf.number_of_layers_space==7:
-    #     continue
-    out = (np.max(auc_his), conf.number_of_layers_space, conf.batch_counter)
-
+    if not use_test_data:
+        auc_his = np.load(os.path.join(MODELS_DIR, i[0], i[0] + '_best', 'auc_history.npy'))
+        if len(auc_his.shape) > 1:
+            auc_his = auc_his[0, :]
+        # if conf.number_of_layers_space==7:
+        #     continue
+        out = (np.max(auc_his), conf.number_of_layers_space, conf.batch_counter)
+    else:
+        model_evaluation_multiple.EvaluationData.load(os.path.join(MODELS_DIR, i[0], i[0] + '_best',i[0] +'davids_ergodic' if conf.data_base_path==DAVID_BASE_PATH else 'reduction_ergodic'+'_test.meval'))
     if conf.data_base_path == REDUCTION_BASE_PATH:
         reduction_auc.append(out)
     else:
