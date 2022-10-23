@@ -135,7 +135,7 @@ for i in range(len(layers_reduction)):
 from scipy.stats import ttest_ind
 for i in range(max(len(layers_original),len(layers_reduction))):
     if i in layers_original and i in layers_reduction:
-        print(new_auc_data_reduction.shape)
+        print(new_auc_data_reduction[:,i])
         p_value = ttest_ind(new_auc_data_original[:,i],new_auc_data_reduction[:,i],equal_var=False)
         print(p_value)
         p_value=p_value.pvalue
