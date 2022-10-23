@@ -137,12 +137,11 @@ for i in range(len(layers_reduction)):
     plt.annotate(human_format(batch_counter_reduction_mean[i]) +r" $\pm$ " + human_format(batch_counter_reduction_std[i]), (layers_reduction[i]+0.1,reduction_auc_plotting[i]-(0.0005*((i==0)*2-1))*((i==0)+1)), fontsize=FONT_SIZE,color=(0/255., 10/255., 77/255.))
 from scipy.stats import ttest_ind
 
-p_value = ttest_ind(new_auc_data_original, new_auc_data_reduction,axis=1, equal_var=True).pvalue
+p_value = ttest_ind(new_auc_data_original, new_auc_data_reduction,axis=1).pvalue#, equal_var=True).pvalue
 print(p_value)
-for i ,l in enumerate(range(max(len(layers_original),len(layers_reduction)))):
-    print(l,layers_original,layers_reduction)
-    if l in layers_original and l in layers_reduction:
-
+for i in range(max(len(layers_original),len(layers_reduction))):
+    print(i,layers_original,layers_reduction)
+    if layers_original[i] in layers_reduction:
         # print(p_value)
         out_str=''
         if p_value[i]<0.05:
