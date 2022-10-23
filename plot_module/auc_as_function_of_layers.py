@@ -136,8 +136,8 @@ from scipy.stats import ttest_ind
 
 p_value = ttest_ind(new_auc_data_original, new_auc_data_reduction,axis=1, equal_var=False).pvalue
 
-for i in range(max(len(layers_original),len(layers_reduction))):
-    if i in layers_original and i in layers_reduction:
+for i ,l in enumerate(range(max(len(layers_original),len(layers_reduction)))):
+    if l in layers_original and l in layers_reduction:
 
         # print(p_value)
         out_str=''
@@ -147,7 +147,7 @@ for i in range(max(len(layers_original),len(layers_reduction))):
             out_str+='*'
         if p_value[i]<0.0005:
             out_str+='*'
-        plt.annotate(out_str,(i,1),color='black')
+        plt.annotate(out_str,(l,0.97),color='black')
 plt.legend()
 plt.title('AUC as a function of layers.')
 plt.xlabel('Number of Layers')
