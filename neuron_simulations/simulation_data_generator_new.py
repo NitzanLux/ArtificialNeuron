@@ -292,19 +292,13 @@ class SimulationDataGenerator():
                     self.curr_files_index[i] += self.curr_files_index[i - 1]
 
         self.X = np.vstack(self.X)
-        debug_flag=False
         if self.window_size_ms>self.X.shape[2]:
            self.prediction_length = self.X.shape[2]-self.receptive_filed_size
            self.window_size_ms = self.X.shape[2]
-           debug_flag=True
-           print('pr_l',self.prediction_length)
-           print('ws_ms',self.window_size_ms)
         self.y_spike = np.vstack(self.y_spike).squeeze(1)
         self.y_soma = np.vstack(self.y_soma).squeeze(1)
         times = ((self.X.shape[2] - self.receptive_filed_size) // self.prediction_length)
-        print(times,times,self.state)
         self.X = self.X[:, :, :self.receptive_filed_size+self.prediction_length*times]
-        if debug_flag: print('x_shape',self.X.shape,self.receptive_filed_size+self.prediction_length*times)
         self.y_spike = self.y_spike[:,
                        :self.receptive_filed_size+self.prediction_length*times]
         self.y_soma = self.y_soma[:, :self.receptive_filed_size+self.prediction_length*times]
