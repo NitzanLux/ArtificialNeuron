@@ -139,8 +139,8 @@ from scipy.stats import ttest_ind
 
 p_value = ttest_ind(new_auc_data_original, new_auc_data_reduction,axis=1, equal_var=True).pvalue
 print(p_value)
-print(ttest_ind(new_auc_data_original, new_auc_data_reduction,axis=0, equal_var=True).pvalue)
 for i ,l in enumerate(range(max(len(layers_original),len(layers_reduction)))):
+    print(l,layers_original,layers_reduction)
     if l in layers_original and l in layers_reduction:
 
         # print(p_value)
