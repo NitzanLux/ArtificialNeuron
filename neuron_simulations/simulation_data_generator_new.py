@@ -306,8 +306,8 @@ class SimulationDataGenerator():
         self.X = self.X[:, :, :self.receptive_filed_size+self.prediction_length*times]
         if debug_flag: print('x_shape',self.X.shape,self.receptive_filed_size+self.prediction_length*times)
         self.y_spike = self.y_spike[:,
-                       :-((self.y_spike.shape[1] - self.receptive_filed_size) // self.prediction_length)]
-        self.y_soma = self.y_soma[:, :-((self.y_soma.shape[1] - self.receptive_filed_size) // self.prediction_length)]
+                       :self.receptive_filed_size+self.prediction_length*times]
+        self.y_soma = self.y_soma[:, :self.receptive_filed_size+self.prediction_length*times]
 
         number_of_indexes = times * self.X.shape[0]
         self.indexes = np.arange(number_of_indexes)

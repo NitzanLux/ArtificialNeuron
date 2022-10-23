@@ -124,10 +124,13 @@ plt.show()
 
 #%%
 fig,ax=plt.subplots()
-
+dataset_orig=[]
+dataset_reduc=[]
 avarage_original=[]
 avarage_reduction=[]
 for k in key_list:
+    dataset_orig.append(original_data[k])
+    dataset_reduc.append(reduction_data[k])
     avarage_original.append(original_data[k])
     avarage_reduction.append(reduction_data[k])
 avarage_original=np.array(avarage_original)
@@ -137,7 +140,8 @@ ax.errorbar(np.arange(avarage_reduction.shape[1]),np.mean(avarage_reduction,axis
 ax.legend()
 # save_large_plot(fig,'avarage_trend_with_error.png')
 plt.show()
-
+from scipy.stats import ttest_ind
+print(ttest_ind(np.array(dataset_reduc),np.array(dataset_orig),axis=1))
 #%% plot diffrences order
 fig,ax=plt.subplots()
 
@@ -163,8 +167,8 @@ eps= np.std(np.array([reduction_ci[k]-original_ci[k] for k in key_list]))*2
 for i,k in enumerate(key_list):
     # plt.scatter(i,)
     print( np.abs(reduction_ci[k]-original_ci[k]))
-    if np.abs(reduction_ci[k]-original_ci[k])<eps:
-        continue
+    # if np.abs(reduction_ci[k]-original_ci[k])<eps:
+    #     continue
     r_ci_arr.append(reduction_ci[k])
     o_ci_arr.append(original_ci[k])
 parts = ax.violinplot(r_ci_arr, showmeans=True,showextrema = True, showmedians = True)
