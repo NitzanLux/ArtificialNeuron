@@ -67,7 +67,7 @@ batch_counter_reduction = []
 
 layers_original = []
 layers_reduction = []
-cur_layer = -1
+cur_layer = 2
 for i in original_auc:
     if i[1] != cur_layer:
         if len(new_auc_data_original) > 0:
