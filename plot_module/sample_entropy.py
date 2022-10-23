@@ -33,7 +33,7 @@ def create_sample_entropy_file(q,use_voltage=True):
             return
         f_path,f_index,tag=data
 
-        _, y_spike, _ = parse_sim_experiment_file(f_path)
+        _, y_spike, y_soma = parse_sim_experiment_file(f_path)
         path, f = ntpath.split(f_path)
         for index in range(y_spike.shape[1]):
             print(f'start key:{f} index:{index}')
