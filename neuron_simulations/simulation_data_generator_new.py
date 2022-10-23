@@ -157,7 +157,7 @@ class SimulationDataGenerator():
         while self.files_counter * self.buffer_size_in_files < len(
                 self.sim_experiment_files) or self.sample_counter < self.indexes.size or self.state == GeneratorState.VALIDATION :
             print('cur_X',self.X.shape)
-            print('cur_indexes',self.indexes.shape)
+            if self.state==GeneratorState.VALIDATION :print('cur_indexes',self.indexes)
             print(self.files_counter*self.buffer_size_in_files)
             print(np.arange(self.sample_counter, self.sample_counter + self.batch_size) % self.indexes.shape[0],'cur item')
             print('number_of_files_general',len(self.sim_experiment_files))
