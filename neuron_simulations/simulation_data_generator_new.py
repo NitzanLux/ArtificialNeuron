@@ -109,6 +109,7 @@ class SimulationDataGenerator():
         self.state = GeneratorState.VALIDATION
         self.shuffle_files = True
         self.is_shuffle_data = True
+        self.reload_files()
         return self
 
     def display_current_file_and_indexes(self):
@@ -127,10 +128,10 @@ class SimulationDataGenerator():
         self.sample_counter = 0
         self.index_set = set()
         self.data_set=set()
-        # if not self.first_run:
-        self.reload_files()
-        self.first_run = False
-            # self.files_counter=1
+        if not self.first_run:
+            self.reload_files()
+            self.first_run = False
+            self.files_counter=1
         if self.is_shuffle_data: self.shuffle_data()
 
         yield from self.iterate_deterministic_no_repetition()
@@ -301,7 +302,7 @@ class SimulationDataGenerator():
         self.y_spike = np.vstack(self.y_spike).squeeze(1)
         self.y_soma = np.vstack(self.y_soma).squeeze(1)
         times = ((self.X.shape[2] - self.receptive_filed_size) // self.prediction_length)
-        # if self.state !=  GeneratorState.VALIDATION:
+        print(times,times,self.state)
         self.X = self.X[:, :, :-((self.X.shape[2] - self.receptive_filed_size) % (self.prediction_length))]
         if debug_flag: print('x_shape',self.X.shape)
         self.y_spike = self.y_spike[:,
