@@ -304,7 +304,7 @@ class SimulationDataGenerator():
         times = ((self.X.shape[2] - self.receptive_filed_size) // self.prediction_length)
         print(times,times,self.state)
         self.X = self.X[:, :, :-((self.X.shape[2] - self.receptive_filed_size) % (self.prediction_length))]
-        if debug_flag: print('x_shape',self.X.shape)
+        if debug_flag: print('x_shape',self.X.shape,-((self.X.shape[2] - self.receptive_filed_size) % (self.prediction_length)))
         self.y_spike = self.y_spike[:,
                        :-((self.y_spike.shape[1] - self.receptive_filed_size) // self.prediction_length)]
         self.y_soma = self.y_soma[:, :-((self.y_soma.shape[1] - self.receptive_filed_size) // self.prediction_length)]
