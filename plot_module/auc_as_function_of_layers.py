@@ -86,6 +86,7 @@ for i in original_auc:
 new_auc_data_original[-1] = np.array(new_auc_data_original[-1])
 batch_counter_original_std=np.std(np.array(batch_counter_original),axis=1)
 batch_counter_original_mean=np.mean(np.array(batch_counter_original),axis=1)
+cur_layer = 2
 
 for i in reduction_auc:
     if i[1] != cur_layer:
