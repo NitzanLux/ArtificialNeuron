@@ -141,6 +141,7 @@ p_value = ttest_ind(new_auc_data_original, new_auc_data_reduction,axis=1).pvalue
 print(p_value)
 for i in range(max(len(layers_original),len(layers_reduction))):
     print(i,layers_original,layers_reduction)
+    l=layers_original[i]
     if layers_original[i] in layers_reduction:
         # print(p_value)
         out_str=''
