@@ -135,8 +135,9 @@ for i in range(len(layers_reduction)):
 from scipy.stats import ttest_ind
 for i in range(max(len(layers_original),len(layers_reduction))):
     if i in layers_original and i in layers_reduction:
-        p_value = ttest_ind(new_auc_data_original,new_auc_data_reduction).pvalue
+        p_value = ttest_ind(new_auc_data_original,new_auc_data_reduction,equal_var=False)
         print(p_value)
+        p_value=p_value.pvalue
         out_str=''
         if p_value<0.05:
             out_str+='*'
