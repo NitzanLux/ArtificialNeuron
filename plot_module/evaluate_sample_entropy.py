@@ -149,7 +149,7 @@ diff = np.array(diff)
 diff.sort(axis=0)
 eps=1e-6
 diff = (diff-diff.min()+eps)/(diff.max()-diff.min()+eps)
-ax.matshow(diff)
+ax.matshow(diff,vmin=0,vmax=1,cmap='jet')
 # save_large_plot(fig,'error_between_the_same_input.png')
 plt.show()
 #%%
