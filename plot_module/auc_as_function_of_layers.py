@@ -165,13 +165,13 @@ for i in range(max(len(layers_original), len(layers_reduction))):
 
         print((l, max(np.max(new_auc_data_reduction[i, :]), np.max(new_auc_data_original[i, :]))))
         plt.annotate(out_str,
-                     (l, max(np.max(new_auc_data_reduction[i, :]), np.max(new_auc_data_original[i, :])) + 0.001),
+                     (l, max(np.max(new_auc_data_reduction[i, :]), np.max(new_auc_data_original[i, :])) + 0.0005),
                      color='black')
 plt.legend(loc=4,)
 plt.title('AUC as a function of layers.')
 plt.xlabel('Number of Layers')
 plt.ylim([np.min((new_auc_data_reduction, new_auc_data_original)),
-          np.max((new_auc_data_reduction, new_auc_data_original)) + 0.005])
+          np.max((new_auc_data_reduction, new_auc_data_original)) + 0.002])
 plt.ylabel('Area Under the Curve')
 plt.tight_layout()
 plt.show()
