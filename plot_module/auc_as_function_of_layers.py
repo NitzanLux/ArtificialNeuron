@@ -159,6 +159,7 @@ for i in range(max(len(layers_original), len(layers_reduction))):
         while flag:
             if p_value[i]<5*factor:
                 out_str += '*'
+                factor*=0.01
             else:
                 flag=False
 
