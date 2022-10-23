@@ -51,6 +51,8 @@ for i in configs:
     auc_his=np.load(os.path.join(MODELS_DIR, i[0],i[0]+'_best','auc_history.npy'))
     if len(auc_his.shape)>1:
         auc_his=auc_his[0,:]
+    if conf.number_of_layers_space==7:
+        continue
     out=(np.max(auc_his),conf.number_of_layers_space,conf.batch_counter)
 
     if conf.data_base_path==REDUCTION_BASE_PATH:
@@ -67,7 +69,7 @@ batch_counter_reduction = []
 
 layers_original = []
 layers_reduction = []
-cur_layer = 2
+cur_layer = -1
 for i in original_auc:
     if i[1] != cur_layer:
         if len(new_auc_data_original) > 0:
@@ -86,7 +88,7 @@ for i in original_auc:
 new_auc_data_original[-1] = np.array(new_auc_data_original[-1])
 batch_counter_original_std=np.std(np.array(batch_counter_original),axis=1)
 batch_counter_original_mean=np.mean(np.array(batch_counter_original),axis=1)
-cur_layer = 2
+cur_layer = -1
 
 for i in reduction_auc:
     if i[1] != cur_layer:
