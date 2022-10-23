@@ -54,6 +54,8 @@ class SimulationDataGenerator():
                  shuffle_files=True, is_shuffle_data=True, number_of_traces_from_file=None,
                  number_of_files=None, load_on_parallel=True, start_loading_while_training=True, start_loading_files_n_batches_from_end = 10):
         'data generator initialization'
+        self.state = GeneratorState.TRAIN
+
         self.start_loading_files_n_batches_from_end=start_loading_files_n_batches_from_end
         self.load_on_parallel = load_on_parallel
         self.start_loading_while_training=start_loading_while_training
@@ -125,9 +127,9 @@ class SimulationDataGenerator():
         self.sample_counter = 0
         self.index_set = set()
         self.data_set=set()
-        if not self.first_run:
-            self.reload_files()
-            self.first_run = False
+        # if not self.first_run:
+        self.reload_files()
+        self.first_run = False
             # self.files_counter=1
         if self.is_shuffle_data: self.shuffle_data()
 
