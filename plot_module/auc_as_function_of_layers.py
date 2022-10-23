@@ -179,4 +179,4 @@ plt.ylabel('Area Under the Curve')
 plt.tight_layout()
 plt.show()
 
-plt.savefig(f'evaluation_plots/comparison_{jsons_list}.png')
+plt.savefig(f'evaluation_plots/comparison_{jsons_list}_{"test" if use_test_data else "valid"}.png')
