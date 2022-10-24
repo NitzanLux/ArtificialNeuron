@@ -140,7 +140,7 @@ plt.errorbar(layers_original, original_auc_plotting, yerr=original_auc_plotting_
 plt.errorbar(layers_reduction, reduction_auc_plotting, yerr=reduction_auc_plotting_err, label='reduction', alpha=0.7,
              color='blue')
 print(len(original_auc_plotting), batch_counter_original_mean.shape)
-color_factor=10
+color_factor=0.4
 color_function = lambda x: np.clip((np.array(x)*color_factor)/255.,0,1)
 for i in range(len(layers_original)):
     plt.annotate(
