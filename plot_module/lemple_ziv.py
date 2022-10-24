@@ -47,11 +47,11 @@ def create_sample_entropy_file(q,use_voltage=True):
             t = time.time()
             # Mobj = lempel_ziv_complexity('SampEn')
             MSx = lempel_ziv_complexity(s)
-            s_c.append((MSx,index))
+            s_c.append(MSx)
             print(
                 f"current sample number {f} {index}  total: {time.time() - t} seconds",
                 flush=True)
-        with open(os.path.join("sample_entropy",f"sample_entropy_{'v' if use_voltage else 's'}_{tag}_{f_index}_{index}_{MAX_INTERVAL}d.p"),'wb') as f_o:
+        with open(os.path.join("LZC",f"LZC_{'v' if use_voltage else 's'}_{tag}_{f_index}_{index}_{MAX_INTERVAL}d.p"),'wb') as f_o:
             pickle.dump((s_c,f),f_o)
 
 def get_sample_entropy(tag,pathes,use_voltage=False):
@@ -88,7 +88,6 @@ if __name__ == "__main__":
     number_of_clusters=10
     job_factory = SlurmJobFactory("cluster_logs")
 
-    assert args.sv in{'s','v'}
     parent_dir_path = args.parent_dir_path
     # size = len(GroundTruthData.load(os.path.join( 'evaluations', 'ground_truth', gt_name + '.gteval')))
     list_dir_parent=os.listdir(parent_dir_path)
@@ -101,5 +100,5 @@ if __name__ == "__main__":
     for i in range(number_of_clusters):
         pathes=list_dir_parent[i*jumps:min((i+1)*jumps,len(list_dir_parent))]
         print(pathes)
-        job_factory.send_job(f"sample_entropy{args.tag}_{i}_{MAX_INTERVAL}d", f'python -c "from plot_module.sample_entropy import get_sample_entropy; get_sample_entropy('+"'"+args.tag+"'"+f',{pathes})"',**keys)
+        job_factory.send_job(f"LZC{args.tag}_{i}_{MAX_INTERVAL}d", f'python -c "from plot_module.lemple_ziv import get_sample_entropy; get_sample_entropy('+"'"+args.tag+"'"+f',{pathes})"',**keys)
         print('job sent')
