@@ -189,7 +189,7 @@ props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
 text = '\n'.join(text)
 # place a text box in upper left in axes coords
 ann = plt.annotate("Test",
-                  xy=(0.2, 0.2), xycoords='data',
+                  xy=(3, 0.985), xycoords='data',
                   xytext=(0.8, 0.8), textcoords='data',
                   size=20, va="center", ha="center",
                   bbox=dict(boxstyle="round4", fc="w"))
