@@ -56,12 +56,14 @@ for i in configs:
         auc_his = np.load(os.path.join(MODELS_DIR, i[0], i[0] + '_best', 'auc_history.npy'))
         if len(auc_his.shape) > 1:
             auc_his = auc_his[0, :]
+            auc = np.max(auc_his)
         # if conf.number_of_layers_space==7:
         #     continue
-        out = (np.max(auc_his), conf.number_of_layers_space, conf.batch_counter)
+
     else:
         m = model_evaluation_multiple.EvaluationData.load(os.path.join(MODELS_DIR, i[0], i[0] + '_best',i[0] +('_davids_ergodic' if conf.data_base_path==DAVID_BASE_PATH else '_reduction_ergodic')+'_test.meval'))
-        out=m.get_ROC_data()[0]
+        auc=m.get_ROC_data()[0]
+    out = (auc, conf.number_of_layers_space, conf.batch_counter)
     if conf.data_base_path == REDUCTION_BASE_PATH:
         reduction_auc.append(out)
     else:

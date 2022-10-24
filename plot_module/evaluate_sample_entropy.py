@@ -10,8 +10,8 @@ if not os.path.exists('sample_entropy_plots'):
 tag = "train"
 reduction_tag='_reduction_ergodic_train'
 original_tag='_davids_ergodic_train'
-regex_file_filter = r'sample_entropy_(?:reduction|davids)_ergodic_train.*'
-regex_file_replace = r'sample_entropy_(?:reduction|davids)_ergodic_train'
+regex_file_filter = r'sample_entropy_v_(?:reduction|davids)_ergodic_train.*'
+regex_file_replace = r'sample_entropy_v_(?:reduction|davids)_ergodic_train'
 filter_regex_match = re.compile(regex_file_filter)
 def save_large_plot(fig,name):
     mng = plt.get_current_fig_manager()
@@ -243,6 +243,8 @@ for i,k in enumerate(key_list):
     print( np.abs(reduction_ci[k]-original_ci[k]))
     # if np.abs(reduction_ci[k]-original_ci[k])<eps:
     #     continue
+    if np.isinf(reduction_ci[k]) or np.isnan(reduction_ci[k]) or np.isinf(original_ci[k]) or np.isnan(original_ci[k]):
+        continue
     r_ci_arr.append(reduction_ci[k])
     o_ci_arr.append(original_ci[k])
 parts = ax.violinplot(r_ci_arr, showmeans=True,showextrema = True, showmedians = True)
