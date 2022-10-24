@@ -196,7 +196,7 @@ plt.xlabel('Number of Layers')
 plt.ylim([np.min((new_auc_data_reduction, new_auc_data_original)),
           np.max((new_auc_data_reduction, new_auc_data_original)) + 0.002])
 plt.ylabel('Area Under the Curve')
-plt.tight_layout()
+# plt.tight_layout()
 plt.show()
 
 plt.savefig(f'evaluation_plots/comparison_{jsons_list}_{"test" if use_test_data else "valid"}.png')
