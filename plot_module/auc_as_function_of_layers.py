@@ -156,6 +156,8 @@ from scipy.stats import ttest_ind
 
 p_value = ttest_ind(new_auc_data_original, new_auc_data_reduction, axis=1).pvalue  # , equal_var=True).pvalue
 print(p_value)
+p_value_legend=''
+p_values_dict=dict()
 for i in range(max(len(layers_original), len(layers_reduction))):
     print(i, layers_original, layers_reduction)
     l = layers_original[i]
@@ -163,18 +165,28 @@ for i in range(max(len(layers_original), len(layers_reduction))):
         # print(p_value)
         out_str = ''
         flag=True
-        factor=0.01
+        factor=0.05
         while flag:
-            if p_value[i]<5*factor:
+            if p_value[i]<factor:
                 out_str += '*'
                 factor*=0.1
             else:
                 flag=False
+        if out_str not in p_values_key:
+            p_values_dict[out_str]=factor
 
         print((l, max(np.max(new_auc_data_reduction[i, :]), np.max(new_auc_data_original[i, :]))))
         plt.annotate(out_str,
                      (l, max(np.max(new_auc_data_reduction[i, :]), np.max(new_auc_data_original[i, :])) + 0.001),
                      color='black', ha='center', va='center')
+text=[]
+for k in sorted(p_values_dict.keys(),key=lambda x:len(x)):
+    text.append(k+' - $p_{value}$<'+str(p_values_dict[k]))
+props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+text = '\n'.join(text)
+# place a text box in upper left in axes coords
+ax.text(0.05, 0.95, text, transform=ax.transAxes, fontsize=14,
+        verticalalignment='top', bbox=props)
 plt.legend(loc=4,)
 plt.title('AUC as a function of layers.')
 plt.xlabel('Number of Layers')
