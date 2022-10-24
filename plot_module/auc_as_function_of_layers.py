@@ -190,7 +190,7 @@ text = '\n'.join(text)
 # place a text box in upper left in axes coords
 ann = plt.annotate(text,
                   xy=(1, 0.99),
-                  bbox=dict(boxstyle="square", fc="w"),ha='left', va='bottom')
+                  bbox=dict(boxstyle="square", fc="w"),ha='left', va='top')
 plt.legend(loc=4,)
 plt.title('AUC as a function of layers.')
 plt.xlabel('Number of Layers')
