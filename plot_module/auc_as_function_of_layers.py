@@ -172,7 +172,7 @@ for i in range(max(len(layers_original), len(layers_reduction))):
                 factor*=0.1
             else:
                 flag=False
-        if out_str not in p_values_key:
+        if out_str not in p_values_dict:
             p_values_dict[out_str]=factor
 
         print((l, max(np.max(new_auc_data_reduction[i, :]), np.max(new_auc_data_original[i, :]))))
