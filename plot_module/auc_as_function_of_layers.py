@@ -140,16 +140,18 @@ plt.errorbar(layers_original, original_auc_plotting, yerr=original_auc_plotting_
 plt.errorbar(layers_reduction, reduction_auc_plotting, yerr=reduction_auc_plotting_err, label='reduction', alpha=0.7,
              color='blue')
 print(len(original_auc_plotting), batch_counter_original_mean.shape)
+color_factor=4
+color_function = lambda x: np.min(np.array(x)*color_factor,np.array(255.),axis=0)/255.
 for i in range(len(layers_original)):
     plt.annotate(
         str(human_format(batch_counter_original_mean[i]) + r" $\pm$ " + human_format(batch_counter_original_std[i])),
         (layers_original[i] + 0.2, original_auc_plotting[i] + (0.001 * ((i == 0) * 2 - 1)) * ((i == 0) + 1)),
-        fontsize=FONT_SIZE, color=(90 / 255., 20 / 255., 17 / 255.), ha='center', va='center')
+        fontsize=FONT_SIZE, color=color_function((45,10,7)), ha='center', va='center')
 for i in range(len(layers_reduction)):
     plt.annotate(
         human_format(batch_counter_reduction_mean[i]) + r" $\pm$ " + human_format(batch_counter_reduction_std[i]),
         (layers_reduction[i] + 0.1, reduction_auc_plotting[i] - (0.0005 * ((i == 0) * 2 - 1)) * ((i == 0) + 1)),
-        fontsize=FONT_SIZE, color=(0 / 255., 10 / 255., 77 / 255.), ha='center', va='center')
+        fontsize=FONT_SIZE, color=color_function((0,5,35)), ha='center', va='center')
 from scipy.stats import ttest_ind
 
 p_value = ttest_ind(new_auc_data_original, new_auc_data_reduction, axis=1).pvalue  # , equal_var=True).pvalue
@@ -171,7 +173,7 @@ for i in range(max(len(layers_original), len(layers_reduction))):
 
         print((l, max(np.max(new_auc_data_reduction[i, :]), np.max(new_auc_data_original[i, :]))))
         plt.annotate(out_str,
-                     (l, max(np.max(new_auc_data_reduction[i, :]), np.max(new_auc_data_original[i, :])) + 0.0005),
+                     (l, max(np.max(new_auc_data_reduction[i, :]), np.max(new_auc_data_original[i, :])) + 0.001),
                      color='black', ha='center', va='center')
 plt.legend(loc=4,)
 plt.title('AUC as a function of layers.')
