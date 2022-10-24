@@ -10,8 +10,8 @@ if not os.path.exists('sample_entropy_plots'):
 tag = "train"
 reduction_tag='_reduction_ergodic_train'
 original_tag='_davids_ergodic_train'
-regex_file_filter = r'sample_entropy_v_(?:reduction|davids)_ergodic_train.*'
-regex_file_replace = r'sample_entropy_v_(?:reduction|davids)_ergodic_train'
+regex_file_filter = r'sample_entropy_(?:reduction|davids)_ergodic_train.*'
+regex_file_replace = r'sample_entropy_(?:reduction|davids)_ergodic_train'
 filter_regex_match = re.compile(regex_file_filter)
 def save_large_plot(fig,name):
     mng = plt.get_current_fig_manager()
