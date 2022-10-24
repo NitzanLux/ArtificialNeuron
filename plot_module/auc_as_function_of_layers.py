@@ -188,7 +188,7 @@ for k in sorted(p_values_dict.keys(),key=lambda x:len(x)):
 props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
 text = '\n'.join(text)
 # place a text box in upper left in axes coords
-plt.text(0.01, 0.01, text, fontsize=12,
+plt.text(0.01, 0.9, text, fontsize=12,
         verticalalignment='top', bbox=props)
 plt.legend(loc=4,)
 plt.title('AUC as a function of layers.')
