@@ -181,7 +181,7 @@ for i in range(max(len(layers_original), len(layers_reduction))):
                      color='black', ha='center', va='center')
 text=[]
 for k in sorted(p_values_dict.keys(),key=lambda x:len(x)):
-    text.append(k+' - $p_{value}$<'+str(p_values_dict[k]))
+    text.append(k+' - $p_{value}$<%E'%p_values_dict[k])
 props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
 text = '\n'.join(text)
 # place a text box in upper left in axes coords
