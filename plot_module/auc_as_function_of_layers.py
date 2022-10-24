@@ -165,7 +165,7 @@ for i in range(max(len(layers_original), len(layers_reduction))):
         # print(p_value)
         out_str = ''
         flag=True
-        factor=0.05
+        factor=np.array([0.05])
         while flag:
             if p_value[i]<factor:
                 out_str += '*'
@@ -173,7 +173,7 @@ for i in range(max(len(layers_original), len(layers_reduction))):
             else:
                 flag=False
         if out_str not in p_values_dict:
-            p_values_dict[out_str]=factor
+            p_values_dict[out_str]=factor[0]
 
         print((l, max(np.max(new_auc_data_reduction[i, :]), np.max(new_auc_data_original[i, :]))))
         plt.annotate(out_str,
