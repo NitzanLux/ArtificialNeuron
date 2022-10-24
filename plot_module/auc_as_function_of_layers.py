@@ -188,8 +188,11 @@ for k in sorted(p_values_dict.keys(),key=lambda x:len(x)):
 props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
 text = '\n'.join(text)
 # place a text box in upper left in axes coords
-plt.annotate(text,(0.01, 0.9), fontsize=12,
-        verticalalignment='top', bbox=props)
+ann = plt.annotate("Test",
+                  xy=(0.2, 0.2), xycoords='data',
+                  xytext=(0.8, 0.8), textcoords='data',
+                  size=20, va="center", ha="center",
+                  bbox=dict(boxstyle="round4", fc="w"))
 plt.legend(loc=4,)
 plt.title('AUC as a function of layers.')
 plt.xlabel('Number of Layers')
