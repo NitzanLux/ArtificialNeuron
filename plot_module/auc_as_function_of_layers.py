@@ -161,19 +161,22 @@ p_values_dict=dict()
 for i in range(max(len(layers_original), len(layers_reduction))):
     print(i, layers_original, layers_reduction)
     l = layers_original[i]
+
     if layers_original[i] in layers_reduction:
         # print(p_value)
         out_str = ''
         flag=True
         factor=np.array([0.05])
+        factor_steps=1
         while flag:
             if p_value[i]<factor:
                 out_str += '*'
+                factor_steps+=1
                 factor*=0.1
             else:
                 flag=False
         if out_str not in p_values_dict:
-            p_values_dict[out_str]=factor[0]
+            p_values_dict[out_str]=factor_steps
 
         print((l, max(np.max(new_auc_data_reduction[i, :]), np.max(new_auc_data_original[i, :]))))
         plt.annotate(out_str,
@@ -181,7 +184,7 @@ for i in range(max(len(layers_original), len(layers_reduction))):
                      color='black', ha='center', va='center')
 text=[]
 for k in sorted(p_values_dict.keys(),key=lambda x:len(x)):
-    text.append(k+' - $p_{value}$<%E'%p_values_dict[k])
+    text.append(k+' - $p_{value}$<5e-%d'%(p_values_dict[k]))
 props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
 text = '\n'.join(text)
 # place a text box in upper left in axes coords
