@@ -158,6 +158,7 @@ p_value = ttest_ind(new_auc_data_original, new_auc_data_reduction, axis=1).pvalu
 print(p_value)
 p_value_legend=''
 p_values_dict=dict()
+p_value_arr=[]
 for i in range(max(len(layers_original), len(layers_reduction))):
     print(i, layers_original, layers_reduction)
     l = layers_original[i]
@@ -166,7 +167,7 @@ for i in range(max(len(layers_original), len(layers_reduction))):
         # print(p_value)
         out_str = ''
         flag=True
-        factor=np.array([0.05])
+        factor=np.array([0.5])
         factor_steps=1
         while flag:
             if p_value[i]<factor:
@@ -175,16 +176,29 @@ for i in range(max(len(layers_original), len(layers_reduction))):
                 factor*=0.1
             else:
                 flag=False
-        if out_str not in p_values_dict:
-            p_values_dict[out_str]=factor_steps
+        # if out_str not in p_values_dict:
+        if factor_steps>0.005:
+            continue
+        if factor_steps not in p_value_dict:
+            p_values_dict[factor_steps]=[]
+        p_values_dict[factor_steps].append(l)
+        # p_value_arr.append(factor)
 
-        print((l, max(np.max(new_auc_data_reduction[i, :]), np.max(new_auc_data_original[i, :]))))
-        plt.annotate(out_str,
-                     (l, max(np.max(new_auc_data_reduction[i, :]), np.max(new_auc_data_original[i, :])) + 0.001),
+
+
+
+out_str='*'
+for i in sorted(p_values_dict.keys(),key=lambda x:x):
+    print(i)
+    for l in p_values_dict[i]:
+        # print((l, max(np.max(new_auc_data_reduction[i, :]), np.max(new_auc_data_original[i, :]))))
+        plt.annotate(out_str,(l, max(np.max(new_auc_data_reduction[layers_original.index(l), :]), np.max(new_auc_data_original[layers_original.index(l), :])) + 0.001),
                      color='black', ha='center', va='center')
+    out_str+='*'
+out_str='*'
 text=[]
-for k in sorted(p_values_dict.keys(),key=lambda x:len(x)):
-    text.append(k+' - $p_{value}$<5e-%d'%(p_values_dict[k]))
+for k in sorted(p_values_dict.keys(),key=lambda x:x):
+    text.append(k+' - $p_{value}$<5e-%d'%(np.log10(5/k)))
 props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
 text = '\n'.join(text)
 # place a text box in upper left in axes coords
