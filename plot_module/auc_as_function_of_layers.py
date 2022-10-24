@@ -141,7 +141,7 @@ plt.errorbar(layers_reduction, reduction_auc_plotting, yerr=reduction_auc_plotti
              color='blue')
 print(len(original_auc_plotting), batch_counter_original_mean.shape)
 color_factor=4
-color_function = lambda x: np.min(np.array(x)*color_factor,np.array(255.),axis=0)/255.
+color_function = lambda x: np.clip((np.array(x)*color_factor)/255.,0,1)
 for i in range(len(layers_original)):
     plt.annotate(
         str(human_format(batch_counter_original_mean[i]) + r" $\pm$ " + human_format(batch_counter_original_std[i])),
