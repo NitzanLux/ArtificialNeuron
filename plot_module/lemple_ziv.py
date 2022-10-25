@@ -46,7 +46,7 @@ def create_sample_entropy_file(q,use_voltage=True):
             print(s,s.shape)
             t = time.time()
             # Mobj = lempel_ziv_complexity('SampEn')
-            MSx = lempel_ziv_complexity(s)
+            MSx = lempel_ziv_complexity(tuple(s))
             s_c.append(MSx)
             print(
                 f"current sample number {f} {index}  total: {time.time() - t} seconds",
