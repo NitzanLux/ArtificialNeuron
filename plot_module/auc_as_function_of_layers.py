@@ -167,17 +167,16 @@ for i in range(max(len(layers_original), len(layers_reduction))):
         # print(p_value)
         out_str = ''
         flag=True
-        factor=np.array([0.5])
+        factor=0.5
         factor_steps=1
         while flag:
             if p_value[i]<factor:
-                out_str += '*'
                 factor_steps+=1
                 factor*=0.1
             else:
                 flag=False
         # if out_str not in p_values_dict:
-        if factor_steps>0.005:
+        if factor>0.05:
             continue
         if factor_steps not in p_value_dict:
             p_values_dict[factor_steps]=[]
