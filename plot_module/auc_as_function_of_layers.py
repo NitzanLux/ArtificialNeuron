@@ -200,8 +200,8 @@ for i in sorted(p_values_dict.keys(),key=lambda x:x):
 out_str='*'
 text=[]
 for k in sorted(p_values_dict.keys(),key=lambda x:x):
-    text.append(astriks_dict[k]+' - $p_{value}$<5e-%d'%(np.log10(5/k)).astype(int))
-    print(' - $p_{value}$<5e-%d'%(np.log10(5/k)).astype(int),(np.log10(5/k)).astype(int))
+    text.append(astriks_dict[k]+' - $p_{value}$<5e-%d'%k)
+    print(' - $p_{value}$<5e-%d'%k,k)
 props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
 text = '\n'.join(text)
 # place a text box in upper left in axes coords
