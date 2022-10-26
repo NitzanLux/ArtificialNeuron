@@ -178,7 +178,7 @@ for i in range(max(len(layers_original), len(layers_reduction))):
         # if out_str not in p_values_dict:
         if factor>0.05:
             continue
-        if factor_steps not in p_value_dict:
+        if factor_steps not in p_values_dict:
             p_values_dict[factor_steps]=[]
         p_values_dict[factor_steps].append(l)
         # p_value_arr.append(factor)
