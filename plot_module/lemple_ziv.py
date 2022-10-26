@@ -54,7 +54,7 @@ def create_sample_entropy_file(q,use_voltage=True):
         with open(os.path.join("LZC",f"LZC_{'v' if use_voltage else 's'}_{tag}_{f_index}_{index}_{MAX_INTERVAL}d.p"),'wb') as f_o:
             pickle.dump((s_c,f),f_o)
 
-def get_sample_entropy(tag,pathes,use_voltage=False):
+def get_sample_entropy(tag,pathes,file_index_start,use_voltage=False):
 
     number_of_jobs = min(number_of_cpus - 1,len(pathes))
 
@@ -63,7 +63,7 @@ def get_sample_entropy(tag,pathes,use_voltage=False):
     process = [Process(target=create_sample_entropy_file, args=(queue,use_voltage)) for i in range(number_of_jobs)]
     print('starting')
     for j,fp in enumerate(pathes):
-        queue.put((fp,j,tag))
+        queue.put((fp,j+file_index_start,tag))
         if j<len(process):
             process[j].start()
 
@@ -100,5 +100,5 @@ if __name__ == "__main__":
     for i in range(number_of_clusters):
         pathes=list_dir_parent[i*jumps:min((i+1)*jumps,len(list_dir_parent))]
         print(pathes)
-        job_factory.send_job(f"LZC{args.tag}_{i}_{MAX_INTERVAL}d", f'python -c "from plot_module.lemple_ziv import get_sample_entropy; get_sample_entropy('+"'"+args.tag+"'"+f',{pathes})"',**keys)
+        job_factory.send_job(f"LZC{args.tag}_{i}_{MAX_INTERVAL}d", f'python -c "from plot_module.lemple_ziv import get_sample_entropy; get_sample_entropy('+"'"+args.tag+"'"+f',{pathes},{i*jumps})"',**keys)
         print('job sent')
