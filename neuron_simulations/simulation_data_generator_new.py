@@ -393,7 +393,8 @@ def parse_sim_experiment_file(sim_experiment_file, print_logs=False):
         loading_duration_sec = time.time() - loading_start_time
         print('loading took %.3f seconds' % (loading_duration_sec))
         print('-----------------------------------------------------------------')
-
+    print('soma shape',y_soma.shpae)
+    print('spike shape',y_spike.shpae)
     return X, y_spike, y_soma
 
 
