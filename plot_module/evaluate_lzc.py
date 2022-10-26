@@ -5,13 +5,13 @@ import numpy as np
 import pickle
 import re
 #%%
-if not os.path.exists('sample_entropy_plots'):
-    os.mkdir('sample_entropy_plots')
+if not os.path.exists('lzc_plots'):
+    os.mkdir('lzc_plots')
 tag = "train"
 reduction_tag='_reduction_ergodic_train'
 original_tag='_davids_ergodic_train'
-regex_file_filter = r'sample_entropy_s_(?:reduction|davids)_ergodic_train.*'
-regex_file_replace = r'sample_entropy_s_(?:reduction|davids)_ergodic_train'
+regex_file_filter = r'LZC_s_(?:reduction|davids)_ergodic_train.*'
+regex_file_replace = r'LZC_s_(?:reduction|davids)_ergodic_train'
 filter_regex_match = re.compile(regex_file_filter)
 def save_large_plot(fig,name):
     mng = plt.get_current_fig_manager()
@@ -20,7 +20,7 @@ def save_large_plot(fig,name):
         name = f"{name[:name.find('.')]}_{tag}_{name[name.find('.'):]}"
     else:
         name =f"{name}_{tag}"
-    fig.savefig(os.path.join('sample_entropy_plots',name))
+    fig.savefig(os.path.join('lzc_plots',name))
 dim_size=200
 #%%
 reduction_data=dict()
@@ -31,43 +31,35 @@ file_list=[]
 ordering=dict()
 key_list=set()
 file_names=[]
-counter=0
-file_sample_entropy=sorted(os.listdir(os.path.join('sample_entropy')),key= lambda x:x[::-1])
-
-#%%
-
-datas=[]
-for i in os.listdir(os.path.join('sample_entropy')):
+for i in os.listdir(os.path.join('LZC')):
 
     if not str(dim_size)+'d.p' in i or not tag in i or (filter_regex_match.match(i) is None):
         continue
-    counter+=1
     s = re.sub(regex_file_replace,'',i)
     s = s.replace(original_tag,'')
-    s = s.replace('sample_entropy_','')
+    s = s.replace('LZC_','')
     s = s.replace(reduction_tag,'')
     s = s.replace(f'_{dim_size}d','')
-    print(s)
     if reduction_tag in i:
         # print(i)
-        with open(os.path.join('sample_entropy',i),'rb') as f:
+        with open(os.path.join('LZC',i),'rb') as f:
             data=pickle.load(f)
             data=list(data)
-
-            data[2]=data[2].replace('_reduction_0w','')
-            s=tuple(data[2:])
-            reduction_data[s],reduction_ci[s]=data[:2]
-            datas.append(data)
+            data[1]=data[1].replace('.p','').replace('_reduction_0w','')
+            s=data[1]
+            for j in range(len(data[0])):
+                reduction_ci[(s,j)]=data[0][j]
+            print(j)
     elif original_tag in i:
         # print(i)
-        with open(os.path.join('sample_entropy',i),'rb') as f:
+        with open(os.path.join('LZC',i),'rb') as f:
             data=pickle.load(f)
             data=list(data)
-            # data[2]=data[2].replace('.p','')
-            s=tuple(data[2:])
-            original_data[s],original_ci[s]=data[:2]
-            datas.append(data)
-
+            data[1]=data[1].replace('.p','')
+            s=data[1]
+            for j in range(len(data[0])):
+                original_ci[(s,j)]=data[0][j]
+            print(j)
     else:
         print(f'!!!!!!!!!!!!@#$%%%    {i}')
     file_list.append(s[0])
@@ -77,106 +69,21 @@ for i in os.listdir(os.path.join('sample_entropy')):
 file_list=list(set(file_list))
 file_list = sorted(file_list,key=lambda x:ordering[x])
 
-reduction_keys=set(reduction_data.keys())
-original_keys=set(original_data.keys())
-key_list = list(reduction_keys&original_keys)
-print(len(key_list))
-#%% print nans
-fig,ax=plt.subplots()
-data_mat=np.zeros((401,len(key_list)))
-for i,k in enumerate(key_list):
-    print(i)
-    out = np.argwhere(np.isnan(original_data[k]))
-    data_mat[out,i]=1
-    out = np.argwhere(np.isnan(reduction_data[k]))
-    data_mat[201+out,i]=1
-    # out = np.argwhere(np.isinf(original_data[k]))
-    # data_mat[out,i]=-1
-    # out = np.argwhere(np.isinf(reduction_data[k]))
-    # data_mat[201+out,i]=-1
-ax.matshow(data_mat)
-plt.show()
-#%% print  infs
-inf_his=[]
-fig,ax=plt.subplots()
-data_mat=np.zeros((401,len(key_list)))
-for i,k in enumerate(key_list):
-    print(i)
-    out = np.argwhere(np.isinf(original_data[k]))
-    data_mat[out,i]=1
-
-    out = np.argwhere(np.isinf(reduction_data[k]))
-    data_mat[201+out,i]=1
-    # out = np.argwhere(np.isinf(original_data[k]))
-    # data_mat[out,i]=-1
-    # out = np.argwhere(np.isinf(reduction_data[k]))
-    # data_mat[201+out,i]=-1
-ax.matshow(data_mat)
-plt.show()
-#%% remove nans
-
-for k in key_list:
-    if np.isnan(original_data[k]).any() :
-        print(original_data[k])
-        del original_data[k]
-        del reduction_data[k]
-        continue
-    if np.isnan(reduction_data[k]).any():
-        print(k)
-        del original_data[k]
-        del reduction_data[k]
-        continue
-reduction_keys=set(reduction_data.keys())
-original_keys=set(original_data.keys())
+reduction_keys=set(reduction_ci.keys())
+original_keys=set(original_ci.keys())
 key_list = list(reduction_keys&original_keys)
 print(len(key_list))
 
-#%% remove infs
-
-for k in key_list:
-    if np.isinf(original_data[k]).any() :
-        print(original_data[k])
-        del original_data[k]
-        del reduction_data[k]
-        continue
-    if np.isinf(reduction_data[k]).any():
-        print(k)
-        del original_data[k]
-        del reduction_data[k]
-        continue
-reduction_keys=set(reduction_data.keys())
-original_keys=set(original_data.keys())
-key_list = list(reduction_keys&original_keys)
-print(len(key_list))
-#%% set_timescale to lowest bound
-min_inf=-1
-for i,k in enumerate(key_list):
-    o_infs = np.argwhere(np.isinf(original_data[k]))
-    r_infs = np.argwhere(np.isinf(reduction_data[k]))
-    infs_t=np.vstack((o_infs,r_infs))
-    if infs_t.size>0:
-        cur_min_inf=np.min(infs_t)
-        if min_inf==-1 or cur_min_inf<min_inf:
-            min_inf=cur_min_inf
-for i,k  in enumerate(key_list):
-    original_data[k]=original_data[k][:min_inf]
-    reduction_data[k]=reduction_data[k][:min_inf]
-#%% validation about files that had been done
-fig,ax=plt.subplots()
-
-ax.scatter(list(key_list),[1]*len(key_list))
-save_large_plot(fig,'files_that_had_been_done.png')
-plt.show()
 #%%
 fig,ax=plt.subplots()
 
 avarage_diff=[]
 for k in key_list:
 
-    avarage_diff.append(original_data[k]-reduction_data[k])
+    avarage_diff.append(original_ci[k]-reduction_ci[k])
 avarage_diff = np.array(avarage_diff)
 
-ax.errorbar(np.arange(avarage_diff.shape[1]),np.mean(avarage_diff,axis=0),yerr=np.std(avarage_diff,axis=0))
+ax.errorbar(np.arange(avarage_diff.shape[1]),avarage_diff)
 # save_large_plot(fig,'error_between_the_same_input.png')
 plt.show()
 #%%

@@ -51,7 +51,7 @@ def create_sample_entropy_file(q,use_voltage=True):
             with open(os.path.join("sample_entropy",f"sample_entropy_{'v' if use_voltage else 's'}_{tag}_{f_index}_{index}_{MAX_INTERVAL}d.p"),'wb') as f_o:
                 pickle.dump((MSx,Ci,f,index),f_o)
 
-def get_sample_entropy(tag,pathes,use_voltage):
+def get_sample_entropy(tag,pathes,use_voltage,file_index_start):
 
     number_of_jobs = min(number_of_cpus - 1,len(pathes))
 
@@ -60,7 +60,7 @@ def get_sample_entropy(tag,pathes,use_voltage):
     process = [Process(target=create_sample_entropy_file, args=(queue,use_voltage)) for i in range(number_of_jobs)]
     print('starting')
     for j,fp in enumerate(pathes):
-        queue.put((fp,j,tag))
+        queue.put((fp,j+file_index_start,tag))
         if j<len(process):
             process[j].start()
 
@@ -101,5 +101,5 @@ if __name__ == "__main__":
         pathes = list_dir_parent[i*jumps:min((i+1)*jumps,len(list_dir_parent))]
         print(len(pathes))
         use_voltage = args.sv=='v'
-        job_factory.send_job(f"sample_entropy{args.tag}_{i}_{MAX_INTERVAL}d", f'python -c "from plot_module.sample_entropy import get_sample_entropy; get_sample_entropy('+"'"+args.tag+"'"+f',{pathes},{use_voltage})"',**keys)
+        job_factory.send_job(f"sample_entropy{args.tag}_{i}_{MAX_INTERVAL}d", f'python -c "from plot_module.sample_entropy import get_sample_entropy; get_sample_entropy('+"'"+args.tag+"'"+f',{pathes},{use_voltage},{i*jumps})"',**keys)
         print('job sent')
