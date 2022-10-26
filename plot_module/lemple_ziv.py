@@ -99,6 +99,8 @@ if __name__ == "__main__":
         print("Mem:",args.memory)
     for i in range(number_of_clusters):
         pathes=list_dir_parent[i*jumps:min((i+1)*jumps,len(list_dir_parent))]
-        print(pathes)
+        # print(pathes)
+        print(range(i*jumps,min((i+1)*jumps,len(list_dir_parent))))
+
         job_factory.send_job(f"LZC{args.tag}_{i}_{MAX_INTERVAL}d", f'python -c "from plot_module.lemple_ziv import get_sample_entropy; get_sample_entropy('+"'"+args.tag+"'"+f',{pathes},{i*jumps})"',**keys)
         print('job sent')
