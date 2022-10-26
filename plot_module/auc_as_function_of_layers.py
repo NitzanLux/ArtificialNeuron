@@ -191,8 +191,9 @@ out_str='*'
 for i in sorted(p_values_dict.keys(),key=lambda x:x):
     print(i)
     for l in p_values_dict[i]:
+        print(out_str)
         # print((l, max(np.max(new_auc_data_reduction[i, :]), np.max(new_auc_data_original[i, :]))))
-        plt.annotate(out_str,(l, max(np.max(new_auc_data_reduction[layers_original.index(l), :]), np.max(new_auc_data_original[layers_original.index(l), :])) + 0.0001),
+        plt.annotate(out_str,(l, max(np.max(new_auc_data_reduction[layers_original.index(l), :]), np.max(new_auc_data_original[layers_original.index(l), :])) - 0.0001),
                      color='black', ha='center', va='center')
     out_str+='*'
 out_str='*'
