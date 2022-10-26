@@ -178,7 +178,7 @@ for i in range(max(len(layers_original), len(layers_reduction))):
         # if out_str not in p_values_dict:
         if factor>0.05:
             continue
-        if factor_steps not in p_values_dict:
+        if factor_steps not in p_values_dict    :
             p_values_dict[factor_steps]=[]
         p_values_dict[factor_steps].append(l)
         # p_value_arr.append(factor)
@@ -198,7 +198,7 @@ for i in sorted(p_values_dict.keys(),key=lambda x:x):
 out_str='*'
 text=[]
 for k in sorted(p_values_dict.keys(),key=lambda x:x):
-    text.append(k+' - $p_{value}$<5e-%d'%(np.log10(5/k)).astype(int))
+    text.append(p_values_dict[k]+' - $p_{value}$<5e-%d'%(np.log10(5/k)).astype(int))
 props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
 text = '\n'.join(text)
 # place a text box in upper left in axes coords
