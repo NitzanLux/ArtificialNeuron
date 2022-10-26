@@ -170,12 +170,12 @@ for i in range(max(len(layers_original), len(layers_reduction))):
         factor=0.5
         factor_steps=1
         while flag:
-            if p_value[i]<factor:
+            if p_value[i]<factor*0.1:
                 factor_steps+=1
                 factor*=0.1
             else:
-                factor*=10
-                factor_steps-=1
+                # factor*=10
+                # factor_steps-=1
                 flag=False
         # if out_str not in p_values_dict:
         if factor>0.05:
