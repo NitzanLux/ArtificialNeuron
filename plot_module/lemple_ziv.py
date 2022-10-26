@@ -51,7 +51,7 @@ def create_sample_entropy_file(q,use_voltage=True):
             print(
                 f"current sample number {f} {index}  total: {time.time() - t} seconds",
                 flush=True)
-        with open(os.path.join("LZC",f"LZC_{'v' if use_voltage else 's'}_{tag}_{f_index}_{index}_{MAX_INTERVAL}d.p"),'wb') as f_o:
+        with open(os.path.join("LZC",f"LZC_{'v' if use_voltage else 's'}_{tag}_{f_index}_{MAX_INTERVAL}d.p"),'wb') as f_o:
             pickle.dump((s_c,f),f_o)
 
 def get_sample_entropy(tag,pathes,file_index_start,use_voltage=False):
