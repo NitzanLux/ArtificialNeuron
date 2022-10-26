@@ -101,5 +101,6 @@ if __name__ == "__main__":
         pathes = list_dir_parent[i*jumps:min((i+1)*jumps,len(list_dir_parent))]
         print(len(pathes))
         use_voltage = args.sv=='v'
+        print(range(i*jumps,min((i+1)*jumps,len(list_dir_parent))))
         job_factory.send_job(f"sample_entropy{args.tag}_{i}_{MAX_INTERVAL}d", f'python -c "from plot_module.sample_entropy import get_sample_entropy; get_sample_entropy('+"'"+args.tag+"'"+f',{pathes},{use_voltage},{i*jumps})"',**keys)
         print('job sent')
