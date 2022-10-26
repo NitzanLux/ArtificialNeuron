@@ -145,12 +145,12 @@ color_function = lambda x: np.clip((np.array(x)*color_factor)/255.,0,1)
 for i in range(len(layers_original)):
     plt.annotate(
         str(human_format(batch_counter_original_mean[i]) + r" $\pm$ " + human_format(batch_counter_original_std[i])),
-        (layers_original[i] + 0.1, original_auc_plotting[i] + (0.0005 * ((i == 0) * 2 - 1)) * ((i == 0) + 1)),
+        (layers_original[i] + 0.1, original_auc_plotting[i] + (0.005 * ((i == 0) * 2 - 1)) * ((i == 0) + 1)),
         fontsize=FONT_SIZE, color=color_function((45,10,7)), ha='center', va='center')
 for i in range(len(layers_reduction)):
     plt.annotate(
         human_format(batch_counter_reduction_mean[i]) + r" $\pm$ " + human_format(batch_counter_reduction_std[i]),
-        (layers_reduction[i] + 0.1, reduction_auc_plotting[i] - (0.0005 * ((i == 0) * 2 - 1)) * ((i == 0) + 1)),
+        (layers_reduction[i] + 0.1, reduction_auc_plotting[i] - (0.005 * ((i == 0) * 2 - 1)) * ((i == 0) + 1)),
         fontsize=FONT_SIZE, color=color_function((0,5,35)), ha='center', va='center')
 from scipy.stats import ttest_ind
 
@@ -193,7 +193,7 @@ for i in sorted(p_values_dict.keys(),key=lambda x:x):
     for l in p_values_dict[i]:
         print(out_str)
         # print((l, max(np.max(new_auc_data_reduction[i, :]), np.max(new_auc_data_original[i, :]))))
-        plt.annotate(out_str,(l, max(np.max(new_auc_data_reduction[layers_original.index(l), :]), np.max(new_auc_data_original[layers_original.index(l), :])) - 0.0001),
+        plt.annotate(out_str,(l, max(np.max(new_auc_data_reduction[layers_original.index(l), :]), np.max(new_auc_data_original[layers_original.index(l), :])) - 0.001),
                      color='black', ha='center', va='center')
     out_str+='*'
 out_str='*'
