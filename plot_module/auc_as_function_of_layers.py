@@ -185,10 +185,11 @@ for i in range(max(len(layers_original), len(layers_reduction))):
 
 
 
-
+astriks_dict=dict()
 out_str='*'
 for i in sorted(p_values_dict.keys(),key=lambda x:x):
     print(i)
+    astriks_dict[i]=out_str
     for l in p_values_dict[i]:
         print(out_str)
         # print((l, max(np.max(new_auc_data_reduction[i, :]), np.max(new_auc_data_original[i, :]))))
@@ -198,7 +199,7 @@ for i in sorted(p_values_dict.keys(),key=lambda x:x):
 out_str='*'
 text=[]
 for k in sorted(p_values_dict.keys(),key=lambda x:x):
-    text.append(p_values_dict[k]+' - $p_{value}$<5e-%d'%(np.log10(5/k)).astype(int))
+    text.append(astriks_dict[k]+' - $p_{value}$<5e-%d'%(np.log10(5/k)).astype(int))
 props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
 text = '\n'.join(text)
 # place a text box in upper left in axes coords
