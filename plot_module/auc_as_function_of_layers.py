@@ -19,8 +19,8 @@ FONT_SIZE = 6
 # '/ems/elsc-labs/segev-i/nitzan.luxembourg/projects/dendritic_tree/ArtificialNeuron'
 # %% pipline plot parameters
 I = 6
-jsons_list = ['d_r_comparison_ss']  # ,'d_r_comparison']
-use_test_data=False
+jsons_list = ['comparison_3']  # ,'d_r_comparison']
+use_test_data=True
 # gt_original_name = 'davids_ergodic_validation'
 # gt_reduction_name = 'reduction_ergodic_validation'
 
