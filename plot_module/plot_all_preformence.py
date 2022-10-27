@@ -20,7 +20,16 @@ def save_large_plot(fig,name):
 best_aucis=dict()
 best_aucis_data=dict()
 fig,ax= plt.subplots()
+jsons_list=["d_r_comparison_ss"]
+configs=[]
+for i in jsons_list:
+    with open(os.path.join(MODELS_DIR, "%s.json" % i), 'r') as file:
+        configs += json.load(file)
+models_names = set([i[0] for i in configs])
 for i in os.listdir(MODELS_DIR):
+    if len(jsons_list)>0:
+        if i not in models_names:
+            continue
     if os.path.exists(os.path.join(MODELS_DIR,i,i+'_best','auc_history.npy')):
         print(i)
         config = load_config_file(os.path.join(MODELS_DIR,i,i+'_best','config.pkl'),suffix='.pkl')
