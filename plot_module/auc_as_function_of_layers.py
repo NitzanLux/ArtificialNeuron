@@ -208,7 +208,7 @@ props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
 text = '\n'.join(text)
 # place a text box in upper left in axes coords
 ann = plt.annotate(text,
-                  xy=(0.5, 0.1),xycoords='axes fraction',textcoords='axes fraction',size=5,
+                  xy=(0.5, 0.1),xycoords='axes fraction',textcoords='axes fraction',size=8,
                   bbox=dict(boxstyle="square", fc="w"),ha='left', va='top')
 plt.legend(loc=4,)
 plt.title('AUC as a function of layers.')
