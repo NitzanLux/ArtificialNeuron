@@ -20,7 +20,7 @@ FONT_SIZE = 6
 # %% pipline plot parameters
 I = 6
 jsons_list = ['comparison_3']  # ,'d_r_comparison']
-use_test_data=True
+use_test_data=False
 # gt_original_name = 'davids_ergodic_validation'
 # gt_reduction_name = 'reduction_ergodic_validation'
 
