@@ -43,9 +43,9 @@ for i in os.listdir(MODELS_DIR):
             layers=config.number_of_layers_space
         best_aucis[i]=np.max(auc)
         best_aucis_data[i]=(layers,config.batch_counter*config.batch_size_train)
-        ax.plot(1-auc)
+        ax.plot(auc)
 
-save_large_plot(fig,"all_preformence_{jsons_list}.png")
+save_large_plot(fig,f"all_preformence_{jsons_list}.png")
 plt.show()
 fig,ax = plt.subplots()
 data_x=[]
