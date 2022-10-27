@@ -9,6 +9,7 @@ from matplotlib  import cm
 import numpy as np
 from project_path import *
 from train_nets.configuration_factory import load_config_file
+import json
 def save_large_plot(fig,name):
     mng = plt.get_current_fig_manager()
     mng.full_screen_toggle()
@@ -16,7 +17,7 @@ def save_large_plot(fig,name):
         name = f"{name[:name.find('.')]}_{name[name.find('.'):]}"
     else:
         name =f"{name}"
-    fig.savefig(name)
+    fig.savefig(os.path.join('evaluation_plots',name))
 best_aucis=dict()
 best_aucis_data=dict()
 fig,ax= plt.subplots()
@@ -44,7 +45,7 @@ for i in os.listdir(MODELS_DIR):
         best_aucis_data[i]=(layers,config.batch_counter*config.batch_size_train)
         ax.plot(1-auc)
 
-save_large_plot(fig,"all_preformence.png")
+save_large_plot(fig,"all_preformence_{jsons_list}.png")
 plt.show()
 fig,ax = plt.subplots()
 data_x=[]
@@ -62,4 +63,4 @@ out = ax.scatter(data_x,data_y,s=0.5,c=data_z,cmap = cm.jet)
 plt.colorbar(out,ax=ax)
 
 # ax.color_bar()
-save_large_plot(fig,f'evaluation_plots/auc_as_function_of_layers_and_step.png')
+save_large_plot(fig,f'auc_as_function_of_layers_and_step_{jsons_list}.png')
