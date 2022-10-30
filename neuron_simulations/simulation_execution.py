@@ -2,7 +2,7 @@ import time
 import os
 import logging
 # from ...project_path import *
-from ... import project_path
+import project_path
 from project_path import *
 from art import tprint
 import argparse
