@@ -142,6 +142,7 @@ def load_config_file(path: str,suffix:str='.config') -> AttrDict:
     # config.lr_scheduler=None
     # config.constant_learning_rate=0.0007
     # config.batch_size_train = 8
+    config.number_of_steps=16000
     if config.config_version < CURRENT_VERSION:
         print("updating config file....")
         del config.config_version
