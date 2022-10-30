@@ -78,6 +78,8 @@ if __name__ == "__main__":
                         help='tag for saving')
     parser.add_argument('-sv',dest="sv", type=str,
                         help='somatic voltage or spikes as data')
+    parser.add_argument('-der',dest="sv", type=str,
+                        help='add_derivative')
     parser.add_argument('-mem', dest="memory", type=int,
                         help='set memory', default=-1)
     args = parser.parse_args()

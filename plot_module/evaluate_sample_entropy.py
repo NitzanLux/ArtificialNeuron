@@ -1,10 +1,14 @@
+#%%
 
 import os
 import matplotlib.pyplot as plt
 import numpy as np
 import pickle
 import re
+from tqdm import tqdm
+
 #%%
+
 if not os.path.exists('sample_entropy_plots'):
     os.mkdir('sample_entropy_plots')
 tag = "train"
@@ -22,7 +26,9 @@ def save_large_plot(fig,name):
         name =f"{name}_{tag}"
     fig.savefig(os.path.join('sample_entropy_plots',name))
 dim_size=200
+
 #%%
+
 reduction_data=dict()
 reduction_ci=dict()
 original_data=dict()
@@ -33,11 +39,13 @@ key_list=set()
 file_names=[]
 counter=0
 file_sample_entropy=sorted(os.listdir(os.path.join('sample_entropy')),key= lambda x:x[::-1])
+file_index_counter_original=dict()
+file_index_counter_reduction=dict()
 
 #%%
 
 datas=[]
-for i in os.listdir(os.path.join('sample_entropy')):
+for i in tqdm(os.listdir(os.path.join('sample_entropy'))):
 
     if not str(dim_size)+'d.p' in i or not tag in i or (filter_regex_match.match(i) is None):
         continue
@@ -47,27 +55,36 @@ for i in os.listdir(os.path.join('sample_entropy')):
     s = s.replace('sample_entropy_','')
     s = s.replace(reduction_tag,'')
     s = s.replace(f'_{dim_size}d','')
-    print(s)
+    # print(s)
     if reduction_tag in i:
         # print(i)
         with open(os.path.join('sample_entropy',i),'rb') as f:
             data=pickle.load(f)
             data=list(data)
-
-            data[2]=data[2].replace('_reduction_0w','')
+            data[2]=data[2].replace('_reduction_0w','').replace('.p','')
             s=tuple(data[2:])
+            if s in reduction_data:
+                continue
             reduction_data[s],reduction_ci[s]=data[:2]
             datas.append(data)
+            if s[0] not in file_index_counter_reduction:
+                file_index_counter_reduction[s[0]]=0
+            file_index_counter_reduction[s[0]]+=1
+
     elif original_tag in i:
         # print(i)
         with open(os.path.join('sample_entropy',i),'rb') as f:
             data=pickle.load(f)
             data=list(data)
-            # data[2]=data[2].replace('.p','')
+            data[2]=data[2].replace('.p','')
             s=tuple(data[2:])
+            if s in original_data:
+                continue
             original_data[s],original_ci[s]=data[:2]
             datas.append(data)
-
+            if s[0] not in file_index_counter_original:
+                file_index_counter_original[s[0]]=0
+            file_index_counter_original[s[0]]+=1
     else:
         print(f'!!!!!!!!!!!!@#$%%%    {i}')
     file_list.append(s[0])
@@ -81,11 +98,12 @@ reduction_keys=set(reduction_data.keys())
 original_keys=set(original_data.keys())
 key_list = list(reduction_keys&original_keys)
 print(len(key_list))
+
 #%% print nans
+
 fig,ax=plt.subplots()
 data_mat=np.zeros((401,len(key_list)))
-for i,k in enumerate(key_list):
-    print(i)
+for i,k in tqdm(enumerate(key_list)):
     out = np.argwhere(np.isnan(original_data[k]))
     data_mat[out,i]=1
     out = np.argwhere(np.isnan(reduction_data[k]))
@@ -94,9 +112,12 @@ for i,k in enumerate(key_list):
     # data_mat[out,i]=-1
     # out = np.argwhere(np.isinf(reduction_data[k]))
     # data_mat[201+out,i]=-1
+ax.set_aspect('auto')
 ax.matshow(data_mat)
 plt.show()
+
 #%% print  infs
+
 inf_his=[]
 fig,ax=plt.subplots()
 data_mat=np.zeros((401,len(key_list)))
@@ -113,6 +134,7 @@ for i,k in enumerate(key_list):
     # data_mat[201+out,i]=-1
 ax.matshow(data_mat)
 plt.show()
+
 #%% remove nans
 
 for k in key_list:
@@ -148,7 +170,9 @@ reduction_keys=set(reduction_data.keys())
 original_keys=set(original_data.keys())
 key_list = list(reduction_keys&original_keys)
 print(len(key_list))
-#%% set_timescale to lowest bound
+
+#%% set_timescale to lowest bound [optional]
+
 min_inf=-1
 for i,k in enumerate(key_list):
     o_infs = np.argwhere(np.isinf(original_data[k]))
@@ -161,36 +185,60 @@ for i,k in enumerate(key_list):
 for i,k  in enumerate(key_list):
     original_data[k]=original_data[k][:min_inf]
     reduction_data[k]=reduction_data[k][:min_inf]
+
 #%% validation about files that had been done
+
 fig,ax=plt.subplots()
 
 ax.scatter(list(key_list),[1]*len(key_list))
 save_large_plot(fig,'files_that_had_been_done.png')
 plt.show()
+
 #%%
+
 fig,ax=plt.subplots()
 
 avarage_diff=[]
-for k in key_list:
-
-    avarage_diff.append(original_data[k]-reduction_data[k])
+for k in tqdm(key_list):
+    if file_index_counter_reduction[k[0]]==file_index_counter_original[k[0]]:
+        avarage_diff.append(original_data[k]-reduction_data[k])
 avarage_diff = np.array(avarage_diff)
 
 ax.errorbar(np.arange(avarage_diff.shape[1]),np.mean(avarage_diff,axis=0),yerr=np.std(avarage_diff,axis=0))
 # save_large_plot(fig,'error_between_the_same_input.png')
 plt.show()
+
 #%%
+
 fig,ax=plt.subplots()
 
 indexes=[1]
 indexes = np.array(list(key_list))[indexes]
 for k in key_list:
+    if file_index_counter_reduction[k[0]]!=file_index_counter_original[k[0]]:
+        continue
     p = ax.plot(original_data[k])
     color = p[0].get_color()
     ax.plot(reduction_data[k],'--',color=color)
-save_large_plot(fig,'different_between_the_same_input.png')
+# save_large_plot(fig,'different_between_the_same_input.png')
 plt.show()
+
 #%%
+fig,ax=plt.subplots()
+
+indexes=[1]
+indexes = np.array(list(key_list))[indexes]
+for k in tqdm(key_list):
+    if file_index_counter_reduction[k[0]]!=file_index_counter_original[k[0]]:
+        continue
+    p = ax.scatter(np.arange(original_data[k].shape[0]),original_data[k],color='red')
+    # color = p[0].get_color()
+    ax.scatter(np.arange(reduction_data[k].shape[0]),reduction_data[k],color='blue')
+# save_large_plot(fig,'different_between_the_same_input.png')
+plt.show()
+
+#%%
+
 fig,ax=plt.subplots()
 
 avarage_original=[]
@@ -200,13 +248,16 @@ for k in key_list:
     avarage_reduction.append(reduction_data[k])
 avarage_original=np.array(avarage_original)
 avarage_reduction=np.array(avarage_reduction)
-ax.plot(np.mean(avarage_original,axis=0),label='original')
-ax.plot(np.mean(avarage_reduction,axis=0),label='reduction')
+mean_total=np.mean(np.vstack([avarage_original,avarage_reduction]),axis=0)
+std_total=np.std(np.vstack([avarage_original,avarage_reduction]),axis=0)
+ax.errorbar(np.arange(avarage_original.shape[1]),(np.mean(avarage_original,axis=0))/std_total,yerr=(np.std(avarage_original,axis=0))/std_total,label='original')
+ax.errorbar(np.arange(avarage_original.shape[1]),(np.mean(avarage_reduction,axis=0))/std_total,yerr=(np.std(avarage_reduction,axis=0))/std_total,label='reduction')
 ax.legend()
 # save_large_plot(fig,'avarage_trend.png')
 plt.show()
 
 #%%
+
 fig,ax=plt.subplots()
 dataset_orig=[]
 dataset_reduc=[]
@@ -226,7 +277,9 @@ ax.legend()
 plt.show()
 from scipy.stats import ttest_ind
 print(ttest_ind(np.array(dataset_reduc),np.array(dataset_orig),axis=1))
+
 #%% plot diffrences order
+
 fig,ax=plt.subplots()
 
 diff=[]
@@ -240,6 +293,7 @@ diff = (diff-diff.min()+eps)/(diff.max()-diff.min()+eps)
 ax.matshow(diff,vmin=0,vmax=1,cmap='jet')
 # save_large_plot(fig,'error_between_the_same_input.png')
 plt.show()
+
 #%%
 
 r_ci_arr=[]
@@ -250,6 +304,8 @@ remove_matches=True
 eps= np.std(np.array([reduction_ci[k]-original_ci[k] for k in key_list]))*2
 for i,k in enumerate(key_list):
     # plt.scatter(i,)
+    if file_index_counter_reduction[k[0]]!=file_index_counter_original[k[0]]:
+        continue
     print( np.abs(reduction_ci[k]-original_ci[k]))
     # if np.abs(reduction_ci[k]-original_ci[k])<eps:
     #     continue
@@ -282,15 +338,19 @@ ax.legend([mpatches.Patch(color='blue'),mpatches.Patch(color='red')], ['reductio
 # plt.scatter(np.zeros([len(r_ci_arr)]),r_ci_arr,color='red')
 # plt.scatter(np.ones([len(r_ci_arr)]),o_ci_arr,color='blue')
 plt.show()
+
 #%%
+
 fig,ax = plt.subplots()
 for k in key_list:
-    ax.scatter(original_ci[k],reduction_ci[k])
+    if file_index_counter_reduction[k[0]]==file_index_counter_original[k[0]]:
+        ax.scatter(original_ci[k],reduction_ci[k])
     # avarage_original.append(original_data[k])
     # avarage_reduction.append(reduction_data[k])
 plt.show()
 
 #%%
+
 fig,ax = plt.subplots()
 original_hist=[original_ci[k] for k in key_list]
 reduction_hist=[reduction_ci[k] for k in key_list]
@@ -299,3 +359,5 @@ ax.hist(reduction_hist,100,alpha=0.6,color='blue')
 plt.show()
 
 #%%
+
+
