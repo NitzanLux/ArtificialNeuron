@@ -58,6 +58,8 @@ for i in best_aucis.keys():
     data_y.append(best_aucis[i])
     data_z.append(np.log(best_aucis_data[i][1]))
 out = ax.scatter(data_x,data_y,s=0.5,c=data_z,cmap = cm.jet)
+print(np.max(data_y))
+# for i in np.unique(data_x
 # ax.set_yscale('log')
 
 plt.colorbar(out,ax=ax)
