@@ -64,12 +64,12 @@ def generate_input_spike_trains_for_simulation(sim_experiment_file, print_logs=P
     return genrator(), experiment_dict['Params']
 
 
-def get_dir_name_and_filename(file_name, dir_name,reduction_frequency=0):
+def get_dir_name_and_filename(file_name, dir_name,is_NMDA):
     # string to describe model name based on params
     resultsSavedIn_rootFolder = os.path.join(NEURON_REDUCE_DATA_DIR, dir_name)
     file_name, file_extension = os.path.splitext(file_name)
     _, file_name = os.path.split(file_name)
-    file_name = file_name + '_reduction_%dw' % (reduction_frequency) + file_extension
+    file_name = file_name + '_%s' % ('NMDA' if is_NMDA else 'AMPA') + file_extension
     if not os.path.exists(resultsSavedIn_rootFolder):
         os.makedirs(resultsSavedIn_rootFolder)
     return resultsSavedIn_rootFolder, file_name
@@ -136,7 +136,7 @@ def ConnectEmptyEventGenerator(synapse):
     return netConnection
 
 #%%
-def simulate_L5PC_reduction(sim_file, dir_name,reduction_frequency=0):
+def simulate_L5PC_reduction(sim_file, dir_name,is_NMDA=False):
     data_generator, experimentParams = generate_input_spike_trains_for_simulation(sim_file)
     # get or randomly generate random seed
     random_seed = experimentParams['random_seed']
@@ -378,8 +378,10 @@ def simulate_L5PC_reduction(sim_file, dir_name,reduction_frequency=0):
             ###### excitation ######
 
             # define synapse and connect it to a segment
-            exSynapse = DefineSynapse_NMDA(segment, NMDA_to_AMPA_g_ratio=gmax_NMDA_to_AMPA_ratio)
-            exSynapse = DefineSynapse_AMPA(segment)
+            if is_NMDA:
+                exSynapse = DefineSynapse_NMDA(segment, NMDA_to_AMPA_g_ratio=gmax_NMDA_to_AMPA_ratio)
+            else:
+                exSynapse = DefineSynapse_AMPA(segment)
             # exSynapse = DefineSynapse_NMDA(segment, NMDA_to_AMPA_g_ratio=gmax_NMDA_to_AMPA_ratio)
             allExSynapses.append(exSynapse)
 
@@ -622,9 +624,12 @@ parser = argparse.ArgumentParser(description='add file to run the neuron reduce'
 
 parser.add_argument('-f', dest="file", type=str, nargs='+', help='data file to which reduce')
 parser.add_argument('-d', dest="dir", type=str, nargs='+', help='data directory to which reduce')
-parser.add_argument('-rf', dest="reduction_frequency", type=int, nargs='+', help='reduction frequency')
+parser.add_argument('-na', dest="NMDA_or_AMPA", type=str, nargs='+', help='choose whether NMDA or AMPA')
 parser.add_argument('-i', dest="slurm_job_id", type=str, help='slurm_job_id')
 args = parser.parse_args()
+assert args.NMDA_or_AMPA in {'N','A'},'nmda or ampa should be as N or A'
+NMDA_or_AMPA = args.NMDA_or_AMPA=='N'
+
 sim_files = args.file
 dir_name = args.dir[0]
 if int(args.slurm_job_id)!=-1:
@@ -640,7 +645,7 @@ for f in sim_files:
     print(dir_name)
     print(f)
     print(flush=True)
-    simulate_L5PC_reduction(f,dir_name,args.reduction_frequency[0])
+    simulate_L5PC_reduction(f,dir_name,is_NMDA=NMDA_or_AMPA)
     print('#####################################################################', '\n\t')
     print('ending')
     print(dir_name)
