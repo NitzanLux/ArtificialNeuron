@@ -14,8 +14,8 @@ if not os.path.exists('sample_entropy_plots'):
 tag = "train"
 reduction_tag='_reduction_ergodic_train'
 original_tag='_davids_ergodic_train'
-regex_file_filter = r'sample_entropy_s_(?:reduction|davids)_ergodic_train.*'
-regex_file_replace = r'sample_entropy_s_(?:reduction|davids)_ergodic_train'
+regex_file_filter = r'sample_entropy_v_der__(?:reduction|davids)_ergodic_train.*'
+regex_file_replace = r'sample_entropy_v_der__(?:reduction|davids)_ergodic_train'
 filter_regex_match = re.compile(regex_file_filter)
 def save_large_plot(fig,name):
     mng = plt.get_current_fig_manager()
@@ -25,7 +25,7 @@ def save_large_plot(fig,name):
     else:
         name =f"{name}_{tag}"
     fig.savefig(os.path.join('sample_entropy_plots',name))
-dim_size=200
+dim_size=400
 
 #%%
 
@@ -102,12 +102,12 @@ print(len(key_list))
 #%% print nans
 
 fig,ax=plt.subplots()
-data_mat=np.zeros((401,len(key_list)))
+data_mat=np.zeros((dim_size+1,len(key_list)))
 for i,k in tqdm(enumerate(key_list)):
     out = np.argwhere(np.isnan(original_data[k]))
     data_mat[out,i]=1
     out = np.argwhere(np.isnan(reduction_data[k]))
-    data_mat[201+out,i]=1
+    data_mat[dim_size+out,i]=1
     # out = np.argwhere(np.isinf(original_data[k]))
     # data_mat[out,i]=-1
     # out = np.argwhere(np.isinf(reduction_data[k]))
@@ -120,14 +120,14 @@ plt.show()
 
 inf_his=[]
 fig,ax=plt.subplots()
-data_mat=np.zeros((401,len(key_list)))
+data_mat=np.zeros((dim_size*2+1,len(key_list)))
 for i,k in enumerate(key_list):
     print(i)
     out = np.argwhere(np.isinf(original_data[k]))
     data_mat[out,i]=1
 
     out = np.argwhere(np.isinf(reduction_data[k]))
-    data_mat[201+out,i]=1
+    data_mat[dim_size+1+out,i]=1
     # out = np.argwhere(np.isinf(original_data[k]))
     # data_mat[out,i]=-1
     # out = np.argwhere(np.isinf(reduction_data[k]))
@@ -214,8 +214,8 @@ fig,ax=plt.subplots()
 
 indexes=[1]
 indexes = np.array(list(key_list))[indexes]
-for k in key_list:
-    if file_index_counter_reduction[k[0]]!=file_index_counter_original[k[0]]:
+for k in tqdm(key_list):
+    if file_index_counter_reduction[k[0]]!=file_index_counter_original[k[0]] and max( file_index_counter_reduction[k[0]],file_index_counter_original[k[0]])==127:
         continue
     p = ax.plot(original_data[k])
     color = p[0].get_color()
@@ -229,11 +229,12 @@ fig,ax=plt.subplots()
 indexes=[1]
 indexes = np.array(list(key_list))[indexes]
 for k in tqdm(key_list):
-    if file_index_counter_reduction[k[0]]!=file_index_counter_original[k[0]]:
+    if file_index_counter_reduction[k[0]]!=file_index_counter_original[k[0]] and max( file_index_counter_reduction[k[0]],file_index_counter_original[k[0]])==127:
         continue
     p = ax.scatter(np.arange(original_data[k].shape[0]),original_data[k],color='red')
     # color = p[0].get_color()
     ax.scatter(np.arange(reduction_data[k].shape[0]),reduction_data[k],color='blue')
+# ax.plot()
 # save_large_plot(fig,'different_between_the_same_input.png')
 plt.show()
 
@@ -309,10 +310,10 @@ for i,k in enumerate(key_list):
     print( np.abs(reduction_ci[k]-original_ci[k]))
     # if np.abs(reduction_ci[k]-original_ci[k])<eps:
     #     continue
-    if np.isinf(reduction_ci[k]) or np.isnan(reduction_ci[k]) or np.isinf(original_ci[k]) or np.isnan(original_ci[k]):
-        continue
-    r_ci_arr.append(reduction_ci[k])
-    o_ci_arr.append(original_ci[k])
+    # if np.isinf(reduction_ci[k]) or np.isnan(reduction_ci[k]) or np.isinf(original_ci[k]) or np.isnan(original_ci[k]):
+    #     continue
+    r_ci_arr.append(sum(reduction_data[k]))
+    o_ci_arr.append(sum(original_data[k]))
 parts = ax.violinplot(r_ci_arr, showmeans=True,showextrema = True, showmedians = True)
 for pc in ('cbars','cmins','cmaxes','cmeans','cmedians'):
     pc=parts[pc]
@@ -342,11 +343,19 @@ plt.show()
 #%%
 
 fig,ax = plt.subplots()
-for k in key_list:
-    if file_index_counter_reduction[k[0]]==file_index_counter_original[k[0]]:
-        ax.scatter(original_ci[k],reduction_ci[k])
+original = []
+reduction=[]
+for k in tqdm(key_list):
+    if file_index_counter_reduction[k[0]]==file_index_counter_original[k[0]] or max( file_index_counter_reduction[k[0]],file_index_counter_original[k[0]])<127:
+        original.append(sum(original_data[k]))
+        reduction.append(sum(reduction_data[k]))
     # avarage_original.append(original_data[k])
     # avarage_reduction.append(reduction_data[k])
+ax.scatter(original,reduction)
+lims=[np.min(np.vstack((original,reduction))),np.max(np.vstack((original,reduction)))]
+ax.set_ylim(lims)
+ax.set_xlim(lims)
+ax.plot(lims,lims,color='red')
 plt.show()
 
 #%%

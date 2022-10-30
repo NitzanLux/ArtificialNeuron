@@ -39,6 +39,7 @@ def create_sample_entropy_file(q,use_voltage=True,use_derivative=False):
             print(f'start key:{f} index:{index}')
             if use_voltage:
                 s = y_soma[:,index].astype(np.float64)
+                s[s>-20]=20
             else:
                 s = y_spike[:,index].astype(np.float64)
             print(s,s.shape)
