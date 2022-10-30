@@ -21,7 +21,7 @@ def save_large_plot(fig,name):
 best_aucis=dict()
 best_aucis_data=dict()
 fig,ax= plt.subplots()
-jsons_list=["comparison_3"]
+jsons_list=["comparison_3",'d_r_comparison_ss']
 configs=[]
 for i in jsons_list:
     with open(os.path.join(MODELS_DIR, "%s.json" % i), 'r') as file:
