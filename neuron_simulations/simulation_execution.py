@@ -21,6 +21,7 @@ parser.add_argument('-d',dest="directory", type=str,
 parser.add_argument('-f',dest="files_that_do_not_exist", type=bool,
                     help='simulate only files that do not exist', default=False)
 parser.add_argument('-na', dest="NMDA_or_AMPA", type=str, nargs='+', help='choose whether NMDA or AMPA')
+args = parser.parse_args()
 assert args.NMDA_or_AMPA in {'N','A'},'nmda or ampa should be as N or A'
 NMDA_or_AMPA = args.NMDA_or_AMPA=='N'
 
