@@ -42,13 +42,13 @@ directory_name = os.path.basename(directory)
 base_directory = os.path.basename(base_directory)
 print(args.files_that_do_not_exist)
 if args.files_that_do_not_exist:
-    directory_dest = os.path.join(NEURON_REDUCE_DATA_DIR, base_directory + "_" + directory_name +"_"+  ('NMDA' if is_NMDA else 'AMPA'))
+    directory_dest = os.path.join(NEURON_REDUCE_DATA_DIR, base_directory + "_" + directory_name +"_"+  ('NMDA' if NMDA_or_AMPA else 'AMPA'))
     files_that_exists = set([f for f in os.listdir(directory_dest) if os.path.isfile(os.path.join(directory_dest, f))])
     new_files = []
     for f in only_files:
         file_name, file_extension = os.path.splitext(f)
         _, file_name = os.path.split(file_name)
-        file_name = file_name +"_"+  ('NMDA' if is_NMDA else 'AMPA')  + file_extension
+        file_name = file_name +"_"+  ('NMDA' if NMDA_or_AMPA else 'AMPA')  + file_extension
         if file_name not in files_that_exists:
             new_files.append(f)
     only_files = new_files
@@ -61,8 +61,8 @@ for i, f in enumerate(only_files):
     if i % files_per_cpu == 0:
         params_string = 'python3 $(dirname "$path")/simulate_L5PC_ergodic.py %s -i $SLURM_JOB_ID' % (
                     "-f '" + str(os.path.join(directory,
-                                              f)) + "' -d '" + base_directory + "_" + directory_name +  ('NMDA' if is_NMDA else 'AMPA') +
-                    " -na %s"% ('N' if is_NMDA else 'A'))
+                                              f)) + "' -d '" + base_directory + "_" + directory_name +  ('NMDA' if NMDA_or_AMPA else 'AMPA') +
+                    " -na %s"% ('N' if NMDA_or_AMPA else 'A'))
     else:
         params_string = params_string + '&& python3 $(dirname "$path")/simulate_L5PC_ergodic.py %s -i -1' % (
                     "-f '" + str(os.path.join(directory,
