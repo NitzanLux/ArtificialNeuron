@@ -14,7 +14,7 @@ import ntpath
 import argparse
 number_of_cpus = multiprocessing.cpu_count()
 import queue
-MAX_INTERVAL = 200
+MAX_INTERVAL = 400
 print("start job")
 
 import pickle as pickle
@@ -23,7 +23,7 @@ number_of_jobs=number_of_cpus-1//5
 
 def load_file_path(base_dir):
     return os.listdir(base_dir)
-def create_sample_entropy_file(q,use_voltage=True):
+def create_sample_entropy_file(q,use_voltage=True,use_derivative=False):
 
     while True:
         if q.empty():
@@ -42,22 +42,24 @@ def create_sample_entropy_file(q,use_voltage=True):
             else:
                 s = y_spike[:,index].astype(np.float64)
             print(s,s.shape)
+            if use_derivative:
+                s=s[1:]-s[:-1]
             t = time.time()
             Mobj = EH.MSobject('SampEn')
             MSx, Ci = EH.MSEn(s, Mobj, Scales=MAX_INTERVAL)
             print(
                 f"current sample number {f} {index}  total: {time.time() - t} seconds",
                 flush=True)
-            with open(os.path.join("sample_entropy",f"sample_entropy_{'v' if use_voltage else 's'}_{tag}_{f_index}_{index}_{MAX_INTERVAL}d.p"),'wb') as f_o:
+            with open(os.path.join("sample_entropy",f"sample_entropy_{'v' if use_voltage else 's'}{'_der_' if use_derivative else ''}_{tag}_{f_index}_{index}_{MAX_INTERVAL}d.p"),'wb') as f_o:
                 pickle.dump((MSx,Ci,f,index),f_o)
 
-def get_sample_entropy(tag,pathes,use_voltage,file_index_start):
+def get_sample_entropy(tag,pathes,use_voltage,file_index_start,use_derivative):
 
     number_of_jobs = min(number_of_cpus - 1,len(pathes))
 
 
     queue=Queue(maxsize=number_of_jobs)
-    process = [Process(target=create_sample_entropy_file, args=(queue,use_voltage)) for i in range(number_of_jobs)]
+    process = [Process(target=create_sample_entropy_file, args=(queue,use_voltage,use_derivative)) for i in range(number_of_jobs)]
     print('starting')
     for j,fp in enumerate(pathes):
         queue.put((fp,j+file_index_start,tag))
@@ -78,18 +80,29 @@ if __name__ == "__main__":
                         help='tag for saving')
     parser.add_argument('-sv',dest="sv", type=str,
                         help='somatic voltage or spikes as data')
-    parser.add_argument('-der',dest="sv", type=str,
-                        help='add_derivative')
+    parser.add_argument('-der',dest="use_derivative", type=str,
+                        help='add_derivative',default='False')
     parser.add_argument('-mem', dest="memory", type=int,
                         help='set memory', default=-1)
     args = parser.parse_args()
 
     print(args)
+    assert args.sv in{'s','v'}
+    use_derivative = not args.use_derivative.lower() in {"false", '0', ''}
+    print("continue?y/n")
+    response = input()
+    while response not in {'y', 'n'}:
+        print("continue?y/n")
+        response = input()
+    if response == 'n':
+        exit(0)
+
+
     from utils.slurm_job import *
-    number_of_clusters=10
+
+    number_of_clusters = 10
     job_factory = SlurmJobFactory("cluster_logs")
 
-    assert args.sv in{'s','v'}
     parent_dir_path = args.parent_dir_path
     # size = len(GroundTruthData.load(os.path.join( 'evaluations', 'ground_truth', gt_name + '.gteval')))
     list_dir_parent=os.listdir(parent_dir_path)
