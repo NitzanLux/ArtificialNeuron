@@ -67,7 +67,7 @@ for i, f in enumerate(only_files):
         params_string = params_string + '&& python3 $(dirname "$path")/simulate_L5PC_ergodic.py %s -i -1' % (
                     "-f '" + str(os.path.join(directory,
                                               f)) + "' -d '" + base_directory + "_" + directory_name + "'" +
-                    " -na %s"% ('N' if is_NMDA else 'A'))
+                    " -na %s"% ('N' if NMDA_or_AMPA else 'A'))
 
     if i%files_per_cpu==files_per_cpu-1 or i==len(only_files)-1:
         job_factory.send_job("%s_%s"%( ('NMDA' if is_NMDA else 'AMPA')+"_simulation",base_directory[:15]+"_"+directory_name), params_string,filename_index=i//files_per_cpu)
