@@ -351,12 +351,14 @@ for k in tqdm(key_list):
         reduction.append(sum(reduction_data[k]))
     # avarage_original.append(original_data[k])
     # avarage_reduction.append(reduction_data[k])
-ax.scatter(original,reduction)
+ax.scatter(original,reduction,s=0.1)
 lims=[np.min(np.vstack((original,reduction))),np.max(np.vstack((original,reduction)))]
 ax.set_ylim(lims)
 ax.set_xlim(lims)
 ax.plot(lims,lims,color='red')
 plt.show()
+from scipy.stats import ttest_ind
+print(ttest_ind(original,reduction))
 
 #%%
 
