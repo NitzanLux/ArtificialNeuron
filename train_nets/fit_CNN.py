@@ -266,7 +266,7 @@ def train_network(config, model, optimizer):
             evaluate_validation(config, custom_loss, model, validation_data_iterator)
 
             if config.number_of_steps == config.batch_counter:  # finnish model saving
-                SavingAndEvaluationScheduler.flush_all(config, models, optimizer)
+                SavingAndEvaluationScheduler.flush_all(config, model, optimizer)
                 return
             # save model every once a while
             # elif saving_counter % 10 == 0:
