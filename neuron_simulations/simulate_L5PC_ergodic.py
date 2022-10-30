@@ -624,7 +624,7 @@ parser = argparse.ArgumentParser(description='add file to run the neuron reduce'
 
 parser.add_argument('-f', dest="file", type=str, nargs='+', help='data file to which reduce')
 parser.add_argument('-d', dest="dir", type=str, nargs='+', help='data directory to which reduce')
-parser.add_argument('-na', dest="NMDA_or_AMPA", type=str, nargs='+', help='choose whether NMDA or AMPA')
+parser.add_argument('-na', dest="NMDA_or_AMPA", type=str, help='choose whether NMDA or AMPA')
 parser.add_argument('-i', dest="slurm_job_id", type=str, help='slurm_job_id')
 args = parser.parse_args()
 assert args.NMDA_or_AMPA in {'N','A'},'nmda or ampa should be as N or A'
