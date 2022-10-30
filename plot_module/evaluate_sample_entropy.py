@@ -14,8 +14,8 @@ if not os.path.exists('sample_entropy_plots'):
 tag = "train"
 reduction_tag='_reduction_ergodic_train'
 original_tag='_davids_ergodic_train'
-regex_file_filter = r'sample_entropy_v_der__(?:reduction|davids)_ergodic_train.*'
-regex_file_replace = r'sample_entropy_v_der__(?:reduction|davids)_ergodic_train'
+regex_file_filter = r'sample_entropy_s_(?:reduction|davids)_ergodic_train.*'
+regex_file_replace = r'sample_entropy_s_(?:reduction|davids)_ergodic_train'
 filter_regex_match = re.compile(regex_file_filter)
 def save_large_plot(fig,name):
     mng = plt.get_current_fig_manager()
@@ -25,7 +25,7 @@ def save_large_plot(fig,name):
     else:
         name =f"{name}_{tag}"
     fig.savefig(os.path.join('sample_entropy_plots',name))
-dim_size=400
+dim_size=200
 
 #%%
 
@@ -358,7 +358,7 @@ ax.set_xlim(lims)
 ax.plot(lims,lims,color='red')
 plt.show()
 from scipy.stats import ttest_ind
-print(ttest_ind(original,reduction))
+print(ttest_ind(original,reduction,equal_var=False))
 
 #%%
 
