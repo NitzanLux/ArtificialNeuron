@@ -1,5 +1,5 @@
 #%%
-
+from scipy.stats import ttest_ind
 import os
 import matplotlib.pyplot as plt
 import numpy as np
@@ -222,7 +222,33 @@ for k in tqdm(key_list):
     ax.plot(reduction_data[k],'--',color=color)
 # save_large_plot(fig,'different_between_the_same_input.png')
 plt.show()
+#%% p_value of variables
+fig,ax=plt.subplots()
 
+o_d,r_d=[],[]
+for k in tqdm(key_list):
+    if file_index_counter_reduction[k[0]]!=file_index_counter_original[k[0]] and max( file_index_counter_reduction[k[0]],file_index_counter_original[k[0]])==127:
+        continue
+    o_d.append(original_data[k])
+    r_d.append(reduction_data[k])
+o_d=np.array(o_d)
+r_d=np.array(r_d)
+p_value = ttest_ind(o_d,r_d,axis=0,equal_var=False).pvalue
+o_dm = np.mean(o_d,axis=0)
+r_dm= np.mean(r_d,axis=0)
+dm= np.mean(np.vstack((o_dm,r_dm)),axis=0)
+
+ax.plot(o_dm-dm)
+ax.plot(r_dm-dm)
+max_val=np.max(np.hstack((o_dm-dm,r_dm-dm)))
+for i,p in enumerate(p_value):
+    # pass
+    if p<5e-20:
+        n = np.log10(1/p)
+        # p=''.join(['*']*n)
+        ax.annotate(f"*",(i,max_val))
+# print(p_value)
+plt.show()
 #%%
 fig,ax=plt.subplots()
 
@@ -357,7 +383,7 @@ ax.set_ylim(lims)
 ax.set_xlim(lims)
 ax.plot(lims,lims,color='red')
 plt.show()
-from scipy.stats import ttest_ind
+
 print(ttest_ind(original,reduction,equal_var=False))
 
 #%%
