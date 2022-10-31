@@ -604,7 +604,6 @@ def simulate_L5PC_reduction(sim_file, dir_name,is_NMDA=False):
     experimentParams['totalNumSimulationSeconds'] = totalNumSimulationSeconds
     experimentParams['averageOutputFrequency'] = averageOutputFrequency
     experimentParams['entireExperimentDurationInMinutes'] = entireExperimentDurationInMinutes
-    experimentParams['reduction_frequency']=reduction_frequency
     # the important things to store
     experimentResults = {}
     experimentResults['listOfSingleSimulationDicts'] = listOfSingleSimulationDicts
@@ -615,7 +614,7 @@ def simulate_L5PC_reduction(sim_file, dir_name,is_NMDA=False):
     experimentDict['Results'] = experimentResults
 
 
-    dirToSaveIn, filenameToSave = get_dir_name_and_filename(sim_file, dir_name,reduction_frequency)
+    dirToSaveIn, filenameToSave = get_dir_name_and_filename(sim_file, dir_name,is_NMDA)
     pickle.dump(experimentDict, open(os.path.join(dirToSaveIn, filenameToSave), "wb"), protocol=2)
 
 
