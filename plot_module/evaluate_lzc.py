@@ -94,7 +94,7 @@ ax.plot(np.arange(avarage_diff.shape[0]),np.ones(avarage_diff.shape[0])*np.mean(
 # save_large_plot(fig,'error_between_the_same_input.png')
 plt.show()
 
-# %%
+# %% violinplot
 
 r_ci_arr = []
 o_ci_arr = []

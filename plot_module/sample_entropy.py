@@ -14,7 +14,7 @@ import ntpath
 import argparse
 number_of_cpus = multiprocessing.cpu_count()
 import queue
-MAX_INTERVAL = 400
+MAX_INTERVAL = 200
 print("start job")
 
 import pickle as pickle

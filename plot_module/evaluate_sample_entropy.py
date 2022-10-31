@@ -6,16 +6,17 @@ import numpy as np
 import pickle
 import re
 from tqdm import tqdm
+from matplotlib import colors
 
 #%%
 
 if not os.path.exists('sample_entropy_plots'):
     os.mkdir('sample_entropy_plots')
-tag = "train"
+tag = ["sample_entropy_v_der","train"]
 reduction_tag='_reduction_ergodic_train'
 original_tag='_davids_ergodic_train'
-regex_file_filter = r'sample_entropy_s_(?:reduction|davids)_ergodic_train.*'
-regex_file_replace = r'sample_entropy_s_(?:reduction|davids)_ergodic_train'
+regex_file_filter = r'sample_entropy_v_der__(?:reduction|davids)_ergodic_train.*'
+regex_file_replace = r'sample_entropy_v_der__(?:reduction|davids)_ergodic_train'
 filter_regex_match = re.compile(regex_file_filter)
 def save_large_plot(fig,name):
     mng = plt.get_current_fig_manager()
@@ -25,7 +26,7 @@ def save_large_plot(fig,name):
     else:
         name =f"{name}_{tag}"
     fig.savefig(os.path.join('sample_entropy_plots',name))
-dim_size=200
+dim_size=400
 
 #%%
 
@@ -46,8 +47,8 @@ file_index_counter_reduction=dict()
 
 datas=[]
 for i in tqdm(os.listdir(os.path.join('sample_entropy'))):
-
-    if not str(dim_size)+'d.p' in i or not tag in i or (filter_regex_match.match(i) is None):
+    # out_put = [t in i for t in tag]
+    if not str(dim_size)+'d.p' in i or not all([t in i for t in tag]) or (filter_regex_match.match(i) is None):
         continue
     counter+=1
     s = re.sub(regex_file_replace,'',i)
@@ -102,18 +103,18 @@ print(len(key_list))
 #%% print nans
 
 fig,ax=plt.subplots()
-data_mat=np.zeros((dim_size+1,len(key_list)))
+data_mat=np.zeros((dim_size*2+1,len(key_list)))
 for i,k in tqdm(enumerate(key_list)):
     out = np.argwhere(np.isnan(original_data[k]))
     data_mat[out,i]=1
     out = np.argwhere(np.isnan(reduction_data[k]))
-    data_mat[dim_size+out,i]=1
+    data_mat[dim_size+1+out,i]=1
     # out = np.argwhere(np.isinf(original_data[k]))
     # data_mat[out,i]=-1
     # out = np.argwhere(np.isinf(reduction_data[k]))
     # data_mat[201+out,i]=-1
-ax.set_aspect('auto')
 ax.matshow(data_mat)
+ax.set_aspect(100)
 plt.show()
 
 #%% print  infs
@@ -121,8 +122,7 @@ plt.show()
 inf_his=[]
 fig,ax=plt.subplots()
 data_mat=np.zeros((dim_size*2+1,len(key_list)))
-for i,k in enumerate(key_list):
-    print(i)
+for i,k in tqdm(enumerate(key_list)):
     out = np.argwhere(np.isinf(original_data[k]))
     data_mat[out,i]=1
 
@@ -132,19 +132,17 @@ for i,k in enumerate(key_list):
     # data_mat[out,i]=-1
     # out = np.argwhere(np.isinf(reduction_data[k]))
     # data_mat[201+out,i]=-1
-ax.matshow(data_mat)
+ax.matshow(data_mat,aspect=100)
 plt.show()
 
 #%% remove nans
 
-for k in key_list:
+for k in tqdm(key_list):
     if np.isnan(original_data[k]).any() :
-        print(original_data[k])
         del original_data[k]
         del reduction_data[k]
         continue
     if np.isnan(reduction_data[k]).any():
-        print(k)
         del original_data[k]
         del reduction_data[k]
         continue
@@ -222,8 +220,23 @@ for k in tqdm(key_list):
     ax.plot(reduction_data[k],'--',color=color)
 # save_large_plot(fig,'different_between_the_same_input.png')
 plt.show()
-#%% p_value of variables
+
+#%%plot avarage
 fig,ax=plt.subplots()
+
+indexes=[1]
+indexes = np.array(list(key_list))[indexes]
+for k in tqdm(key_list):
+    if file_index_counter_reduction[k[0]]!=file_index_counter_original[k[0]] and max( file_index_counter_reduction[k[0]],file_index_counter_original[k[0]])==127:
+        continue
+    p = ax.plot(original_data[k])
+    color = p[0].get_color()
+    ax.plot(reduction_data[k],'--',color=color)
+# save_large_plot(fig,'different_between_the_same_input.png')
+fig.show()
+
+#%% p_value of variables
+fig,axs=plt.subplots(2)
 
 o_d,r_d=[],[]
 for k in tqdm(key_list):
@@ -236,19 +249,30 @@ r_d=np.array(r_d)
 p_value = ttest_ind(o_d,r_d,axis=0,equal_var=False).pvalue
 o_dm = np.mean(o_d,axis=0)
 r_dm= np.mean(r_d,axis=0)
-dm= np.mean(np.vstack((o_dm,r_dm)),axis=0)
-
-ax.plot(o_dm-dm)
-ax.plot(r_dm-dm)
+# o_dm=[0]
+# r_dm=[0]
+# dm= np.mean(np.vstack((o_dm,r_dm)),axis=0)
+# dm=0
+axs[0].plot(o_dm-dm,label='original')
+axs[0].plot(r_dm-dm,label='reduction')
+axs[0].legend(loc='lower right')
 max_val=np.max(np.hstack((o_dm-dm,r_dm-dm)))
-for i,p in enumerate(p_value):
-    # pass
-    if p<5e-20:
-        n = np.log10(1/p)
-        # p=''.join(['*']*n)
-        ax.annotate(f"*",(i,max_val))
+p_value[p_value>0.05]=np.NAN
+p_value[p_value==0]=1e-300
+im = axs[1].imshow([p_value],interpolation='nearest',aspect='auto',norm=colors.LogNorm(),cmap='jet')
+axs[1].set_yticklabels([])
+axs[1].xaxis.set_ticks_position('bottom')
+# axs[1].colorbar()
+# for i,p in enumerate(p_value):
+#     # pass
+#     if p<5e-20:
+#         n = np.log10(1/p)
+#         # p=''.join(['*']*n)
+#         ax.annotate(f"*",(i,max_val))
 # print(p_value)
-plt.show()
+plt.colorbar(im,location ='bottom')
+fig.show()
+save_large_plot(fig,'entropy_temporal_diffrenceses.png')
 #%%
 fig,ax=plt.subplots()
 
@@ -366,6 +390,30 @@ ax.legend([mpatches.Patch(color='blue'),mpatches.Patch(color='red')], ['reductio
 # plt.scatter(np.ones([len(r_ci_arr)]),o_ci_arr,color='blue')
 plt.show()
 
+#%% scatter plot complexity evaluation
+
+fig,ax = plt.subplots()
+original = []
+reduction=[]
+for k in tqdm(key_list):
+    if file_index_counter_reduction[k[0]]==file_index_counter_original[k[0]] or max( file_index_counter_reduction[k[0]],file_index_counter_original[k[0]])<127:
+        original.append(sum(original_data[k]))
+        reduction.append(sum(reduction_data[k]))
+    # avarage_original.append(original_data[k])
+    # avarage_reduction.append(reduction_data[k])
+ax.scatter(original,reduction,s=0.1,alpha=0.3)
+lims=[np.min(np.vstack((original,reduction))),np.max(np.vstack((original,reduction)))]
+ax.set_ylim(lims)
+ax.set_xlim(lims)
+ax.set_ylabel('reduction model')
+ax.set_xlabel('L5PC model')
+ax.set_title('L5PC and its reduction integral across time')
+ax.plot(lims,lims,color='red')
+save_large_plot(fig,"cross_scatter_evaluation.png")
+fig.show()
+
+print(ttest_ind(original,reduction,equal_var=False))
+
 #%%
 
 fig,ax = plt.subplots()
@@ -377,15 +425,22 @@ for k in tqdm(key_list):
         reduction.append(sum(reduction_data[k]))
     # avarage_original.append(original_data[k])
     # avarage_reduction.append(reduction_data[k])
-ax.scatter(original,reduction,s=0.1)
-lims=[np.min(np.vstack((original,reduction))),np.max(np.vstack((original,reduction)))]
-ax.set_ylim(lims)
-ax.set_xlim(lims)
+data = np.array([original,reduction])
+lims=[np.min(data),np.max(data)]
+# data[0,:]=lims[0]
+H, xedges, yedges = np.histogram2d(data[0,:],data[1,:],range=np.array([lims,lims]),bins=int(int(lims[1]-lims[0])//1.5))
+im = ax.imshow(H.T,interpolation='nearest', origin='lower',extent=[xedges[0], xedges[-1], yedges[0], yedges[-1]])
+
 ax.plot(lims,lims,color='red')
-plt.show()
+ax.set_ylabel('reduction model')
+ax.set_xlabel('L5PC model')
+ax.set_title('L5PC and its reduction Sample Entropy complexity histogram')
+plt.colorbar(im)
+# plt.savefig('evaluation_plots\\SEn_2dhist.png')
+save_large_plot(fig,'sample_entropy_2hist.png')
+fig.show()
 
-print(ttest_ind(original,reduction,equal_var=False))
-
+print(ttest_ind(data[0,:],data[1,:],equal_var=False))
 #%%
 
 fig,ax = plt.subplots()
