@@ -37,11 +37,15 @@ def create_sample_entropy_file(q,use_voltage=True,use_derivative=False):
         path, f = ntpath.split(f_path)
         for index in range(y_spike.shape[1]):
             print(f'start key:{f} index:{index}')
+            spike_number=0
             if use_voltage:
                 s = y_soma[:,index].astype(np.float64)
-                s[s>-20]=20
+                spike_number=s>20
+                s[spike_number]=20
+                spike_number=np.sum(spike_number)
             else:
                 s = y_spike[:,index].astype(np.float64)
+                spike_number=np.sum(s)
             print(s,s.shape)
             if use_derivative:
                 s=s[1:]-s[:-1]
@@ -52,7 +56,7 @@ def create_sample_entropy_file(q,use_voltage=True,use_derivative=False):
                 f"current sample number {f} {index}  total: {time.time() - t} seconds",
                 flush=True)
             with open(os.path.join("sample_entropy",f"sample_entropy_{'v' if use_voltage else 's'}{'_der_' if use_derivative else ''}_{tag}_{f_index}_{index}_{MAX_INTERVAL}d.p"),'wb') as f_o:
-                pickle.dump((MSx,Ci,f,index),f_o)
+                pickle.dump((MSx,Ci,f,index,spike_number),f_o)
 
 def get_sample_entropy(tag,pathes,use_voltage,file_index_start,use_derivative):
 

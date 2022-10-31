@@ -192,7 +192,7 @@ ax.scatter(list(key_list),[1]*len(key_list))
 save_large_plot(fig,'files_that_had_been_done.png')
 plt.show()
 
-#%%
+#%% plot difference avarage per file
 
 fig,ax=plt.subplots()
 
@@ -232,7 +232,7 @@ for k in tqdm(key_list):
     p = ax.plot(original_data[k])
     color = p[0].get_color()
     ax.plot(reduction_data[k],'--',color=color)
-# save_large_plot(fig,'different_between_the_same_input.png')
+save_large_plot(fig,'different_between_the_same_input.png')
 fig.show()
 
 #%% p_value of variables
@@ -285,7 +285,7 @@ for k in tqdm(key_list):
     # color = p[0].get_color()
     ax.scatter(np.arange(reduction_data[k].shape[0]),reduction_data[k],color='blue')
 # ax.plot()
-# save_large_plot(fig,'different_between_the_same_input.png')
+save_large_plot(fig,'different_between_the_same_input.png')
 plt.show()
 
 #%%
@@ -304,7 +304,7 @@ std_total=np.std(np.vstack([avarage_original,avarage_reduction]),axis=0)
 ax.errorbar(np.arange(avarage_original.shape[1]),(np.mean(avarage_original,axis=0))/std_total,yerr=(np.std(avarage_original,axis=0))/std_total,label='original')
 ax.errorbar(np.arange(avarage_original.shape[1]),(np.mean(avarage_reduction,axis=0))/std_total,yerr=(np.std(avarage_reduction,axis=0))/std_total,label='reduction')
 ax.legend()
-# save_large_plot(fig,'avarage_trend.png')
+save_large_plot(fig,'avarage_trend_with_error_bars.png')
 plt.show()
 
 #%%
@@ -324,9 +324,9 @@ avarage_reduction=np.array(avarage_reduction)
 ax.errorbar(np.arange(avarage_original.shape[1]),np.mean(avarage_original,axis=0),yerr=np.std(avarage_original,axis=0),alpha=0.5,label='original')
 ax.errorbar(np.arange(avarage_reduction.shape[1]),np.mean(avarage_reduction,axis=0),yerr=np.std(avarage_reduction,axis=0),alpha=0.5,label='reduction')
 ax.legend()
-# save_large_plot(fig,'avarage_trend_with_error.png')
+save_large_plot(fig,'avarage_trend_with_error.png')
 plt.show()
-from scipy.stats import ttest_ind
+# from scipy.stats import ttest_ind
 print(ttest_ind(np.array(dataset_reduc),np.array(dataset_orig),axis=1))
 
 #%% plot diffrences order
