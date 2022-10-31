@@ -142,26 +142,29 @@ def create_synapse(L5PC,reduction_frequency=None):
                                                                                reduction_frequency)
         return L5PC,synapses_list,netcons_list
 
+global LOADING_FLAG
+LOADING_FLAG=False
 
 def get_L5PC(model_name:ModelName=ModelName.L5PC_ERGODIC):
     import neuron
     from neuron import gui, h
+    global LOADING_FLAG
+    if not LOADING_FLAG:
+        # if not loaded_already:
+        h.load_file('nrngui.hoc')
+        h.load_file("import3d.hoc")
 
-    # if not loaded_already:
-    h.load_file('nrngui.hoc')
-    h.load_file("import3d.hoc")
-
-    # if not hasattr(h, "L5PCtemplate"):
-    if platform.system() == 'Windows':
-        h.nrn_load_dll(model_name.value+DLL_FILE_PATH)
-    else:
-        neuron.load_mechanisms(model_name.value)
+        # if not hasattr(h, "L5PCtemplate"):
+        if platform.system() == 'Windows':
+            h.nrn_load_dll(model_name.value+DLL_FILE_PATH)
+        else:
+            neuron.load_mechanisms(model_name.value)
 
 
-    h.load_file(model_name.value+biophysicalModelFilename)
+        h.load_file(model_name.value+biophysicalModelFilename)
 
-    h.load_file(model_name.value+biophysicalModelTemplateFilename)
-
+        h.load_file(model_name.value+biophysicalModelTemplateFilename)
+        LOADING_FLAG=True
     #delete unwanted printings.
     old_stdout = sys.stdout  # backup current stdout
     sys.stdout = open(os.devnull, "w")

@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pickle
 import re
+from scipy.stats import ttest_ind
+from matplotlib import colors
 
 # %%
 if not os.path.exists('lzc_plots'):
@@ -26,7 +28,7 @@ def save_large_plot(fig, name):
 
 
 dim_size = 200
-# %%
+# %% load data
 reduction_data = dict()
 reduction_ci = dict()
 original_data = dict()
@@ -52,7 +54,6 @@ for i in os.listdir(os.path.join('LZC')):
             data[1] = data[1].replace('.p', '').replace('_reduction_0w', '')
             s = data[1]
             reduction_ci[s] = data[0]
-            print(j)
     elif original_tag in i:
         # print(i)
         with open(os.path.join('LZC', i), 'rb') as f:
@@ -142,7 +143,7 @@ ax.legend([mpatches.Patch(color='blue'), mpatches.Patch(color='red')], ['reducti
 # plt.scatter(np.zeros([len(r_ci_arr)]),r_ci_arr,color='red')
 # plt.scatter(np.ones([len(r_ci_arr)]),o_ci_arr,color='blue')
 plt.show()
-# %%
+# %% lzc complexity index historgram
 fig, ax = plt.subplots()
 data = [[], []]
 for k in key_list:
@@ -153,17 +154,34 @@ for k in key_list:
     # avarage_original.append(original_data[k])
     # avarage_reduction.append(reduction_data[k])
 data = np.array(data)
-
-ax.set_ylim([np.min(data), np.max(data)])
-ax.set_xlim([np.min(data), np.max(data)])
+lims=[np.min(data),np.max(data)]
+# data[0,:]=lims[0]
+H, xedges, yedges = np.histogram2d(data[0,:],data[1,:],range=np.array([lims,lims]),bins=lims[1]-lims[0])
+im = ax.imshow(H.T,interpolation='nearest', origin='lower',extent=[xedges[0], xedges[-1], yedges[0], yedges[-1]],norm=colors.LogNorm())
+# lims=[np.min(data),np.max(data)]
+# ax.set_ylim(lims)
+# ax.set_xlim(lims)
+# ax.plot(lims,lims,color='red')
+ax.plot(lims,lims,color='red')
+ax.set_ylabel('reduction model')
+ax.set_xlabel('L5PC model')
+ax.set_title('L5PC and its reduction Lemple Ziv complexity histogram')
+plt.colorbar(im)
 plt.show()
+plt.savefig('evaluation_plots\\LZC_2dhist.png')
+
+print(ttest_ind(data[0,:],data[1,:],equal_var=False))
+
+# ax.set_ylim([np.min(data), np.max(data)])
+# ax.set_xlim([np.min(data), np.max(data)])
+# plt.show()
 
 # %%
 fig, ax = plt.subplots()
 original_hist = [original_ci[k] for k in key_list]
 reduction_hist = [reduction_ci[k] for k in key_list]
-ax.hist(original_hist, 100, alpha=0.6, color='red')
-ax.hist(reduction_hist, 100, alpha=0.6, color='blue')
+ax.hist([original_hist,reduciton_hist], 100, alpha=0.6, color=['red','blue'])
+# ax.hist(reduction_hist, 100, alpha=0.6, color='blue')
 plt.show()
 
 # %%
