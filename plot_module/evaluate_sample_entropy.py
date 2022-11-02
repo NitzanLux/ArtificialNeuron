@@ -7,7 +7,7 @@ import pickle
 import re
 from tqdm import tqdm
 from matplotlib import colors
-
+import seaborn as sns
 #%%
 
 if not os.path.exists('sample_entropy_plots'):
@@ -31,8 +31,10 @@ dim_size=200
 #%%
 
 reduction_data=dict()
+reduction_sc=dict()
 reduction_ci=dict()
 original_data=dict()
+original_sc=dict()
 original_ci=dict()
 file_list=[]
 ordering=dict()
@@ -63,10 +65,11 @@ for i in tqdm(os.listdir(os.path.join('sample_entropy'))):
             data=pickle.load(f)
             data=list(data)
             data[2]=data[2].replace('_reduction_0w','').replace('.p','')
-            s=tuple(data[2:])
+            s=tuple(data[2:4])
             if s in reduction_data:
                 continue
             reduction_data[s],reduction_ci[s]=data[:2]
+            reduction_sc[s]=data[4]
             datas.append(data)
             if s[0] not in file_index_counter_reduction:
                 file_index_counter_reduction[s[0]]=0
@@ -78,10 +81,11 @@ for i in tqdm(os.listdir(os.path.join('sample_entropy'))):
             data=pickle.load(f)
             data=list(data)
             data[2]=data[2].replace('.p','')
-            s=tuple(data[2:])
+            s=tuple(data[2:4])
             if s in original_data:
                 continue
             original_data[s],original_ci[s]=data[:2]
+            original_sc[s]=data[4]
             datas.append(data)
             if s[0] not in file_index_counter_original:
                 file_index_counter_original[s[0]]=0
@@ -99,7 +103,34 @@ reduction_keys=set(reduction_data.keys())
 original_keys=set(original_data.keys())
 key_list = list(reduction_keys&original_keys)
 print(len(key_list))
+#%% print nans ci
 
+fig,ax=plt.subplots()
+data_mat=np.zeros((3,len(key_list)))
+for i,k in tqdm(enumerate(key_list)):
+    data_mat[0,i]=np.isnan(original_ci[k])
+    data_mat[2,i]=np.isnan(reduction_ci[k])
+    # out = np.argwhere(np.isinf(original_data[k]))
+    # data_mat[out,i]=-1
+    # out = np.argwhere(np.isinf(reduction_data[k]))
+    # data_mat[201+out,i]=-1
+ax.matshow(data_mat)
+ax.set_aspect(15000)
+plt.show()
+#%% print infs ci
+
+fig,ax=plt.subplots()
+data_mat=np.zeros((3,len(key_list)))
+for i,k in tqdm(enumerate(key_list)):
+    data_mat[0,i]=np.isinf(original_ci[k])
+    data_mat[2,i]=np.isinf(reduction_ci[k])
+    # out = np.argwhere(np.isinf(original_data[k]))
+    # data_mat[out,i]=-1
+    # out = np.argwhere(np.isinf(reduction_data[k]))
+    # data_mat[201+out,i]=-1
+ax.matshow(data_mat)
+ax.set_aspect(15000)
+plt.show()
 #%% print nans
 
 fig,ax=plt.subplots()
@@ -134,43 +165,33 @@ for i,k in tqdm(enumerate(key_list)):
     # data_mat[201+out,i]=-1
 ax.matshow(data_mat,aspect=100)
 plt.show()
-
-#%% remove nans
+#%% create_mask for  nans
+mask=set()
 
 for k in tqdm(key_list):
-    if np.isnan(original_data[k]).any() :
-        del original_data[k]
-        del reduction_data[k]
-        continue
-    if np.isnan(reduction_data[k]).any():
-        del original_data[k]
-        del reduction_data[k]
+    if np.isnan(original_data[k]).any() or  np.isnan(reduction_data[k]).any():
+        # del original_data[k]
+        # del reduction_data[k]
+        mask.add(k)
         continue
 reduction_keys=set(reduction_data.keys())
 original_keys=set(original_data.keys())
-key_list = list(reduction_keys&original_keys)
+key_list = list((reduction_keys&original_keys)-mask)
 print(len(key_list))
 
 #%% remove infs
 
 for k in key_list:
-    if np.isinf(original_data[k]).any() :
-        print(original_data[k])
-        del original_data[k]
-        del reduction_data[k]
-        continue
-    if np.isinf(reduction_data[k]).any():
-        print(k)
-        del original_data[k]
-        del reduction_data[k]
+    if np.isinf(original_data[k]).any() or  np.isinf(reduction_data[k]).any():
+        mask.add(k)
         continue
 reduction_keys=set(reduction_data.keys())
 original_keys=set(original_data.keys())
-key_list = list(reduction_keys&original_keys)
+key_list = list((reduction_keys&original_keys)-mask)
 print(len(key_list))
 
-#%% set_timescale to lowest bound [optional]
 
+#%% set_timescale to lowest bound [optional]
 min_inf=-1
 for i,k in enumerate(key_list):
     o_infs = np.argwhere(np.isinf(original_data[k]))
@@ -202,7 +223,7 @@ for k in tqdm(key_list):
         avarage_diff.append(original_data[k]-reduction_data[k])
 avarage_diff = np.array(avarage_diff)
 
-ax.errorbar(np.arange(avarage_diff.shape[1]),np.mean(avarage_diff,axis=0),yerr=np.std(avarage_diff,axis=0))
+ax.errorbar(np.arange(avarage_diff.shape[1]),np.nanmean(avarage_diff[~np.isinf(avarage_diff)],axis=0),yerr=np.nanstd(avarage_diff[~np.isinf(avarage_diff)],axis=0))
 # save_large_plot(fig,'error_between_the_same_input.png')
 plt.show()
 
@@ -450,6 +471,46 @@ ax.hist(original_hist,100,alpha=0.6,color='red')
 ax.hist(reduction_hist,100,alpha=0.6,color='blue')
 plt.show()
 
-#%%
+#%% two different distributions (reduction and original) comparison between spike rate to entropy index.
+spike_list_r=[]
+spike_list_o=[]
+se_list_o=[]
+se_list_r=[]
+counter=0
+for k in tqdm(key_list):
+    # if np.isinf(original_ci[k]) or np.isnan(original_ci[k]) or np.isinf(reduction_ci[k]) or np.isnan(reduction_ci[k]):
+    spike_list_r.append(original_sc[k])
+    spike_list_o.append(reduction_sc[k])
+    se_list_o.append(sum(original_data[k]))
+    se_list_r.append(sum(reduction_data[k]))
+    # if counter<40:
+    #     counter+=1
+    # else:
+    #     break
+# Plotting the KDE Plot
+fig,ax=plt.subplots()
+# se_mean,se_std=np.mean(np.array([se_list_r,se_list_o])),np.std(np.array([se_list_r,se_list_o]))
+# sp_mean,sp_std=np.mean(np.array([spike_list_r,spike_list_o])),np.std(np.array([spike_list_r,spike_list_o]))
+# ax.boxplot([(se_list_r-se_mean)/se_std,(se_list_o-se_mean)/se_std,(spike_list_o-sp_mean)/sp_std,(spike_list_r-sp_mean)/sp_std])
+# sns.kdeplot(x=se_list_r, y=spike_list_r, cmap="Reds", shade=True, bw_adjust=.5,alpha=0.5)
+# sns.kdeplot(x=se_list_o, y=spike_list_o, cmap="Blues", shade=True, bw_adjust=.5,alpha=0.5)
+mat = np.corrcoef(np.array([se_list_o+se_list_r,spike_list_o+spike_list_r,[0]*len(se_list_o)+[1]*len(se_list_r)]))
+mat[np.arange(mat.shape[0]),np.arange(mat.shape[0])]=np.NAN
+minmax_val = np.max([np.abs(np.nanmin(mat)),np.nanmax(mat)])
+divnorm=colors.TwoSlopeNorm(vmin=-float(minmax_val), vcenter=0., vmax=float(minmax_val))
 
+im = ax.matshow(mat, cmap='bwr',norm=divnorm)
+for i in range(mat.shape[0]):
+    for j in range(mat.shape[0]):
+        c = mat[j,i]
+        if i==j:c=1
+
+        ax.text(i, j, '%0.4f'%c, va='center', ha='center')
+ax.set_xticks(range(3),['Spike count','Sample entropy(v)','Model'])
+ax.set_yticks(range(3),['Spike count','Sample entropy(v)','Model'],rotation=45)
+ax.set_title('Cross Correlation matrix')
+plt.colorbar(im)
+plt.tight_layout()
+save_large_plot(fig,'cross_correlation.png')
+plt.show()
 
