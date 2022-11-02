@@ -55,14 +55,15 @@ def create_sample_entropy_file(q,use_voltage=True,use_derivative=False):
             print(
                 f"current sample number {f} {index}  total: {time.time() - t} seconds",
                 flush=True)
-            with open(os.path.join("sample_entropy",f"sample_entropy_{'v' if use_voltage else 's'}{'_der_' if use_derivative else ''}_{tag}_{f_index}_{index}_{MAX_INTERVAL}d.p"),'wb') as f_o:
+            with open(os.path.join("sample_entropy",f"{'v' if use_voltage else 's'}{'_der_' if use_derivative else ''}_{tag}_{MAX_INTERVAL}d",f"sample_entropy_{'v' if use_voltage else 's'}{'_der_' if use_derivative else ''}_{tag}_{f_index}_{index}_{MAX_INTERVAL}d.p"),'wb') as f_o:
                 pickle.dump((MSx,Ci,f,index,spike_number),f_o)
 
 def get_sample_entropy(tag,pathes,use_voltage,file_index_start,use_derivative):
 
     number_of_jobs = min(number_of_cpus - 1,len(pathes))
 
-
+    if not os.path.exists:
+        os.mkdir(os.path.join('sample_entropy',f"{'v' if use_voltage else 's'}{'_der_' if use_derivative else ''}_{tag}_{MAX_INTERVAL}d"))
     queue=Queue(maxsize=number_of_jobs)
     process = [Process(target=create_sample_entropy_file, args=(queue,use_voltage,use_derivative)) for i in range(number_of_jobs)]
     print('starting')
