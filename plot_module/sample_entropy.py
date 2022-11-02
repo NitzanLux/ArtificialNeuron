@@ -43,15 +43,17 @@ def create_sample_entropy_file(q,use_voltage=True,use_derivative=False):
                 spike_number=s>20
                 s[spike_number]=20
                 r=np.std(s[~spike_number])*0.2
+                keys={'r':r}
                 spike_number=np.sum(spike_number)
             else:
+                keys={}
                 s = y_spike[:,index].astype(np.float64)
                 spike_number=np.sum(s)
             print(s,s.shape)
             if use_derivative:
                 s=s[1:]-s[:-1]
             t = time.time()
-            Mobj = EH.MSobject('SampEn',r=np.std(s))
+            Mobj = EH.MSobject('SampEn',**keys)
             MSx, Ci = EH.MSEn(s, Mobj, Scales=MAX_INTERVAL)
             print(
                 f"current sample number {f} {index}  total: {time.time() - t} seconds",
