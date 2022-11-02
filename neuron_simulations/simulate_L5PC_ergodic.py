@@ -60,7 +60,8 @@ def generate_input_spike_trains_for_simulation(sim_experiment_file, print_logs=P
                              experiment_dict['Params']['totalSimDurationInSec'] * 1000)
             print('sim number ',k,flush=True)
             yield X_ex, X_inh
-
+            break
+            #todo for debugging
     return genrator(), experiment_dict['Params']
 
 
