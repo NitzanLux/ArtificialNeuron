@@ -65,8 +65,7 @@ def get_sample_entropy(tag,pathes,use_voltage,file_index_start,use_derivative):
 
     number_of_jobs = min(number_of_cpus - 1,len(pathes))
 
-    if not os.path.exists:
-        os.mkdir(os.path.join('sample_entropy',f"{'v' if use_voltage else 's'}{'_der_' if use_derivative else ''}_{tag}_{MAX_INTERVAL}d"))
+
     queue=Queue(maxsize=number_of_jobs)
     process = [Process(target=create_sample_entropy_file, args=(queue,use_voltage,use_derivative)) for i in range(number_of_jobs)]
     print('starting')
@@ -118,6 +117,8 @@ if __name__ == "__main__":
     list_dir_parent = [os.path.join(parent_dir_path,i) for i in list_dir_parent]
     jumps=len(list_dir_parent)//number_of_clusters
     keys={}
+    if not os.path.exists:
+        os.mkdir(os.path.join('sample_entropy',f"{'v' if  args.sv=='v' else 's'}{'_der_' if use_derivative else ''}_{tag}_{MAX_INTERVAL}d"))
     if args.memory>0:
         keys['mem']=args.memory
         print("Mem:",args.memory)

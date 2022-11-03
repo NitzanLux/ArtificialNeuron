@@ -483,17 +483,7 @@ for k in tqdm(key_list):
     spike_list_o.append(reduction_sc[k])
     se_list_o.append(sum(original_data[k]))
     se_list_r.append(sum(reduction_data[k]))
-    # if counter<40:
-    #     counter+=1
-    # else:
-    #     break
-# Plotting the KDE Plot
 fig,ax=plt.subplots()
-# se_mean,se_std=np.mean(np.array([se_list_r,se_list_o])),np.std(np.array([se_list_r,se_list_o]))
-# sp_mean,sp_std=np.mean(np.array([spike_list_r,spike_list_o])),np.std(np.array([spike_list_r,spike_list_o]))
-# ax.boxplot([(se_list_r-se_mean)/se_std,(se_list_o-se_mean)/se_std,(spike_list_o-sp_mean)/sp_std,(spike_list_r-sp_mean)/sp_std])
-# sns.kdeplot(x=se_list_r, y=spike_list_r, cmap="Reds", shade=True, bw_adjust=.5,alpha=0.5)
-# sns.kdeplot(x=se_list_o, y=spike_list_o, cmap="Blues", shade=True, bw_adjust=.5,alpha=0.5)
 mat = np.corrcoef(np.array([se_list_o+se_list_r,spike_list_o+spike_list_r,[0]*len(se_list_o)+[1]*len(se_list_r)]))
 mat[np.arange(mat.shape[0]),np.arange(mat.shape[0])]=np.NAN
 minmax_val = np.max([np.abs(np.nanmin(mat)),np.nanmax(mat)])
@@ -506,8 +496,8 @@ for i in range(mat.shape[0]):
         if i==j:c=1
 
         ax.text(i, j, '%0.4f'%c, va='center', ha='center')
-ax.set_xticks(range(3),['Spike count','Sample entropy(v)','Model'])
-ax.set_yticks(range(3),['Spike count','Sample entropy(v)','Model'],rotation=45)
+ax.set_xticks(range(3),['Sample entropy(v)','Spike count','Model'])
+ax.set_yticks(range(3),['Sample entropy(v)','Spike count','Model'],rotation=45)
 ax.set_title('Cross Correlation matrix')
 plt.colorbar(im)
 plt.tight_layout()
