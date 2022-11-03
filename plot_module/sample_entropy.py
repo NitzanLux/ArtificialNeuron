@@ -118,7 +118,7 @@ if __name__ == "__main__":
     jumps=len(list_dir_parent)//number_of_clusters
     keys={}
     if not os.path.exists(os.path.join('sample_entropy',f"{'v' if  args.sv=='v' else 's'}{'_der_' if use_derivative else ''}_{args.tag}_{MAX_INTERVAL}d")):
-        os.mkdir(os.path.join('sample_entropy',f"{'v' if  args.sv=='v' else 's'}{'_der_' if use_derivative else ''}_{tag}_{MAX_INTERVAL}d"))
+        os.mkdir(os.path.join('sample_entropy',f"{'v' if  args.sv=='v' else 's'}{'_der_' if use_derivative else ''}_{args.tag}_{MAX_INTERVAL}d"))
     if args.memory>0:
         keys['mem']=args.memory
         print("Mem:",args.memory)
