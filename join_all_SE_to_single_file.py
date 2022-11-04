@@ -15,6 +15,6 @@ for i in os.listdir('sample_entropy'):
             f_path=os.path.join(cut_path,j)
             with open(f_path, 'rb') as f:
                 data_dict[j]=pickle.load(f)
-        with open(f'{i}.pkl','wb') as f_o:
+        with open(os.path.join('sample_entropy',f'{i}.pkl'),'wb') as f_o:
             pickle.dump(data_dict, f_o)
             print('saving')
