@@ -1,10 +1,10 @@
 import os
 import pickle
-
-for i in os.listdir('sample_entropy'):
-    cur_path =  os.path.join('sample_entropy',i)
-    if not os.path.isdir(cur_path):
-        os.remove(cur_path)
+#
+# for i in os.listdir('sample_entropy'):
+#     cur_path =  os.path.join('sample_entropy',i)
+#     if not os.path.isdir(cur_path):
+#         os.remove(cur_path)
 for i in os.listdir('sample_entropy'):
     cut_path =os.path.join('sample_entropy',i)
     if os.path.isdir(cut_path):
