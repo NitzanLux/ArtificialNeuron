@@ -86,6 +86,8 @@ if __name__ == "__main__":
                         help='parant directory path')
     parser.add_argument('-t',dest="tag", type=str,
                         help='tag for saving')
+    parser.add_argument('-j',dest="cluster_num", type=int,
+                        help="number of jobs on cluster")
     parser.add_argument('-sv',dest="sv", type=str,
                         help='somatic voltage or spikes as data')
     parser.add_argument('-der',dest="use_derivative", type=str,
@@ -108,7 +110,7 @@ if __name__ == "__main__":
 
     from utils.slurm_job import *
 
-    number_of_clusters = 10
+    number_of_clusters = args.cluster_num
     job_factory = SlurmJobFactory("cluster_logs")
 
     parent_dir_path = args.parent_dir_path
