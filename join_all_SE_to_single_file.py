@@ -14,7 +14,7 @@ for i in os.listdir('sample_entropy'):
         for j in tqdm(os.listdir(cut_path)):
             f_path=os.path.join(cut_path,j)
             with open(f_path, 'rb') as f:
-                data_dict[i]=pickle.load(f)
+                data_dict[j]=pickle.load(f)
         with open(f'{i}.pkl','wb') as f_o:
             pickle.dump(data_dict, f_o)
             print('saving')
