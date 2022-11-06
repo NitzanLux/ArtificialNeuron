@@ -22,6 +22,7 @@ parser.add_argument('-f',dest="files_that_do_not_exist", type=bool,
                     help='simulate only files that do not exist', default=False)
 parser.add_argument('-na', dest="NMDA_or_AMPA", type=str, help='choose whether NMDA or AMPA')
 parser.add_argument('-gmaxampa', dest="gmax_ampa", type=float, help='gmax ampa')
+parser.add_argument('-t', dest="tag", type=string, help='tag')
 args = parser.parse_args()
 assert args.NMDA_or_AMPA in {'N','A'},'nmda or ampa should be as N or A'
 NMDA_or_AMPA = args.NMDA_or_AMPA=='N'
@@ -43,7 +44,7 @@ directory_name = os.path.basename(directory)
 base_directory = os.path.basename(base_directory)
 print(args.files_that_do_not_exist)
 if args.files_that_do_not_exist:
-    directory_dest = os.path.join(NEURON_REDUCE_DATA_DIR, base_directory + "_" + directory_name +"_"+  ('NMDA' if NMDA_or_AMPA else 'AMPA'))
+    directory_dest = os.path.join(NEURON_REDUCE_DATA_DIR, base_directory + "_" + directory_name +"_"+  ('NMDA' if NMDA_or_AMPA else 'AMPA')+'_'+args.tag)
     files_that_exists = set([f for f in os.listdir(directory_dest) if os.path.isfile(os.path.join(directory_dest, f))])
     new_files = []
     for f in only_files:
