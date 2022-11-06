@@ -21,7 +21,7 @@ parser.add_argument('-d',dest="directory", type=str,
 parser.add_argument('-f',dest="files_that_do_not_exist", type=bool,
                     help='simulate only files that do not exist', default=False)
 parser.add_argument('-na', dest="NMDA_or_AMPA", type=str, help='choose whether NMDA or AMPA')
-parser.add_argument('-gmaxampa', dest="gmax_ampa", type=float, help='gmax ampa')
+parser.add_argument('-gmax_ampa', dest="gmax_ampa", type=float, help='gmax ampa')
 parser.add_argument('-t', dest="tag", type=str, help='tag')
 args = parser.parse_args()
 assert args.NMDA_or_AMPA in {'N','A'},'nmda or ampa should be as N or A'
@@ -64,12 +64,12 @@ for i, f in enumerate(only_files):
         params_string = 'python3 -m neuron_simulations.simulate_L5PC_ergodic %s -i $SLURM_JOB_ID' % (
                     "-f '" + str(os.path.join(directory,
                                               f)) + "' -d '" + base_directory + "_" + directory_name +  ('NMDA' if NMDA_or_AMPA else 'AMPA') +
-                    "' -na %s "% ('N' if NMDA_or_AMPA else 'A')+' -gmaxampa '+str(args.gmaxampa))
+                    "' -na %s "% ('N' if NMDA_or_AMPA else 'A')+' -gmax_ampa '+str(args.gmaxampa))
     else:
         params_string = params_string + '&& python3 -m neuron_simulations.simulate_L5PC_ergodic %s -i -1' % (
                     "-f '" + str(os.path.join(directory,
                                               f)) + "' -d '" + base_directory + "_" + directory_name +  ('NMDA' if NMDA_or_AMPA else 'AMPA') +
-                    "' -na %s"% ('N' if NMDA_or_AMPA else 'A')+' -gmaxampa '+str(args.gmaxampa))
+                    "' -na %s"% ('N' if NMDA_or_AMPA else 'A')+' -gmax_ampa '+str(args.gmaxampa))
 
     if i%files_per_cpu==files_per_cpu-1 or i==len(only_files)-1:
         job_factory.send_job("%s_%s"%( ('NMDA' if NMDA_or_AMPA else 'AMPA')+"_simulation",base_directory[:15]+"_"+directory_name), params_string,filename_index=i//files_per_cpu)

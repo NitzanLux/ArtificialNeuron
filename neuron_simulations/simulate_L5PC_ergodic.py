@@ -624,7 +624,7 @@ parser.add_argument('-f', dest="file", type=str, nargs='+', help='data file to w
 parser.add_argument('-d', dest="dir", type=str, nargs='+', help='data directory to which reduce')
 parser.add_argument('-na', dest="NMDA_or_AMPA", type=str, help='choose whether NMDA or AMPA')
 parser.add_argument('-i', dest="slurm_job_id", type=str, help='slurm_job_id')
-parser.add_argument('-gmaxampa', dest="gmax_ampa", type=float, help='slurm_job_id')
+parser.add_argument('-gmax_ampa', dest="gmax_ampa", type=float, help='slurm_job_id')
 args = parser.parse_args()
 assert args.NMDA_or_AMPA in {'N','A'},'nmda or ampa should be as N or A'
 NMDA_or_AMPA = args.NMDA_or_AMPA=='N'
