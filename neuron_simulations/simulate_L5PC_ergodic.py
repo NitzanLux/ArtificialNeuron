@@ -135,7 +135,7 @@ def ConnectEmptyEventGenerator(synapse):
     return netConnection
 
 #%%
-def simulate_L5PC_reduction(sim_file, dir_name,is_NMDA=False):
+def simulate_L5PC_reduction(sim_file, dir_name,is_NMDA=False,gMax_AMPA=0.0004):
     data_generator, experimentParams = generate_input_spike_trains_for_simulation(sim_file)
     # get or randomly generate random seed
     random_seed = experimentParams['random_seed']
@@ -380,7 +380,7 @@ def simulate_L5PC_reduction(sim_file, dir_name,is_NMDA=False):
             if is_NMDA:
                 exSynapse = DefineSynapse_NMDA(segment, NMDA_to_AMPA_g_ratio=gmax_NMDA_to_AMPA_ratio)
             else:
-                exSynapse = DefineSynapse_AMPA(segment)
+                exSynapse = DefineSynapse_AMPA(segment,gMax_AMPA)
             # exSynapse = DefineSynapse_NMDA(segment, NMDA_to_AMPA_g_ratio=gmax_NMDA_to_AMPA_ratio)
             allExSynapses.append(exSynapse)
 
@@ -624,6 +624,7 @@ parser.add_argument('-f', dest="file", type=str, nargs='+', help='data file to w
 parser.add_argument('-d', dest="dir", type=str, nargs='+', help='data directory to which reduce')
 parser.add_argument('-na', dest="NMDA_or_AMPA", type=str, help='choose whether NMDA or AMPA')
 parser.add_argument('-i', dest="slurm_job_id", type=str, help='slurm_job_id')
+parser.add_argument('-gmaxampa', dest="gmax_ampa", type=float, help='slurm_job_id')
 args = parser.parse_args()
 assert args.NMDA_or_AMPA in {'N','A'},'nmda or ampa should be as N or A'
 NMDA_or_AMPA = args.NMDA_or_AMPA=='N'
@@ -643,7 +644,14 @@ for f in sim_files:
     print(dir_name)
     print(f)
     print(flush=True)
-    simulate_L5PC_reduction(f,dir_name,is_NMDA=NMDA_or_AMPA)
+    keys={}
+    if hasattr(args,'gmax_ampa'):
+        keys={'gMax_AMPA':args.gmax_ampa}
+        print('yey')
+    else:
+        keys={}
+        exit(1)
+    simulate_L5PC_reduction(f, dir_name, is_NMDA=NMDA_or_AMPA,**keys)
     print('#####################################################################', '\n\t')
     print('ending')
     print(dir_name)

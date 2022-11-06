@@ -9,6 +9,7 @@ from tqdm import tqdm
 from matplotlib import colors
 import seaborn as sns
 import pandas as pd
+from scipy import stats
 
 MSX_INDEX = 0
 COMPLEXITY_INDEX = 1
@@ -173,6 +174,8 @@ print('balanced removal of ', sum([c[fi == i] for i in inf_ci_files['key']])[0] 
 # %%
 
 # %% plot inf distribution in se data
+df.reset_index(drop=True, inplace=True)
+
 df = df.sort_values(['key'])
 data_color = []
 hist_data = []
@@ -196,6 +199,7 @@ ax[1].legend()
 plt.show()
 # %% remove infs and correct CI balanced
 precentage = 0.1
+
 df = df.sort_values(['key'])
 fig, ax = plt.subplots(3)
 first_inf = []
@@ -223,26 +227,74 @@ ax[2].plot(probability_data, np.arange(max_value))
 print('temporal_res value: %0.4f actual: %0.4f' % (probability_data[temporal_res], precentage))
 fig.show()
 # %% remove infs and update
-# df = df.assign(temp_SE=lambda x:(x['key']),axis=1)
 
-df['SE'] = np.array(list(df['SE']))[:,:temporal_res].tolist()
-x,y=np.where(np.isinf(np.vstack(df['SE'])))
+df['SE'] = np.array(list(df['SE']))[:, :temporal_res].tolist()
+df.reset_index(drop=True, inplace=True)
+non_inf_vec = np.vstack(df['SE'])
+x, y = np.where(np.isinf(non_inf_vec))
 x = np.unique(x).tolist()
-# p=df.index
-# df = get_df_with_condition_balanced(df, df.index.isin(x), True)
+df = get_df_with_condition_balanced(df, df.index.isin(x), True)
 
-#update ci
-# out = np.sum(np.vstack(list(df['SE'])),axis=1)
-# %% set_timescale to lowest bound [optional]
-
-
-# %% validation about files that had been done
+# update ci
+ooo = np.array(list(df['SE']))
+sum_ci = np.sum(np.array(list(df['SE'])), axis=1)
+df['Ci'] = sum_ci
+# %% box plot complexity
 
 fig, ax = plt.subplots()
+datas = []
+for i in m_names:
+    datas.append(df[df['model_' + i] == 1]['Ci'].tolist())
+p01 = ttest_ind(datas[0], datas[1], equal_var=False).pvalue
+p12 = ttest_ind(datas[2], datas[1], equal_var=False).pvalue
+p02 = ttest_ind(datas[0], datas[2], equal_var=False).pvalue
+print(p01, p12, p02)
+ax.boxplot(datas)
+ax.set_xlabel(m_names)
+fig.show()
+# %% spike_count
+plt.close()
+fig, ax = plt.subplots()
+datas = []
+for i in m_names:
+    datas.append(df[df['model_' + i] == 1]['spike_number'].tolist())
+ax.hist(datas, bins=20, label=m_names, alpha=0.4)
+fig.legend()
+fig.show()
+#%%
 
-ax.scatter(list(key_list), [1] * len(key_list))
-save_large_plot(fig, 'files_that_had_been_done.png')
-plt.show()
+# %%
+df = df.sort_values(['key'])
+datas = []
+for i in m_names:
+    datas.append(df[df['model_' + i] == 1]['Ci'].tolist())
+for i in range(3):
+    fig, ax = plt.subplots()
+    ax.scatter(datas[i], datas[(i + 1) % 3], alpha=0.2, s=0.1)
+    ax.set_xlabel(m_names[i])
+    ax.set_ylabel(m_names[(i + 1) % 3])
+    lims = (np.min(np.vstack((datas[i], datas[(i + 1) % 3]))), np.max(np.vstack((datas[i], datas[(i + 1) % 3]))))
+    ax.plot(lims, lims, color='red')
+    fig.show()
+# %%
+df = df.sort_values(['key'])
+datas = []
+for i in m_names:
+    datas.append(df[df['model_' + i] == 1]['Ci'].tolist())
+for i in range(3):
+    fig, ax = plt.subplots()
+    lims = (np.min(np.vstack((datas[i], datas[(i + 1) % 3]))), np.max(np.vstack((datas[i], datas[(i + 1) % 3]))))
+
+    H, xedges, yedges = np.histogram2d(datas[i], datas[(i + 1) % 3], range=np.array([lims, lims]),
+                                       bins=int(lims[1] - lims[0]))
+    im = ax.imshow(H.T, interpolation='nearest', origin='lower', extent=[xedges[0], xedges[-1], yedges[0], yedges[-1]]
+                   # )
+                   , norm=colors.LogNorm())
+    ax.plot(lims, lims, color='red')
+    fig.colorbar(im)
+    ax.set_xlabel(m_names[i])
+    ax.set_ylabel(m_names[(i + 1) % 3])
+    fig.show()
 
 # %% plot difference avarage per file
 
