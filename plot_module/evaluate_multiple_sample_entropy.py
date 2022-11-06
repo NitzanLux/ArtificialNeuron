@@ -10,15 +10,14 @@ from matplotlib import colors
 import seaborn as sns
 import pandas as pd
 
-
 MSX_INDEX = 0
 COMPLEXITY_INDEX = 1
 FILE_INDEX = 2
 SIM_INDEX = 3
 SPIKE_NUMBER = 4
-    # MSx,Ci,f,index,spike_number
 
 
+# MSx,Ci,f,index,spike_number
 
 
 def save_large_plot(fig, name):
@@ -35,30 +34,53 @@ class ModelsSEData():
     def __init__(self, tags):
         self.data_tags = [(i[:-len('.pkl')] if i.endswith('.pkl') else i) for i in tags]
         self.data = dict()
-        self.join_keys = set()
         for i in self.data_tags:
             with open(os.path.join('sample_entropy', i + '.pkl'), 'rb') as f:
                 self.data[i] = pickle.load(f)
         keys = []
-        for i in self.data_tags:
+        for i in tqdm(self.data_tags):
             temp_data = dict()
             temp_tags = set()
+            files = [i[FILE_INDEX] for i in self.data[i].values()]
+            suffix = self.find_suffix_shared(files)
             for v in self.data[i].values():
-                temp_tags.add((v[FILE_INDEX], v[SIM_INDEX], len(self.data[i])))
-                temp_data[(v[FILE_INDEX], v[SIM_INDEX])] = (
+                temp_tags.add((v[FILE_INDEX][:-len(suffix)], v[SIM_INDEX]))
+                temp_data[(v[FILE_INDEX][:-len(suffix)], v[SIM_INDEX])] = (
                     v[MSX_INDEX], v[COMPLEXITY_INDEX], v[SPIKE_NUMBER])
             self.data[i] = temp_data
             keys.append(temp_tags)
-
-        keys = set.intersection(*keys)
-
+        i_keys = set.intersection(*keys)
+        d_keys = set.union(*keys)
+        d_keys = d_keys.symmetric_difference(d_keys)
+        d_keys = set([i[0] for i in d_keys])
         self.keys = set()
-        for i in keys:
-            self.keys.add(i[:2])
+        for i in i_keys:
+            if i[0] in d_keys:  # if theres a sim from file that do not exists
+                continue
+            self.keys.add(i)
+
+    @staticmethod
+    def find_suffix_shared(files):
+        base_str = ''
+        pointer = -1
+        cur_letter = None
+        while True:
+            for i in files:
+                if cur_letter is None:
+                    cur_letter = i[pointer]
+                if i[pointer] != cur_letter:
+                    break
+            else:
+                pointer -= 1
+                base_str = cur_letter + base_str
+                cur_letter = None
+                continue
+            break
+        return base_str
 
     def get_by_shard_keys(self, key):
         assert key in self.keys, 'key is not shard amoung all'
-        return {k: v[key] for k, v in self.data_tags.items()}
+        return {k: v[key] for k, v in self.data.items()}
 
     def iter_by_keys(self):
         for i in self.keys:
@@ -68,140 +90,151 @@ class ModelsSEData():
         """
         :return: modeltype ,file index , sim index , v
         """
-        for dk ,dv in self.data.items():
+        for dk, dv in self.data.items():
             for k, v in dv.items():
-                yield [dk]+list(k) + list(v)
+                yield [dk] + list(k) + list(v)
+
     def __iter_only_by_shard_keys(self):
         for i in self.keys:
             shard_keys = self.get_by_shard_keys(i)
-            for k,v in shard_keys.items():
-                print( [k]+list(i)+list(v))
-                yield [k]+list(i)+list(v)
+            for k, v in shard_keys.items():
+                yield [k] + list(i) + list(v)
+
     def get_as_dataframe(self, is_shared_keys=True):
-        model_list=[]
-        file_list=[]
-        sim_list=[]
-        complexity_list=[]
-        msx_list=[]
-        spike_list=[]
+        model_list = []
+        file_list = []
+        sim_list = []
+        complexity_list = []
+        msx_list = []
+        spike_list = []
         if is_shared_keys:
-            generator = self.__iter_only_by_shard_keys
+            generator = self.__iter_only_by_shard_keys()
         else:
             generator = self
         for i in tqdm(generator):
             model_list.append(i[0])
             file_list.append(i[1])
-            sim_list.append(i[2])
+            sim_list.append(str(i[2]))
             msx_list.append(i[3])
             complexity_list.append(i[4])
             spike_list.append(i[5])
-        return pd.DataFrame(data={'model':model_list,'file':file_list,'sim_ind':sim_list,'SE':msx_list,'Ci':complexity_list,'spike_number':spike_list})
+        df = pd.DataFrame(
+            data={'model': model_list, 'file': file_list, 'sim_ind': sim_list, 'SE': msx_list, 'Ci': complexity_list,
+                  'spike_number': spike_list})
+        model_names = df.model.unique()
+        df['key'] = df['file'] + '#$#' + df['sim_ind']
+        df = pd.get_dummies(df, columns=['model'])
+        return df, model_names.tolist()
+
+
+def get_df_with_condition_balanced(df, condition, negate_condition=False):
+    condition_files = df[condition]['key']
+    if negate_condition:
+        df = df[~df['key'].isin(condition_files)]
+    else:
+        df = df[df['key'].isin(condition_files)]
+    return df
+    # fi, c = np.unique(df['key'], return_counts=True)
 
 
 # %%
-tags = ['v_AMPA_ergodic_train_200d.pkl','v_davids_ergodic_train_200d.pkl','v_reduction_ergodic_train_200d.pkl']
+tags = ['v_AMPA_ergodic_train_200d.pkl', 'v_davids_ergodic_train_200d.pkl', 'v_reduction_ergodic_train_200d.pkl']
 d = ModelsSEData(tags)
-a=d.get_as_dataframe()
+##%%
+df, m_names = d.get_as_dataframe()
 # %% print nans ci
+df = df.sort_values(['model_' + i for i in m_names])
+print('number_of_nans', df['Ci'].isnull().sum())
+print('number of columns', df.shape[0])
+print('ratio', df['Ci'].isnull().sum() / df.shape[0])
+nan_ci_files = df[df['Ci'].isnull()]
+# nan_ci_files = nan_ci_files['file']+(nan_ci_files['sim_ind'])
+# # print(nan_ci_files['key'])
+print(nan_ci_files.shape[0])
+fi, c = np.unique(df['key'], return_counts=True)
+print('balanced removal of ', sum([c[fi == i] for i in nan_ci_files['key']])[0] if nan_ci_files.shape[0] > 0 else 0)
+# %% remove blanced nans
+df = get_df_with_condition_balanced(df, df['Ci'].isnull(), True)
 
-fig, ax = plt.subplots()
-data_mat = np.zeros((3, len(key_list)))
-for i, k in tqdm(enumerate(key_list)):
-    data_mat[0, i] = np.isnan(original_ci[k])
-    data_mat[2, i] = np.isnan(reduction_ci[k])
-    # out = np.argwhere(np.isinf(original_data[k]))
-    # data_mat[out,i]=-1
-    # out = np.argwhere(np.isinf(reduction_data[k]))
-    # data_mat[201+out,i]=-1
-ax.matshow(data_mat)
-ax.set_aspect(15000)
-plt.show()
 # %% print infs ci
+dfinf = df['Ci']
 
-fig, ax = plt.subplots()
-data_mat = np.zeros((3, len(key_list)))
-for i, k in tqdm(enumerate(key_list)):
-    data_mat[0, i] = np.isinf(original_ci[k])
-    data_mat[2, i] = np.isinf(reduction_ci[k])
-    # out = np.argwhere(np.isinf(original_data[k]))
-    # data_mat[out,i]=-1
-    # out = np.argwhere(np.isinf(reduction_data[k]))
-    # data_mat[201+out,i]=-1
-ax.matshow(data_mat)
-ax.set_aspect(15000)
+print('number_of_complexity_infs', np.isinf(dfinf).shape[0])
+print('number of columns', df.shape[0])
+print('ratio', np.isinf(dfinf).shape[0] / df.shape[0])
+fi, c = np.unique(df['key'], return_counts=True)
+print('aa')
+inf_ci_files = df[np.isinf(dfinf)]
+print('balanced removal of ', sum([c[fi == i] for i in inf_ci_files['key']])[0] if inf_ci_files.shape[0] > 0 else 0)
+# df_inf = df[~np.isinf(df['Ci']).all(1)]
+# print(df_inf)
+# %% remove blanced  inf ci [do not remove]
+# df = df[~df['key'].isin(nan_ci_files['key'])]
+# %%
+
+# %% plot inf distribution in se data
+df = df.sort_values(['key'])
+data_color = []
+hist_data = []
+hist_mat = np.zeros_like(np.array(list(df[df['model_' + m_names[0]] == 1]['SE'])))
+fig, ax = plt.subplots(3)
+for i in tqdm(m_names):
+    data = np.array(list(df[df['model_' + i] == 1]['SE']))
+    y, x = np.where(np.isinf(data))
+    p = ax[0].scatter(x, y, label=i, alpha=0.1, s=0.2)
+    color = p.get_facecolor()
+    color[:, -1] = 1.
+    data_color.append(color)
+    hist_data.append(x)
+    hist_mat[y, x] = len(m_names)
+ax[1].hist(hist_data, bins=20, label=m_names, color=data_color)
+counts, edges, bars = ax[2].hist(np.where(hist_mat >= 1)[1], label=m_names)
+datavalues = np.cumsum(bars.datavalues, dtype=int)
+
+ax[2].bar_label(bars, labels=['%d\n%d-%d' % (d, edges[i], edges[i + 1]) for i, d in enumerate(datavalues)])
+ax[1].legend()
 plt.show()
-# %% print nans
+# %% remove infs and correct CI balanced
+precentage = 0.1
+df = df.sort_values(['key'])
+fig, ax = plt.subplots(3)
+first_inf = []
+data_shape = np.array(list(df[df['model_' + m_names[0]] == 1]['SE'])).shape
+hist_inf = np.ones((data_shape[0],)) * data_shape[1]
+max_value = data_shape[1]
+for i in tqdm(m_names):
+    hist_mat = np.zeros_like(np.array(list(df[df['model_' + i] == 1]['SE'])))
+    data = np.array(list(df[df['model_' + i] == 1]['SE']))
+    y, x = np.where(np.isinf(data))
+    hist_mat[y, x] = 1
+    data = np.argmax(hist_mat, axis=1)
+    mask = hist_mat[data] > 0
+    x, y = np.where(hist_mat[data] > 0)
+    hist_inf[x] = np.min(np.vstack((data[x], hist_inf[x])), axis=0)
+ax[0].hist(hist_inf, bins=30)
+probability_data = np.histogram(hist_inf, bins=max_value)[0]
+probability_data = probability_data / np.sum(probability_data)
+probability_data = np.cumsum(probability_data)
+# probability_data=probability_data/np.sum(probability_data)
+ax[1].plot(np.arange(max_value), probability_data)
+temporal_res = np.argmin(np.abs(probability_data - precentage))
+ax[1].scatter(temporal_res, precentage)
+ax[2].plot(probability_data, np.arange(max_value))
+print('temporal_res value: %0.4f actual: %0.4f' % (probability_data[temporal_res], precentage))
+fig.show()
+# %% remove infs and update
+# df = df.assign(temp_SE=lambda x:(x['key']),axis=1)
 
-fig, ax = plt.subplots()
-data_mat = np.zeros((dim_size * 2 + 1, len(key_list)))
-for i, k in tqdm(enumerate(key_list)):
-    out = np.argwhere(np.isnan(original_data[k]))
-    data_mat[out, i] = 1
-    out = np.argwhere(np.isnan(reduction_data[k]))
-    data_mat[dim_size + 1 + out, i] = 1
-    # out = np.argwhere(np.isinf(original_data[k]))
-    # data_mat[out,i]=-1
-    # out = np.argwhere(np.isinf(reduction_data[k]))
-    # data_mat[201+out,i]=-1
-ax.matshow(data_mat)
-ax.set_aspect(100)
-plt.show()
+df['SE'] = np.array(list(df['SE']))[:,:temporal_res].tolist()
+x,y=np.where(np.isinf(np.vstack(df['SE'])))
+x = np.unique(x).tolist()
+# p=df.index
+# df = get_df_with_condition_balanced(df, df.index.isin(x), True)
 
-# %% print  infs
-
-inf_his = []
-fig, ax = plt.subplots()
-data_mat = np.zeros((dim_size * 2 + 1, len(key_list)))
-for i, k in tqdm(enumerate(key_list)):
-    out = np.argwhere(np.isinf(original_data[k]))
-    data_mat[out, i] = 1
-
-    out = np.argwhere(np.isinf(reduction_data[k]))
-    data_mat[dim_size + 1 + out, i] = 1
-    # out = np.argwhere(np.isinf(original_data[k]))
-    # data_mat[out,i]=-1
-    # out = np.argwhere(np.isinf(reduction_data[k]))
-    # data_mat[201+out,i]=-1
-ax.matshow(data_mat, aspect=100)
-plt.show()
-# %% create_mask for  nans
-mask = set()
-
-for k in tqdm(key_list):
-    if np.isnan(original_data[k]).any() or np.isnan(reduction_data[k]).any():
-        # del original_data[k]
-        # del reduction_data[k]
-        mask.add(k)
-        continue
-reduction_keys = set(reduction_data.keys())
-original_keys = set(original_data.keys())
-key_list = list((reduction_keys & original_keys) - mask)
-print(len(key_list))
-
-# %% remove infs
-
-for k in key_list:
-    if np.isinf(original_data[k]).any() or np.isinf(reduction_data[k]).any():
-        mask.add(k)
-        continue
-reduction_keys = set(reduction_data.keys())
-original_keys = set(original_data.keys())
-key_list = list((reduction_keys & original_keys) - mask)
-print(len(key_list))
-
+#update ci
+# out = np.sum(np.vstack(list(df['SE'])),axis=1)
 # %% set_timescale to lowest bound [optional]
-min_inf = -1
-for i, k in enumerate(key_list):
-    o_infs = np.argwhere(np.isinf(original_data[k]))
-    r_infs = np.argwhere(np.isinf(reduction_data[k]))
-    infs_t = np.vstack((o_infs, r_infs))
-    if infs_t.size > 0:
-        cur_min_inf = np.min(infs_t)
-        if min_inf == -1 or cur_min_inf < min_inf:
-            min_inf = cur_min_inf
-for i, k in enumerate(key_list):
-    original_data[k] = original_data[k][:min_inf]
-    reduction_data[k] = reduction_data[k][:min_inf]
+
 
 # %% validation about files that had been done
 
@@ -367,7 +400,7 @@ for k in key_list:
 diff = np.array(diff)
 diff.sort(axis=0)
 eps = 1e-6
-diff = (diff - diff.min() + eps) / (diff.max() - diff.min() + eps)
+diff = (diff - np.min(diff) + eps) / (np.max(diff) - np.min(diff) + eps)
 ax.matshow(diff, vmin=0, vmax=1, cmap='jet')
 # save_large_plot(fig,'error_between_the_same_input.png')
 plt.show()
