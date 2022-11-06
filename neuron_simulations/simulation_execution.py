@@ -22,7 +22,7 @@ parser.add_argument('-f',dest="files_that_do_not_exist", type=bool,
                     help='simulate only files that do not exist', default=False)
 parser.add_argument('-na', dest="NMDA_or_AMPA", type=str, help='choose whether NMDA or AMPA')
 parser.add_argument('-gmaxampa', dest="gmax_ampa", type=float, help='gmax ampa')
-parser.add_argument('-t', dest="tag", type=string, help='tag')
+parser.add_argument('-t', dest="tag", type=str, help='tag')
 args = parser.parse_args()
 assert args.NMDA_or_AMPA in {'N','A'},'nmda or ampa should be as N or A'
 NMDA_or_AMPA = args.NMDA_or_AMPA=='N'
