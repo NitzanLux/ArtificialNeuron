@@ -9,7 +9,7 @@ import argparse
 import json
 from utils.slurm_job import *
 from math import ceil
-from time import time
+import time
 parser = argparse.ArgumentParser(description='Add configuration file')
 
 parser.add_argument('-c',dest="number_of_cpus", type=int,
