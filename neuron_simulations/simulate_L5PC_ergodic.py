@@ -491,9 +491,9 @@ def simulate_L5PC_reduction(sim_file, dir_name, is_NMDA=False, gmax_AMPA=0.0004)
         #         continue
 
         # check if the simulation has too many output spikes
-        if numOutputSpikes > max_output_spikes_to_keep_per_sim:
-            print('simulation with too many spikes (%d). droping it\n\n' % (numOutputSpikes))
-            continue
+        # if numOutputSpikes > max_output_spikes_to_keep_per_sim:
+        #     print('simulation with too many spikes (%d). droping it\n\n' % (numOutputSpikes))
+        #     continue
 
         # store everything that needs to be stored
         currSimulationResultsDict['recordingTimeHighRes'] = recordingTimeHighRes.astype(np.float32)
@@ -531,8 +531,9 @@ def simulate_L5PC_reduction(sim_file, dir_name, is_NMDA=False, gmax_AMPA=0.0004)
         simInd = simInd + 1
 
         # make sure we don't run forever
-        if simInd > 7 * numSimulations:
-            break
+        # if simInd > 7 * numSimulations:
+        #     break
+    print('number of simulation in file:',simInd)
     numSimulations=simInd
     # assert numSimulations!= simInd, "sim index and number of simulated are inconsistent"
     if numSimulations!= simInd: logging.warning("number of simulations is incongruent numSimulations: %d while simInd: %d"%(numSimulations,simInd))
