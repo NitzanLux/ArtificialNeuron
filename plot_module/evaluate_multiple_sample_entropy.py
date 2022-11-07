@@ -143,6 +143,7 @@ tags = ['v_AMPA_ergodic_train_200d.pkl', 'v_davids_ergodic_train_200d.pkl', 'v_r
 d = ModelsSEData(tags)
 ##%%
 df, m_names = d.get_as_dataframe()
+name_order=['v_davids_ergodic_train_200d','v_reduction_ergodic_train_200d','v_AMPA_ergodic_train_200d']
 # %% print nans ci
 df = df.sort_values(['model_' + i for i in m_names])
 print('number_of_nans', df['Ci'].isnull().sum())
@@ -280,7 +281,7 @@ df = df.sort_values(['key'])
 datas = []
 for i in m_names:
     datas.append(df[df['model_' + i] == 1]['Ci'].tolist())
-name_order=['v_davids_ergodic_train_200d','v_reduction_ergodic_train_200d','v_AMPA_ergodic_train_200d']
+
 for i in range(3):
     first_index = i
     second_index = (i+1)%3
@@ -314,7 +315,7 @@ datas=[]
 for i in m_names:
     datas.append(np.vstack(df[df['model_' + i] == 1]['SE'].tolist()))
 # avarage_diff = []
-name_order=['v_davids_ergodic_train_200d','v_reduction_ergodic_train_200d','v_AMPA_ergodic_train_200d']
+
 for i in range(3):
     first_index = i
     second_index = (i+1)%3
@@ -337,9 +338,8 @@ df = df.sort_values(['key'])
 datas=[]
 for i in m_names:
     datas.append(np.vstack(df[df['model_' + i] == 1]['SE'].tolist()))
-name_order = ['v_davids_ergodic_train_200d', 'v_reduction_ergodic_train_200d', 'v_AMPA_ergodic_train_200d']
 for i in range(3):
-    first_index = m_names.find(name_order[i])
+    first_index = m_names.index(name_order[i])
     second_index = (i + 1) % 3
     mean=np.mean(datas[i],axis=0)
     std=np.std(datas[i],axis=0)
@@ -350,19 +350,23 @@ ax.legend(loc='upper left')
 # save_large_plot(fig,'different_between_the_same_input.png')
 plt.show()
 
-# %%plot avarage
+# %% plot files by order:
 fig, ax = plt.subplots()
+df = df.sort_values(['key'])
+datas=[]
 
-indexes = [1]
-indexes = np.array(list(key_list))[indexes]
-for k in tqdm(key_list):
-    if file_index_counter_reduction[k[0]] != file_index_counter_original[k[0]] and max(
-            file_index_counter_reduction[k[0]], file_index_counter_original[k[0]]) == 127:
-        continue
-    p = ax.plot(original_data[k])
-    color = p[0].get_color()
-    ax.plot(reduction_data[k], '--', color=color)
-save_large_plot(fig, 'different_between_the_same_input.png')
+for i in m_names:
+    datas.append(np.vstack(df[df['model_' + i] == 1]['SE'].tolist()))
+diff_vec=[]
+for j in tqdm(name_order):
+    a=df[(df['model_'+j]==1)]['Ci'].values
+    diff_vec.append(df[(df['model_'+j]==1)]['Ci'].values)
+diff_vec=np.array(diff_vec)
+# diff_vec[:,0]=1000
+diff_vec.sort(axis=1)
+for i,n in enumerate(name_order):
+    ax.plot(np.arange(diff_vec.shape[1]),diff_vec[i,:],label=n)
+fig.legend()
 fig.show()
 
 # %% p_value of variables
