@@ -68,7 +68,7 @@ def get_dir_name_and_filename(file_name, dir_name,is_NMDA,gmax_AMPA):
     resultsSavedIn_rootFolder = os.path.join(NEURON_REDUCE_DATA_DIR, dir_name)
     file_name, file_extension = os.path.splitext(file_name)
     _, file_name = os.path.split(file_name)
-    file_name = file_name + '_%s' % ('NMDA' if is_NMDA else 'AMPA'+'_'+str(gmax_AMPA).replace('.','*')) + file_extension
+    file_name = file_name + '_%s' % ('NMDA' if is_NMDA else 'AMPA'+'_'+str(gmax_AMPA).replace('.','-')) + file_extension
     if not os.path.exists(resultsSavedIn_rootFolder):
         os.makedirs(resultsSavedIn_rootFolder)
     return resultsSavedIn_rootFolder, file_name

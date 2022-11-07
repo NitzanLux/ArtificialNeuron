@@ -11,6 +11,7 @@ import seaborn as sns
 import pandas as pd
 from scipy import stats
 from sklearn.linear_model import LinearRegression
+
 MSX_INDEX = 0
 COMPLEXITY_INDEX = 1
 FILE_INDEX = 2
@@ -21,7 +22,7 @@ SPIKE_NUMBER = 4
 # MSx,Ci,f,index,spike_number
 
 
-def save_large_plot(fig, name):
+def save_large_plot(fig, name, tags):
     mng = plt.get_current_fig_manager()
     mng.full_screen_toggle()
     if '.' in name:
@@ -143,8 +144,12 @@ tags = ['v_AMPA_ergodic_train_200d.pkl', 'v_davids_ergodic_train_200d.pkl', 'v_r
 d = ModelsSEData(tags)
 ##%%
 df, m_names = d.get_as_dataframe()
-name_order=['v_davids_ergodic_train_200d','v_reduction_ergodic_train_200d','v_AMPA_ergodic_train_200d']
-# %% print nans ci
+name_order = ['v_davids_ergodic_train_200d', 'v_reduction_ergodic_train_200d', 'v_AMPA_ergodic_train_200d']
+names_for_plots_dict = {'v_davids_ergodic_train_200d': 'L5PC NMDA',
+                        'v_reduction_ergodic_train_200d': 'L5PC NMDA reduction',
+                        'v_AMPA_ergodic_train_200d': 'L5PC AMPA'}
+names_for_plots = [names_for_plots_dict[i] for i in name_order]
+## %% print nans ci
 df = df.sort_values(['model_' + i for i in m_names])
 print('number_of_nans', df['Ci'].isnull().sum())
 print('number of columns', df.shape[0])
@@ -155,7 +160,7 @@ nan_ci_files = df[df['Ci'].isnull()]
 print(nan_ci_files.shape[0])
 fi, c = np.unique(df['key'], return_counts=True)
 print('balanced removal of ', sum([c[fi == i] for i in nan_ci_files['key']])[0] if nan_ci_files.shape[0] > 0 else 0)
-# %% remove blanced nans
+## %% remove blanced nans
 df = get_df_with_condition_balanced(df, df['Ci'].isnull(), True)
 
 # %% print infs ci
@@ -169,20 +174,15 @@ print('aa')
 inf_ci_files = df[np.isinf(dfinf)]
 print('balanced removal of ', sum([c[fi == i] for i in inf_ci_files['key']])[0] if inf_ci_files.shape[0] > 0 else 0)
 # df_inf = df[~np.isinf(df['Ci']).all(1)]
-# print(df_inf)
-# %% remove blanced  inf ci [do not remove]
-# df = df[~df['key'].isin(nan_ci_files['key'])]
-# %%
-
 # %% plot inf distribution in se data
 df.reset_index(drop=True, inplace=True)
 
 df = df.sort_values(['key'])
 data_color = []
 hist_data = []
-hist_mat = np.zeros_like(np.array(list(df[df['model_' + m_names[0]] == 1]['SE'])))
+hist_mat = np.zeros_like(np.array(list(df[df['model_' + name_order[0]] == 1]['SE'])))
 fig, ax = plt.subplots(3)
-for i in tqdm(m_names):
+for i in tqdm(name_order):
     data = np.array(list(df[df['model_' + i] == 1]['SE']))
     y, x = np.where(np.isinf(data))
     p = ax[0].scatter(x, y, label=i, alpha=0.1, s=0.2)
@@ -190,15 +190,15 @@ for i in tqdm(m_names):
     color[:, -1] = 1.
     data_color.append(color)
     hist_data.append(x)
-    hist_mat[y, x] = len(m_names)
-ax[1].hist(hist_data, bins=20, label=m_names, color=data_color)
-counts, edges, bars = ax[2].hist(np.where(hist_mat >= 1)[1], label=m_names)
+    hist_mat[y, x] = len(name_order)
+ax[1].hist(hist_data, bins=20, label=names_for_plots, color=data_color)
+counts, edges, bars = ax[2].hist(np.where(hist_mat >= 1)[1], label=names_for_plots)
 datavalues = np.cumsum(bars.datavalues, dtype=int)
 
 ax[2].bar_label(bars, labels=['%d\n%d-%d' % (d, edges[i], edges[i + 1]) for i, d in enumerate(datavalues)])
 ax[1].legend()
 plt.show()
-# %% remove infs and correct CI balanced
+## %% remove infs and correct CI balanced
 precentage = 0.1
 
 df = df.sort_values(['key'])
@@ -227,7 +227,7 @@ ax[1].scatter(temporal_res, precentage)
 ax[2].plot(probability_data, np.arange(max_value))
 print('temporal_res value: %0.4f actual: %0.4f' % (probability_data[temporal_res], precentage))
 fig.show()
-# %% remove infs and update
+## %% remove infs and update
 
 df['SE'] = np.array(list(df['SE']))[:, :temporal_res].tolist()
 df.reset_index(drop=True, inplace=True)
@@ -242,404 +242,198 @@ df['Ci'] = sum_ci
 # %% box plot complexity
 
 fig, ax = plt.subplots()
-datas = []
-for i in m_names:
-    datas.append(df[df['model_' + i] == 1]['Ci'].tolist())
-p01 = ttest_ind(datas[0], datas[1], equal_var=False).pvalue
-p12 = ttest_ind(datas[2], datas[1], equal_var=False).pvalue
-p02 = ttest_ind(datas[0], datas[2], equal_var=False).pvalue
+box_plot_data = []
+for i, m in enumerate(name_order):
+    box_plot_data.append(df[df['model_' + name_order[i]] == 1]['Ci'].tolist())
+p01 = ttest_ind(box_plot_data[0], box_plot_data[1], equal_var=False).pvalue
+p12 = ttest_ind(box_plot_data[2], box_plot_data[1], equal_var=False).pvalue
+p02 = ttest_ind(box_plot_data[0], box_plot_data[2], equal_var=False).pvalue
 print(p01, p12, p02)
-ax.boxplot(datas)
-ax.set_xlabel(m_names)
+ax.boxplot(box_plot_data)
+ax.set_ylabel('sample entropy complexity index')
+ax.set_xticks(np.arange(len(name_order)) + 1, names_for_plots)
+ax.set_title(f'Sample Entropy Complexity Index Between Models (n = {len(box_plot_data[0])*len(box_plot_data):,})')
+save_large_plot(fig, "boxplot.png", name_order)
 fig.show()
 # %% spike_count
 plt.close()
 fig, ax = plt.subplots()
 datas = []
-for i in m_names:
+for i in name_order:
     datas.append(df[df['model_' + i] == 1]['spike_number'].tolist())
-ax.hist(datas, bins=20, label=m_names, alpha=0.4)
+ax.hist(datas, bins=20, label=names_for_plots, alpha=0.4)
 fig.legend()
 fig.show()
-#%%
-
 # %%
+
+# %% scatter plot pairwise complaxity plots[3].
 df = df.sort_values(['key'])
 datas = []
-for i in m_names:
+for i in name_order:
     datas.append(df[df['model_' + i] == 1]['Ci'].tolist())
 for i in range(3):
+    first_index = i
+    second_index = (i + 1) % 3
+    first_index, second_index = min([first_index, second_index]), max([first_index, second_index])
     fig, ax = plt.subplots()
-    ax.scatter(datas[i], datas[(i + 1) % 3], alpha=0.2, s=0.1)
-    ax.set_xlabel(m_names[i])
-    ax.set_ylabel(m_names[(i + 1) % 3])
-    lims = (np.min(np.vstack((datas[i], datas[(i + 1) % 3]))), np.max(np.vstack((datas[i], datas[(i + 1) % 3]))))
+    ax.scatter(datas[first_index], datas[second_index], alpha=0.2, s=0.1)
+    ax.set_xlabel(names_for_plots[first_index])
+    ax.set_ylabel(names_for_plots[second_index])
+    lims = (np.min(np.vstack((datas[first_index], datas[second_index]))),
+            np.max(np.vstack((datas[first_index], datas[second_index]))))
     ax.plot(lims, lims, color='red')
+    ax.set_title(
+        f"{names_for_plots[first_index]} and {names_for_plots[second_index]} simulation \nSE complexity index (n = {len(datas[second_index])*2:,})")
+    save_large_plot(fig, "pairwise_scatter.png", [name_order[first_index], name_order[second_index]])
+
     fig.show()
-# %%
+# %% 2d histogram pairwise plots[3].
 df = df.sort_values(['key'])
 datas = []
-for i in m_names:
+for i in name_order:
     datas.append(df[df['model_' + i] == 1]['Ci'].tolist())
 
 for i in range(3):
     first_index = i
-    second_index = (i+1)%3
-    first_index,second_index=min(first_index,second_index,key=lambda x:name_order.index(m_names[x])),max(first_index,second_index,key=lambda x:name_order.index(m_names[x]))
+    second_index = (i + 1) % 3
+    first_index, second_index = min([first_index, second_index]), max([first_index, second_index])
     fig, ax = plt.subplots()
-    lims = (np.min(np.vstack((datas[first_index], datas[second_index]))), np.max(np.vstack((datas[first_index], datas[second_index]))))
+    lims = (np.min(np.vstack((datas[first_index], datas[second_index]))),
+            np.max(np.vstack((datas[first_index], datas[second_index]))))
 
     H, xedges, yedges = np.histogram2d(datas[first_index], datas[second_index], range=np.array([lims, lims]),
-                                       bins=int(lims[1] - lims[0])+1)
+                                       bins=int(lims[1] - lims[0]))
+    # replace zeroes with nan
+    H[H == 0] = np.nan
     im = ax.imshow(H.T, interpolation='nearest', origin='lower', extent=[xedges[0], xedges[-1], yedges[0], yedges[-1]]
-                   # )
-                   , norm=colors.LogNorm())
+                   )
+    # , norm=colors.LogNorm())
     ax.plot(lims, lims, color='black')
 
-
-    reg = LinearRegression().fit(np.array(datas[first_index])[:,np.newaxis],datas[second_index])
-    reg_intercep=reg.intercept_
-    reg_coef=reg.coef_
-    x=lims
-    y=[reg_intercep+lims[0]*reg_coef,reg_intercep+lims[1]*reg_coef]
-    ax.plot(x,y,color='magenta')
+    reg = LinearRegression().fit(np.array(datas[first_index])[:, np.newaxis], datas[second_index])
+    reg_intercep = reg.intercept_
+    reg_coef = reg.coef_
+    x = lims
+    y = [reg_intercep + lims[0] * reg_coef, reg_intercep + lims[1] * reg_coef]
+    ax.plot(x, y, color='magenta')
     fig.colorbar(im)
-    ax.set_xlabel(m_names[first_index])
-    ax.set_ylabel(m_names[second_index])
+    ax.set_xlabel(names_for_plots[first_index])
+    ax.set_ylabel(names_for_plots[second_index])
+    ax.set_title(
+        f"{names_for_plots[first_index]} and {names_for_plots[second_index]} simulation \nSE Complexity Index (n = {len(datas[second_index])*2:,}) $\\rho$ = {np.round(np.corrcoef(np.array(datas[first_index]), np.array(datas[second_index]),rowvar=False),3)[0,1]}")
+    save_large_plot(fig, "pairwise_2dhist.png", [name_order[first_index], name_order[second_index]])
+
     fig.show()
 
 # %% plot difference avarage per file
 df = df.sort_values(['key'])
 fig, ax = plt.subplots()
-datas=[]
-for i in m_names:
+datas = []
+
+
+for i in name_order:
     datas.append(np.vstack(df[df['model_' + i] == 1]['SE'].tolist()))
 # avarage_diff = []
 
 for i in range(3):
     first_index = i
-    second_index = (i+1)%3
-    first_index,second_index=min(first_index,second_index,key=lambda x:name_order.index(m_names[x])),max(first_index,second_index,key=lambda x:name_order.index(m_names[x]))
-    diff=datas[first_index]-datas[second_index]
-    mean=np.mean(diff,axis=0)
-    std=np.std(diff,axis=0)
-    ax.plot(np.arange(diff.shape[1]),mean,label=m_names[first_index]+" - "+m_names[second_index],)
-    ax.fill_between(np.arange(diff.shape[1]), mean-std, mean+std,alpha=0.3)
+    second_index = (i + 2) % 3
+    first_index, second_index = min([first_index, second_index]), max([first_index, second_index])
+    assert first_index != second_index
+    diff = datas[first_index] - datas[second_index]
+    mean = np.mean(diff, axis=0)
+    std = np.std(diff, axis=0)
+    ax.plot(np.arange(diff.shape[1]), mean,
+            label=names_for_plots[first_index] + " - " + names_for_plots[second_index], )
+    ax.fill_between(np.arange(diff.shape[1]), mean - std, mean + std, alpha=0.3)
+ax.set_title(f'Differences Across Different SE Scales (n = {len(datas[0])*len(datas):,})')
+ax.set_xlabel('Time Scales')
+ax.set_ylabel('Differences')
 plt.legend()
 plt.tight_layout()
 
-# save_large_plot(fig,'error_between_the_same_input.png')
+save_large_plot(fig, 'differences_between_the_same_inputs.png', name_order)
 plt.show()
 
 # %% print temporal mean and error
+threshold = 0.2
+direction=-1
+box_plot_data =np.array(box_plot_data)
+threshold_box_plot = np.sort(box_plot_data,axis=1)
+if direction>1:
+    threshold_ration=threshold
+else:
+    threshold_ration=1-threshold
+threshold_value = np.min(threshold_box_plot[:,int(threshold_box_plot.shape[1]*(threshold_ration))])
 
 fig, ax = plt.subplots()
 df = df.sort_values(['key'])
-datas=[]
-for i in m_names:
+datas = []
+ci_data=[]
+for i in name_order:
     datas.append(np.vstack(df[df['model_' + i] == 1]['SE'].tolist()))
+    ci_data.append(np.vstack(df[df['model_' + i] == 1]['Ci'].tolist()))
+ci_data=np.hstack(ci_data)
+if direction>0:
+    indexes= np.all(ci_data>=threshold_value,axis=1)
+else:
+    indexes= np.all(ci_data<=threshold_value,axis=1)
 for i in range(3):
-    first_index = m_names.index(name_order[i])
-    second_index = (i + 1) % 3
-    mean=np.mean(datas[i],axis=0)
-    std=np.std(datas[i],axis=0)
-    ax.plot(np.arange(datas[i].shape[1]),mean,label=m_names[i])
-    ax.fill_between(np.arange(datas[i].shape[1]), mean-std, mean+std,alpha=0.3)
+    first_index = i
+    second_index = (i + 2) % 3
+    first_index, second_index = min([first_index, second_index]), max([first_index, second_index])
+    mean = np.mean(datas[i][indexes,:], axis=0)
+    std = np.std(datas[i][indexes,:], axis=0)
+    ax.plot(np.arange(datas[i].shape[1]), mean, label=names_for_plots[i])
+    ax.fill_between(np.arange(datas[i].shape[1]), mean - std, mean + std, alpha=0.3)
 
 ax.legend(loc='upper left')
-# save_large_plot(fig,'different_between_the_same_input.png')
+ax.set_title(f'Average SE Across Different Time Scales (n = {len(datas[0])*len(datas):,}) \nCi value {"greater" if direction>0 else "lower"} than {threshold_value:0.4}')
+ax.set_xlabel('Time Scales')
+ax.set_ylabel('SE value')
+save_large_plot(fig, f'Average_SE_across_different_Time_Scales_th_{direction}{str(threshold).replace(".","!")}.png', name_order)
 plt.show()
 
 # %% plot files by order:
 
 
 df = df.sort_values(['key'])
-datas=[]
 
-for i in m_names:
-    datas.append(np.vstack(df[df['model_' + i] == 1]['SE'].tolist()))
-diff_vec=[]
+diff_vec = []
 for j in tqdm(name_order):
-    a=df[(df['model_'+j]==1)]['Ci'].values
-    diff_vec.append(df[(df['model_'+j]==1)]['Ci'].values)
-diff_vec=np.array(diff_vec)
-temp_diff_vec=diff_vec.copy()
-a = np.argsort(np.linalg.norm(diff_vec,axis=0))
-fig, ax0 = plt.subplots()
-ax0.matshow(diff_vec[:,a])
-ax0.set_aspect(3000)
-ax0.set_yticks(range(len(name_order)),name_order)
+    a = df[(df['model_' + j] == 1)]['Ci'].values
+    diff_vec.append(df[(df['model_' + j] == 1)]['Ci'].values)
+diff_vec = np.array(diff_vec)
+temp_diff_vec = diff_vec.copy()
+a = np.argsort(np.linalg.norm(diff_vec, axis=0))
+fig, ax = plt.subplots()
+ax.matshow(diff_vec[:, a])
+ax.set_aspect(3000)
+ax.set_xticks([])
+ax.set_xlabel(f'Simulation index (n = {diff_vec.shape[1]:,})')
+ax.set_yticks(range(len(name_order)), names_for_plots)
+ax.set_title('Norm Sorted SE Complexity Index')
 plt.tight_layout()
+save_large_plot(fig, 'norm_wise_orderd_matrix.png', name_order)
 fig.show()
+# %% plot files by order 3d view
+fig = plt.figure()
+ax = fig.add_subplot(projection='3d')
 
-fig=plt.figure()
-ax1 = fig.add_subplot(projection='3d')
-
-for i ,m in enumerate(name_order):
-    ax1.scatter(np.arange(diff_vec.shape[1]),diff_vec[i,a],np.ones((diff_vec.shape[1]))*i,label=m,alpha=0.6,s=0.5)
-ax1.set_xlabel('simulation index')
-ax1.set_ylabel('complexity index')
-# ax1.set_zticks([])
-ax1.set_zticks(range(len(name_order)),name_order)
+for i, m in enumerate(name_order):
+    ax.scatter(np.arange(diff_vec.shape[1]), diff_vec[i, a], np.ones((diff_vec.shape[1])) * i, label=names_for_plots_dict[m], alpha=0.6,
+                s=0.5)
+ax.set_xlabel(f'Simulation index (n = {diff_vec.shape[1]:,})')
+ax.set_ylabel('SE Complexity Index')
+ax.set_xticks([])
+ax.w_zaxis.line.set_lw(0.)
+ax.set_zticks(range(len(name_order)), names_for_plots)
+ax.xaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
+ax.yaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
+ax.zaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
+ax.grid(False)
+ax.spines.right.set_visible(False)
+ax.set_title('Norm Sorted SE Complexity Index')
 # fig.legend(loc='lower left')
-plt.tight_layout()
-fig.show()
-
-
-# # %% p_value of variables
-# fig, axs = plt.subplots(2)
-#
-# o_d, r_d = [], []
-# for k in tqdm(key_list):
-#     if file_index_counter_reduction[k[0]] != file_index_counter_original[k[0]] and max(
-#             file_index_counter_reduction[k[0]], file_index_counter_original[k[0]]) == 127:
-#         continue
-#     o_d.append(original_data[k])
-#     r_d.append(reduction_data[k])
-# o_d = np.array(o_d)
-# r_d = np.array(r_d)
-# p_value = ttest_ind(o_d, r_d, axis=0, equal_var=False).pvalue
-# o_dm = np.mean(o_d, axis=0)
-# r_dm = np.mean(r_d, axis=0)
-# # o_dm=[0]
-# # r_dm=[0]
-# # dm= np.mean(np.vstack((o_dm,r_dm)),axis=0)
-# # dm=0
-# axs[0].plot(o_dm - dm, label='original')
-# axs[0].plot(r_dm - dm, label='reduction')
-# axs[0].legend(loc='lower right')
-# max_val = np.max(np.hstack((o_dm - dm, r_dm - dm)))
-# p_value[p_value > 0.05] = np.NAN
-# p_value[p_value == 0] = 1e-300
-# im = axs[1].imshow([p_value], interpolation='nearest', aspect='auto', norm=colors.LogNorm(), cmap='jet')
-# axs[1].set_yticklabels([])
-# axs[1].xaxis.set_ticks_position('bottom')
-# # axs[1].colorbar()
-# # for i,p in enumerate(p_value):
-# #     # pass
-# #     if p<5e-20:
-# #         n = np.log10(1/p)
-# #         # p=''.join(['*']*n)
-# #         ax.annotate(f"*",(i,max_val))
-# # print(p_value)
-# plt.colorbar(im, location='bottom')
-# fig.show()
-# save_large_plot(fig, 'entropy_temporal_diffrenceses.png')
-# # %%
-# fig, ax = plt.subplots()
-#
-# indexes = [1]
-# indexes = np.array(list(key_list))[indexes]
-# for k in tqdm(key_list):
-#     if file_index_counter_reduction[k[0]] != file_index_counter_original[k[0]] and max(
-#             file_index_counter_reduction[k[0]], file_index_counter_original[k[0]]) == 127:
-#         continue
-#     p = ax.scatter(np.arange(original_data[k].shape[0]), original_data[k], color='red')
-#     # color = p[0].get_color()
-#     ax.scatter(np.arange(reduction_data[k].shape[0]), reduction_data[k], color='blue')
-# # ax.plot()
-# save_large_plot(fig, 'different_between_the_same_input.png')
-# plt.show()
-#
-# # %%
-#
-# fig, ax = plt.subplots()
-#
-# avarage_original = []
-# avarage_reduction = []
-# for k in key_list:
-#     avarage_original.append(original_data[k])
-#     avarage_reduction.append(reduction_data[k])
-# avarage_original = np.array(avarage_original)
-# avarage_reduction = np.array(avarage_reduction)
-# mean_total = np.mean(np.vstack([avarage_original, avarage_reduction]), axis=0)
-# std_total = np.std(np.vstack([avarage_original, avarage_reduction]), axis=0)
-# ax.errorbar(np.arange(avarage_original.shape[1]), (np.mean(avarage_original, axis=0)) / std_total,
-#             yerr=(np.std(avarage_original, axis=0)) / std_total, label='original')
-# ax.errorbar(np.arange(avarage_original.shape[1]), (np.mean(avarage_reduction, axis=0)) / std_total,
-#             yerr=(np.std(avarage_reduction, axis=0)) / std_total, label='reduction')
-# ax.legend()
-# save_large_plot(fig, 'avarage_trend_with_error_bars.png')
-# plt.show()
-#
-# # %%
-#
-# fig, ax = plt.subplots()
-# dataset_orig = []
-# dataset_reduc = []
-# avarage_original = []
-# avarage_reduction = []
-# for k in key_list:
-#     dataset_orig.append(original_data[k])
-#     dataset_reduc.append(reduction_data[k])
-#     avarage_original.append(original_data[k])
-#     avarage_reduction.append(reduction_data[k])
-# avarage_original = np.array(avarage_original)
-# avarage_reduction = np.array(avarage_reduction)
-# ax.errorbar(np.arange(avarage_original.shape[1]), np.mean(avarage_original, axis=0),
-#             yerr=np.std(avarage_original, axis=0), alpha=0.5, label='original')
-# ax.errorbar(np.arange(avarage_reduction.shape[1]), np.mean(avarage_reduction, axis=0),
-#             yerr=np.std(avarage_reduction, axis=0), alpha=0.5, label='reduction')
-# ax.legend()
-# save_large_plot(fig, 'avarage_trend_with_error.png')
-# plt.show()
-# # from scipy.stats import ttest_ind
-# print(ttest_ind(np.array(dataset_reduc), np.array(dataset_orig), axis=1))
-#
-# # %% plot diffrences order
-#
-# fig, ax = plt.subplots()
-#
-# diff = []
-# for k in key_list:
-#     diff.append(original_data[k] - reduction_data[k])
-# diff = np.array(diff)
-# diff.sort(axis=0)
-# eps = 1e-6
-# diff = (diff - np.min(diff) + eps) / (np.max(diff) - np.min(diff) + eps)
-# ax.matshow(diff, vmin=0, vmax=1, cmap='jet')
-# # save_large_plot(fig,'error_between_the_same_input.png')
-# plt.show()
-#
-# # %%
-#
-# r_ci_arr = []
-# o_ci_arr = []
-# import matplotlib.patches as mpatches
-#
-# fig, ax = plt.subplots()
-# remove_matches = True
-# eps = np.std(np.array([reduction_ci[k] - original_ci[k] for k in key_list])) * 2
-# for i, k in enumerate(key_list):
-#     # plt.scatter(i,)
-#     if file_index_counter_reduction[k[0]] != file_index_counter_original[k[0]]:
-#         continue
-#     print(np.abs(reduction_ci[k] - original_ci[k]))
-#     # if np.abs(reduction_ci[k]-original_ci[k])<eps:
-#     #     continue
-#     # if np.isinf(reduction_ci[k]) or np.isnan(reduction_ci[k]) or np.isinf(original_ci[k]) or np.isnan(original_ci[k]):
-#     #     continue
-#     r_ci_arr.append(sum(reduction_data[k]))
-#     o_ci_arr.append(sum(original_data[k]))
-# parts = ax.violinplot(r_ci_arr, showmeans=True, showextrema=True, showmedians=True)
-# for pc in ('cbars', 'cmins', 'cmaxes', 'cmeans', 'cmedians'):
-#     pc = parts[pc]
-#     print(dir(pc))
-#     # pc.set_facecolor('blue')
-#     # pc.set_edgecolor('black')
-#     pc.set_color('blue')
-#
-#     pc.set_alpha(0.5)
-# # pc1=pc['bodies'][0].get_facecolor().flatten()
-# parts = ax.violinplot(o_ci_arr, showmeans=True, showextrema=True, showmedians=True)
-# for pc in ('cbars', 'cmins', 'cmaxes', 'cmeans', 'cmedians'):
-#     pc = parts[pc]
-#     print(dir(pc))
-#     # pc.set_facecolor('red')
-#     pc.set_color('red')
-#     # pc.set_edgecolor('red')
-#     pc.set_alpha(0.5)
-# # pc2=pc['bodies'][0].get_facecolor().flatten()
-#
-# ax.legend([mpatches.Patch(color='blue'), mpatches.Patch(color='red')], ['reduction', 'original'])
-# # save_large_plot(fig,'violinplot_overlap.png')
-# # plt.scatter(np.zeros([len(r_ci_arr)]),r_ci_arr,color='red')
-# # plt.scatter(np.ones([len(r_ci_arr)]),o_ci_arr,color='blue')
-# plt.show()
-#
-# # %% scatter plot complexity evaluation
-#
-# fig, ax = plt.subplots()
-# original = []
-# reduction = []
-# for k in tqdm(key_list):
-#     if file_index_counter_reduction[k[0]] == file_index_counter_original[k[0]] or max(
-#             file_index_counter_reduction[k[0]], file_index_counter_original[k[0]]) < 127:
-#         original.append(sum(original_data[k]))
-#         reduction.append(sum(reduction_data[k]))
-#     # avarage_original.append(original_data[k])
-#     # avarage_reduction.append(reduction_data[k])
-# ax.scatter(original, reduction, s=0.1, alpha=0.3)
-# lims = [np.min(np.vstack((original, reduction))), np.max(np.vstack((original, reduction)))]
-# ax.set_ylim(lims)
-# ax.set_xlim(lims)
-# ax.set_ylabel('reduction model')
-# ax.set_xlabel('L5PC model')
-# ax.set_title('L5PC and its reduction integral across time')
-# ax.plot(lims, lims, color='red')
-# save_large_plot(fig, "cross_scatter_evaluation.png")
-# fig.show()
-#
-# print(ttest_ind(original, reduction, equal_var=False))
-#
-# # %%
-#
-# fig, ax = plt.subplots()
-# original = []
-# reduction = []
-# for k in tqdm(key_list):
-#     if file_index_counter_reduction[k[0]] == file_index_counter_original[k[0]] or max(
-#             file_index_counter_reduction[k[0]], file_index_counter_original[k[0]]) < 127:
-#         original.append(sum(original_data[k]))
-#         reduction.append(sum(reduction_data[k]))
-#     # avarage_original.append(original_data[k])
-#     # avarage_reduction.append(reduction_data[k])
-# data = np.array([original, reduction])
-# lims = [np.min(data), np.max(data)]
-# # data[0,:]=lims[0]
-# H, xedges, yedges = np.histogram2d(data[0, :], data[1, :], range=np.array([lims, lims]),
-#                                    bins=int(int(lims[1] - lims[0]) // 1.5))
-# im = ax.imshow(H.T, interpolation='nearest', origin='lower', extent=[xedges[0], xedges[-1], yedges[0], yedges[-1]])
-#
-# ax.plot(lims, lims, color='red')
-# ax.set_ylabel('reduction model')
-# ax.set_xlabel('L5PC model')
-# ax.set_title('L5PC and its reduction Sample Entropy complexity histogram')
-# plt.colorbar(im)
-# # plt.savefig('evaluation_plots\\SEn_2dhist.png')
-# save_large_plot(fig, 'sample_entropy_2hist.png')
-# fig.show()
-#
-# print(ttest_ind(data[0, :], data[1, :], equal_var=False))
-# # %%
-#
-# fig, ax = plt.subplots()
-# original_hist = [original_ci[k] for k in key_list]
-# reduction_hist = [reduction_ci[k] for k in key_list]
-# ax.hist(original_hist, 100, alpha=0.6, color='red')
-# ax.hist(reduction_hist, 100, alpha=0.6, color='blue')
-# plt.show()
-#
-# # %% two different distributions (reduction and original) comparison between spike rate to entropy index.
-# spike_list_r = []
-# spike_list_o = []
-# se_list_o = []
-# se_list_r = []
-# counter = 0
-# for k in tqdm(key_list):
-#     # if np.isinf(original_ci[k]) or np.isnan(original_ci[k]) or np.isinf(reduction_ci[k]) or np.isnan(reduction_ci[k]):
-#     spike_list_r.append(original_sc[k])
-#     spike_list_o.append(reduction_sc[k])
-#     se_list_o.append(sum(original_data[k]))
-#     se_list_r.append(sum(reduction_data[k]))
-# fig, ax = plt.subplots()
-# mat = np.corrcoef(
-#     np.array([se_list_o + se_list_r, spike_list_o + spike_list_r, [0] * len(se_list_o) + [1] * len(se_list_r)]))
-# mat[np.arange(mat.shape[0]), np.arange(mat.shape[0])] = np.NAN
-# minmax_val = np.max([np.abs(np.nanmin(mat)), np.nanmax(mat)])
-# divnorm = colors.TwoSlopeNorm(vmin=-float(minmax_val), vcenter=0., vmax=float(minmax_val))
-#
-# im = ax.matshow(mat, cmap='bwr', norm=divnorm)
-# for i in range(mat.shape[0]):
-#     for j in range(mat.shape[0]):
-#         c = mat[j, i]
-#         if i == j: c = 1
-#
-#         ax.text(i, j, '%0.4f' % c, va='center', ha='center')
-# ax.set_xticks(range(3), ['Sample entropy(v)', 'Spike count', 'Model'])
-# ax.set_yticks(range(3), ['Sample entropy(v)', 'Spike count', 'Model'], rotation=45)
-# ax.set_title('Cross Correlation matrix')
-# plt.colorbar(im)
 # plt.tight_layout()
-# save_large_plot(fig, 'cross_correlation.png')
-# plt.show()
+fig.show()
