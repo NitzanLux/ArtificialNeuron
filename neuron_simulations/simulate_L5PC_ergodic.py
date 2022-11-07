@@ -533,6 +533,7 @@ def simulate_L5PC_reduction(sim_file, dir_name, is_NMDA=False, gmax_AMPA=0.0004)
         # make sure we don't run forever
         # if simInd > 7 * numSimulations:
         #     break
+        break #todo debugging
     print('number of simulation in file:',simInd)
     numSimulations=simInd
     # assert numSimulations!= simInd, "sim index and number of simulated are inconsistent"
