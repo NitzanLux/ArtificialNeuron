@@ -10,7 +10,7 @@ from matplotlib import colors
 import seaborn as sns
 import pandas as pd
 from scipy import stats
-
+from sklearn.linear_model import LinearRegression
 MSX_INDEX = 0
 COMPLEXITY_INDEX = 1
 FILE_INDEX = 2
@@ -236,7 +236,6 @@ x = np.unique(x).tolist()
 df = get_df_with_condition_balanced(df, df.index.isin(x), True)
 
 # update ci
-ooo = np.array(list(df['SE']))
 sum_ci = np.sum(np.array(list(df['SE'])), axis=1)
 df['Ci'] = sum_ci
 # %% box plot complexity
@@ -286,28 +285,31 @@ for i in range(3):
     lims = (np.min(np.vstack((datas[i], datas[(i + 1) % 3]))), np.max(np.vstack((datas[i], datas[(i + 1) % 3]))))
 
     H, xedges, yedges = np.histogram2d(datas[i], datas[(i + 1) % 3], range=np.array([lims, lims]),
-                                       bins=int(lims[1] - lims[0]))
-    im = ax.imshow(H.T, interpolation='nearest', origin='lower', extent=[xedges[0], xedges[-1], yedges[0], yedges[-1]]
+                                       bins=int(lims[1] - lims[0])+1)
+    im = ax.imshow(H.T/sum(H.T), interpolation='nearest', origin='lower', extent=[xedges[0], xedges[-1], yedges[0], yedges[-1]]
                    # )
                    , norm=colors.LogNorm())
     ax.plot(lims, lims, color='red')
+
     fig.colorbar(im)
     ax.set_xlabel(m_names[i])
     ax.set_ylabel(m_names[(i + 1) % 3])
     fig.show()
 
 # %% plot difference avarage per file
-
+df = df.sort_values(['key'])
 fig, ax = plt.subplots()
-
-avarage_diff = []
-for k in tqdm(key_list):
-    if file_index_counter_reduction[k[0]] == file_index_counter_original[k[0]]:
-        avarage_diff.append(original_data[k] - reduction_data[k])
-avarage_diff = np.array(avarage_diff)
-
-ax.errorbar(np.arange(avarage_diff.shape[1]), np.nanmean(avarage_diff[~np.isinf(avarage_diff)], axis=0),
-            yerr=np.nanstd(avarage_diff[~np.isinf(avarage_diff)], axis=0))
+datas=[]
+for i in m_names:
+    datas.append(np.vstack(df[df['model_' + i] == 1]['SE'].tolist()))
+# avarage_diff = []
+for i in range(3):
+    diff=datas[i]-datas[(i+1)%3]
+    mean=np.mean(diff,axis=0)
+    std=np.std(diff,axis=0)
+    ax.plot(np.arange(diff.shape[1]),mean,label=m_names[i]+" - "+m_names[(i+1)%3],)
+    ax.fill_between(np.arange(diff.shape[1]), mean-std, mean+std,alpha=0.3)
+plt.tight_layout()
 # save_large_plot(fig,'error_between_the_same_input.png')
 plt.show()
 

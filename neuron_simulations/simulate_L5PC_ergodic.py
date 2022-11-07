@@ -649,7 +649,7 @@ for f in sim_files:
     print(flush=True)
     keys={}
     if hasattr(args,'gmax_ampa'):
-        keys={'gMax_AMPA':args.gmax_ampa}
+        keys={'gmax_AMPA':args.gmax_ampa}
         print('yey')
     else:
         keys={}
