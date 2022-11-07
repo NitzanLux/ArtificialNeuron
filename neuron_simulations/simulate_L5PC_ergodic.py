@@ -581,6 +581,9 @@ def simulate_L5PC_reduction(sim_file, dir_name, is_NMDA=False, gmax_AMPA=0.0004)
     experimentParams['max_spikes_mult_factor_per_NMDA_g_ratio'] = max_spikes_mult_factor_per_NMDA_g_ratio
 
     experimentParams['numSamplesPerMS_HighRes'] = numSamplesPerMS_HighRes
+    experimentParams['excitatorySynapseType'] = ('NMDA' if NMDA_or_AMPA else 'AMPA')
+    experimentParams['gmax_AMPA'] =gmax_AMPA
+
 
     experimentParams['collectAndSaveDVTs'] = collectAndSaveDVTs
     experimentParams['allSectionsType'] = allSectionsType
