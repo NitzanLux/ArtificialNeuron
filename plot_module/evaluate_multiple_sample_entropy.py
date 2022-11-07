@@ -280,20 +280,31 @@ df = df.sort_values(['key'])
 datas = []
 for i in m_names:
     datas.append(df[df['model_' + i] == 1]['Ci'].tolist())
+name_order=['v_davids_ergodic_train_200d','v_reduction_ergodic_train_200d','v_AMPA_ergodic_train_200d']
 for i in range(3):
+    first_index = i
+    second_index = (i+1)%3
+    first_index,second_index=min(first_index,second_index,key=lambda x:name_order.index(m_names[x])),max(first_index,second_index,key=lambda x:name_order.index(m_names[x]))
     fig, ax = plt.subplots()
-    lims = (np.min(np.vstack((datas[i], datas[(i + 1) % 3]))), np.max(np.vstack((datas[i], datas[(i + 1) % 3]))))
+    lims = (np.min(np.vstack((datas[first_index], datas[second_index]))), np.max(np.vstack((datas[first_index], datas[second_index]))))
 
-    H, xedges, yedges = np.histogram2d(datas[i], datas[(i + 1) % 3], range=np.array([lims, lims]),
+    H, xedges, yedges = np.histogram2d(datas[first_index], datas[second_index], range=np.array([lims, lims]),
                                        bins=int(lims[1] - lims[0])+1)
-    im = ax.imshow(H.T/sum(H.T), interpolation='nearest', origin='lower', extent=[xedges[0], xedges[-1], yedges[0], yedges[-1]]
+    im = ax.imshow(H.T, interpolation='nearest', origin='lower', extent=[xedges[0], xedges[-1], yedges[0], yedges[-1]]
                    # )
                    , norm=colors.LogNorm())
-    ax.plot(lims, lims, color='red')
+    ax.plot(lims, lims, color='black')
 
+
+    reg = LinearRegression().fit(np.array(datas[first_index])[:,np.newaxis],datas[second_index])
+    reg_intercep=reg.intercept_
+    reg_coef=reg.coef_
+    x=lims
+    y=[reg_intercep+lims[0]*reg_coef,reg_intercep+lims[1]*reg_coef]
+    ax.plot(x,y,color='magenta')
     fig.colorbar(im)
-    ax.set_xlabel(m_names[i])
-    ax.set_ylabel(m_names[(i + 1) % 3])
+    ax.set_xlabel(m_names[first_index])
+    ax.set_ylabel(m_names[second_index])
     fig.show()
 
 # %% plot difference avarage per file
@@ -303,29 +314,39 @@ datas=[]
 for i in m_names:
     datas.append(np.vstack(df[df['model_' + i] == 1]['SE'].tolist()))
 # avarage_diff = []
+name_order=['v_davids_ergodic_train_200d','v_reduction_ergodic_train_200d','v_AMPA_ergodic_train_200d']
 for i in range(3):
-    diff=datas[i]-datas[(i+1)%3]
+    first_index = i
+    second_index = (i+1)%3
+    first_index,second_index=min(first_index,second_index,key=lambda x:name_order.index(m_names[x])),max(first_index,second_index,key=lambda x:name_order.index(m_names[x]))
+    diff=datas[first_index]-datas[second_index]
     mean=np.mean(diff,axis=0)
     std=np.std(diff,axis=0)
-    ax.plot(np.arange(diff.shape[1]),mean,label=m_names[i]+" - "+m_names[(i+1)%3],)
+    ax.plot(np.arange(diff.shape[1]),mean,label=m_names[first_index]+" - "+m_names[second_index],)
     ax.fill_between(np.arange(diff.shape[1]), mean-std, mean+std,alpha=0.3)
+plt.legend()
 plt.tight_layout()
+
 # save_large_plot(fig,'error_between_the_same_input.png')
 plt.show()
 
 # %%
 
 fig, ax = plt.subplots()
+df = df.sort_values(['key'])
+datas=[]
+for i in m_names:
+    datas.append(np.vstack(df[df['model_' + i] == 1]['SE'].tolist()))
+name_order = ['v_davids_ergodic_train_200d', 'v_reduction_ergodic_train_200d', 'v_AMPA_ergodic_train_200d']
+for i in range(3):
+    first_index = m_names.find(name_order[i])
+    second_index = (i + 1) % 3
+    mean=np.mean(datas[i],axis=0)
+    std=np.std(datas[i],axis=0)
+    ax.plot(np.arange(datas[i].shape[1]),mean,label=m_names[i])
+    ax.fill_between(np.arange(datas[i].shape[1]), mean-std, mean+std,alpha=0.3)
 
-indexes = [1]
-indexes = np.array(list(key_list))[indexes]
-for k in tqdm(key_list):
-    if file_index_counter_reduction[k[0]] != file_index_counter_original[k[0]] and max(
-            file_index_counter_reduction[k[0]], file_index_counter_original[k[0]]) == 127:
-        continue
-    p = ax.plot(original_data[k])
-    color = p[0].get_color()
-    ax.plot(reduction_data[k], '--', color=color)
+ax.legend(loc='upper left')
 # save_large_plot(fig,'different_between_the_same_input.png')
 plt.show()
 
