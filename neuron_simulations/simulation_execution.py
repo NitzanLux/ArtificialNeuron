@@ -9,7 +9,7 @@ import argparse
 import json
 from utils.slurm_job import *
 from math import ceil
-
+from time import time
 parser = argparse.ArgumentParser(description='Add configuration file')
 
 parser.add_argument('-c',dest="number_of_cpus", type=int,
@@ -73,3 +73,4 @@ for i, f in enumerate(only_files):
 
     if i%files_per_cpu==files_per_cpu-1 or i==len(only_files)-1:
         job_factory.send_job("%s_%s"%( ('NMDA' if NMDA_or_AMPA else 'AMPA')+"_simulation",base_directory[:15]+"_"+directory_name), params_string,filename_index=i//files_per_cpu)
+        time.sleep(360)

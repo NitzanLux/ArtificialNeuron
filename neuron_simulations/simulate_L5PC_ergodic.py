@@ -63,7 +63,7 @@ def generate_input_spike_trains_for_simulation(sim_experiment_file, print_logs=P
     return genrator(), experiment_dict['Params']
 
 
-def get_dir_name_and_filename(file_name, dir_name,is_NMDA):
+def get_dir_name_and_filename(file_name, dir_name,is_NMDA,gmax_AMPA):
     # string to describe model name based on params
     resultsSavedIn_rootFolder = os.path.join(NEURON_REDUCE_DATA_DIR, dir_name)
     file_name, file_extension = os.path.splitext(file_name)
@@ -135,7 +135,7 @@ def ConnectEmptyEventGenerator(synapse):
     return netConnection
 
 #%%
-def simulate_L5PC_reduction(sim_file, dir_name,is_NMDA=False,gMax_AMPA=0.0004):
+def simulate_L5PC_reduction(sim_file, dir_name, is_NMDA=False, gmax_AMPA=0.0004):
     data_generator, experimentParams = generate_input_spike_trains_for_simulation(sim_file)
     # get or randomly generate random seed
     random_seed = experimentParams['random_seed']
@@ -380,7 +380,7 @@ def simulate_L5PC_reduction(sim_file, dir_name,is_NMDA=False,gMax_AMPA=0.0004):
             if is_NMDA:
                 exSynapse = DefineSynapse_NMDA(segment, NMDA_to_AMPA_g_ratio=gmax_NMDA_to_AMPA_ratio)
             else:
-                exSynapse = DefineSynapse_AMPA(segment,gMax_AMPA)
+                exSynapse = DefineSynapse_AMPA(segment, gmax_AMPA)
             # exSynapse = DefineSynapse_NMDA(segment, NMDA_to_AMPA_g_ratio=gmax_NMDA_to_AMPA_ratio)
             allExSynapses.append(exSynapse)
 
@@ -613,7 +613,7 @@ def simulate_L5PC_reduction(sim_file, dir_name,is_NMDA=False,gMax_AMPA=0.0004):
     experimentDict['Results'] = experimentResults
 
 
-    dirToSaveIn, filenameToSave = get_dir_name_and_filename(sim_file, dir_name,is_NMDA)
+    dirToSaveIn, filenameToSave = get_dir_name_and_filename(sim_file, dir_name,is_NMDA,gmax_AMPA)
     pickle.dump(experimentDict, open(os.path.join(dirToSaveIn, filenameToSave), "wb"), protocol=2)
 
 
