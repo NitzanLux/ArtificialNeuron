@@ -125,7 +125,7 @@ class ModelsSEData():
                   'spike_number': spike_list})
         model_names = df.model.unique()
         df['key'] = df['file'] + '#$#' + df['sim_ind']
-        df = pd.get_dummies(df, columns=['model'])
+        # df = pd.get_dummies(df, columns=['model'])
         return df, model_names.tolist()
 
 
@@ -150,7 +150,7 @@ names_for_plots_dict = {'v_davids_ergodic_train_200d': 'L5PC NMDA',
                         'v_AMPA_ergodic_train_200d': 'L5PC AMPA'}
 names_for_plots = [names_for_plots_dict[i] for i in name_order]
 ## %% print nans ci
-df = df.sort_values(['model_' + i for i in m_names])
+df = df.sort_values(['model'])
 print('number_of_nans', df['Ci'].isnull().sum())
 print('number of columns', df.shape[0])
 print('ratio', df['Ci'].isnull().sum() / df.shape[0])
@@ -174,16 +174,16 @@ print('aa')
 inf_ci_files = df[np.isinf(dfinf)]
 print('balanced removal of ', sum([c[fi == i] for i in inf_ci_files['key']])[0] if inf_ci_files.shape[0] > 0 else 0)
 # df_inf = df[~np.isinf(df['Ci']).all(1)]
-# %% plot inf distribution in se data
+# %% plot inf distribution in se data and update
 df.reset_index(drop=True, inplace=True)
 
 df = df.sort_values(['key'])
 data_color = []
 hist_data = []
-hist_mat = np.zeros_like(np.array(list(df[df['model_' + name_order[0]] == 1]['SE'])))
+hist_mat = np.zeros_like(np.array(list(df[df['model']==name_order[0]]['SE'])))
 fig, ax = plt.subplots(3)
 for i in tqdm(name_order):
-    data = np.array(list(df[df['model_' + i] == 1]['SE']))
+    data = np.array(list(df[df['model']==i]['SE']))
     y, x = np.where(np.isinf(data))
     p = ax[0].scatter(x, y, label=i, alpha=0.1, s=0.2)
     color = p.get_facecolor()
@@ -204,12 +204,12 @@ precentage = 0.1
 df = df.sort_values(['key'])
 fig, ax = plt.subplots(3)
 first_inf = []
-data_shape = np.array(list(df[df['model_' + m_names[0]] == 1]['SE'])).shape
+data_shape = np.array(list(df[df['model']==m_names[0]]['SE'])).shape
 hist_inf = np.ones((data_shape[0],)) * data_shape[1]
 max_value = data_shape[1]
 for i in tqdm(m_names):
-    hist_mat = np.zeros_like(np.array(list(df[df['model_' + i] == 1]['SE'])))
-    data = np.array(list(df[df['model_' + i] == 1]['SE']))
+    hist_mat = np.zeros_like(np.array(list(df[df['model']==i]['SE'])))
+    data = np.array(list(df[df['model']==i]['SE']))
     y, x = np.where(np.isinf(data))
     hist_mat[y, x] = 1
     data = np.argmax(hist_mat, axis=1)
@@ -244,7 +244,7 @@ df['Ci'] = sum_ci
 fig, ax = plt.subplots()
 box_plot_data = []
 for i, m in enumerate(name_order):
-    box_plot_data.append(df[df['model_' + name_order[i]] == 1]['Ci'].tolist())
+    box_plot_data.append(df[df['model'] == name_order[i]]['Ci'].tolist())
 p01 = ttest_ind(box_plot_data[0], box_plot_data[1], equal_var=False).pvalue
 p12 = ttest_ind(box_plot_data[2], box_plot_data[1], equal_var=False).pvalue
 p02 = ttest_ind(box_plot_data[0], box_plot_data[2], equal_var=False).pvalue
@@ -260,7 +260,7 @@ plt.close()
 fig, ax = plt.subplots()
 datas = []
 for i in name_order:
-    datas.append(df[df['model_' + i] == 1]['spike_number'].tolist())
+    datas.append(df[df['model']==i]['spike_number'].tolist())
 ax.hist(datas, bins=20, label=names_for_plots, alpha=0.4)
 fig.legend()
 fig.show()
@@ -270,7 +270,7 @@ fig.show()
 df = df.sort_values(['key'])
 datas = []
 for i in name_order:
-    datas.append(df[df['model_' + i] == 1]['Ci'].tolist())
+    datas.append(df[df['model']==i]['Ci'].tolist())
 for i in range(3):
     first_index = i
     second_index = (i + 1) % 3
@@ -291,7 +291,7 @@ for i in range(3):
 df = df.sort_values(['key'])
 datas = []
 for i in name_order:
-    datas.append(df[df['model_' + i] == 1]['Ci'].tolist())
+    datas.append(df[df['model']==i]['Ci'].tolist())
 
 for i in range(3):
     first_index = i
@@ -332,7 +332,7 @@ datas = []
 
 
 for i in name_order:
-    datas.append(np.vstack(df[df['model_' + i] == 1]['SE'].tolist()))
+    datas.append(np.vstack(df[df['model']==i]['SE'].tolist()))
 # avarage_diff = []
 
 for i in range(3):
@@ -356,42 +356,54 @@ save_large_plot(fig, 'differences_between_the_same_inputs.png', name_order)
 plt.show()
 
 # %% print temporal mean and error
-threshold = 0.2
+threshold = None
 direction=-1
 box_plot_data =np.array(box_plot_data)
 threshold_box_plot = np.sort(box_plot_data,axis=1)
-if direction>1:
+if direction>1 and threshold is not None:
     threshold_ration=threshold
-else:
+elif threshold is not None:
     threshold_ration=1-threshold
-threshold_value = np.min(threshold_box_plot[:,int(threshold_box_plot.shape[1]*(threshold_ration))])
+if threshold is not None:
+    threshold_value = np.min(threshold_box_plot[:,int(threshold_box_plot.shape[1]*(threshold_ration))])
 
 fig, ax = plt.subplots()
 df = df.sort_values(['key'])
 datas = []
 ci_data=[]
 for i in name_order:
-    datas.append(np.vstack(df[df['model_' + i] == 1]['SE'].tolist()))
-    ci_data.append(np.vstack(df[df['model_' + i] == 1]['Ci'].tolist()))
+    datas.append(np.vstack(df[df['model']==i]['SE'].tolist()))
+    ci_data.append(np.vstack(df[df['model']==i]['Ci'].tolist()))
 ci_data=np.hstack(ci_data)
-if direction>0:
-    indexes= np.all(ci_data>=threshold_value,axis=1)
-else:
-    indexes= np.all(ci_data<=threshold_value,axis=1)
+if threshold is not None:
+    if direction>0:
+        indexes= np.all(ci_data>=threshold_value,axis=1)
+    else:
+        indexes= np.all(ci_data<=threshold_value,axis=1)
 for i in range(3):
     first_index = i
     second_index = (i + 2) % 3
     first_index, second_index = min([first_index, second_index]), max([first_index, second_index])
-    mean = np.mean(datas[i][indexes,:], axis=0)
-    std = np.std(datas[i][indexes,:], axis=0)
+    if threshold is not None:
+        mean = np.mean(datas[i][indexes,:], axis=0)
+        std = np.std(datas[i][indexes,:], axis=0)
+    else:
+        mean = np.mean(datas[i], axis=0)
+        std = np.std(datas[i], axis=0)
     ax.plot(np.arange(datas[i].shape[1]), mean, label=names_for_plots[i])
     ax.fill_between(np.arange(datas[i].shape[1]), mean - std, mean + std, alpha=0.3)
 
 ax.legend(loc='upper left')
-ax.set_title(f'Average SE Across Different Time Scales (n = {len(datas[0])*len(datas):,}) \nCi value {"greater" if direction>0 else "lower"} than {threshold_value:0.4}')
+if threshold is not None:
+    ax.set_title(f'Average SE Across Different Time Scales (n = {len(datas[0])*len(datas):,}) \nCi value {"greater" if direction>0 else "lower"} than {threshold_value:0.4}')
+else:
+    ax.set_title(f'Average SE Across Different Time Scales (n = {len(datas[0])*len(datas):,}) \nCi value')
 ax.set_xlabel('Time Scales')
 ax.set_ylabel('SE value')
-save_large_plot(fig, f'Average_SE_across_different_Time_Scales_th_{direction}{str(threshold).replace(".","!")}.png', name_order)
+if threshold is not None:
+    save_large_plot(fig, f'Average_SE_across_different_Time_Scales_th_{direction}{str(threshold).replace(".","!")}.png', name_order)
+else:
+    save_large_plot(fig, f'Average_SE_across_different_Time_Scales.png', name_order)
 plt.show()
 
 # %% plot files by order:
@@ -437,3 +449,12 @@ ax.set_title('Norm Sorted SE Complexity Index')
 # fig.legend(loc='lower left')
 # plt.tight_layout()
 fig.show()
+
+#%% multidimensional distribution
+df = df.sort_values(['key'])
+datas = []
+columns = ['model_'+i for i in m_names]+['Ci']+['key']
+df_nondummis =pd.from_dummies(df[columns])
+sns.set_style("whitegrid")
+sns.pairplot(df_nondummis, hue="species", size=3)
+plt.show()
