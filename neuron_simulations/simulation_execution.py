@@ -44,7 +44,7 @@ directory_name = os.path.basename(directory)
 base_directory = os.path.basename(base_directory)
 print(args.files_that_do_not_exist)
 if args.files_that_do_not_exist:
-    directory_dest = os.path.join(NEURON_REDUCE_DATA_DIR, base_directory + "_" + directory_name +"_"+  ('NMDA' if NMDA_or_AMPA else 'AMPA')+'_'+args.tag)
+    directory_dest = os.path.join(NEURON_REDUCE_DATA_DIR, base_directory + "_" + directory_name + ('NMDA' if NMDA_or_AMPA else 'AMPA')+'_'+args.tag)
     files_that_exists = set([f for f in os.listdir(directory_dest) if os.path.isfile(os.path.join(directory_dest, f))])
     new_files = []
     for f in only_files:

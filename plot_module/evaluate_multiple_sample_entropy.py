@@ -6,6 +6,7 @@ import numpy as np
 import pickle
 import re
 from tqdm import tqdm
+import matplotlib
 from matplotlib import colors
 import seaborn as sns
 import pandas as pd
@@ -264,7 +265,6 @@ for i in name_order:
 ax.hist(datas, bins=20, label=names_for_plots, alpha=0.4)
 fig.legend()
 fig.show()
-# %%
 
 # %% scatter plot pairwise complaxity plots[3].
 df = df.sort_values(['key'])
@@ -397,7 +397,7 @@ ax.legend(loc='upper left')
 if threshold is not None:
     ax.set_title(f'Average SE Across Different Time Scales (n = {len(datas[0])*len(datas):,}) \nCi value {"greater" if direction>0 else "lower"} than {threshold_value:0.4}')
 else:
-    ax.set_title(f'Average SE Across Different Time Scales (n = {len(datas[0])*len(datas):,}) \nCi value')
+    ax.set_title(f'Average SE Across Different Time Scales (n = {len(datas[0])*len(datas):,})')
 ax.set_xlabel('Time Scales')
 ax.set_ylabel('SE value')
 if threshold is not None:
@@ -413,8 +413,8 @@ df = df.sort_values(['key'])
 
 diff_vec = []
 for j in tqdm(name_order):
-    a = df[(df['model_' + j] == 1)]['Ci'].values
-    diff_vec.append(df[(df['model_' + j] == 1)]['Ci'].values)
+    a = df[(df['model'] == j)]['Ci'].values
+    diff_vec.append(df[(df['model'] == j)]['Ci'].values)
 diff_vec = np.array(diff_vec)
 temp_diff_vec = diff_vec.copy()
 a = np.argsort(np.linalg.norm(diff_vec, axis=0))
@@ -448,13 +448,73 @@ ax.spines.right.set_visible(False)
 ax.set_title('Norm Sorted SE Complexity Index')
 # fig.legend(loc='lower left')
 # plt.tight_layout()
-fig.show()
+save_large_plot(fig, 'norm_wise_orderd_matrix3d.png', name_order)
 
-#%% multidimensional distribution
+fig.show()
+#%% correlation matrix
+dummies_df= pd.get_dummies(df[['Ci','spike_number','model']], columns=['model'])
+# dummies_df=df[['Ci','spike_number','model']]
+corr= dummies_df.corr()
+#%%
+fig,ax=plt.subplots()
+mat = corr.to_numpy()
+cols= list(corr.columns)
+cols = [names_for_plots_dict[c[len('model_'):]] if (c[len('model_'):] in names_for_plots_dict) else c for c in cols]
+mat[np.arange(mat.shape[0]), np.arange(mat.shape[0])] = np.NAN
+minmax_val = np.max([np.abs(np.nanmin(mat)), np.nanmax(mat)])
+cmap = matplotlib.cm.get_cmap('bwr').copy()
+cmap.set_bad('black',1.)
+divnorm = colors.TwoSlopeNorm(vmin=-float(minmax_val), vcenter=0., vmax=float(minmax_val))
+im = ax.matshow(mat, cmap=cmap, norm=divnorm)
+for i in range(mat.shape[0]):
+    for j in range(mat.shape[0]):
+        c = mat[j, i]
+        if i == j: c = 1
+
+        ax.text(i, j, '%0.4f' % c, va='center', ha='center')
+ax.set_xticks(range(len(cols)), cols, rotation=45,fontsize=8)
+ax.set_yticks(range(len(cols)), cols, rotation=45,fontsize=8)
+ax.set_title('Cross Correlation matrix')
+ax.grid(False)
+plt.colorbar(im)
+plt.tight_layout()
+save_large_plot(fig, 'cross_correlation.png',name_order)
+plt.show()
+#%%
+data=[]
 df = df.sort_values(['key'])
-datas = []
-columns = ['model_'+i for i in m_names]+['Ci']+['key']
-df_nondummis =pd.from_dummies(df[columns])
-sns.set_style("whitegrid")
-sns.pairplot(df_nondummis, hue="species", size=3)
+
+for i in name_order:
+    data.append(df[df['model']==i]['Ci'].to_numpy())
+cols = names_for_plots
+data = np.vstack(data)
+mat = np.corrcoef(data)
+fig,ax=plt.subplots()
+
+mat[np.arange(mat.shape[0]), np.arange(mat.shape[0])] = np.NAN
+minmax_val = np.max([np.abs(np.nanmin(mat)), np.nanmax(mat)])
+
+cmap = matplotlib.cm.get_cmap('bwr').copy()
+cmap.set_bad('black',1.)
+if np.sign(np.nanmin(mat))==np.sign(np.nanmax(mat)):
+    min_val=np.nanmin(mat)
+    max_val=np.nanmax(mat)
+else:
+    min_val=-float(minmax_val)
+    max_val=float(minmax_val)
+divnorm = colors.TwoSlopeNorm(vmin=min_val, vcenter=(min_val+max_val)/2, vmax=max_val)
+im = ax.matshow(mat, cmap=cmap, norm=divnorm)
+for i in range(mat.shape[0]):
+    for j in range(mat.shape[0]):
+        c = mat[j, i]
+        if i == j: c = 1
+
+        ax.text(i, j, '%0.4f' % c, va='center', ha='center')
+ax.set_xticks(range(len(cols)), cols, rotation=45,fontsize=8)
+ax.set_yticks(range(len(cols)), cols, rotation=45,fontsize=8)
+ax.set_title('Cross Correlation matrix')
+ax.grid(False)
+plt.colorbar(im)
+plt.tight_layout()
+save_large_plot(fig, 'cross_correlation_between_different_models.png',name_order)
 plt.show()

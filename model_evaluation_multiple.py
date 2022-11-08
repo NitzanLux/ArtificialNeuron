@@ -723,6 +723,7 @@ def run_test(include_models=True):
         number_of_models=1
         for p in [os.path.join("evaluations","models","davids_ergodic_validation"), os.path.join("evaluations","models","reduction_ergodic_validation")]:
             # continue
+            break
             counter=0
             for i in os.listdir(p):
                 counter+=1
