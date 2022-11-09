@@ -72,5 +72,5 @@ for i, f in enumerate(only_files):
                     "' -na %s"% ('N' if NMDA_or_AMPA else 'A')+' -gmax_ampa '+str(args.gmax_ampa))
 
     if i%files_per_cpu==files_per_cpu-1 or i==len(only_files)-1:
-        job_factory.send_job("%s_%s"%( ('NMDA' if NMDA_or_AMPA else 'AMPA')+"_simulation",base_directory[:15]+"_"+directory_name), params_string,filename_index=i//files_per_cpu)
+        job_factory.send_job("%s_%s_s"%( ('NMDA' if NMDA_or_AMPA else 'AMPA')+"_simulation",base_directory[:15]+"_"+directory_name+args.tag), params_string,filename_index=i//files_per_cpu)
         time.sleep(0.3)
