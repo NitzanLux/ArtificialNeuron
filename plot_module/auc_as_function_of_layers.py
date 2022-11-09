@@ -19,7 +19,7 @@ FONT_SIZE = 6
 # '/ems/elsc-labs/segev-i/nitzan.luxembourg/projects/dendritic_tree/ArtificialNeuron'
 # %% pipline plot parameters
 I = 6
-jsons_list = ['d_r_comparison_ss']  # ,'d_r_comparison']
+jsons_list = ['d_r_comparison_ss','comparison_3']
 use_test_data=False
 # gt_original_name = 'davids_ergodic_validation'
 # gt_reduction_name = 'reduction_ergodic_validation'
@@ -224,6 +224,7 @@ plt.xlim([0.5,7.5])
 mng = plt.get_current_fig_manager()
 mng.full_screen_toggle()
 # plt.tight_layout()
+print('best name original data',best_name_original)
+print('best name reduction data',best_name_reduction)
 plt.show()
-
 plt.savefig(f'evaluation_plots/comparison_{jsons_list}_{"test" if use_test_data else "valid"}.png')
