@@ -4,4 +4,4 @@ zip_arr=[]
 for i in os.listdir(os.path.join('models','NMDA')):
     if 'd_r_comparison_ss_7' in i:
         zip_arr.append(i)
-p = subprocess.run(' '.join(["zip",'-r','models_for_msc_proj.zip',*zip_arr]))
+p = subprocess.Popen(["zip",'-r','models_for_msc_proj.zip',*zip_arr])
