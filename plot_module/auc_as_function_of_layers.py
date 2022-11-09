@@ -133,11 +133,11 @@ new_auc_data_reduction = np.array(new_auc_data_reduction)
 # continue
 # plt.scatter(layers_original, np.array(new_auc_data_original[:, i]),c=p[0].get_color())
 # ax = plt.errorbar(layers_original, original_auc_plotting, yerr=original_auc_plotting_err,label='original',alpha=0.7)
-plt.scatter(layers_original, np.max(new_auc_data_original, axis=1), color='red',label='maximal value',marker='x')
-plt.scatter(layers_reduction, np.max(new_auc_data_reduction, axis=1), color='blue',label='maximal value',marker='x')
-plt.errorbar(layers_original, original_auc_plotting, yerr=original_auc_plotting_err, label='original', alpha=0.7,
+plt.scatter(layers_original, np.max(new_auc_data_original, axis=1), color='red',label='maximal value',marker='x',alpha=0.7)
+plt.scatter(layers_reduction, np.max(new_auc_data_reduction, axis=1), color='blue',label='maximal value',marker='x',alpha=0.7)
+plt.errorbar(layers_original, original_auc_plotting, yerr=original_auc_plotting_err, label='L5PC', alpha=0.7,
              color='red')
-plt.errorbar(layers_reduction, reduction_auc_plotting, yerr=reduction_auc_plotting_err, label='reduction', alpha=0.7,
+plt.errorbar(layers_reduction, reduction_auc_plotting, yerr=reduction_auc_plotting_err, label='L5PC Reduction', alpha=0.7,
              color='blue')
 print(len(original_auc_plotting), batch_counter_original_mean.shape)
 color_factor=0.4
@@ -216,6 +216,7 @@ plt.xlabel('Number of Layers')
 plt.ylim([np.min((new_auc_data_reduction, new_auc_data_original))-0.002,
           np.max((new_auc_data_reduction, new_auc_data_original)) + 0.002])
 plt.ylabel('Area Under the Curve')
+plt.xlim([0.5,7.5])
 # plt.tight_layout()
 plt.show()
 
