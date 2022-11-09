@@ -246,6 +246,8 @@ fig, ax = plt.subplots()
 box_plot_data = []
 for i, m in enumerate(name_order):
     box_plot_data.append(df[df['model'] == name_order[i]]['Ci'].tolist())
+    box_plot_data[-1]=np.array(box_plot_data[-1])
+    # box_plot_data[-1]=box_plot_data[-1][box_plot_data[-1]>100]
 p01 = ttest_ind(box_plot_data[0], box_plot_data[1], equal_var=False).pvalue
 p12 = ttest_ind(box_plot_data[2], box_plot_data[1], equal_var=False).pvalue
 p02 = ttest_ind(box_plot_data[0], box_plot_data[2], equal_var=False).pvalue
@@ -283,7 +285,7 @@ for i in range(3):
             np.max(np.vstack((datas[first_index], datas[second_index]))))
     ax.plot(lims, lims, color='red')
     ax.set_title(
-        f"{names_for_plots[first_index]} and {names_for_plots[second_index]} simulation \nSE complexity index (n = {len(datas[second_index])*2:,})")
+        f"{names_for_plots[first_index]} and {names_for_plots[second_index]} trials \nSE complexity index (n = {len(datas[second_index])*2:,})")
     save_large_plot(fig, "pairwise_scatter.png", [name_order[first_index], name_order[second_index]])
 
     fig.show()
@@ -320,7 +322,7 @@ for i in range(3):
     ax.set_xlabel(names_for_plots[first_index])
     ax.set_ylabel(names_for_plots[second_index])
     ax.set_title(
-        f"{names_for_plots[first_index]} and {names_for_plots[second_index]} simulation \nSE Complexity Index (n = {len(datas[second_index])*2:,}) $\\rho$ = {np.round(np.corrcoef(np.array(datas[first_index]), np.array(datas[second_index]),rowvar=False),3)[0,1]}")
+        f"{names_for_plots[first_index]} and {names_for_plots[second_index]} trials \nSE Complexity Index (n = {len(datas[second_index])*2:,}) $\\rho$ = {np.round(np.corrcoef(np.array(datas[first_index]), np.array(datas[second_index]),rowvar=False),3)[0,1]}")
     save_large_plot(fig, "pairwise_2dhist.png", [name_order[first_index], name_order[second_index]])
 
     fig.show()
@@ -422,7 +424,7 @@ fig, ax = plt.subplots()
 ax.matshow(diff_vec[:, a])
 ax.set_aspect(3000)
 ax.set_xticks([])
-ax.set_xlabel(f'Simulation index (n = {diff_vec.shape[1]:,})')
+ax.set_xlabel(f'Sorted Trial index (n = {diff_vec.shape[1]:,})')
 ax.set_yticks(range(len(name_order)), names_for_plots)
 ax.set_title('Norm Sorted SE Complexity Index')
 plt.tight_layout()
@@ -435,7 +437,7 @@ ax = fig.add_subplot(projection='3d')
 for i, m in enumerate(name_order):
     ax.scatter(np.arange(diff_vec.shape[1]), diff_vec[i, a], np.ones((diff_vec.shape[1])) * i, label=names_for_plots_dict[m], alpha=0.6,
                 s=0.5)
-ax.set_xlabel(f'Simulation index (n = {diff_vec.shape[1]:,})')
+ax.set_xlabel(f'Sorted Trial index (n = {diff_vec.shape[1]:,})')
 ax.set_ylabel('SE Complexity Index')
 ax.set_xticks([])
 ax.w_zaxis.line.set_lw(0.)

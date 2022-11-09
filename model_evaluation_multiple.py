@@ -365,6 +365,7 @@ class ModelEvaluator():
         self.file_names_short_names = set()
         self.ground_truths = list(ground_truth_set)
         self.models = list(model_set)
+        print(self.models,self.ground_truths,flush=True)
         self.current_good_and_bad_div = None
         self.__currnt_value = None
         self.gt_index_dict = {k: i for i, k in enumerate(self.ground_truths)}
@@ -389,8 +390,8 @@ class ModelEvaluator():
             f_is = [gt.get_file_from_shortmane(f_i) for gt in self.ground_truths]
             for i in range(len(f_is)):
                 if f_is[i] is not None:
-                    values[i] = f_is[i]
-            self.__currnt_value = values
+                    value[i] = f_is[i]
+            self.__currnt_value = value
             return self.__currnt_value
 
     def display(self):
@@ -581,8 +582,11 @@ class ModelEvaluator():
                             subplot_titles=("voltage",
                                             "spike probability"), row_heights=[0.6, 0.37, 0.03])
         x_axis_gt = None
+        s=None
+        print(self.ground_truths,flush=True)
         for j, gt in enumerate(self.ground_truths):
             v, s = gt.get_by_index(indexes[j])
+            print(v,s)
             x_axis_gt = np.arange(v.shape[0])
             fig.add_trace(
                 go.Scatter(x=x_axis_gt, y=v, legendgroup='gt%d' % j, name="%s" % (self.ground_truths[j]),
@@ -607,7 +611,6 @@ class ModelEvaluator():
             # fig['data'][j*2+1]['line']['color']=fig['data'][j*2]['line']['color']
         mse_matrix = []
         y = []
-        s=None
         for j, m in enumerate(self.models):
             v, s = m.get_by_index(indexes[self.gt_index_dict[m.ground_truth]])
             if is_optimal_thresholding:
@@ -617,7 +620,7 @@ class ModelEvaluator():
                 # th,fpr,tpr = m.round_th_fpr_tpr(tpr=thresholding)
                 # print(thresholding)
                 v=np.copy(v)
-                spike_arr = s >= thresholding
+                spike_arr = v >= thresholding
 
                 if use_refractory_period:
                     for i in range(spike_arr.shape[0]):
@@ -639,9 +642,7 @@ class ModelEvaluator():
         if len(mse_matrix) > 0:
             mse_matrix = np.vstack(mse_matrix)
             fig.add_heatmap(z=mse_matrix, row=3, col=1, y=y)
-        fig.update_layout(  # height=600, width=600,
-            # title_text="model %s index %d" % (self.config.model_path[-1], index),
-            **{yaxis_range:[-83, -52]} if trim_top else {}
+        fig.update_layout(**{'yaxis_range':[-83, -52]} if trim_top else {}
             , yaxis2_range=[0, 1],xaxis2_range=[0, s.shape[0]],xaxis1_range=[0, s.shape[0]],xaxis2=dict(showticklabels= True,title='time(ms)') ) # , legend_orientation="h"
         #, yaxis2=dict(ticks="", showticklabels=False),xaxis2=dict(showticklabels=True))
         return fig
@@ -732,6 +733,7 @@ def run_test(include_models=True):
                 if counter>number_of_models:
                     break
                 g.append(EvaluationData.load(os.path.join(p, i)))
+    print(g)
     # g2 = EvaluationData.load(
     #     "evaluations/models/davids_ergodic_test/davids_2_NAdam___2022-08-15__15_02__ID_64341.meval")
     me = ModelEvaluator(*g)
