@@ -217,6 +217,8 @@ plt.ylim([np.min((new_auc_data_reduction, new_auc_data_original))-0.002,
           np.max((new_auc_data_reduction, new_auc_data_original)) + 0.002])
 plt.ylabel('Area Under the Curve')
 plt.xlim([0.5,7.5])
+mng = plt.get_current_fig_manager()
+mng.full_screen_toggle()
 # plt.tight_layout()
 plt.show()
 
