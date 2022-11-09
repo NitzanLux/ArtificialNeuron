@@ -20,7 +20,7 @@ FONT_SIZE = 6
 # %% pipline plot parameters
 I = 6
 jsons_list = ['d_r_comparison_ss']  # ,'d_r_comparison']
-use_test_data=True
+use_test_data=False
 # gt_original_name = 'davids_ergodic_validation'
 # gt_reduction_name = 'reduction_ergodic_validation'
 
@@ -63,7 +63,7 @@ for i in configs:
     else:
         m = model_evaluation_multiple.EvaluationData.load(os.path.join(MODELS_DIR, i[0], i[0] + '_best',i[0] +('_davids_ergodic' if conf.data_base_path==DAVID_BASE_PATH else '_reduction_ergodic')+'_test.meval'))
         auc=m.get_ROC_data()[0]
-    out = (auc, conf.number_of_layers_space, conf.batch_counter)
+    out = (auc, conf.number_of_layers_space, conf.batch_counter,conf.model_filename)
     if conf.data_base_path == REDUCTION_BASE_PATH:
         reduction_auc.append(out)
     else:
@@ -78,6 +78,8 @@ batch_counter_reduction = []
 
 layers_original = []
 layers_reduction = []
+best_name_original=None
+best_name_reduction=None
 cur_layer = -1
 for i in original_auc:
     if i[1] != cur_layer:
@@ -94,6 +96,7 @@ for i in original_auc:
         batch_counter_original[-1].append(i[2])
 
 new_auc_data_original[-1] = np.array(new_auc_data_original[-1])
+best_name_original=max(original_auc,key=lambda x: x[0])[3]
 batch_counter_original_std = np.std(np.array(batch_counter_original), axis=1)
 batch_counter_original_mean = np.mean(np.array(batch_counter_original), axis=1)
 cur_layer = -1
@@ -113,6 +116,7 @@ for i in reduction_auc:
         batch_counter_reduction[-1].append(i[2])
 
 new_auc_data_reduction[-1] = np.array(new_auc_data_reduction[-1])
+best_name_reduction=max(reduction_auc,key=lambda x: x[0])[3]
 batch_counter_reduction_std = np.std(np.array(batch_counter_reduction), axis=1)
 batch_counter_reduction_mean = np.mean(np.array(batch_counter_reduction), axis=1)
 # %%
