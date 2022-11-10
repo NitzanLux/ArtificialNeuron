@@ -19,7 +19,7 @@ FONT_SIZE = 6
 # '/ems/elsc-labs/segev-i/nitzan.luxembourg/projects/dendritic_tree/ArtificialNeuron'
 # %% pipline plot parameters
 I = 6
-jsons_list = ['d_r_comparison_ss','comparison_3']
+jsons_list = ['d_r_comparison_ss']
 use_test_data=False
 # gt_original_name = 'davids_ergodic_validation'
 # gt_reduction_name = 'reduction_ergodic_validation'
@@ -210,11 +210,13 @@ for k in sorted(p_values_dict.keys(),key=lambda x:x):
     print(' - $p_{value}$<5e-%d'%k,k)
 props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
 text = '\n'.join(text)
+leg = plt.legend(loc=4,)
 # place a text box in upper left in axes coords
+p = leg.get_window_extent()
 ann = plt.annotate(text,
-                  xy=(0.5, 0.1),xycoords='axes fraction',textcoords='axes fraction',size=8,
+                  (p.p0[0], p.p1[1]), (p.p0[0], p.p1[1])#,xycoords='axes fraction',textcoords='axes fraction'
+                   ,size=leg._fontsize,
                   bbox=dict(boxstyle="square", fc="w"),ha='left', va='top')
-plt.legend(loc=4,)
 plt.title('AUC as a function of layers.')
 plt.xlabel('Number of Layers')
 plt.ylim([np.min((new_auc_data_reduction, new_auc_data_original))-0.002,
