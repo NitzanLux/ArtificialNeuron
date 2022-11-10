@@ -39,7 +39,7 @@ if __name__ == '__main__':
                 configs_lists.extend(json.load(file))
         commands=[]
         number_of_jobs = args.jobs_number
-
+        print(configs_lists)
         for i in configs_lists:
             i=i[1]
             if not m_query.match(i):
