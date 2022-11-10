@@ -212,6 +212,7 @@ props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
 text = '\n'.join(text)
 leg = plt.legend(loc=4,)
 # place a text box in upper left in axes coords
+plt.draw()
 p = leg.get_window_extent()
 ann = plt.annotate(text,
                   (p.p0[0], p.p1[1]), (p.p0[0], p.p1[1])#,xycoords='axes fraction',textcoords='axes fraction'
