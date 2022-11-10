@@ -215,7 +215,7 @@ leg = plt.legend(loc=4,)
 # plt.draw()
 # p = leg.get_window_extent()
 ann = plt.annotate(text,
-                  (0.8, 0.2), (0.2, 0.2)#,xycoords='axes fraction',textcoords='axes fraction'
+                  (0.8, 0.2), (0.2, 0.2),xycoords='axes fraction',textcoords='axes fraction'
                    ,size=leg._fontsize,
                   bbox=dict(boxstyle="square", fc="w"),ha='left', va='top')
 plt.title('AUC as a function of layers.')
