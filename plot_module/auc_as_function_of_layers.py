@@ -206,7 +206,7 @@ for i in sorted(p_values_dict.keys(),key=lambda x:x):
 out_str='*'
 text=[]
 for k in sorted(p_values_dict.keys(),key=lambda x:x):
-    key = {'s':len(astriks_dict[k])*150+450}
+    key = {'s':len(astriks_dict[k])*150+450} if len(astriks_dict[k])>1 else {}
     out  = astriks_dict[k].replace("*", r"\ast")
     plt.scatter([],[],marker=f'${out}$',color='black',label='$p_{value}$<5e-%d'%k,**key)
     # text.append(astriks_dict[k]+' - $p_{value}$<5e-%d'%k)
