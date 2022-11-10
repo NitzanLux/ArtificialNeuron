@@ -137,8 +137,8 @@ new_auc_data_reduction = np.array(new_auc_data_reduction)
 # continue
 # plt.scatter(layers_original, np.array(new_auc_data_original[:, i]),c=p[0].get_color())
 # ax = plt.errorbar(layers_original, original_auc_plotting, yerr=original_auc_plotting_err,label='original',alpha=0.7)
-plt.scatter(layers_original, np.max(new_auc_data_original, axis=1), color='red',label='maximal value',marker='x',alpha=0.7)
-plt.scatter(layers_reduction, np.max(new_auc_data_reduction, axis=1), color='blue',label='maximal value',marker='x',alpha=0.7)
+plt.scatter(layers_original, np.max(new_auc_data_original, axis=1), color='red',marker='x',alpha=0.7)#,label='maximal value')
+plt.scatter(layers_reduction, np.max(new_auc_data_reduction, axis=1), color='blue',marker='x',alpha=0.7)#,label='maximal value'
 plt.errorbar(layers_original, original_auc_plotting, yerr=original_auc_plotting_err, label='L5PC', alpha=0.7,
              color='red')
 plt.errorbar(layers_reduction, reduction_auc_plotting, yerr=reduction_auc_plotting_err, label='L5PC Reduction', alpha=0.7,
@@ -208,7 +208,7 @@ text=[]
 for k in sorted(p_values_dict.keys(),key=lambda x:x):
     key = {'s':50*(4*(len(astriks_dict[k])-1))} if len(astriks_dict[k])>1 else {'s':50}
     out  = astriks_dict[k].replace("*", r"\ast")
-    plt.scatter([],[],marker=f'${out}$',color='black',**key)#label='$p_{value}$<5e-%d'%k,)
+    plt.scatter([],[],marker=f'${out}$',color='black',label='$p_{value}$<5e-%d'%k,**key)
     # text.append(astriks_dict[k]+' - $p_{value}$<5e-%d'%k)
     # print(' - $p_{value}$<5e-%d'%k,k)
 props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
