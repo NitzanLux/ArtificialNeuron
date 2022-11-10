@@ -206,18 +206,20 @@ for i in sorted(p_values_dict.keys(),key=lambda x:x):
 out_str='*'
 text=[]
 for k in sorted(p_values_dict.keys(),key=lambda x:x):
-    text.append(astriks_dict[k]+' - $p_{value}$<5e-%d'%k)
-    print(' - $p_{value}$<5e-%d'%k,k)
+    out  = astriks_dict[k].replace("*", r"\ast")
+    plt.scatter([],[],marker=f'${out}$',label='$p_{value}$<5e-%d'%k)
+    # text.append(astriks_dict[k]+' - $p_{value}$<5e-%d'%k)
+    # print(' - $p_{value}$<5e-%d'%k,k)
 props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
 text = '\n'.join(text)
 leg = plt.legend(loc=4,)
 # place a text box in upper left in axes coords
 # plt.draw()
 # p = leg.get_window_extent()
-ann = plt.annotate(text,
-                  (0.8, 0.2), (0.2, 0.2),xycoords='axes fraction',textcoords='axes fraction'
-                   ,size=leg._fontsize,
-                  bbox=dict(boxstyle="square", fc="w"),ha='left', va='top')
+# ann = plt.annotate(text,
+#                   (0.8, 0.2), (0.2, 0.2),xycoords='axes fraction',textcoords='axes fraction',
+#                    ,size=leg._fontsize,
+                  # bbox=dict(boxstyle="square", fc="w"),ha='left', va='top')
 plt.title('AUC as a function of layers.')
 plt.xlabel('Number of Layers')
 plt.ylim([np.min((new_auc_data_reduction, new_auc_data_original))-0.002,
