@@ -208,7 +208,7 @@ text=[]
 for k in sorted(p_values_dict.keys(),key=lambda x:x):
     key = {'s':50*(4*(len(astriks_dict[k])-1))} if len(astriks_dict[k])>1 else {'s':50}
     out  = astriks_dict[k].replace("*", r"\ast")
-    plt.scatter([],[],marker=f'${out}$',color='black',label='$p_{value}$<5e-%d'%k,**key)
+    plt.scatter([],[],marker=f'${out}$',color='black',**key)#label='$p_{value}$<5e-%d'%k,)
     # text.append(astriks_dict[k]+' - $p_{value}$<5e-%d'%k)
     # print(' - $p_{value}$<5e-%d'%k,k)
 props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
