@@ -658,7 +658,8 @@ def create_gt_and_save(folder, name):
 
 def create_model_evaluation(gt_name, model_name, use_cuda=USE_CUDA,config=None,model=None,best_mode=False):
     if best_mode:
-        create_model_evaluation_best(gt_name,model_name,use_cuda,config,model)
+        return create_model_evaluation_best(gt_name,model_name,use_cuda,config,model)
+
     gt_path = os.path.join("evaluations", 'ground_truth', gt_name + ".gteval")
     dest_path = os.path.join("evaluations", 'models', gt_name)
     if not os.path.exists(dest_path):
