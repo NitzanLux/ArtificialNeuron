@@ -258,13 +258,35 @@ ax.set_xticks(np.arange(len(name_order)) + 1, names_for_plots)
 ax.set_title(f'Sample Entropy Complexity Index Between Models (n = {len(box_plot_data[0])*len(box_plot_data):,})')
 save_large_plot(fig, "boxplot.png", name_order)
 fig.show()
+#%% normelized box plot
+fig, ax = plt.subplots()
+normelized_box_plot_data = []
+for i, m in enumerate(name_order):
+    normelized_box_plot_data.append(df[df['model'] == name_order[i]]['Ci'].tolist())
+    normelized_box_plot_data[-1]=np.array(normelized_box_plot_data[-1])
+for i in range(len(normelized_box_plot_data[0])):
+    cur_mean = sum([d[i]for d in normelized_box_plot_data])/len(normelized_box_plot_data)
+    for j in range(len(normelized_box_plot_data)):
+        normelized_box_plot_data[j][i]-=cur_mean
+    # normelized_box_plot_data[-1]=normelized_box_plot_data[-1][normelized_box_plot_data[-1]>100]
+p01 = ttest_ind(normelized_box_plot_data[0], normelized_box_plot_data[1], equal_var=False).pvalue
+p12 = ttest_ind(normelized_box_plot_data[2], normelized_box_plot_data[1], equal_var=False).pvalue
+p02 = ttest_ind(normelized_box_plot_data[0], normelized_box_plot_data[2], equal_var=False).pvalue
+print(p01, p12, p02)
+ax.boxplot(normelized_box_plot_data,showfliers=False)
+ax.set_ylabel('sample entropy complexity index')
+ax.set_xticks(np.arange(len(name_order)) + 1, names_for_plots)
+ax.set_title(f'Sample Entropy Complexity Index Between Models \nNormalized per trial (n = {len(normelized_box_plot_data[0])*len(normelized_box_plot_data):,})')
+save_large_plot(fig, "boxplot_normelized.png", name_order)
+fig.show()
 # %% spike_count
 plt.close()
 fig, ax = plt.subplots()
 datas = []
 for i in name_order:
     datas.append(df[df['model']==i]['spike_number'].tolist())
-ax.hist(datas, bins=20, label=names_for_plots, alpha=0.4)
+    print(i ,np.mean(np.array(datas[-1])))
+ax.hist(datas, bins=20, label=names_for_plots, alpha=1)
 fig.legend()
 fig.show()
 

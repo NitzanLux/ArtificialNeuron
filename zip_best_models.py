@@ -7,6 +7,9 @@ for i in os.listdir(os.path.join('models','NMDA')):
         for j in os.listdir(cur_path):
             if 'train'in i:
                 zip_arr.append(os.path.join(cur_path,i))
-                print(i)
-p = subprocess.Popen(["zip",'-r','models_for_msc_proj.zip',*zip_arr])
+                print(i,flush=True)
+
+print(zip_arr)
+print(len(zip_arr))
+# p = subprocess.Popen(["zip",'-r','models_for_msc_proj.zip',*zip_arr])
 
