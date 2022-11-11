@@ -6,9 +6,9 @@ for i in os.listdir(os.path.join('models','NMDA')):
         cur_path=os.path.join('models','NMDA',i)
         for j in os.listdir(os.path.join(cur_path,i+'_best')):
             print('aaa',j)
-            if 'train'in i:
-                zip_arr.append(os.path.join(cur_path,i))
-                print(i,flush=True)
+            if 'train'in j:
+                zip_arr.append(os.path.join(cur_path,j))
+                print(j,flush=True)
 
 print(zip_arr)
 print(len(zip_arr))
