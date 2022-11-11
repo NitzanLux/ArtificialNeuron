@@ -286,8 +286,16 @@ datas = []
 for i in name_order:
     datas.append(df[df['model']==i]['spike_number'].tolist())
     print(i ,np.mean(np.array(datas[-1])))
-ax.hist(datas, bins=20, label=names_for_plots, alpha=1)
-fig.legend()
+names_for_plots_labels = [ (mn+ f" ($\mu$ = {np.round(np.mean(np.array(datas[i])),2)})")  for i,mn in enumerate(names_for_plots)]
+bins = np.arange(18) - 0.5
+ax.hist(datas, bins=bins, label=names_for_plots_labels, alpha=1, align='mid')
+ax.set_title('Spike Count Per Trial')
+ax.set_yscale('log')
+ax.set_xlabel('Number of Spikes in trail')
+ax.set_ylabel('Number of Occurrences')
+ax.set_xticks(bins[1:(8*(bins.shape[0]//8)):2]-0.5,np.arange(0,(8*(bins.shape[0]//8)),2))
+fig.legend(bbox_to_anchor=[0.9,0.875])
+save_large_plot(fig,'spike_count.png',name_order)
 fig.show()
 
 # %% scatter plot pairwise complaxity plots[3].
