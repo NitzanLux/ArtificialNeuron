@@ -11,7 +11,7 @@ from matplotlib import colors
 import seaborn as sns
 import pandas as pd
 from scipy import stats
-from sklearn.linear_model import LinearRegression
+from scipy.stats import linregress
 
 MSX_INDEX = 0
 COMPLEXITY_INDEX = 1
@@ -342,17 +342,18 @@ for i in range(3):
     # , norm=colors.LogNorm())
     ax.plot(lims, lims, color='black')
 
-    reg = LinearRegression().fit(np.array(datas[first_index])[:, np.newaxis], datas[second_index])
-    reg_intercep = reg.intercept_
-    reg_coef = reg.coef_
+    slope, intercept, r_value, p_value, std_err = linregress(np.array(datas[first_index]), datas[second_index])
+    reg_intercep = intercept
+    reg_coef = slope
     x = lims
     y = [reg_intercep + lims[0] * reg_coef, reg_intercep + lims[1] * reg_coef]
     ax.plot(x, y, color='magenta')
     fig.colorbar(im)
     ax.set_xlabel(names_for_plots[first_index])
     ax.set_ylabel(names_for_plots[second_index])
+    print(p_value)
     ax.set_title(
-        f"{names_for_plots[first_index]} and {names_for_plots[second_index]} trials \nSE Complexity Index (n = {len(datas[second_index])*2:,}) $\\rho$ = {np.round(np.corrcoef(np.array(datas[first_index]), np.array(datas[second_index]),rowvar=False),3)[0,1]}")
+        f"{names_for_plots[first_index]} and {names_for_plots[second_index]} trials SE Complexity Index \nn = {len(datas[second_index])*2:,} ,$R^2$ = {np.round(r_value**2,4)}")
     save_large_plot(fig, "pairwise_2dhist.png", [name_order[first_index], name_order[second_index]])
 
     fig.show()
