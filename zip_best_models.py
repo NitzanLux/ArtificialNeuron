@@ -12,5 +12,5 @@ for i in os.listdir(os.path.join('models','NMDA')):
 
 # print(zip_arr)
 print(len(zip_arr))
-p = subprocess.Popen(["zip",'-r','models_for_msc_proj.zip',*zip_arr])
+p = subprocess.Popen(["zip",'-r','models_for_msc_proj.zip',*zip_arr],stdout=subprocess.PIPE )
 
