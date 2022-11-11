@@ -1,5 +1,6 @@
 import os
 import subprocess
+import sys
 zip_arr=[]
 for i in os.listdir(os.path.join('models','NMDA')):
     if i=="comparison_3__reduction___2022-10-19__15_39__ID_75531" or i =="comparison_3____2022-10-19__15_39__ID_46379":
@@ -12,5 +13,6 @@ for i in os.listdir(os.path.join('models','NMDA')):
 
 # print(zip_arr)
 print(len(zip_arr))
-p = subprocess.Popen(["zip",'-r','models_for_msc_proj.zip',*zip_arr],stdout=subprocess.PIPE )
-
+p = subprocess.Popen(["zip",'-r','models_for_msc_proj.zip',*zip_arr], stderr=sys.stderr, stdout=sys.stdout)
+code = p.wait()
+exit(code)
