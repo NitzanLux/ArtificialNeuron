@@ -237,12 +237,12 @@ plt.show()
 # fig.axes[3].set_position([right_margin_position,ax3_pos.y0,ax3_pos.width,ax3_pos.height])
 # fig.axes[3].get_xaxis().set_ticks([])
 fig, ax = plt.subplots()
-ax.plot(output_x_range, original_output_v, color='blue', label='compartmental model')
+ax.plot(output_x_range, original_output_v, color='blue', label='compartmental model', alpha=alpha)
 for v, s, l, th in model_evaluation_original:
     print(th, l)
     v[s >= th] = 20
     ax.plot(output_x_range, v, color=color_function(l), label=f"{l} layers", alpha=alpha)
-ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+# ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 save_large_plot(fig, 'evaluation_plots/pipeline_original_v.png')
 plt.show()
 
@@ -256,7 +256,7 @@ for v, s, l, th in model_evaluation_original:
     print(l,3)
 
     ax.plot(output_x_range, s, color=color_function(l), label=f"{l} layers", alpha=alpha)
-ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+# ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 mng = plt.get_current_fig_manager()
 mng.full_screen_toggle()
 save_large_plot(fig, 'evaluation_plots/pipeline_original_s.png')
