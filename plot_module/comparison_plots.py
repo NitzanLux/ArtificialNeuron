@@ -212,7 +212,7 @@ save_large_plot(fig, 'evaluation_plots/raster_pipline.png')
 fig, ax = plt.subplots()
 # ax.get_xaxis().set_ticks([])
 
-ax.plot(output_x_range, reduction_output_v, color=gtc, label='compartmental reduction model',alpha=alpha)
+ax.plot(output_x_range, reduction_output_v, color=gtc, label='compartmental reduction model')#,alpha=alpha)
 for v, s, l, th in model_evaluation_reduction:
     print(l)
     ax.plot(output_x_range, v, color=moc, label=f"{l} layers", alpha=alpha)
@@ -226,7 +226,7 @@ plt.show()
 # fig.axes[2].set_position([right_margin_position,ax1_pos.y0-ax2_pos.height-twin_graph_margin,ax2_pos.width,ax2_pos.height])
 # ax2_pos = fig.axes[2].get_position()
 fig, ax = plt.subplots()
-ax.plot(output_x_range, reduction_output_s, color=gtc, label='compartmental reduction model',alpha=alpha)
+ax.plot(output_x_range, reduction_output_s, color=gtc, label='compartmental reduction model')#,alpha=alpha)
 for v, s, l, th in model_evaluation_reduction:
     print(l,2)
 
@@ -241,7 +241,7 @@ plt.show()
 # fig.axes[3].set_position([right_margin_position,ax3_pos.y0,ax3_pos.width,ax3_pos.height])
 # fig.axes[3].get_xaxis().set_ticks([])
 fig, ax = plt.subplots()
-ax.plot(output_x_range, original_output_v, color=gtc, label='compartmental model', alpha=alpha)
+ax.plot(output_x_range, original_output_v, color=gtc, label='compartmental model')#, alpha=alpha)
 for v, s, l, th in model_evaluation_original:
     print(th, l)
     v[s >= th] = 20
@@ -254,7 +254,7 @@ plt.show()
 # fig.axes[4].set_position([right_margin_position,ax3_pos.y0-ax4_pos.height-twin_graph_margin,ax4_pos.width,ax4_pos.height])
 # ax4_pos = fig.axes[4].get_position()
 fig, ax = plt.subplots()
-ax.plot(output_x_range, original_output_s, color=gtc, label='compartmental model',alpha=alpha)
+ax.plot(output_x_range, original_output_s, color=gtc, label='compartmental model')#,alpha=alpha)
 for v, s, l, th in model_evaluation_original:
     v[s >= th] = 20
     print(l,3)
