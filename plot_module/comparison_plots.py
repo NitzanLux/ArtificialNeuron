@@ -210,6 +210,7 @@ fig, ax = plt.subplots()
 
 ax.plot(output_x_range, reduction_output_v, color='blue', label='compartmental reduction model',alpha=alpha)
 for v, s, l, th in model_evaluation_reduction:
+    print(l)
     ax.plot(output_x_range, v, color=color_function(l), label=f"{l} layers", alpha=alpha)
 # ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 mng = plt.get_current_fig_manager()
@@ -223,6 +224,8 @@ plt.show()
 fig, ax = plt.subplots()
 ax.plot(output_x_range, reduction_output_s, color='blue', label='compartmental reduction model',alpha=alpha)
 for v, s, l, th in model_evaluation_reduction:
+    print(l,2)
+
     ax.plot(output_x_range, s, color=color_function(l), label=f"{l} layers", alpha=alpha)
 # ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 mng = plt.get_current_fig_manager()
@@ -250,6 +253,8 @@ fig, ax = plt.subplots()
 ax.plot(output_x_range, original_output_s, color='blue', label='compartmental model',alpha=alpha)
 for v, s, l, th in model_evaluation_original:
     v[s >= th] = 20
+    print(l,3)
+
     ax.plot(output_x_range, s, color=color_function(l), label=f"{l} layers", alpha=alpha)
 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 mng = plt.get_current_fig_manager()
