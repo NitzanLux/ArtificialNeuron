@@ -183,6 +183,8 @@ ax.scatter(x_scatter,y_scatter+1,c='black',s=0.001,marker ='*',alpha=1)
 ax.set_ylim([0-0.001,np.max(y_scatter)+2+0.001])
 ax.set_xlabel('time(ms)')
 ax.set_ylabel('Synapse number')
+mng = plt.get_current_fig_manager()
+mng.full_screen_toggle()
 plt.show()
 save_large_plot(fig,'evaluation_plots/raster_pipline.png')
 # ax0_pos = fig.axes[0].get_position()
@@ -204,6 +206,8 @@ ax.plot(output_x_range,reduction_output_v,color='black',label='compartmental red
 for v,s,l,th in model_evaluation_reduction:
     ax.plot(output_x_range,v,color=color_function(l),label=f"{l} layers",alpha=alpha)
 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+mng = plt.get_current_fig_manager()
+mng.full_screen_toggle()
 plt.show()
 save_large_plot(fig,'evaluation_plots/pipeline_reduction_v.png')
 
@@ -216,7 +220,8 @@ ax.plot(output_x_range,reduction_output_s,color='black',label='compartmental red
 for v,s,l,th in model_evaluation_reduction:
     ax.plot(output_x_range,s,color=color_function(l),label=f"{l} layers",alpha=alpha)
 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-
+mng = plt.get_current_fig_manager()
+mng.full_screen_toggle()
 plt.show()
 save_large_plot(fig,'evaluation_plots/pipeline_reduction_s.png')
 
@@ -243,6 +248,8 @@ for v,s,l,th in model_evaluation_original:
     ax.plot(output_x_range,s,color=color_function(l),label=f"{l} layers",alpha=alpha)
 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 plt.show()
+mng = plt.get_current_fig_manager()
+mng.full_screen_toggle()
 save_large_plot(fig,'evaluation_plots/pipeline_original_s.png')
 # plt.tight_layout()
 
