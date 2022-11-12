@@ -39,8 +39,8 @@ data_points_start_input_interval = 300
 data_points_start = 750
 data_points_end = 5000
 use_custom_threshold = False
-threshold_r=0
-threshold_o=0
+threshold_r=0.153
+threshold_o=0.163
 data_points_start_input = data_points_start - data_points_start_input_interval
 tag = f"{file_original[:len('.p')]}_{sim_index}_[{data_points_start}_{data_points_end}_{data_points_start_input_interval}]"
 if use_custom_threshold:
