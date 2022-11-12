@@ -154,7 +154,7 @@ import matplotlib
 
 
 colors_steps = 255. / max_layer
-alpha = 0.8
+alpha = 0.7
 # color_function = lambda l: (1., (255 - l * colors_steps) / 255., (255 - l * colors_steps) / 255., alpha)
 # c = matplotlib.cm.get_cmap('jet', max_layer)
 # color_function = lambda l: c(l / max_layer)
@@ -193,6 +193,7 @@ ax.scatter(x_scatter, y_scatter + 1, c='black', s=0.001, marker='*', alpha=1)
 ax.set_ylim([0 - 0.001, np.max(y_scatter) + 2 + 0.001])
 # ax.set_xlabel('time(ms)')
 ax.axis('off')
+
 # ax.set_ylabel('Synapse number')
 mng = plt.get_current_fig_manager()
 mng.full_screen_toggle()
@@ -219,7 +220,7 @@ for v, s, l, th in model_evaluation_reduction:
     v[s >= th] = 20
 
     ax.plot(output_x_range, v,   alpha=alpha,label='ANN')
-ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+ax.legend(loc=2)
 mng = plt.get_current_fig_manager()
 mng.full_screen_toggle()
 save_large_plot(fig, 'evaluation_plots/pipeline_reduction_v.png')
@@ -236,6 +237,8 @@ for v, s, l, th in model_evaluation_reduction:
 
     ax.plot(output_x_range, s,  label="ANN", alpha=alpha)
 # ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+ax.legend(loc=2)
+
 mng = plt.get_current_fig_manager()
 mng.full_screen_toggle()
 save_large_plot(fig, 'evaluation_plots/pipeline_reduction_s.png')
@@ -251,6 +254,9 @@ for v, s, l, th in model_evaluation_original:
     v[s >= th] = 20
     ax.plot(output_x_range, v,  label="ANN", alpha=alpha)
 # ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+ax.legend(loc=2)
+mng = plt.get_current_fig_manager()
+mng.full_screen_toggle()
 save_large_plot(fig, 'evaluation_plots/pipeline_original_v.png')
 plt.show()
 
@@ -265,6 +271,8 @@ for v, s, l, th in model_evaluation_original:
 
     ax.plot(output_x_range, s, color=moc, label="ANN", alpha=alpha)
 # ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+ax.legend(loc=2)
+
 mng = plt.get_current_fig_manager()
 mng.full_screen_toggle()
 save_large_plot(fig, 'evaluation_plots/pipeline_original_s.png')
