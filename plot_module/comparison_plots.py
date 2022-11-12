@@ -159,8 +159,8 @@ alpha = 0.5
 # c = matplotlib.cm.get_cmap('jet', max_layer)
 # color_function = lambda l: c(l / max_layer)
 color_function = lambda l: 'orange'
-gtc=(0, 101, 161)
-moc=(236, 82, 59)
+gtc=(0/255., 101/255., 161/255.)
+moc=(236/255., 82/255., 59/255.)
 # margins
 right_margin = 0.1
 left_margin = 0.05
