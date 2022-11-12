@@ -36,7 +36,7 @@ file_original = 'L5PC_sim__Output_spikes_0909__Input_ranges_Exc_[0128,1170]_Inh_
 file_reduction = f"{file_original[:-len('.p')]}_reduction_0w.p"
 sim_index = 16
 data_points_start_input_interval = 300
-data_points_start = 750
+data_points_start = 3000
 data_points_end = 5000
 use_custom_threshold = True
 threshold_r=0.153
@@ -154,7 +154,7 @@ import matplotlib
 
 
 colors_steps = 255. / max_layer
-alpha = 0.5
+alpha = 0.75
 # color_function = lambda l: (1., (255 - l * colors_steps) / 255., (255 - l * colors_steps) / 255., alpha)
 # c = matplotlib.cm.get_cmap('jet', max_layer)
 # color_function = lambda l: c(l / max_layer)
