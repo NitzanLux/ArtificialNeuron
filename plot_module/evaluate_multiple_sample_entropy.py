@@ -252,10 +252,10 @@ p01 = ttest_ind(box_plot_data[0], box_plot_data[1], equal_var=False).pvalue
 p12 = ttest_ind(box_plot_data[2], box_plot_data[1], equal_var=False).pvalue
 p02 = ttest_ind(box_plot_data[0], box_plot_data[2], equal_var=False).pvalue
 print(p01, p12, p02)
-ax.boxplot(box_plot_data)
+ax.boxplot(box_plot_data,showfliers=False)
 ax.set_ylabel('sample entropy complexity index')
 ax.set_xticks(np.arange(len(name_order)) + 1, names_for_plots)
-ax.set_title(f'Sample Entropy Complexity Index Between Models (n = {len(box_plot_data[0])*len(box_plot_data):,})')
+ax.set_title(f'Sample Entropy Complexity Index (n = {len(box_plot_data[0])*len(box_plot_data):,})')
 save_large_plot(fig, "boxplot.png", name_order)
 fig.show()
 #%% normelized box plot
@@ -266,8 +266,11 @@ for i, m in enumerate(name_order):
     normelized_box_plot_data[-1]=np.array(normelized_box_plot_data[-1])
 for i in range(len(normelized_box_plot_data[0])):
     cur_mean = sum([d[i]for d in normelized_box_plot_data])/len(normelized_box_plot_data)
+    cur_std=np.std([d[i]for d in normelized_box_plot_data])
     for j in range(len(normelized_box_plot_data)):
         normelized_box_plot_data[j][i]-=cur_mean
+        normelized_box_plot_data[j][i]/cur_std
+
     # normelized_box_plot_data[-1]=normelized_box_plot_data[-1][normelized_box_plot_data[-1]>100]
 p01 = ttest_ind(normelized_box_plot_data[0], normelized_box_plot_data[1], equal_var=False).pvalue
 p12 = ttest_ind(normelized_box_plot_data[2], normelized_box_plot_data[1], equal_var=False).pvalue
@@ -276,7 +279,7 @@ print(p01, p12, p02)
 ax.boxplot(normelized_box_plot_data,showfliers=False)
 ax.set_ylabel('sample entropy complexity index')
 ax.set_xticks(np.arange(len(name_order)) + 1, names_for_plots)
-ax.set_title(f'Sample Entropy Complexity Index Between Models \nNormalized per trial (n = {len(normelized_box_plot_data[0])*len(normelized_box_plot_data):,})')
+ax.set_title(f'Sample Entropy Complexity Index \nZ-Score per trial (n = {len(normelized_box_plot_data[0])*len(normelized_box_plot_data):,})')
 save_large_plot(fig, "boxplot_normelized.png", name_order)
 fig.show()
 # %% spike_count
@@ -347,10 +350,12 @@ for i in range(3):
     reg_coef = slope
     x = lims
     y = [reg_intercep + lims[0] * reg_coef, reg_intercep + lims[1] * reg_coef]
-    ax.plot(x, y, color='magenta')
+    ax.plot(x, y, color='red')
     fig.colorbar(im)
     ax.set_xlabel(names_for_plots[first_index])
     ax.set_ylabel(names_for_plots[second_index])
+    ax.set_ylim(lims)
+    ax.set_xlim(lims)
     print(p_value)
     ax.set_title(
         f"{names_for_plots[first_index]} and {names_for_plots[second_index]} trials SE Complexity Index \nn = {len(datas[second_index])*2:,} ,$R^2$ = {np.round(r_value**2,4)}")
@@ -452,14 +457,19 @@ diff_vec = np.array(diff_vec)
 temp_diff_vec = diff_vec.copy()
 a = np.argsort(np.linalg.norm(diff_vec, axis=0))
 fig, ax = plt.subplots()
-ax.matshow(diff_vec[:, a])
+mat=diff_vec[:, a]
+im = ax.matshow(mat)
 ax.set_aspect(3000)
 ax.set_xticks([])
 ax.set_xlabel(f'Sorted Trial index (n = {diff_vec.shape[1]:,})')
 ax.set_yticks(range(len(name_order)), names_for_plots)
 ax.set_title('Norm Sorted SE Complexity Index')
+fig.colorbar(im,location="bottom")
+
 plt.tight_layout()
+
 save_large_plot(fig, 'norm_wise_orderd_matrix.png', name_order)
+
 fig.show()
 # %% plot files by order 3d view
 fig = plt.figure()

@@ -130,7 +130,7 @@ class GroundTruthData(SimulationData):
         super().__init__(v, s, data_keys, data_label)
 
     def translate_tuple_to_files(self, f, i):
-        f = get_file_from_shortmane(f)
+        f = self.get_file_from_shortmane(f)
         return (f, i) if (f, i) in self else None
 
     def get_file_shortname(self, f):
@@ -583,10 +583,8 @@ class ModelEvaluator():
                                             "spike probability"), row_heights=[0.6, 0.37, 0.03])
         x_axis_gt = None
         s=None
-        print(self.ground_truths,flush=True)
         for j, gt in enumerate(self.ground_truths):
             v, s = gt.get_by_index(indexes[j])
-            print(v,s)
             x_axis_gt = np.arange(v.shape[0])
             fig.add_trace(
                 go.Scatter(x=x_axis_gt, y=v, legendgroup='gt%d' % j, name="%s" % (self.ground_truths[j]),
@@ -615,19 +613,18 @@ class ModelEvaluator():
             v, s = m.get_by_index(indexes[self.gt_index_dict[m.ground_truth]])
             if is_optimal_thresholding:
                 thresholding = m.get_optimal_threshold()
-
             if thresholding is not None:
                 # th,fpr,tpr = m.round_th_fpr_tpr(tpr=thresholding)
                 # print(thresholding)
                 v=np.copy(v)
-                spike_arr = v >= thresholding
+                # print(v)
+                spike_arr = s >= thresholding
 
                 if use_refractory_period:
                     for i in range(spike_arr.shape[0]):
                         if spike_arr[i]:
                             spike_arr[i+1:i+3]=False
-                v[np.where(spike_arr)] = 20
-
+                v[spike_arr] = 20
             x_axis = np.arange(x_axis_gt.shape[0] - v.shape[0], x_axis_gt.shape[0])
             y.append("(gt: %s model: %d)" % (self.gt_index_dict[m.ground_truth], j))
             fig.add_trace(go.Scatter(x=x_axis, y=v, legendgroup='model%d' % (j + len(self.ground_truths)),opacity=0.8,
@@ -716,24 +713,24 @@ def run_test(include_models=True):
     # g4.save('test2.gtest')
 
     from utils.general_aid_function import load_files_names
-    g = []
+    g = [EvaluationData.load(os.path.join('evaluations','models_for_msc_proj',i))for i in ['comparison_3____2022-10-19__15_39__ID_46379_davids_ergodic_test.meval','comparison_3__reduction___2022-10-19__15_39__ID_75531_reduction_ergodic_test.meval']]
     # b_p = r"..C:\Users\ninit\Documents\university\Idan_Lab\dendritic tree project"
-    g.append(GroundTruthData.load(os.path.join("evaluations","ground_truth","david_ergodic_validation.gteval")))
-    g.append(GroundTruthData.load(os.path.join("evaluations","ground_truth","reduction_ergodic_validation.gteval")))
-    if include_models:
-        number_of_models=1
-        for p in [os.path.join("evaluations","models","davids_ergodic_validation"), os.path.join("evaluations","models","reduction_ergodic_validation")]:
+    # g.append(GroundTruthData.load(os.path.join("evaluations","ground_truth","david_ergodic_validation.gteval")))
+    # g.append(GroundTruthData.load(os.path.join("evaluations","ground_truth","reduction_ergodic_validation.gteval")))
+    # if include_models:
+    #     number_of_models=1
+    #     for p in [os.path.join("evaluations","models","davids_ergodic_validation"), os.path.join("evaluations","models","reduction_ergodic_validation")]:
             # continue
-            break
-            counter=0
-            for i in os.listdir(p):
-                counter+=1
-                if '_ss' in i:
-                    continue
-                if counter>number_of_models:
-                    break
-                g.append(EvaluationData.load(os.path.join(p, i)))
-    print(g)
+            # break
+            # counter=0
+            # for i in os.listdir(p):
+            #     counter+=1
+            #     if '_ss' in i:
+            #         continue
+            #     if counter>number_of_models:
+            #         break
+            #     g.append(EvaluationData.load(os.path.join(p, i)))
+    # print(g)
     # g2 = EvaluationData.load(
     #     "evaluations/models/davids_ergodic_test/davids_2_NAdam___2022-08-15__15_02__ID_64341.meval")
     me = ModelEvaluator(*g)

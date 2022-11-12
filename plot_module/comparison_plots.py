@@ -6,6 +6,7 @@ import pickle
 import os
 import sys
 import sklearn.metrics as skm
+from project_path import *
 
 # os.chdir('/ems/elsc-labs/segev-i/nitzan.luxembourg/projects/dendritic_tree/ArtificialNeuron')
 # sys.path.append('/ems/elsc-labs/segev-i/nitzan.luxembourg/projects/dendritic_tree/ArtificialNeuron')
@@ -19,48 +20,51 @@ gt_reduction_name= 'reduction_ergodic_validation'
 model_original_names= [  #"d_r_comparison_1___2022-09-07__22_59__ID_14835.meval",
                         # "d_r_comparison_3___2022-09-07__22_59__ID_53410.meval",
                         # "d_r_comparison_5___2022-09-07__22_59__ID_65381.meval",
-                        "d_r_comparison_7___2022-09-07__22_59__ID_57875.meval"]
+                        "comparison_3____2022-10-19__15_39__ID_46379_davids_ergodic_test.meval"]
 
 model_reduction_names= [#"d_r_comparison_1_reduction___2022-09-07__22_59__ID_14945.meval",
                         # "d_r_comparison_3_reduction___2022-09-07__22_59__ID_44648.meval",
                         # "d_r_comparison_5_reduction___2022-09-07__22_59__ID_9020.meval",
-                        "d_r_comparison_7_reduction___2022-09-07__22_59__ID_31437.meval"]
-file_original='L5PC_sim__Output_spikes_0909__Input_ranges_Exc_[0119,1140]_Inh_[0047,1302]_per100ms__simXsec_128x6_randseed_1110264.p'
-
+                        "comparison_3__reduction___2022-10-19__15_39__ID_75531_reduction_ergodic_test.meval"]
+path_function = lambda x: os.path.join(MODELS_DIR,x[:-len('_test.meval')],x[:-len('_test.meval')]+'_best',x)
+file_original='L5PC_sim__Output_spikes_0909__Input_ranges_Exc_[0128,1170]_Inh_[0052,1302]_per100ms__simXsec_128x6_randseed_1110194.p'
 file_reduction=f"{file_original[:-len('.p')]}_reduction_0w.p"
-sim_index=0
+sim_index=16
 data_points_start_input_interval=300
-data_points_start=1970
-data_points_end=2200
+data_points_start=750
+data_points_end=5000
 use_custom_threshold=False
 data_points_start_input=data_points_start-data_points_start_input_interval
 tag = f"{file_original[:len('.p')]}_{sim_index}_[{data_points_start}_{data_points_end}_{data_points_start_input_interval}]"
 if use_custom_threshold:
     tag+="_custom_threshold"
 #%% pipline plot data
-gt_reduction = model_evaluation_multiple.GroundTruthData.load(os.path.join('evaluations','ground_truth', gt_reduction_name+'.gteval'))
-gt_original = model_evaluation_multiple.GroundTruthData.load(os.path.join('evaluations','ground_truth', gt_original_name+'.gteval'))
+# gt_reduction = model_evaluation_multiple.GroundTruthData.load(os.path.join('evaluations','ground_truth', gt_reduction_name+'.gteval'))
+# gt_original = model_evaluation_multiple.GroundTruthData.load(os.path.join('evaluations','ground_truth', gt_original_name+'.gteval'))
 
 
 max_layer = 0
 model_evaluation_reduction=[]
 model_evaluation_original=[]
 gap=None
-v,s=gt_original[(file_original,sim_index)]
 
-x_axis_gt = v.shape[0]
-print(v.shape,'gt')
-original_output_v = v[data_points_start:data_points_end]
-original_output_s = s[data_points_start:data_points_end]
+gt_original,gt_reduction=None,None
 
-v,s=gt_reduction[(file_reduction,sim_index)]
-reduction_output_v = v[data_points_start:data_points_end]
-reduction_output_s = s[data_points_start:data_points_end]
 
+x_axis_gt,reduction_output_v,reduction_output_s=None,None,None
 for i,m in enumerate(model_reduction_names):
-    if not os.path.exists(os.path.join('evaluations', 'models', gt_reduction_name, m + ('.meval' if not m.endswith('.meval') else ''))):
-        continue
-    m = model_evaluation_multiple.EvaluationData.load(os.path.join('evaluations', 'models', gt_reduction_name, m + ( '.meval' if not m.endswith('.meval') else '')))
+
+    # if not os.path.exists(os.path.join('evaluations', 'models', gt_reduction_name, m + ('.meval' if not m.endswith('.meval') else ''))):
+    #     continue
+    # m = model_evaluation_multiple.EvaluationData.load(os.path.join('evaluations', 'models', gt_reduction_name, m + ( '.meval' if not m.endswith('.meval') else '')))
+    m = model_evaluation_multiple.EvaluationData.load(path_function(m))
+    if reduction_output_v is None:
+        gt_reduction = m.ground_truth
+        v, s = gt_reduction[(file_reduction, sim_index)]
+        x_axis_gt = v.shape[0]
+        print(v.shape, 'gt')
+        reduction_output_v = v[data_points_start:data_points_end]
+        reduction_output_s = s[data_points_start:data_points_end]
     v,s=m[(file_reduction,sim_index)]
     if gap is None:
         gap =v.shape[0]-x_axis_gt
@@ -80,11 +84,18 @@ for i,m in enumerate(model_reduction_names):
         gmean = np.sqrt(tpr * (1 - fpr))
         optimal_threshold = thresholds[np.argmax(gmean)]
     model_evaluation_reduction.append((v,s,m.config.number_of_layers_space,optimal_threshold))
-
+original_output_v,original_output_s=None,None
 for i,m in enumerate(model_original_names):
-    if not os.path.exists(os.path.join('evaluations', 'models', gt_original_name, m +( '.meval' if not m.endswith('.meval') else ''))):
-        continue
-    m=model_evaluation_multiple.EvaluationData.load(os.path.join('evaluations','models', gt_original_name,m+ ('.meval' if not m.endswith('.meval') else '')))
+    # if not os.path.exists(os.path.join('evaluations', 'models', gt_original_name, m +( '.meval' if not m.endswith('.meval') else ''))):
+    #     continue
+
+    # m=model_evaluation_multiple.EvaluationData.load(os.path.join('evaluations','models', gt_original_name,m+ ('.meval' if not m.endswith('.meval') else '')))
+    m=model_evaluation_multiple.EvaluationData.load(path_function(m))
+    if original_output_v is None:
+        gt_original=m.ground_truth
+        v, s =gt_original[(file_original, sim_index)]
+        original_output_v = v[data_points_start:data_points_end]
+        original_output_s = s[data_points_start:data_points_end]
     v,s=m[(file_original,sim_index)]
     v=v[data_points_start+gap:data_points_end+gap]
     s=s[data_points_start+gap:data_points_end+gap]
