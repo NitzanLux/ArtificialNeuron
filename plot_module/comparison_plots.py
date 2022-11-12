@@ -155,9 +155,9 @@ import matplotlib
 
 colors_steps = 255. / max_layer
 alpha = 0.5
-color_function = lambda l: (1., (255 - l * colors_steps) / 255., (255 - l * colors_steps) / 255., alpha)
-c = matplotlib.cm.get_cmap('jet', max_layer)
-color_function = lambda l: c(l / max_layer)
+# color_function = lambda l: (1., (255 - l * colors_steps) / 255., (255 - l * colors_steps) / 255., alpha)
+# c = matplotlib.cm.get_cmap('jet', max_layer)
+# color_function = lambda l: c(l / max_layer)
 color_function = lambda l: 'orange'
 # margins
 right_margin = 0.1
@@ -208,27 +208,27 @@ save_large_plot(fig, 'evaluation_plots/raster_pipline.png')
 fig, ax = plt.subplots()
 # ax.get_xaxis().set_ticks([])
 
-ax.plot(output_x_range, reduction_output_v, color='blue', label='compartmental reduction model')
+ax.plot(output_x_range, reduction_output_v, color='blue', label='compartmental reduction model',alpha=alpha)
 for v, s, l, th in model_evaluation_reduction:
     ax.plot(output_x_range, v, color=color_function(l), label=f"{l} layers", alpha=alpha)
-ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+# ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 mng = plt.get_current_fig_manager()
 mng.full_screen_toggle()
-plt.show()
 save_large_plot(fig, 'evaluation_plots/pipeline_reduction_v.png')
+plt.show()
 
 # ax2_pos = fig.axes[2].get_position()
 # fig.axes[2].set_position([right_margin_position,ax1_pos.y0-ax2_pos.height-twin_graph_margin,ax2_pos.width,ax2_pos.height])
 # ax2_pos = fig.axes[2].get_position()
 fig, ax = plt.subplots()
-ax.plot(output_x_range, reduction_output_s, color='blue', label='compartmental reduction model')
+ax.plot(output_x_range, reduction_output_s, color='blue', label='compartmental reduction model',alpha=alpha)
 for v, s, l, th in model_evaluation_reduction:
     ax.plot(output_x_range, s, color=color_function(l), label=f"{l} layers", alpha=alpha)
-ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+# ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 mng = plt.get_current_fig_manager()
 mng.full_screen_toggle()
-plt.show()
 save_large_plot(fig, 'evaluation_plots/pipeline_reduction_s.png')
+plt.show()
 
 # ax3_pos = fig.axes[3].get_position()
 # fig.axes[3].set_position([right_margin_position,ax3_pos.y0,ax3_pos.width,ax3_pos.height])
@@ -240,22 +240,22 @@ for v, s, l, th in model_evaluation_original:
     v[s >= th] = 20
     ax.plot(output_x_range, v, color=color_function(l), label=f"{l} layers", alpha=alpha)
 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-plt.show()
 save_large_plot(fig, 'evaluation_plots/pipeline_original_v.png')
+plt.show()
 
 # ax4_pos = fig.axes[4].get_position()
 # fig.axes[4].set_position([right_margin_position,ax3_pos.y0-ax4_pos.height-twin_graph_margin,ax4_pos.width,ax4_pos.height])
 # ax4_pos = fig.axes[4].get_position()
 fig, ax = plt.subplots()
-ax.plot(output_x_range, original_output_s, color='blue', label='compartmental model')
+ax.plot(output_x_range, original_output_s, color='blue', label='compartmental model',alpha=alpha)
 for v, s, l, th in model_evaluation_original:
     v[s >= th] = 20
     ax.plot(output_x_range, s, color=color_function(l), label=f"{l} layers", alpha=alpha)
 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-plt.show()
 mng = plt.get_current_fig_manager()
 mng.full_screen_toggle()
 save_large_plot(fig, 'evaluation_plots/pipeline_original_s.png')
+plt.show()
 # plt.tight_layout()
 
 
