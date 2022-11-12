@@ -39,6 +39,8 @@ data_points_start_input_interval = 300
 data_points_start = 750
 data_points_end = 5000
 use_custom_threshold = False
+threshold_r=0
+threshold_o=0
 data_points_start_input = data_points_start - data_points_start_input_interval
 tag = f"{file_original[:len('.p')]}_{sim_index}_[{data_points_start}_{data_points_end}_{data_points_start_input_interval}]"
 if use_custom_threshold:
@@ -79,14 +81,14 @@ for i, m in enumerate(model_reduction_names):
     s = s[data_points_start + gap:data_points_end + gap]
     if max_layer < m.config.number_of_layers_space:
         max_layer = m.config.number_of_layers_space
-    if use_custom_threshold:
+    if not use_custom_threshold:
         fpr, tpr, thresholds = skm.roc_curve(reduction_output_s, s)
         gmean = np.sqrt(tpr * (1 - fpr))
         optimal_threshold = thresholds[np.argmax(gmean)]
     else:
-        auc, fpr, tpr, optimal_threshold, thresholds = m.get_ROC_data()
-        gmean = np.sqrt(tpr * (1 - fpr))
-        optimal_threshold = thresholds[np.argmax(gmean)]
+        # auc, fpr, tpr, optimal_threshold, thresholds = m.get_ROC_data()
+        # gmean = np.sqrt(tpr * (1 - fpr))
+        optimal_threshold = threshold_r
     model_evaluation_reduction.append((v, s, m.config.number_of_layers_space, optimal_threshold))
 original_output_v, original_output_s = None, None
 for i, m in enumerate(model_original_names):
@@ -105,12 +107,12 @@ for i, m in enumerate(model_original_names):
     s = s[data_points_start + gap:data_points_end + gap]
     if max_layer < m.config.number_of_layers_space:
         max_layer = m.config.number_of_layers_space
-    if use_custom_threshold:
+    if not use_custom_threshold:
         fpr, tpr, thresholds = skm.roc_curve(original_output_s, s)
         optimal_idx = np.argmax(tpr - fpr)
         optimal_threshold = thresholds[optimal_idx] * np.sum(reduction_output_s) / reduction_output_s.shape[0]
     else:
-        optimal_threshold = m.get_ROC_data()[3] * np.sum(reduction_output_s) / reduction_output_s.shape[0]
+        optimal_threshold = threshold_o
     model_evaluation_original.append((v, s, m.config.number_of_layers_space, optimal_threshold))
 
 # v,s=gt_reduction[(file_reduction,sim_index)]
@@ -156,6 +158,7 @@ alpha = 0.5
 color_function = lambda l: (1., (255 - l * colors_steps) / 255., (255 - l * colors_steps) / 255., alpha)
 c = matplotlib.cm.get_cmap('jet', max_layer)
 color_function = lambda l: c(l / max_layer)
+color_function = lambda l: 'orange'
 # margins
 right_margin = 0.1
 left_margin = 0.05
@@ -205,7 +208,7 @@ save_large_plot(fig, 'evaluation_plots/raster_pipline.png')
 fig, ax = plt.subplots()
 # ax.get_xaxis().set_ticks([])
 
-ax.plot(output_x_range, reduction_output_v, color='black', label='compartmental reduction model')
+ax.plot(output_x_range, reduction_output_v, color='r', label='compartmental reduction model')
 for v, s, l, th in model_evaluation_reduction:
     ax.plot(output_x_range, v, color=color_function(l), label=f"{l} layers", alpha=alpha)
 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
@@ -231,7 +234,7 @@ save_large_plot(fig, 'evaluation_plots/pipeline_reduction_s.png')
 # fig.axes[3].set_position([right_margin_position,ax3_pos.y0,ax3_pos.width,ax3_pos.height])
 # fig.axes[3].get_xaxis().set_ticks([])
 fig, ax = plt.subplots()
-ax.plot(output_x_range, original_output_v, color='black', label='compartmental model')
+ax.plot(output_x_range, original_output_v, color='blue', label='compartmental model')
 for v, s, l, th in model_evaluation_original:
     print(th, l)
     v[s >= th] = 20
@@ -244,7 +247,7 @@ save_large_plot(fig, 'evaluation_plots/pipeline_original_v.png')
 # fig.axes[4].set_position([right_margin_position,ax3_pos.y0-ax4_pos.height-twin_graph_margin,ax4_pos.width,ax4_pos.height])
 # ax4_pos = fig.axes[4].get_position()
 fig, ax = plt.subplots()
-ax.plot(output_x_range, original_output_s, color='black', label='compartmental model')
+ax.plot(output_x_range, original_output_s, color='blue', label='compartmental model')
 for v, s, l, th in model_evaluation_original:
     ax.plot(output_x_range, s, color=color_function(l), label=f"{l} layers", alpha=alpha)
 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
