@@ -221,6 +221,8 @@ for v, s, l, th in model_evaluation_reduction:
 
     ax.plot(output_x_range, v,   alpha=alpha,label='ANN')
 ax.legend(loc=2)
+ax.set_ylabel('mv')
+ax.set_xlabel('ms')
 mng = plt.get_current_fig_manager()
 mng.full_screen_toggle()
 save_large_plot(fig, 'evaluation_plots/pipeline_reduction_v.png')
