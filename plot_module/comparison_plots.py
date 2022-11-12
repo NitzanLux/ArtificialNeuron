@@ -38,7 +38,7 @@ sim_index = 16
 data_points_start_input_interval = 300
 data_points_start = 750
 data_points_end = 5000
-use_custom_threshold = False
+use_custom_threshold = True
 threshold_r=0.153
 threshold_o=0.163
 data_points_start_input = data_points_start - data_points_start_input_interval
@@ -249,6 +249,7 @@ save_large_plot(fig, 'evaluation_plots/pipeline_original_v.png')
 fig, ax = plt.subplots()
 ax.plot(output_x_range, original_output_s, color='blue', label='compartmental model')
 for v, s, l, th in model_evaluation_original:
+    v[s >= th] = 20
     ax.plot(output_x_range, s, color=color_function(l), label=f"{l} layers", alpha=alpha)
 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 plt.show()
