@@ -154,7 +154,7 @@ import matplotlib
 
 
 colors_steps = 255. / max_layer
-alpha = 0.75
+alpha = 0.5
 # color_function = lambda l: (1., (255 - l * colors_steps) / 255., (255 - l * colors_steps) / 255., alpha)
 # c = matplotlib.cm.get_cmap('jet', max_layer)
 # color_function = lambda l: c(l / max_layer)
