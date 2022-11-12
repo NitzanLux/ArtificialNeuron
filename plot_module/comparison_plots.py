@@ -208,7 +208,7 @@ save_large_plot(fig, 'evaluation_plots/raster_pipline.png')
 fig, ax = plt.subplots()
 # ax.get_xaxis().set_ticks([])
 
-ax.plot(output_x_range, reduction_output_v, color='r', label='compartmental reduction model')
+ax.plot(output_x_range, reduction_output_v, color='blue', label='compartmental reduction model')
 for v, s, l, th in model_evaluation_reduction:
     ax.plot(output_x_range, v, color=color_function(l), label=f"{l} layers", alpha=alpha)
 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
@@ -221,7 +221,7 @@ save_large_plot(fig, 'evaluation_plots/pipeline_reduction_v.png')
 # fig.axes[2].set_position([right_margin_position,ax1_pos.y0-ax2_pos.height-twin_graph_margin,ax2_pos.width,ax2_pos.height])
 # ax2_pos = fig.axes[2].get_position()
 fig, ax = plt.subplots()
-ax.plot(output_x_range, reduction_output_s, color='black', label='compartmental reduction model')
+ax.plot(output_x_range, reduction_output_s, color='blue', label='compartmental reduction model')
 for v, s, l, th in model_evaluation_reduction:
     ax.plot(output_x_range, s, color=color_function(l), label=f"{l} layers", alpha=alpha)
 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
