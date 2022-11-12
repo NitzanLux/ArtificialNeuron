@@ -160,7 +160,9 @@ alpha = 0.75
 # color_function = lambda l: c(l / max_layer)
 color_function = lambda l: 'orange'
 gtc=(0/255., 101/255., 161/255.)
+gtc='blue'
 moc=(236/255., 82/255., 59/255.)
+moc='orange'
 # margins
 right_margin = 0.1
 left_margin = 0.05
