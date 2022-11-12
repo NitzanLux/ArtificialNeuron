@@ -39,7 +39,7 @@ data_points_start_input_interval = 300
 data_points_start = 3000
 data_points_end = 5000
 use_custom_threshold = True
-threshold_r=0.153
+threshold_r=0.163
 threshold_o=0.163
 data_points_start_input = data_points_start - data_points_start_input_interval
 tag = f"{file_original[:len('.p')]}_{sim_index}_[{data_points_start}_{data_points_end}_{data_points_start_input_interval}]"
@@ -216,6 +216,8 @@ fig, ax = plt.subplots()
 ax.plot(output_x_range, reduction_output_v,  label='CM')#,alpha=alpha)
 for v, s, l, th in model_evaluation_reduction:
     print(l)
+    v[s >= th] = 20
+
     ax.plot(output_x_range, v,   alpha=alpha,label='ANN')
 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 mng = plt.get_current_fig_manager()
@@ -230,6 +232,7 @@ fig, ax = plt.subplots()
 ax.plot(output_x_range, reduction_output_s,  label='CM')#,alpha=alpha)
 for v, s, l, th in model_evaluation_reduction:
     print(l,2)
+    v[s >= th] = 20
 
     ax.plot(output_x_range, s,  label="ANN", alpha=alpha)
 # ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
