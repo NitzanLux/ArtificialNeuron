@@ -26,7 +26,7 @@ model_reduction_names= [#"d_r_comparison_1_reduction___2022-09-07__22_59__ID_149
                         # "d_r_comparison_3_reduction___2022-09-07__22_59__ID_44648.meval",
                         # "d_r_comparison_5_reduction___2022-09-07__22_59__ID_9020.meval",
                         "comparison_3__reduction___2022-10-19__15_39__ID_75531_reduction_ergodic_test.meval"]
-path_function = lambda x: os.path.join(MODELS_DIR,x[:-len('_test.meval')],x[:-len('_test.meval')]+'_best',x)
+path_function = lambda x: os.path.join(MODELS_DIR,x[:-len('_reduction_ergodic_test.meval')],x[:-len('_reduction_ergodic_test.meval')]+'_best',x)
 file_original='L5PC_sim__Output_spikes_0909__Input_ranges_Exc_[0128,1170]_Inh_[0052,1302]_per100ms__simXsec_128x6_randseed_1110194.p'
 file_reduction=f"{file_original[:-len('.p')]}_reduction_0w.p"
 sim_index=16
