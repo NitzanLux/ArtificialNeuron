@@ -237,6 +237,7 @@ for v, s, l, th in model_evaluation_reduction:
 
     ax.plot(output_x_range, s,  label="ANN", alpha=alpha)
 # ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+
 ax.legend(loc=2)
 
 mng = plt.get_current_fig_manager()
@@ -255,6 +256,8 @@ for v, s, l, th in model_evaluation_original:
     ax.plot(output_x_range, v,  label="ANN", alpha=alpha)
 # ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 ax.legend(loc=2)
+ax.set_ylabel('mv')
+ax.set_xlabel('ms')
 mng = plt.get_current_fig_manager()
 mng.full_screen_toggle()
 save_large_plot(fig, 'evaluation_plots/pipeline_original_v.png')
