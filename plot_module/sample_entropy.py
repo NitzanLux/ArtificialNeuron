@@ -60,7 +60,7 @@ def create_sample_entropy_file(q,use_voltage=True,use_derivative=False):
                 f"current sample number {f} {index}  total: {time.time() - t} seconds",
                 flush=True)
             with open(os.path.join("sample_entropy",f"{'v' if use_voltage else 's'}{'_der_' if use_derivative else ''}_{tag}_{MAX_INTERVAL}d",f"sample_entropy_{'v' if use_voltage else 's'}{'_der_' if use_derivative else ''}_{tag}_{f_index}_{index}_{MAX_INTERVAL}d.p"),'wb') as f_o:
-                pickle.dump((MSx,Ci,f,index,spike_number),f_o)
+                pickle.dump((MSx,Ci,f,index,spike_number,s),f_o)
 
 def get_sample_entropy(tag,pathes,use_voltage,file_index_start,use_derivative):
 

@@ -176,10 +176,19 @@ l5pc = get_L5PC(ModelName.L5PC)
 l5pc, _, _ = get_model(l5pc)
 from neuron import h
 fig, ax = plt.subplots()
-plot_morphology_from_cell(ax, l5pc, is_scalebar=True)
+plot_morphology_from_cell(ax, l5pc, is_scalebar=True,seg_colors_cmap=lambda x: ['m']*len(x))
 mng = plt.get_current_fig_manager()
 mng.full_screen_toggle()
-plt.savefig(os.path.join('..','evaluation_plots','neuron_model_original.png'))
+plt.savefig(os.path.join('..','evaluation_plots','NMDA_neuron_model_original.png'))
+plt.show()
+
+l5pc, _, _ = get_model(l5pc)
+from neuron import h
+fig, ax = plt.subplots()
+plot_morphology_from_cell(ax, l5pc, is_scalebar=True,seg_colors_cmap=lambda x:  ['c']*len(x))
+mng = plt.get_current_fig_manager()
+mng.full_screen_toggle()
+plt.savefig(os.path.join('..','evaluation_plots','AMPA_neuron_model_original.png'))
 plt.show()
 # %%
 l5pc, _, _ = get_model(l5pc, 0)
@@ -188,10 +197,10 @@ from neuron import h
 # %%
 h.define_shape()
 fig, ax = plt.subplots()
-plot_morphology_from_cell(ax, l5pc, spread_dend=True, remove_axon=False, is_scalebar=True, fixed_value=100)
+plot_morphology_from_cell(ax, l5pc, spread_dend=True, remove_axon=False, is_scalebar=True, fixed_value=100,seg_colors_cmap=lambda x:  ['m']*len(x))
 mng = plt.get_current_fig_manager()
 mng.full_screen_toggle()
-plt.savefig(os.path.join('..','evaluation_plots','neuron_model_reduction.png'))
+plt.savefig(os.path.join('..','evaluation_plots','NMDA_neuron_model_reduction.png'))
 plt.show()
 # ps = h.PlotShape(False).plot(plt)
 #

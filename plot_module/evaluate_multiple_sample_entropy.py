@@ -409,6 +409,7 @@ fig, ax = plt.subplots()
 df = df.sort_values(['key'])
 datas = []
 ci_data=[]
+from scipy.stats import sem
 for i in name_order:
     datas.append(np.vstack(df[df['model']==i]['SE'].tolist()))
     ci_data.append(np.vstack(df[df['model']==i]['Ci'].tolist()))
@@ -424,10 +425,10 @@ for i in range(3):
     first_index, second_index = min([first_index, second_index]), max([first_index, second_index])
     if threshold is not None:
         mean = np.mean(datas[i][indexes,:], axis=0)
-        std = np.std(datas[i][indexes,:], axis=0)
+        std = sem(datas[i][indexes,:], axis=0)
     else:
         mean = np.mean(datas[i], axis=0)
-        std = np.std(datas[i], axis=0)
+        std = sem(datas[i], axis=0)
     ax.plot(np.arange(datas[i].shape[1]), mean, label=names_for_plots[i])
     ax.fill_between(np.arange(datas[i].shape[1]), mean - std, mean + std, alpha=0.3)
 

@@ -282,10 +282,10 @@ r_dm = np.mean(r_d, axis=0)
 # r_dm=[0]
 # dm= np.mean(np.vstack((o_dm,r_dm)),axis=0)
 # dm=0
-axs[0].plot(o_dm - dm, label='original')
-axs[0].plot(r_dm - dm, label='reduction')
+axs[0].plot(o_dm , label='original')
+axs[0].plot(r_dm , label='reduction')
 axs[0].legend(loc='lower right')
-max_val = np.max(np.hstack((o_dm - dm, r_dm - dm)))
+max_val = np.max(np.hstack((o_dm , r_dm )))
 p_value[p_value > 0.05] = np.NAN
 p_value[p_value == 0] = 1e-300
 im = axs[1].imshow([p_value], interpolation='nearest', aspect='auto', norm=colors.LogNorm(), cmap='jet')
