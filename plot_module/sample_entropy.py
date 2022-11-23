@@ -166,7 +166,7 @@ def get_sample_entropy(tag,pathes,enropies,use_voltage,file_index_start,use_deri
     for i in EntropyTypes:
         if i in enropies:
             entropies_list.append(i)
-    assert len(entropies_list)>0,'No entropy measures'
+    assert len(entropies_list)>0,f'No entropy measures, {entropies}'
     queue=Queue(maxsize=number_of_jobs)
     process = [Process(target=create_sample_entropy_file, args=(queue,tag,entropies_list,use_voltage,use_derivative)) for i in range(number_of_jobs)]
     print('starting')
