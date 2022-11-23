@@ -79,7 +79,6 @@ class EntropyObject():
             spike_number = y > 20
             y[spike_number] = 20
             r = np.std(y[~spike_number]) * 0.2
-            keys = {'r': r}
         if self.use_derivative:
             y=y[1:]-y[:-1]
         if self.smoothing_kernel is not None: #for the future
