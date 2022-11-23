@@ -159,12 +159,12 @@ def create_sample_entropy_file(q,tag,entropies_types,use_voltage=True,use_deriva
             print(f"current sample number {f} {index}  total: {time.time() - t} seconds",flush=True)
 
 
-def get_sample_entropy(tag,pathes,enropies,use_voltage,file_index_start,use_derivative):
+def get_sample_entropy(tag,pathes,entropies,use_voltage,file_index_start,use_derivative):
 
     number_of_jobs = min(number_of_cpus - 1,len(pathes))
     entropies_list=[]
     for i in EntropyTypes:
-        if i in enropies:
+        if i.name in entropies or  i.value in entropies:
             entropies_list.append(i)
     assert len(entropies_list)>0,f'No entropy measures, {entropies}'
     queue=Queue(maxsize=number_of_jobs)
