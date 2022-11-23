@@ -4,7 +4,7 @@ import EntropyHub as EH
 
 import os
 import numpy as np
-import time
+
 import multiprocessing
 from typing import List
 import argparse
@@ -13,7 +13,7 @@ from neuron_simulations.simulation_data_generator_new import parse_sim_experimen
 import ntpath
 from enum import Enum
 import argparse
-
+import time
 ENTROPY_DATA_BASE_FOLDER = 'entropy_data'
 number_of_cpus = multiprocessing.cpu_count()
 import queue
@@ -56,8 +56,12 @@ class EntropyObject():
         keys = {} if keys is None else keys
         if y is None:
             y,keys = self.get_processed_data()
+        print(f"Current Entropy Measure {entropy_type.name} fidx{self.file_index} sidx{self.sim_index}",flush=True)
+        start_time = time.time()
         Mobj = EH.MSobject(entropy_type.value, **keys)
         e_output = self.multiscale_object.value(y, Mobj, Scales=MAX_INTERVAL)
+        print(f"Current Entropy Measure {entropy_type.name} fidx{self.file_index} sidx{self.sim_index}\n \t\t\t time:{time.time()-start_time}")
+
         self.entropy_dict[entropy_type.name] = e_output
 
     def get_number_of_spikes(self):
