@@ -22,17 +22,19 @@ MAX_INTERVAL = 200
 print("start job")
 from project_path import *
 import pickle as pickle
+from functools import partial
 number_of_jobs=number_of_cpus-1//5
 # number_of_jobs=1
+import functools
 class EntropyTypes(Enum):
     SAMPLE_ENTROPY='SampEn'
     APPROXIMATE_ENTROPY='ApEn'
     FUZZY_ENTROPY = 'FuzzEn'
     K2_ENTROPY='K2En'
 class MultiScaleObj(Enum):
-    MultiScaleEntropy=lambda x:getattr(EH,'MSEn')
+    MULTISCALE_ENTROPY = partial(lambda x:getattr(EH, 'MSEn'))
 class EntropyObject():
-    def __init__(self,tag,file_name,file_index,sim_index,y,use_voltage=True,use_derivative=False,smoothing_kernel=None,max_scale=MAX_INTERVAL,multiscale_object=MultiScaleObj.MultiScaleEntropy):
+    def __init__(self, tag, file_name, file_index, sim_index, y, use_voltage=True, use_derivative=False, smoothing_kernel=None, max_scale=MAX_INTERVAL, multiscale_object=MultiScaleObj.MULTISCALE_ENTROPY):
         self.y=y
         self.tag=tag
         self.max_scale=max_scale
