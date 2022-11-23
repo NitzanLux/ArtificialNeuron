@@ -73,7 +73,7 @@ class EntropyObject():
     def get_processed_data(self):
         y=self.y.copy()
         keys = {}
-        if use_voltage:
+        if self.use_voltage:
             spike_number = y > 20
             y[spike_number] = 20
             r = np.std(y[~spike_number]) * 0.2
