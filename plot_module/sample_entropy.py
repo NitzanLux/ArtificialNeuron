@@ -202,7 +202,7 @@ if __name__ == "__main__":
 
     assert args.sv in{'s','v'}
     use_derivative = not args.use_derivative.lower() in {"false", '0', ''}
-    if 'entropies' not in args:
+    if 'entropies' not in args or args.entropies is None:
         entropies = [i.name for i in EntropyTypes]
     else:
         entropies = args.entropies
