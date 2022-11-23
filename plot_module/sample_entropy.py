@@ -32,7 +32,7 @@ class EntropyTypes(Enum):
     FUZZY_ENTROPY = 'FuzzEn'
     K2_ENTROPY='K2En'
 class MultiScaleObj(Enum):
-    MULTISCALE_ENTROPY = partial(lambda x:getattr(EH, 'MSEn'))
+    MULTISCALE_ENTROPY = partial(getattr(EH, 'MSEn'))
 class EntropyObject():
     def __init__(self, tag, file_name, file_index, sim_index, y, use_voltage=True, use_derivative=False, smoothing_kernel=None, max_scale=MAX_INTERVAL, multiscale_object=MultiScaleObj.MULTISCALE_ENTROPY):
         self.y=y
