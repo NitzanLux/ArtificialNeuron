@@ -60,7 +60,7 @@ class EntropyObject():
         start_time = time.time()
         Mobj = EH.MSobject(entropy_type.value, **keys)
         e_output = self.multiscale_object.value(y, Mobj, Scales=MAX_INTERVAL)
-        print(f"Current Entropy Measure {entropy_type.name} fidx{self.file_index} sidx{self.sim_index}\n \t\t\t time:{time.time()-start_time}")
+        print(f"Current Entropy Measure {entropy_type.name} fidx{self.file_index} sidx{self.sim_index}\n \t\t\t time:{time.time()-start_time}",flush=True)
 
         self.entropy_dict[entropy_type.name] = e_output
 
