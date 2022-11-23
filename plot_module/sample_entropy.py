@@ -195,13 +195,19 @@ if __name__ == "__main__":
                         help='add_derivative',default='False')
     parser.add_argument('-mem', dest="memory", type=int,
                         help='set memory', default=-1)
-    parser.add_argument('-e','--list', nargs='+', help='<Required> entropies type', required=True)
+    parser.add_argument('-e','--list',dest="entropies", nargs='+', help='<Required> entropies type', required=False)
 
     args = parser.parse_args()
 
-    print(args)
+
     assert args.sv in{'s','v'}
     use_derivative = not args.use_derivative.lower() in {"false", '0', ''}
+    if 'entropies' not in args:
+        entropies = [i.name for i in EntropyTypes]
+    else:
+        entropies = args.entropies
+    print(args,f'entropies = {entropies}')
+
     print("continue?y/n")
     response = input()
     while response not in {'y', 'n'}:
@@ -232,5 +238,5 @@ if __name__ == "__main__":
         print(len(pathes))
         use_voltage = args.sv=='v'
         print(range(i*jumps,min((i+1)*jumps,len(list_dir_parent))))
-        job_factory.send_job(f"sample_entropy{args.tag}_{i}_{MAX_INTERVAL}d", f'python -c "from plot_module.sample_entropy import get_sample_entropy; get_sample_entropy('+"'"+args.tag+"'"+f',{pathes},{use_voltage},{i*jumps},{use_derivative})"',**keys)
+        job_factory.send_job(f"sample_entropy{args.tag}_{i}_{MAX_INTERVAL}d", f'python -c "from plot_module.sample_entropy import get_sample_entropy; get_sample_entropy('+"'"+args.tag+"'"+f',{pathes},{entropies},{use_voltage},{i*jumps},{use_derivative})"',**keys)
         print('job sent')
