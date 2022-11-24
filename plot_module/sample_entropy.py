@@ -32,7 +32,7 @@ class EntropyTypes(Enum):
     FUZZY_ENTROPY = 'FuzzEn'
     K2_ENTROPY='K2En'
 class MultiScaleObj(Enum):
-    MULTISCALE_ENTROPY = partial(getattr(EH, 'MSEn'))
+    MULTISCALE_ENTROPY = 'MSEn'
 class EntropyObject():
     def __init__(self, tag, file_name, file_index, sim_index, y, use_voltage=True, use_derivative=False, smoothing_kernel=None, max_scale=MAX_INTERVAL, multiscale_object=MultiScaleObj.MULTISCALE_ENTROPY):
         self.y=y
@@ -61,7 +61,7 @@ class EntropyObject():
         print(f"Current Entropy Measure {entropy_type.name} fidx{self.file_index} sidx{self.sim_index}",flush=True)
         start_time = time.time()
         Mobj = EH.MSobject(entropy_type.value, **keys)
-        e_output = self.multiscale_object.value(y, Mobj, Scales=MAX_INTERVAL)
+        e_output =getattr(EH,  self.multiscale_object.value)(y, Mobj, Scales=MAX_INTERVAL)
         print(f"Current Entropy Measure {entropy_type.name} fidx{self.file_index} sidx{self.sim_index}\n \t\t\t time:{time.time()-start_time}",flush=True)
 
         self.entropy_dict[entropy_type.name] = e_output
@@ -183,7 +183,6 @@ def get_sample_entropy(tag,pathes,entropies,use_voltage,file_index_start,use_der
     if number_of_jobs>1:
         for p in process:
             p.join()
-    EntropyObject.load_and_save_in_single_file(tag)
 
 if __name__ == "__main__":
 
@@ -200,8 +199,10 @@ if __name__ == "__main__":
                         help='add_derivative',default='False')
     parser.add_argument('-mem', dest="memory", type=int,
                         help='set memory', default=-1)
-    parser.add_argument('-e','--list',dest="entropies", nargs='+', help='<Required> entropies type', required=False)
-
+    parser.add_argument('-en','--list',dest="entropies", nargs='+', help='<Required> entropies type', required=False)
+    # parser.add_argument('-ex','--list',dest="entropies", nargs='+', help='<Required> entropies type', required=False)
+    parser.add_argument('-ex', dest="files_that_do_not_exist", type=bool,
+                        help='simulate only files that do not exist', default=False)
     args = parser.parse_args()
 
 
@@ -241,8 +242,14 @@ if __name__ == "__main__":
     if args.memory>0:
         keys['mem']=args.memory
         print("Mem:",args.memory)
+    if args.files_that_do_not_exist:
+        files_that_exists=[]
+        for i in enumerate(os.listdir(os.path.join(ENTROPY_DATA_BASE_FOLDER,args.tag))):
+            pass #todo implemnt
+
     for i in range(number_of_clusters):
         pathes = list_dir_parent[i*jumps:min((i+1)*jumps,len(list_dir_parent))]
+
         print(len(pathes))
         use_voltage = args.sv=='v'
         print(range(i*jumps,min((i+1)*jumps,len(list_dir_parent))))
