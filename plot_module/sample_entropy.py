@@ -133,7 +133,7 @@ class EntropyObject():
     def load_all_by_tag(tag):
         cur_path = os.path.join(ENTROPY_DATA_BASE_FOLDER, tag)
         data_list = []
-        for i in os.listdir(cur_path):
+        for i in tqdm(os.listdir(cur_path)):
             data_list.append(EntropyObject.load(os.path.join(cur_path, i)))
         return data_list
 
