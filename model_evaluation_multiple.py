@@ -11,10 +11,10 @@ from dash import html
 from dash.dependencies import Input, Output
 from plotly.subplots import make_subplots
 from scipy.ndimage import uniform_filter1d
-import train_nets.neuron_network.recursive_neuronal_model as recursive_neuronal_model
+# import train_nets.neuron_network.recursive_neuronal_model as recursive_neuronal_model
 from neuron_simulations.simulation_data_generator_new import parse_sim_experiment_file
 from train_nets.neuron_network import fully_connected_temporal_seperated
-from train_nets.neuron_network import neuronal_model
+# from train_nets.neuron_network import neuronal_model
 from utils.general_aid_function import *
 from utils.general_variables import *
 from train_nets.configuration_factory import load_config_file
@@ -271,13 +271,16 @@ class EvaluationData(SimulationData):
         print("loading model...", flush=True)
         if self.config is None: return None
         if self.config.architecture_type == "DavidsNeuronNetwork":
-            model = davids_network.DavidsNeuronNetwork.load(self.config)
+            # model = davids_network.DavidsNeuronNetwork.load(self.config)
+            pass
         elif self.config.architecture_type == "FullNeuronNetwork":
             model = fully_connected_temporal_seperated.FullNeuronNetwork.load(self.config)
         elif "network_architecture_structure" in self.config and self.config.network_architecture_structure == "recursive":
-            model = recursive_neuronal_model.RecursiveNeuronModel.load(self.config)
+            # model = recursive_neuronal_model.RecursiveNeuronModel.load(self.config)
+            pass
         else:
-            model = neuronal_model.NeuronConvNet.build_model_from_config(self.config)
+            pass
+            # model = neuronal_model.NeuronConvNet.build_model_from_config(self.config)
         print("model parmeters: %d" % model.count_parameters())
         return model
 

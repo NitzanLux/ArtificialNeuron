@@ -1,7 +1,7 @@
 import pickle
 import random
 import sys
-from neuron import h, gui
+# from neuron import h, gui
 import numpy as np
 import torch
 import time
@@ -412,16 +412,16 @@ def dict2bin(row_inds_spike_times_map, num_segments, sim_duration_ms):
 
     return bin_spikes_matrix
 
-
-def get_neuron_model(morphology_path: str, biophysical_model_path: str, biophysical_model_tamplate_path: str):
-    h.load_file("import3d.hoc")
-    h.load_file('nrngui.hoc')
-    h.load_file(biophysical_model_tamplate_path)
-    h.load_file(biophysical_model_path)
-
-    L5PC = h.L5PCtemplate(morphology_path)
-
-    cvode = h.CVode()
-    if USE_CVODE:
-        cvode.active(1)
-    return L5PC
+#
+# def get_neuron_model(morphology_path: str, biophysical_model_path: str, biophysical_model_tamplate_path: str):
+#     h.load_file("import3d.hoc")
+#     h.load_file('nrngui.hoc')
+#     h.load_file(biophysical_model_tamplate_path)
+#     h.load_file(biophysical_model_path)
+#
+#     L5PC = h.L5PCtemplate(morphology_path)
+#
+#     cvode = h.CVode()
+#     if USE_CVODE:
+#         cvode.active(1)
+#     return L5PC

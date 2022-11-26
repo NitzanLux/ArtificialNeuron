@@ -1,7 +1,7 @@
 import pickle
 import random
 import sys
-from neuron import h, gui
+# from neuron import h, gui
 import numpy as np
 import torch
 import time

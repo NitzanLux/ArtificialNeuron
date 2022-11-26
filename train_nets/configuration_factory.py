@@ -5,13 +5,13 @@ from typing import Dict
 import shutil
 import yaml
 import errno
-from neuron_simulations.get_neuron_modle import get_L5PC
+# from neuron_simulations.get_neuron_modle import get_L5PC
 from neuron_simulations.simulation_data_generator import *
 from train_nets.neuron_network import davids_network
 from train_nets.neuron_network import fully_connected_temporal_seperated
-from train_nets.neuron_network import neuronal_model
-from train_nets.neuron_network import recursive_neuronal_model
-from train_nets.synapse_tree import SectionNode
+# from train_nets.neuron_network import neuronal_model
+# from train_nets.neuron_network import recursive_neuronal_model
+# from train_nets.synapse_tree import SectionNode
 from utils.general_aid_function import *
 from project_path import *
 
@@ -36,10 +36,10 @@ def generate_model_name(additional_str: str = ''):
     return model_filename
 
 
-def load_tree_from_path(path: str) -> SectionNode:
-    with open(path, 'rb') as file:
-        tree = pickle.load(file)
-    return tree
+# def load_tree_from_path(path: str) -> SectionNode:
+#     with open(path, 'rb') as file:
+#         tree = pickle.load(file)
+#     return tree
 
 
 def save_config(config, path: [str, None] = None):
@@ -178,10 +178,12 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
             elif config.architecture_type == "FullNeuronNetwork":
                 model = fully_connected_temporal_seperated.FullNeuronNetwork(config)
             elif config.network_architecture_structure == "recursive":
-                L5PC = get_L5PC()
-                model = recursive_neuronal_model.RecursiveNeuronModel.build_david_data_model(config, L5PC)
+                # L5PC = get_L5PC()
+                # model = recursive_neuronal_model.RecursiveNeuronModel.build_david_data_model(config, L5PC)
+                pass
             else:
-                model = neuronal_model.NeuronConvNet.build_model_from_config(config)
+                # model = neuronal_model.NeuronConvNet.build_model_from_config(config)
+                pass
             config.model_path = config_new_path + [config.model_filename]
             model.save(os.path.join(MODELS_DIR, *config.model_path))
         else:
@@ -190,12 +192,13 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
             elif config.architecture_type == "FullNeuronNetwork":
                 model = fully_connected_temporal_seperated.FullNeuronNetwork(config)
             elif config.network_architecture_structure == "recursive":
-                L5PC = get_L5PC()
-                model = recursive_neuronal_model.RecursiveNeuronModel.build_david_data_model(config, L5PC)
+                # L5PC = get_L5PC()
+                # model = recursive_neuronal_model.RecursiveNeuronModel.build_david_data_model(config, L5PC)
                 # model.load(config)
+                pass
             else:
-                model = neuronal_model.NeuronConvNet.load(os.path.join(MODELS_DIR, *config.model_path))
-
+                # model = neuronal_model.NeuronConvNet.load(os.path.join(MODELS_DIR, *config.model_path))
+                pass
             config.model_path = config_new_path + [config.model_filename]
             model.save(os.path.join(MODELS_DIR, *config.model_path))
         model.init_weights(config.init_weights_sd)
