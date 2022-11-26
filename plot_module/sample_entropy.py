@@ -158,7 +158,7 @@ def load_file_path(base_dir):
     return os.listdir(base_dir)
 
 
-def create_sample_entropy_file(q, tag, entropies_types, use_voltage=True, use_derivative=False):
+def create_sample_entropy_file(q, tag, entropies_types, use_derivative=False):
     while True:
         if q.empty():
             return
@@ -265,7 +265,7 @@ if __name__ == "__main__":
         pathes = list_dir_parent[i * jumps:min((i + 1) * jumps, len(list_dir_parent))]
 
         print(len(pathes))
-        use_voltage = args.sv == 'v'
+        # use_voltage = args.sv == 'v'
         print(range(i * jumps, min((i + 1) * jumps, len(list_dir_parent))))
         job_factory.send_job(f"sample_entropy{args.tag}_{i}_{MAX_INTERVAL}d",
                              f'python -c "from plot_module.sample_entropy import get_sample_entropy; get_sample_entropy(' + "'" + args.tag + "'" + f',{pathes},{entropies},{i * jumps},{use_derivative})"',
