@@ -1,3 +1,5 @@
+import gzip
+
 from model_evaluation_multiple import GroundTruthData
 import matplotlib.pyplot as plt
 import EntropyHub as EH
@@ -146,12 +148,28 @@ class EntropyObject():
             file_set.add(i.file_index)
             data_dict[(i.file_index, i.sim_index)] = i
         file_path = os.path.join(ENTROPY_DATA_BASE_FOLDER, f'{tag}_fnum_{len(file_set)}_snum{len(data_dict)}.pkl')
-        with open(file_path, 'wb') as pfile:
-            pickle.dump(data_dict, pfile, protocol=pickle.HIGHEST_PROTOCOL)
+        file = gzip.GzipFile(file_path, 'wb')
+        file.write(pickle.dump(data_dict, file, protocol=pickle.HIGHEST_PROTOCOL))
+        file.close()
+
+        # with open(file_path, 'wb') as pfile:
+
         cur_path = os.path.join(ENTROPY_DATA_BASE_FOLDER, tag)
         for i in tqdm(os.listdir(cur_path)):
             os.remove(os.path.join(cur_path, i))
         os.rmdir(cur_path)
+    @staticmethod
+    def load_list(path):
+        file = gzip.GzipFile(path, 'rb')
+        buffer = ""
+        while 1:
+            data = file.read()
+            if data == "":
+                break
+            buffer += data
+        object = pickle.loads(buffer)
+        file.close()
+        return object
 
 
 def load_file_path(base_dir):
