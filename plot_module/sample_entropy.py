@@ -20,7 +20,7 @@ number_of_cpus = multiprocessing.cpu_count()
 import queue
 from typing import List
 
-MAX_INTERVAL = 200
+MAX_INTERVAL = 400
 print("start job")
 from project_path import *
 import pickle as pickle
