@@ -149,7 +149,7 @@ class EntropyObject():
         with open(file_path, 'wb') as pfile:
             pickle.dump(data_dict, pfile, protocol=pickle.HIGHEST_PROTOCOL)
         cur_path = os.path.join(ENTROPY_DATA_BASE_FOLDER, tag)
-        for i in os.listdir(cur_path):
+        for i in tqdm(os.listdir(cur_path)):
             os.remove(os.path.join(cur_path, i))
         os.rmdir(cur_path)
 
@@ -172,7 +172,7 @@ def create_sample_entropy_file(q, tag, entropies_types, use_voltage=True, use_de
         for index in range(y_spike.shape[1]):
             v = y_soma[:, index].astype(np.float64)
             s = y_spike[:, index].astype(np.float64)
-            eo = EntropyObject(tag, f, f_index, sim_index=index, y=s, use_voltage=use_voltage,
+            eo = EntropyObject(tag, f, f_index, sim_index=index, s=s,v=v,# use_voltage=use_voltage,
                                use_derivative=use_derivative, max_scale=MAX_INTERVAL)
             eo.add_entropies(entropies_types)
             eo.save()
