@@ -180,7 +180,7 @@ def create_sample_entropy_file(q, tag, entropies_types, use_derivative=False):
             print(f"current sample number {f} {index}  total: {time.time() - t} seconds", flush=True)
 
 
-def get_sample_entropy(tag, pathes, entropies, use_voltage, file_index_start, use_derivative):
+def get_sample_entropy(tag, pathes, entropies, file_index_start, use_derivative):
     number_of_jobs = min(number_of_cpus - 1, len(pathes))
     entropies_list = []
     for i in EntropyTypes:
@@ -189,7 +189,7 @@ def get_sample_entropy(tag, pathes, entropies, use_voltage, file_index_start, us
     assert len(entropies_list) > 0, f'No entropy measures, {entropies}'
     queue = Queue(maxsize=number_of_jobs)
     process = [
-        Process(target=create_sample_entropy_file, args=(queue, tag, entropies_list, use_voltage, use_derivative)) for i
+        Process(target=create_sample_entropy_file, args=(queue, tag, entropies_list, use_derivative)) for i
         in range(number_of_jobs)]
     print('starting')
     for j, fp in enumerate(pathes):
