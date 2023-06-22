@@ -5,13 +5,13 @@ from typing import Dict
 import shutil
 import yaml
 import errno
-# from neuron_simulations.get_neuron_modle import get_L5PC
+from neuron_simulations.get_neuron_modle import get_L5PC
 from neuron_simulations.simulation_data_generator import *
 from train_nets.neuron_network import davids_network
 from train_nets.neuron_network import fully_connected_temporal_seperated
-# from train_nets.neuron_network import neuronal_model
-# from train_nets.neuron_network import recursive_neuronal_model
-# from train_nets.synapse_tree import SectionNode
+from train_nets.neuron_network import neuronal_model
+from train_nets.neuron_network import recursive_neuronal_model
+from train_nets.synapse_tree import SectionNode
 from utils.general_aid_function import *
 from project_path import *
 
@@ -61,7 +61,7 @@ def surround_with_default_config_values(**kargs):
                       batch_size_validation=300,
                       spike_probability=None,
                       # data_base_path=IDO_BASE_PATH,
-                      data_base_path=DAVID_BASE_PATH,
+                      data_base_path=NITZAN_BASE_PATH,
                       # data_base_path="/ems/elsc-labs/segev-i/sandbox.shared/Rat_L5b_PC_2_Hay_simple_pipeline_1/simulation_dataset/",
                       # files_filter_regex=".*exBas_0_1100_inhBasDiff_-1100_600__exApic_0_1100_inhApicDiff_-1100_600_SpTemp[^\\/\.]*\.p",
                       files_filter_regex=".*", freeze_node_factor=None,
@@ -91,7 +91,7 @@ def surround_with_default_config_values(**kargs):
         # channel_number=[128]*7,space_kernel_sizes=[6]*7,
         channel_number=[128] * 7, space_kernel_sizes=[54] + [12] * 6,
 
-        number_of_layers_root=3, number_of_layers_leaf=7, number_of_layers_intersection=1,
+        number_of_layers_root=7, number_of_layers_leaf=7, number_of_layers_intersection=1,
         number_of_layers_branch_intersection=1,
         # david_layers=[55, 13, 13, 13, 13, 13, 13],
         glu_number_of_layers=0,
@@ -108,10 +108,10 @@ def surround_with_default_config_values(**kargs):
         stride=1,
         padding=0,
         dilation=1,
-        channel_input_number=1278,  # synapse number
-        # channel_input_number=2082,  # synapse number
+        # channel_input_number=1278,  # synapse number
+        channel_input_number=2082,  # synapse number
         inner_scope_channel_number=None,
-        channel_output_number=16,
+        channel_output_number= 1,
         activation_function_name="LeakyReLU",
         activation_function_kargs=dict(negative_slope=0.025),
         # activation_function_kargs=dict(negative_slope=0.001),
@@ -178,12 +178,12 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
             elif config.architecture_type == "FullNeuronNetwork":
                 model = fully_connected_temporal_seperated.FullNeuronNetwork(config)
             elif config.network_architecture_structure == "recursive":
-                # L5PC = get_L5PC()
-                # model = recursive_neuronal_model.RecursiveNeuronModel.build_david_data_model(config, L5PC)
-                pass
+                L5PC = get_L5PC()
+                model = recursive_neuronal_model.RecursiveNeuronModel.build_david_data_model(config, L5PC)
+                # pass
             else:
-                # model = neuronal_model.NeuronConvNet.build_model_from_config(config)
-                pass
+                model = neuronal_model.NeuronConvNet.build_model_from_config(config)
+                # pass
             config.model_path = config_new_path + [config.model_filename]
             model.save(os.path.join(MODELS_DIR, *config.model_path))
         else:
@@ -192,13 +192,13 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
             elif config.architecture_type == "FullNeuronNetwork":
                 model = fully_connected_temporal_seperated.FullNeuronNetwork(config)
             elif config.network_architecture_structure == "recursive":
-                # L5PC = get_L5PC()
-                # model = recursive_neuronal_model.RecursiveNeuronModel.build_david_data_model(config, L5PC)
-                # model.load(config)
-                pass
+                L5PC = get_L5PC()
+                model = recursive_neuronal_model.RecursiveNeuronModel.build_david_data_model(config, L5PC)
+                model.load(config)
+                # pass
             else:
-                # model = neuronal_model.NeuronConvNet.load(os.path.join(MODELS_DIR, *config.model_path))
-                pass
+                model = neuronal_model.NeuronConvNet.load(os.path.join(MODELS_DIR, *config.model_path))
+                # pass
             config.model_path = config_new_path + [config.model_filename]
             model.save(os.path.join(MODELS_DIR, *config.model_path))
         model.init_weights(config.init_weights_sd)
@@ -355,19 +355,20 @@ if __name__ == '__main__':
         torch_seed, numpy_seed, random_seed = get_seeds()
         for i in range(7, 0, -2):
             kernels = arange_kernel_by_layers(base_layer, i, False)
-            for data in [DAVID_BASE_PATH, REDUCTION_BASE_PATH]:
-                config = config_factory(
-                    architecture_type='FullNeuronNetwork',
-                    # architecture_type='LAYERED_TEMPORAL_CONV_N', clip_gradients_factor=2.5,
-                    # model_tag="%s_%d%s" % (configurations_name, i, "_reduction" if data == REDUCTION_BASE_PATH else ''),
-                    model_tag="%s_%d_%s" % (configurations_name,i, "_reduction" if data == REDUCTION_BASE_PATH else ''),
-                    kernel_sizes=kernels, number_of_layers_space=len(kernels), data_base_path=data,#trim_last_nonlinear=True,
-                    accumulate_loss_batch_factor=1, prediction_length=700,torch_seed=torch_seed,numpy_seed=numpy_seed,random_seed=random_seed,
-                    # batch_size_validation=30, batch_size_train=80,
-                    # batch_size_validation=30, batch_size_train=5,
-                    batch_size_validation=30, batch_size_train=160,channel_number=[256]*len(kernels),
-                    constant_learning_rate=0.03)
-                configs.append(config)
+            # for data in [DAVID_BASE_PATH, REDUCTION_BASE_PATH]:
+            config = config_factory(
+                # architecture_type='FullNeuronNetwork',
+                network_architecture_structure='recursive',
+                #architecture_type='LAYERED_TEMPORAL_CONV_N', clip_gradients_factor=2.5,
+                # model_tag="%s_%d%s" % (configurations_name, i, "_reduction" if data == REDUCTION_BASE_PATH else ''),
+                model_tag="%s_%d" % (configurations_name,i),
+                kernel_sizes=kernels, number_of_layers_space=len(kernels), data_base_path=NITZAN_BASE_PATH,#trim_last_nonlinear=True,
+                accumulate_loss_batch_factor=1, prediction_length=700,torch_seed=torch_seed,numpy_seed=numpy_seed,random_seed=random_seed,
+                # batch_size_validation=30, batch_size_train=80,
+                # batch_size_validation=30, batch_size_train=5,
+                batch_size_validation=200, batch_size_train=160,channel_number=[256]*len(kernels),
+                constant_learning_rate=0.03)
+            configs.append(config)
                 # break
             # break
         # break
