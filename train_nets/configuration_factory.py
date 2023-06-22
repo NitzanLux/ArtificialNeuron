@@ -82,7 +82,7 @@ def surround_with_default_config_values(**kargs):
     architecture_dict = AttrDict(  # segment_tree_path="tree.pkl",
         network_architecture_structure="recursive",
         # architecture_type="LAYERED_TEMPORAL_CONV",
-        architecture_type="LAYERED_TEMPORAL_CONV",
+        architecture_type="LAYERED_TEMPORAL_CONV_N",
         time_domain_shape=config.input_window_size,
         # kernel_size_2d=3,
         # kernel_size_1d=9,
