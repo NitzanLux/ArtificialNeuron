@@ -208,6 +208,7 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
     return config.config_path
 
 
+
 def get_seeds():
     max_seed_number = sum([2 ** i for i in range(32)]) - 1  # maximal seed
     np.random.seed()
