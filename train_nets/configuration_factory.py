@@ -349,7 +349,7 @@ def arange_kernel_by_layers(kernels, layers, expend=False):
 if __name__ == '__main__':
     # restore_last_n_configs(100)
     configs = []
-    configurations_name = "reviving_net_d_cpu"
+    configurations_name = "reviving_net_d"
     # configurations_name = 'morph'
     # base_layer = [54] + [12] * 6
     for k in range(3):
@@ -368,7 +368,7 @@ if __name__ == '__main__':
             accumulate_loss_batch_factor=1, prediction_length=700,torch_seed=torch_seed,numpy_seed=numpy_seed,random_seed=random_seed,
             # batch_size_validation=30, batch_size_train=80,
             # batch_size_validation=30, batch_size_train=5,
-            batch_size_validation=200, batch_size_train=50,#channel_number=[256]*len(kernels),
+            batch_size_validation=40, batch_size_train=40,#channel_number=[256]*len(kernels),
             constant_learning_rate=0.03)
         configs.append(config)
                 # break
