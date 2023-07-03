@@ -91,8 +91,8 @@ def surround_with_default_config_values(**kargs):
         # channel_number=[128]*7,space_kernel_sizes=[6]*7,
         channel_number=[128] * 7, space_kernel_sizes=[54] + [12] * 6,
 
-        number_of_layers_root=3, number_of_layers_leaf=7, number_of_layers_intersection=1,
-        number_of_layers_branch_intersection=1,
+        number_of_layers_root=7, number_of_layers_leaf=7, number_of_layers_intersection=7,
+        number_of_layers_branch_intersection=7,
         # david_layers=[55, 13, 13, 13, 13, 13, 13],
         glu_number_of_layers=0,
         skip_connections=True,
@@ -349,7 +349,7 @@ def arange_kernel_by_layers(kernels, layers, expend=False):
 if __name__ == '__main__':
     # restore_last_n_configs(100)
     configs = []
-    configurations_name = "reviving_net_d_2"
+    configurations_name = "reviving_net_d_3"
     # configurations_name = 'morph'
     # base_layer = [54] + [12] * 6
     for k in range(3):
