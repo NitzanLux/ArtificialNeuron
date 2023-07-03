@@ -26,7 +26,6 @@ from utils.slurm_job import *
 import torch.multiprocessing as mp
 from torch.multiprocessing import Process
 
-
 if USE_CUDA:
     torch.cuda.empty_cache()
     print(torch.cuda.get_device_name(0))
@@ -51,7 +50,7 @@ BUFFER_SIZE_IN_FILES_VALID = 2 if USE_CUDA else 2
 # BUFFER_SIZE_IN_FILES_TRAINING = 8
 BUFFER_SIZE_IN_FILES_TRAINING = 4 if USE_CUDA else 4
 SAMPLE_RATIO_TO_SHUFFLE_TRAINING = 1
-RUN_AT_THE_SAME_PROCESS=True
+RUN_AT_THE_SAME_PROCESS = True
 synapse_type = 'NMDA'
 include_DVT = False
 print_logs = False
@@ -270,7 +269,9 @@ def train_network(config, model, optimizer):
                 return
             # save model every once a while
             # elif saving_counter % 10 == 0:
-            evaluation_plotter_scheduler(model, config, optimizer, use_slurm=not RUN_AT_THE_SAME_PROCESS if not USE_CUDA else False,run_at_the_same_process=RUN_AT_THE_SAME_PROCESS)
+            evaluation_plotter_scheduler(model, config, optimizer,
+                                         use_slurm=not RUN_AT_THE_SAME_PROCESS if not USE_CUDA else False,
+                                         run_at_the_same_process=RUN_AT_THE_SAME_PROCESS)
             # if our model finnished its steps
 
 
@@ -407,12 +408,11 @@ class SavingAndEvaluationScheduler():
         self.time_in_hours_for_eval = time_in_hours_for_eval
         self.previous_process = None
 
-
     def create_evaluation_schduler(self, config, run_at_the_same_process, use_slurm):
 
         current_time = datetime.now()
         delta_time = current_time - self.last_time_evaluation
-        if (delta_time.total_seconds() / 60) / 60 > self.time_in_hours_for_eval: #and not self.pause_time_eval:
+        if (delta_time.total_seconds() / 60) / 60 > self.time_in_hours_for_eval:  # and not self.pause_time_eval:
             print("evaluating....")
             self.save_best_model_scaduler(config, use_slurm=use_slurm, run_at_the_same_process=run_at_the_same_process)
             self.last_time_evaluation = datetime.now()
@@ -428,7 +428,7 @@ class SavingAndEvaluationScheduler():
 
         current_time = datetime.now()
         delta_time = current_time - self.last_time_saving
-        if (delta_time.total_seconds() / 60) / 60 > self.time_in_hours_for_saving: #and not self.pause_time_save :
+        if (delta_time.total_seconds() / 60) / 60 > self.time_in_hours_for_saving:  # and not self.pause_time_save :
             self.save_model(model, config, optimizer)
             self.last_time_saving = datetime.now()
 
@@ -452,10 +452,11 @@ class SavingAndEvaluationScheduler():
         else:
             save_best_model(os.path.join(MODELS_DIR, *config.config_path))
             # self.retry(False)
+
     @staticmethod
     def flush_all(config, model, optimizer):
         SavingAndEvaluationScheduler.save_model(model, config, optimizer)
-        SavingAndEvaluationScheduler.save_best_model_p(config,use_slurm=True if not USE_CUDA else False)
+        SavingAndEvaluationScheduler.save_best_model_p(config, use_slurm=True if not USE_CUDA else False)
         # ModelEvaluator.build_and_save(config=config, model=model)
 
     @staticmethod
@@ -476,12 +477,12 @@ class SavingAndEvaluationScheduler():
                     os.remove(os.path.join(base_path, fn) + 'temp')
                 shutil.copy(os.path.join(base_path, fn), os.path.join(base_path, fn) + 'temp')
             elif os.path.isdir(os.path.join(base_path, fn)) and 'temp' not in fn:
-                if not os.path.exists(os.path.join(base_path, fn+'temp')):
-                    shutil.copytree(os.path.join(base_path, fn), os.path.join(base_path, fn+'temp'))
+                if not os.path.exists(os.path.join(base_path, fn + 'temp')):
+                    shutil.copytree(os.path.join(base_path, fn), os.path.join(base_path, fn + 'temp'))
                 else:
                     for i in os.listdir(os.path.join(base_path, fn)):
-                        if os.path.getsize(os.path.join(base_path, fn,i))>0:
-                            shutil.copy(os.path.join(base_path, fn,i),os.path.join(base_path, fn+'temp',i))
+                        if os.path.getsize(os.path.join(base_path, fn, i)) > 0:
+                            shutil.copy(os.path.join(base_path, fn, i), os.path.join(base_path, fn + 'temp', i))
 
         model.save(os.path.join(MODELS_DIR, *config.model_path))
         if INCLUDE_OPTIMIZER_AT_LOADING:
@@ -577,17 +578,17 @@ def save_best_model(config_path):
     auc = g.get_ROC_data()[0]
 
     if not os.path.exists(os.path.join(best_result_path, "auc_history.npy")):
-        auc_arr=np.array([])
-        new_auc_arr = np.array([[auc],[config.batch_counter]])
+        auc_arr = np.array([])
+        new_auc_arr = np.array([[auc], [config.batch_counter]])
     else:
         auc_arr = np.load(os.path.join(best_result_path, "auc_history.npy"))
-        if len(auc_arr.shape)==1:
-            auc_arr=np.vstack((auc_arr,np.zeros_like(auc_arr)))
+        if len(auc_arr.shape) == 1:
+            auc_arr = np.vstack((auc_arr, np.zeros_like(auc_arr)))
 
-        new_auc_arr = np.hstack((auc_arr, [[auc],[config.batch_counter]]))
+        new_auc_arr = np.hstack((auc_arr, [[auc], [config.batch_counter]]))
 
     np.save(os.path.join(best_result_path, "auc_history.npy"), new_auc_arr)
-    if auc_arr.size==0 or np.max(auc_arr[0,:]) < auc:
+    if auc_arr.size == 0 or np.max(auc_arr[0, :]) < auc:
         model.save(os.path.join(best_result_path, 'model'))
         configuration_factory.save_config(config, os.path.join(best_result_path, 'config.pkl'))
         g.save(os.path.join(best_result_path, "eval.meval"))
