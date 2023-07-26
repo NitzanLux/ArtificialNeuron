@@ -377,27 +377,27 @@ if __name__ == '__main__':
             batch_size_validation=40, #channel_number=[256]*len(kernels),
             constant_learning_rate=0.001,**params)
         configs.append(config)
-        for k in range(2):
-            torch_seed, numpy_seed, random_seed = get_seeds()
-            # for i in range(7, 0, -2):
-            #     kernels = arange_kernel_by_layers(base_layer, i, False)
-            # for data in [DAVID_BASE_PATH, REDUCTION_BASE_PATH]:
-            config = config_factory(
-                # architecture_type='FullNeuronNetwork',
-                network_architecture_structure='recursive', biophysical_model="Rat_L5b_PC_2_Hay_noNMDA",
-                architecture_type='LAYERED_TEMPORAL_CONV_N', clip_gradients_factor=2.5,
-                # model_tag="%s_%d%s" % (configurations_name, i, "_reduction" if data == REDUCTION_BASE_PATH else ''),
-                model_tag="%s_noNMDA_%d" % (configurations_name, k),
-                # kernel_sizes=kernels, number_of_layers_space=len(kernels),
-                data_base_path="/ems/elsc-labs/segev-i/sandbox.shared/Rat_L5b_PC_2_Hay_noNMDA_newstandard_simple_pipeline_1/simulation_dataset/",
-                # trim_last_nonlinear=True,
-                accumulate_loss_batch_factor=1, prediction_length=700, torch_seed=torch_seed, numpy_seed=numpy_seed,
-                random_seed=random_seed,
-                # batch_size_validation=30, batch_size_train=80,
-                # batch_size_validation=30, batch_size_train=5,
-                # batch_size_validation=40, batch_size_train=15,  # channel_number=[256]*len(kernels),
-                constant_learning_rate=0.001,**params)
-            configs.append(config)
+    for k in range(2):
+        torch_seed, numpy_seed, random_seed = get_seeds()
+        # for i in range(7, 0, -2):
+        #     kernels = arange_kernel_by_layers(base_layer, i, False)
+        # for data in [DAVID_BASE_PATH, REDUCTION_BASE_PATH]:
+        config = config_factory(
+            # architecture_type='FullNeuronNetwork',
+            network_architecture_structure='recursive', biophysical_model="Rat_L5b_PC_2_Hay_noNMDA",
+            architecture_type='LAYERED_TEMPORAL_CONV_N', clip_gradients_factor=2.5,
+            # model_tag="%s_%d%s" % (configurations_name, i, "_reduction" if data == REDUCTION_BASE_PATH else ''),
+            model_tag="%s_noNMDA_%d" % (configurations_name, k),
+            # kernel_sizes=kernels, number_of_layers_space=len(kernels),
+            data_base_path="/ems/elsc-labs/segev-i/sandbox.shared/Rat_L5b_PC_2_Hay_noNMDA_newstandard_simple_pipeline_1/simulation_dataset/",
+            # trim_last_nonlinear=True,
+            accumulate_loss_batch_factor=1, prediction_length=700, torch_seed=torch_seed, numpy_seed=numpy_seed,
+            random_seed=random_seed,
+            # batch_size_validation=30, batch_size_train=80,
+            # batch_size_validation=30, batch_size_train=5,
+            # batch_size_validation=40, batch_size_train=15,  # channel_number=[256]*len(kernels),
+            constant_learning_rate=0.001,**params)
+        configs.append(config)
                 # break
             # break
         # break
