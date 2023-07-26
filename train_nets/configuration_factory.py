@@ -355,7 +355,7 @@ if __name__ == '__main__':
     configurations_name = "ido_data"
     # configurations_name = 'morph'
     # base_layer = [54] + [12] * 6
-    params = dict(num_segments=1041*2,batch_size_train=32,channel_output_number=16)
+    params = dict(batch_size_train=32,channel_output_number=16)
     for k in range(2):
         torch_seed, numpy_seed, random_seed = get_seeds()
 
@@ -375,7 +375,7 @@ if __name__ == '__main__':
             # batch_size_validation=30, batch_size_train=80,
             # batch_size_validation=30, batch_size_train=5,
             batch_size_validation=40, #channel_number=[256]*len(kernels),
-            constant_learning_rate=0.001)
+            constant_learning_rate=0.001,**params)
         configs.append(config)
         for k in range(2):
             torch_seed, numpy_seed, random_seed = get_seeds()
@@ -395,8 +395,8 @@ if __name__ == '__main__':
                 random_seed=random_seed,
                 # batch_size_validation=30, batch_size_train=80,
                 # batch_size_validation=30, batch_size_train=5,
-                batch_size_validation=40, batch_size_train=15,  # channel_number=[256]*len(kernels),
-                constant_learning_rate=0.001)
+                # batch_size_validation=40, batch_size_train=15,  # channel_number=[256]*len(kernels),
+                constant_learning_rate=0.001,**params)
             configs.append(config)
                 # break
             # break
