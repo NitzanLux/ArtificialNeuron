@@ -1,6 +1,6 @@
 
-import configuration_factory
-from neuron_network.node_network.recursive_neuronal_model import *
+import train_nets.configuration_factory
+from train_nets.neuron_network.recursive_neuronal_model import *
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import plotly.express as plotpx
@@ -12,18 +12,36 @@ from dash import html
 import dash_bootstrap_components as dbc
 import time
 from dash.dependencies import Input, Output
-from simulation_data_generator import SimulationDataGenerator
+from neuron_simulations.simulation_data_generator import SimulationDataGenerator
 # mpl.use('Qt5Agg')
 import numpy as np
 import json
 from collections.abc import Iterable
-from general_aid_function import *
+from utils.general_aid_function import *
 import re
-import parameters_factories.loss_function_factory as loss_function_factory
+import train_nets.parameters_factories.loss_function_factory as loss_function_factory
 NUMBER_OF_COLUMN = 2
-
+from train_nets.neuron_network import davids_network
+from train_nets.neuron_network import fully_connected_temporal_seperated
+from train_nets.neuron_network import neuronal_model
+from train_nets.neuron_network import recursive_neuronal_model
+from torch.nn.modules.conv import _ConvNd
 NUMBER_OF_FIGS_IN_GRID = 4
 
+def load_model(config):
+    print("loading model...", flush=True)
+    if config.architecture_type == "DavidsNeuronNetwork":
+        model = davids_network.DavidsNeuronNetwork.load(config)
+    elif config.architecture_type == "FullNeuronNetwork":
+        model = fully_connected_temporal_seperated.FullNeuronNetwork.load(config)
+    elif "network_architecture_structure" in config and config.network_architecture_structure == "recursive":
+        model = recursive_neuronal_model.RecursiveNeuronModel.load(config)
+    else:
+        model = neuronal_model.NeuronConvNet.build_model_from_config(config)
+    if config.batch_counter == 0:
+        model.init_weights(config.init_weights_sd)
+    print("model parmeters: %d" % model.count_parameters())
+    return model
 
 class CyclicFixedSizeStack():
     def __init__(self, stack_size):
@@ -127,12 +145,12 @@ class NeuronalView():
 
     @staticmethod
     def load_data_generator(config, is_validation):
-        train_files, valid_files, test_files = load_files_names()
+        train_files, valid_files, test_files = load_files_names(r'C:\Users\ninit\Documents\university\Idan_Lab\dendritic_tree_project\data')
         data_files = valid_files if is_validation else test_files
         validation_data_generator = SimulationDataGenerator(data_files, buffer_size_in_files=1,
                                                             batch_size=1,
                                                             window_size_ms=config.time_domain_shape,
-                                                            file_load=config.train_file_load,
+                                                            file_load=1,
                                                             sample_ratio_to_shuffle=1,
                                                             number_of_files=1,number_of_traces_from_file=8,# todo for debugging
                                                             ).eval()
@@ -428,18 +446,75 @@ class NeuronalView():
     def create_single_weights_fig(self,id,ax=0):
         main_model = self.id_node_mapping[id].main_model
         name, param = next(iter(main_model.named_parameters()))
-        matrix = param.detach().numpy()
-        fig = go.Figure(data=[go.Surface(z=matrix.take(i, ax) + 2 * i, showscale=i == 0, opacity=0.8) for i in
-                              range(matrix.shape[ax])])
-        fig.update_layout(title="%s dims %s"%(str(self.id_node_mapping[id]),str(matrix.shape)))
+        matrix = param.cpu().detach().numpy()
+        print(matrix.shape)
+        # return self.create_generic_fig(id,axs=ax)
+        # fig = go.Figure(data=[go.Surface(z=matrix.take(i, ax) + 2 * i, showscale=i == 0, opacity=0.8) for i in
+        #                       range(matrix.shape[ax])])
+        # fig.update_layout(title="%s dims %s"%(str(self.id_node_mapping[id]),str(matrix.shape)))
+        fig = self.visualize_filters(main_model)
         if id in self.grid_id_stack:
             self.grid_fig_stack[self.grid_id_stack.find(id)]=fig
         else:
             self.grid_fig_stack.push(fig)
+    @staticmethod
+    def visualize_filters(model):
+        # Recursive function to find all conv layers
+        def find_convs(module, prefix=''):
+            convs = []
+            for name, sub_module in module.named_children():
+                full_name = f'{prefix}.{name}' if prefix else name
+                if isinstance(sub_module, _ConvNd):
+                    convs.append((full_name, sub_module))
+                else:
+                    convs.extend(find_convs(sub_module, full_name))
+            return convs
 
+        conv_layers = find_convs(model)
+
+        # Create subplots
+        fig = go.Figure()
+
+        # Loop over all conv layers
+        for idx, (name, conv) in enumerate(conv_layers):
+            # Get weights and normalize
+            weights = conv.weight.data.cpu().numpy()
+            weights = weights - np.min(weights)
+            weights = weights / np.max(weights)
+
+            # Transpose weights depending on their dimension
+            if len(weights.shape) == 4:
+                weights = np.transpose(weights, (0, 2, 3, 1))
+            elif len(weights.shape) == 3:
+                weights = np.transpose(weights, (0, 1, 2))
+            else:
+                print(f"Cannot handle weight tensor with shape: {weights.shape}")
+                continue
+
+            num_filters = weights.shape[0]
+            grid_size = np.ceil(np.sqrt(num_filters))
+
+            # Add each filter as a subplot
+            for i in range(num_filters):
+                fig.add_trace(
+                    go.Heatmap(
+                        z=weights[i, :, :, 0] if len(weights.shape) == 4 else weights[i, :, :],
+                        colorscale='Greys',
+                        showscale=False,
+                        name=f'{name}_filter{i}'
+                    ),
+                    row=(idx * num_filters + i) // grid_size + 1,
+                    col=(idx * num_filters + i) % grid_size + 1
+                )
+
+        # Update layout
+        fig.update_layout(height=400, width=400,
+                          title_text="Convolutional Filters",
+                          showlegend=False)
+        return fig
 if __name__ == '__main__':
-    config = configuration_factory.load_config_file(
-        r"models/NMDA/glu_3_AdamW___2022-02-17__14_33__ID_2250/glu_3_AdamW___2022-02-17__14_33__ID_2250.config")
+    config = train_nets.configuration_factory.load_config_file(
+        r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic_tree_project\models\NMDA\reviving_net_d_4_2___2023-07-03__20_25__ID_46960\config.pkl",".pkl")
     nv=NeuronalView()
     nv.create_graph(config)
     nv.show_view()

@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/dendritic tree project.iml" filepath="$PROJECT_DIR$/.idea/dendritic tree project.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/dendritic_tree_project.iml" filepath="$PROJECT_DIR$/.idea/dendritic_tree_project.iml" />
     </modules>
   </component>
 </project>

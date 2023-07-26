@@ -145,7 +145,7 @@ def create_synapse(L5PC,reduction_frequency=None):
 global LOADING_FLAG
 LOADING_FLAG=False
 
-def get_L5PC(model_name:ModelName=ModelName.L5PC_ERGODIC):
+def get_L5PC(model_name:ModelName=ModelName.L5PC):
     import neuron
     from neuron import gui, h
     global LOADING_FLAG

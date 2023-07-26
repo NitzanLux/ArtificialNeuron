@@ -75,7 +75,7 @@ def surround_with_default_config_values(**kargs):
                       torch_seed=42, numpy_seed=21, random_seed=12, init_weights_sd=0.05,
                       dynamic_learning_params=False,
                       constant_loss_weights=[10000., 1., 0., 0], constant_sigma=1.2, constant_learning_rate=0.001,
-                      dynamic_learning_params_function="learning_parameters_iter_per_batch",
+                      dynamic_learning_params_function="learning_parameters_iter_per_batch",biophysical_model="L5PC_david",
                       config_path="", model_tag="complex_constant_model", model_path=None,
                       loss_function="focalbcel_mse_loss")
 
@@ -178,8 +178,11 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
             elif config.architecture_type == "FullNeuronNetwork":
                 model = fully_connected_temporal_seperated.FullNeuronNetwork(config)
             elif config.network_architecture_structure == "recursive":
-                L5PC = get_L5PC()
-                model = recursive_neuronal_model.RecursiveNeuronModel.build_david_data_model(config, L5PC)
+                # if config.biophysic_model:
+                bio_model  = get_L5PC()
+                # else:
+                    # bio_model =
+                model = recursive_neuronal_model.RecursiveNeuronModel.build_david_data_model(config, bio_model)
                 # pass
             else:
                 model = neuronal_model.NeuronConvNet.build_model_from_config(config)
@@ -349,28 +352,49 @@ def arange_kernel_by_layers(kernels, layers, expend=False):
 if __name__ == '__main__':
     # restore_last_n_configs(100)
     configs = []
-    configurations_name = "reviving_net_d_4"
+    configurations_name = "NMDA_ido"
     # configurations_name = 'morph'
     # base_layer = [54] + [12] * 6
-    for k in range(3):
+    for k in range(2):
         torch_seed, numpy_seed, random_seed = get_seeds()
         # for i in range(7, 0, -2):
         #     kernels = arange_kernel_by_layers(base_layer, i, False)
             # for data in [DAVID_BASE_PATH, REDUCTION_BASE_PATH]:
         config = config_factory(
             # architecture_type='FullNeuronNetwork',
-            network_architecture_structure='recursive',
+            network_architecture_structure='recursive',biophysical_model="Rat_L5b_PC_2_Hay",
             architecture_type='LAYERED_TEMPORAL_CONV_N', clip_gradients_factor=2.5,
             # model_tag="%s_%d%s" % (configurations_name, i, "_reduction" if data == REDUCTION_BASE_PATH else ''),
             model_tag="%s_%d" % (configurations_name,k),
             # kernel_sizes=kernels, number_of_layers_space=len(kernels),
-            data_base_path=DAVID_BASE_PATH,#trim_last_nonlinear=True,
+            data_base_path="/ems/elsc-labs/segev-i/sandbox.shared/Rat_L5b_PC_2_Hay_newstandard_simple_pipeline_1/simulation_dataset/",#trim_last_nonlinear=True,
             accumulate_loss_batch_factor=1, prediction_length=700,torch_seed=torch_seed,numpy_seed=numpy_seed,random_seed=random_seed,
             # batch_size_validation=30, batch_size_train=80,
             # batch_size_validation=30, batch_size_train=5,
             batch_size_validation=40, batch_size_train=15,#channel_number=[256]*len(kernels),
             constant_learning_rate=0.001)
         configs.append(config)
+        for k in range(2):
+            torch_seed, numpy_seed, random_seed = get_seeds()
+            # for i in range(7, 0, -2):
+            #     kernels = arange_kernel_by_layers(base_layer, i, False)
+            # for data in [DAVID_BASE_PATH, REDUCTION_BASE_PATH]:
+            config = config_factory(
+                # architecture_type='FullNeuronNetwork',
+                network_architecture_structure='recursive', biophysical_model="Rat_L5b_PC_2_Hay_noNMDA",
+                architecture_type='LAYERED_TEMPORAL_CONV_N', clip_gradients_factor=2.5,
+                # model_tag="%s_%d%s" % (configurations_name, i, "_reduction" if data == REDUCTION_BASE_PATH else ''),
+                model_tag="%s_%d" % (configurations_name, k),
+                # kernel_sizes=kernels, number_of_layers_space=len(kernels),
+                data_base_path="/ems/elsc-labs/segev-i/sandbox.shared/Rat_L5b_PC_2_Hay_noNMDA_newstandard_simple_pipeline_1/simulation_dataset/",
+                # trim_last_nonlinear=True,
+                accumulate_loss_batch_factor=1, prediction_length=700, torch_seed=torch_seed, numpy_seed=numpy_seed,
+                random_seed=random_seed,
+                # batch_size_validation=30, batch_size_train=80,
+                # batch_size_validation=30, batch_size_train=5,
+                batch_size_validation=40, batch_size_train=15,  # channel_number=[256]*len(kernels),
+                constant_learning_rate=0.001)
+            configs.append(config)
                 # break
             # break
         # break
