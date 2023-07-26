@@ -65,10 +65,10 @@ def surround_with_default_config_values(**kargs):
                       # data_base_path="/ems/elsc-labs/segev-i/sandbox.shared/Rat_L5b_PC_2_Hay_simple_pipeline_1/simulation_dataset/",
                       # files_filter_regex=".*exBas_0_1100_inhBasDiff_-1100_600__exApic_0_1100_inhApicDiff_-1100_600_SpTemp[^\\/\.]*\.p",
                       files_filter_regex=".*", freeze_node_factor=None,
-                      optimizer_type="NAdam", optimizer_params=dict(weight_decay=1e-8), clip_gradients_factor=None,
+                      optimizer_type="AdamW", optimizer_params=dict(weight_decay=1e-8), clip_gradients_factor=None,
                       # optimizer_params={'eps':1e-8},
                       # lr_scheduler='CyclicLR',lr_scheduler_params=dict(max_lr=0.05,step_size_up=1000,base_lr=0.00003,cycle_momentum=True),
-                      lr_scheduler='ReduceLROnPlateau',lr_scheduler_params=dict(factor=0.75,cooldown=300,patience =3000,eps=1e-8, threshold=1e-8),
+                      lr_scheduler='ReduceLROnPlateau',lr_scheduler_params=dict(factor=0.75,cooldown=300,patience =100,eps=1e-6, threshold=1e-7),
                       # lr_scheduler=None,
                       # scheduler_cooldown_factor=150,
                       batch_counter=0, epoch_counter=0,  # default counter
@@ -77,7 +77,7 @@ def surround_with_default_config_values(**kargs):
                       constant_loss_weights=[10000., 1., 0., 0], constant_sigma=1.2, constant_learning_rate=0.001,
                       dynamic_learning_params_function="learning_parameters_iter_per_batch",biophysical_model="L5PC_david",
                       config_path="", model_tag="complex_constant_model", model_path=None,
-                      loss_function="focalbcel_mse_loss")
+                      loss_function="focalbcel_mse_mae_loss")
 
     architecture_dict = AttrDict(  # segment_tree_path="tree.pkl",
         network_architecture_structure="recursive",
@@ -91,7 +91,7 @@ def surround_with_default_config_values(**kargs):
         # channel_number=[128]*7,space_kernel_sizes=[6]*7,
         channel_number=[128] * 7, space_kernel_sizes=[54] + [12] * 6,
 
-        number_of_layers_root=7, number_of_layers_leaf=7, number_of_layers_intersection=7,
+        number_of_layers_root=7, number_of_layers_leaf=7, number_of_layers_intersection=4,
         number_of_layers_branch_intersection=7,
         # david_layers=[55, 13, 13, 13, 13, 13, 13],
         glu_number_of_layers=0,
@@ -352,16 +352,19 @@ def arange_kernel_by_layers(kernels, layers, expend=False):
 if __name__ == '__main__':
     # restore_last_n_configs(100)
     configs = []
-    configurations_name = "NMDA_ido"
+    configurations_name = "ido_data"
     # configurations_name = 'morph'
     # base_layer = [54] + [12] * 6
+    params = dict(num_segments=1041*2,batch_size_train=32,channel_output_number=16)
     for k in range(2):
         torch_seed, numpy_seed, random_seed = get_seeds()
+
         # for i in range(7, 0, -2):
         #     kernels = arange_kernel_by_layers(base_layer, i, False)
             # for data in [DAVID_BASE_PATH, REDUCTION_BASE_PATH]:
         config = config_factory(
             # architecture_type='FullNeuronNetwork',
+
             network_architecture_structure='recursive',biophysical_model="Rat_L5b_PC_2_Hay",
             architecture_type='LAYERED_TEMPORAL_CONV_N', clip_gradients_factor=2.5,
             # model_tag="%s_%d%s" % (configurations_name, i, "_reduction" if data == REDUCTION_BASE_PATH else ''),
@@ -371,7 +374,7 @@ if __name__ == '__main__':
             accumulate_loss_batch_factor=1, prediction_length=700,torch_seed=torch_seed,numpy_seed=numpy_seed,random_seed=random_seed,
             # batch_size_validation=30, batch_size_train=80,
             # batch_size_validation=30, batch_size_train=5,
-            batch_size_validation=40, batch_size_train=15,#channel_number=[256]*len(kernels),
+            batch_size_validation=40, #channel_number=[256]*len(kernels),
             constant_learning_rate=0.001)
         configs.append(config)
         for k in range(2):
