@@ -384,7 +384,7 @@ if __name__ == '__main__':
                 network_architecture_structure='recursive', biophysical_model="Rat_L5b_PC_2_Hay_noNMDA",
                 architecture_type='LAYERED_TEMPORAL_CONV_N', clip_gradients_factor=2.5,
                 # model_tag="%s_%d%s" % (configurations_name, i, "_reduction" if data == REDUCTION_BASE_PATH else ''),
-                model_tag="%s_%d" % (configurations_name, k),
+                model_tag="%s_noNMDA_%d" % (configurations_name, k),
                 # kernel_sizes=kernels, number_of_layers_space=len(kernels),
                 data_base_path="/ems/elsc-labs/segev-i/sandbox.shared/Rat_L5b_PC_2_Hay_noNMDA_newstandard_simple_pipeline_1/simulation_dataset/",
                 # trim_last_nonlinear=True,
