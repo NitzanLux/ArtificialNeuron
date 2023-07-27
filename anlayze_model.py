@@ -395,14 +395,14 @@ def map_segment_models(comaprment_map, config_path):
 
 
 if __name__ == '__main__':
-    # model = get_L5PC()
-    model, syn_df = get_L5PC_ido()
+    model = get_L5PC()
+    # model, syn_df = get_L5PC_ido()
     dendrites, comaprment_map,synapses = build_neuron(model)
-    # map_segment_models(comaprment_map,
-    #                    r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic_tree_project\models\NMDA\reviving_net_d_4_2___2023-07-03__20_25__ID_46960\config.pkl")
+    map_segment_models(comaprment_map,
+                       r"C:\Users\ninit\Documents\university\Idan_Lab\dendritic_tree_project\models\NMDA\reviving_net_d_4_2___2023-07-03__20_25__ID_46960\config.pkl")
     # fig = go.Figure(data=[i for dendrite in dendrites for i in dendrite.to_trace()],
-    fig = go.Figure(data=[i.to_trace() for i in dendrites]+[i.to_trace() for i in synapses],
-    # fig = go.Figure(data=[i.to_trace() for i in dendrites],
+    # fig = go.Figure(data=[i.to_trace() for i in dendrites]+[i.to_trace() for i in synapses],
+    fig = go.Figure(data=[i.to_trace() for i in dendrites],
                     layout=go.Layout(scene=dict(aspectmode='data', ), ))
     fig.update_layout(
         # autosize=False,

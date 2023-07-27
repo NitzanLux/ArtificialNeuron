@@ -374,7 +374,7 @@ if __name__ == '__main__':
             accumulate_loss_batch_factor=1, prediction_length=700,torch_seed=torch_seed,numpy_seed=numpy_seed,random_seed=random_seed,
             # batch_size_validation=30, batch_size_train=80,
             # batch_size_validation=30, batch_size_train=5,
-            batch_size_validation=40, #channel_number=[256]*len(kernels),
+            batch_size_validation=40, #channel_number=[256]*len (kernels),
             constant_learning_rate=0.001,**params)
         configs.append(config)
     for k in range(2):

@@ -229,7 +229,7 @@ class RecursiveNeuronModel(nn.Module):
         if "biophysical_model" not in config or config['biophysical_model']=='L5PC_david':
             bio_mod = get_L5PC()
         else:
-            get_standard_model = importlib.import_module(f"neuron_models.{config['biophysical_model']}.get_standard_model")
+            get_standard_model = importlib.import_module(f"neuron_simulations.neuron_models.{config['biophysical_model']}.get_standard_model")
             bio_mod = get_standard_model.create_cell()
         model = RecursiveNeuronModel.build_david_data_model(config, bio_mod)
         model.load_state_dict(neuronal_model_data)
