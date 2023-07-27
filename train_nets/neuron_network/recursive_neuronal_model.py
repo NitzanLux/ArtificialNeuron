@@ -19,7 +19,7 @@ import train_nets.neuron_network.glu_net_skip as glu_net_skip
 import train_nets.neuron_network.temporal_convolution_blocks_skip_connections as temporal_convolution_blocks_skip_connections
 import train_nets.neuron_network.temporal_convolution_blocks_narrow_skip_connections as temporal_convolution_blocks_narrow_skip_connections
 # from ....simulatget_neuron_modle import get_L5PC
-from neuron_simulations.get_neuron_modle import get_L5PC
+# from neuron_simulations.get_neuron_modle import get_L5PC
 from project_path import MODELS_DIR
 from train_nets.synapse_tree import SectionType
 from utils.general_variables import *
@@ -235,7 +235,8 @@ class RecursiveNeuronModel(nn.Module):
         print(bio_mod)
         exit(0)
         if "biophysical_model" not in config or config['biophysical_model']=='L5PC_david':
-            bio_mod = get_L5PC()
+            # bio_mod = get_L5PC()
+            bio_mod = None
         else:
             get_standard_model = importlib.import_module(f"neuron_simulations.neuron_models.{config['biophysical_model']}.get_standard_model")
             bio_mod = get_standard_model.create_cell()
