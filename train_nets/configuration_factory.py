@@ -1,5 +1,6 @@
 import importlib
 import json
+import multiprocessing
 import os.path
 from datetime import datetime
 from typing import Dict
@@ -154,10 +155,12 @@ iter_num=0
 # define network architecture params
 # ------------------------------------------------------------------
 
+def config_factory(*args,**kwargs):
+    with multiprocessing.Pool(1) as pool:
+        result = pool.apply_async(__config_factory,args, kwargs)
+        return result.get()
+
 def build_model_using_neuron(config):
-    with Pool() as p:
-        return p.apply(__build_model_using_neuron, (config,))  # Call square(7) in a separate process
-def __build_model_using_neuron(config):
     if "biophysical_model" not in config or config['biophysical_model'] == 'L5PC_david':
         bio_mod = gnm.get_L5PC()
     else:
@@ -166,7 +169,7 @@ def __build_model_using_neuron(config):
         bio_mod = get_standard_model.create_cell()[0]
 
     return  bio_mod
-def config_factory(save_model_to_config_dir=True, config_new_path=None, generate_random_seeds=False, is_new_name=False,
+def __config_factory(save_model_to_config_dir=True, config_new_path=None, generate_random_seeds=False, is_new_name=False,
                    **kargs):
     config = surround_with_default_config_values(**kargs)
     if is_new_name or not ("model_filename" in config):
