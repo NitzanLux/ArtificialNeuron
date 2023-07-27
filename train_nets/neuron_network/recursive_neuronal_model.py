@@ -231,7 +231,7 @@ class RecursiveNeuronModel(nn.Module):
         get_standard_model = importlib.import_module(
             f"neuron_simulations.neuron_models.{config['biophysical_model']}.get_standard_model")
         print(get_standard_model)
-        bio_mod = getattr(get_standard_model,'create_cell')
+        bio_mod = getattr(get_standard_model,'create_cell')()
         print(bio_mod)
         exit(0)
         if "biophysical_model" not in config or config['biophysical_model']=='L5PC_david':
