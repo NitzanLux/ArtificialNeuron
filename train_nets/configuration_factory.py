@@ -165,8 +165,7 @@ def __build_model_using_neuron(config):
             f"neuron_simulations.neuron_models.{config['biophysical_model']}.get_standard_model")
         bio_mod = get_standard_model.create_cell()[0]
 
-    model = recursive_neuronal_model.RecursiveNeuronModel.build_david_data_model(config, bio_mod)
-    return  model
+    return  bio_mod
 def config_factory(save_model_to_config_dir=True, config_new_path=None, generate_random_seeds=False, is_new_name=False,
                    **kargs):
     config = surround_with_default_config_values(**kargs)
@@ -191,7 +190,9 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
             elif config.architecture_type == "FullNeuronNetwork":
                 model = fully_connected_temporal_seperated.FullNeuronNetwork(config)
             elif config.network_architecture_structure == "recursive":
-                model = build_model_using_neuron(config)
+                bio_mod = build_model_using_neuron(config)
+                model = recursive_neuronal_model.RecursiveNeuronModel.build_david_data_model(config, bio_mod)
+
                 # pass
             else:
                 model = neuronal_model.NeuronConvNet.build_model_from_config(config)
@@ -201,11 +202,16 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
         else:
             if config.architecture_type == "DavidsNeuronNetwork":
                 model = davids_network.DavidsNeuronNetwork.load(config)
+
             elif config.architecture_type == "FullNeuronNetwork":
                 model = fully_connected_temporal_seperated.FullNeuronNetwork(config)
+
             elif config.network_architecture_structure == "recursive":
-                model = build_model_using_neuron(config)
+                bio_mod = build_model_using_neuron(config)
+                model = recursive_neuronal_model.RecursiveNeuronModel.build_david_data_model(config, bio_mod)
+
                 model.load(config)
+
             else:
                 model = neuronal_model.NeuronConvNet.load(os.path.join(MODELS_DIR, *config.model_path))
                 # pass
