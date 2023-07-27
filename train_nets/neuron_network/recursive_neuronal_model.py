@@ -230,7 +230,7 @@ class RecursiveNeuronModel(nn.Module):
         print("start loading model...")
         get_standard_model = importlib.import_module(
             f"neuron_simulations.neuron_models.{config['biophysical_model']}.get_standard_model")
-        print(get_standard_model)
+        print(dir(get_standard_model))
         # bio_mod = get_standard_model.create_cell()
         # print(bio_mod)
         exit(0)
