@@ -19,7 +19,7 @@ import train_nets.neuron_network.glu_net_skip as glu_net_skip
 import train_nets.neuron_network.temporal_convolution_blocks_skip_connections as temporal_convolution_blocks_skip_connections
 import train_nets.neuron_network.temporal_convolution_blocks_narrow_skip_connections as temporal_convolution_blocks_narrow_skip_connections
 # from ....simulatget_neuron_modle import get_L5PC
-# from neuron_simulations.get_neuron_modle import get_L5PC
+from neuron_simulations.get_neuron_modle import get_L5PC
 from project_path import MODELS_DIR
 from train_nets.synapse_tree import SectionType
 from utils.general_variables import *
@@ -228,17 +228,9 @@ class RecursiveNeuronModel(nn.Module):
         with open(path, 'rb') as outp:
             neuronal_model_data = pickle.load(outp)
         print("start loading model...")
-        # get_standard_model = importlib.import_module(
-        #     f"neuron_simulations.neuron_models.{config['biophysical_model']}.get_standard_model")
-        # print(get_standard_model)
-        # bio_mod = getattr(get_standard_model,'create_cell')()
-        # print(bio_mod)
-        from neuron_simulations.neuron_models.Rat_L5b_PC_2_Hay.get_standard_model import  create_cell
-        print(create_cell())
-        exit(0)
         if "biophysical_model" not in config or config['biophysical_model']=='L5PC_david':
-            # bio_mod = get_L5PC()
-            bio_mod = None
+            bio_mod = get_L5PC()
+            # bio_mod = None
         else:
             get_standard_model = importlib.import_module(f"neuron_simulations.neuron_models.{config['biophysical_model']}.get_standard_model")
             bio_mod = get_standard_model.create_cell()
