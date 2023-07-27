@@ -1,3 +1,5 @@
+import importlib
+
 from neuron import h,gui
 import pandas as pd
 import os
@@ -14,9 +16,11 @@ def create_cell(path=None):
 
     if path is None:
         path = os.path.dirname(os.path.realpath(__file__)) +'/'
-    
-    neuron.load_mechanisms(path)
-
+    try:
+        neuron.load_mechanisms(path)
+    except Exception as e:
+        importlib.reload(neuron)
+        neuron.load_mechanisms(path)
     morphologyFilename = path + "/morphologies/cell1.asc"
     biophysicalModelFilename = path + "/L5PCbiophys5b.hoc"
     biophysicalModelTemplateFilename = path + "/L5PCtemplate_2.hoc"
