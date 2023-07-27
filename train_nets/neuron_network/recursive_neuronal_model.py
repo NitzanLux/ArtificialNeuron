@@ -225,6 +225,7 @@ class RecursiveNeuronModel(nn.Module):
         path = os.path.join(MODELS_DIR, *config.model_path)
         print(f"The path is: {path}",flush=True)
         path = '%s.pkl' % path if path[-len(".pkl"):] != ".pkl" else path
+        exit(0)
         with open(path, 'rb') as outp:
             neuronal_model_data = pickle.load(outp)
         print("start loading model...")
