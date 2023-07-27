@@ -373,6 +373,7 @@ if __name__ == '__main__':
     # base_layer = [54] + [12] * 6
     params = dict(batch_size_train=32,channel_output_number=16)
     for k in range(2):
+        print(k)
         torch_seed, numpy_seed, random_seed = get_seeds()
 
         # for i in range(7, 0, -2):
@@ -394,6 +395,8 @@ if __name__ == '__main__':
             constant_learning_rate=0.001,**params)
         configs.append(config)
     for k in range(2):
+        print(k)
+
         torch_seed, numpy_seed, random_seed = get_seeds()
         # for i in range(7, 0, -2):
         #     kernels = arange_kernel_by_layers(base_layer, i, False)
