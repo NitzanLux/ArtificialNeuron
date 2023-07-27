@@ -229,9 +229,9 @@ class RecursiveNeuronModel(nn.Module):
             neuronal_model_data = pickle.load(outp)
         print("start loading model...")
         get_standard_model = importlib.import_module(
-            f"neuron_simulations.neuron_models.{config['biophysical_model']}.get_standard_model.create_cell")
+            f"neuron_simulations.neuron_models.{config['biophysical_model']}.get_standard_model")
         print(get_standard_model)
-        bio_mod = get_standard_model()
+        bio_mod = getattr(get_standard_model,'create_cell')
         print(bio_mod)
         exit(0)
         if "biophysical_model" not in config or config['biophysical_model']=='L5PC_david':
