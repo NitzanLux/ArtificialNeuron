@@ -225,7 +225,6 @@ class RecursiveNeuronModel(nn.Module):
         path = os.path.join(MODELS_DIR, *config.model_path)
         print(f"The path is: {path}",flush=True)
         path = '%s.pkl' % path if path[-len(".pkl"):] != ".pkl" else path
-        exit(0)
         with open(path, 'rb') as outp:
             neuronal_model_data = pickle.load(outp)
         print("start loading model...")
@@ -234,6 +233,8 @@ class RecursiveNeuronModel(nn.Module):
         else:
             get_standard_model = importlib.import_module(f"neuron_simulations.neuron_models.{config['biophysical_model']}.get_standard_model")
             bio_mod = get_standard_model.create_cell()
+        exit(0)
+
         print("end loading model...")
 
         model = RecursiveNeuronModel.build_david_data_model(config, bio_mod)
