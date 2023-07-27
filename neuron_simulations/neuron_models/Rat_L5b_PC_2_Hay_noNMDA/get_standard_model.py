@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 
 def create_cell(path=None):
     import neuron
+    importlib.reload(neuron)
     h.load_file("import3d.hoc")
     h.load_file("nrngui.hoc")
 
