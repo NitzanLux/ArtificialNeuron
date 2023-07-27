@@ -1,6 +1,7 @@
+import importlib
 import platform
 
-from neuron import h,gui
+
 import pandas as pd
 import os
 import logging
@@ -10,7 +11,9 @@ from ..model_utils import create_synapses
 logger = logging.getLogger(__name__)
 
 def create_cell(path=None):
-    import neuron
+    importlib.reload(neuron)
+    from neuron import h, gui
+
     h.load_file("import3d.hoc")
     h.load_file("nrngui.hoc")
 

@@ -6,7 +6,7 @@ from typing import Dict
 import shutil
 import yaml
 import errno
-from neuron_simulations.get_neuron_modle import get_L5PC
+import  neuron_simulations.get_neuron_modle as gnm
 from neuron_simulations.simulation_data_generator import *
 from train_nets.neuron_network import davids_network
 from train_nets.neuron_network import fully_connected_temporal_seperated
@@ -15,7 +15,7 @@ from train_nets.neuron_network import recursive_neuronal_model
 from train_nets.synapse_tree import SectionNode
 from utils.general_aid_function import *
 from project_path import *
-
+from utils import slurm_job
 synapse_type = ''
 include_DVT = False
 # num_DVT_components = 20 if synapse_type == 'NMDA' else 30
@@ -149,12 +149,14 @@ def load_config_file(path: str,suffix:str='.config') -> AttrDict:
         del config.config_version
         config = surround_with_default_config_values(**config)
     return config
-
-
+iter_num=0
 # ------------------------------------------------------------------
 # define network architecture params
 # ------------------------------------------------------------------
+def config_wrapper(**kwargs):
 
+    s= slurm_job.SlurmJobFactory("cluster_logs")
+    s.send_job_for_function(f"{iter_num}_config",'train_nets.configuration_factory','config_factory',kwargs)
 def config_factory(save_model_to_config_dir=True, config_new_path=None, generate_random_seeds=False, is_new_name=False,
                    **kargs):
     config = surround_with_default_config_values(**kargs)
@@ -180,7 +182,8 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                 model = fully_connected_temporal_seperated.FullNeuronNetwork(config)
             elif config.network_architecture_structure == "recursive":
                 if "biophysical_model" not in config or config['biophysical_model'] == 'L5PC_david':
-                    bio_mod = get_L5PC()
+                    bio_mod = gnm.get_L5PC()
+                    importlib.reload(gnm)
                     # bio_mod = None
                 else:
                     get_standard_model = importlib.import_module(
