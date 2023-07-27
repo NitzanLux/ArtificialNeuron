@@ -21,7 +21,7 @@ include_DVT = False
 # num_DVT_components = 20 if synapse_type == 'NMDA' else 30
 CURRENT_VERSION = 1.92
 import neuron
-
+from multiprocessing import Pool
 def generate_model_name(additional_str: str = ''):
     model_ID = np.random.randint(100000)
     modelID_str = 'ID_%d' % (model_ID)
@@ -153,10 +153,20 @@ iter_num=0
 # ------------------------------------------------------------------
 # define network architecture params
 # ------------------------------------------------------------------
-def config_wrapper(**kwargs):
 
-    s= slurm_job.SlurmJobFactory("cluster_logs")
-    s.send_job_for_function(f"{iter_num}_config",'train_nets.configuration_factory','config_factory',kwargs)
+def build_model_using_neuron(config):
+    with Pool() as p:
+        return p.apply(__build_model_using_neuron, (config,))  # Call square(7) in a separate process
+def __build_model_using_neuron(config):
+    if "biophysical_model" not in config or config['biophysical_model'] == 'L5PC_david':
+        bio_mod = gnm.get_L5PC()
+    else:
+        get_standard_model = importlib.import_module(
+            f"neuron_simulations.neuron_models.{config['biophysical_model']}.get_standard_model")
+        bio_mod = get_standard_model.create_cell()[0]
+
+    model = recursive_neuronal_model.RecursiveNeuronModel.build_david_data_model(config, bio_mod)
+    return  model
 def config_factory(save_model_to_config_dir=True, config_new_path=None, generate_random_seeds=False, is_new_name=False,
                    **kargs):
     config = surround_with_default_config_values(**kargs)
@@ -181,24 +191,7 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
             elif config.architecture_type == "FullNeuronNetwork":
                 model = fully_connected_temporal_seperated.FullNeuronNetwork(config)
             elif config.network_architecture_structure == "recursive":
-                if "biophysical_model" not  in config or config['biophysical_model'] == 'L5PC_david':
-                    from neuron import h, gui
-                    # importlib.reload(h)
-                    del h
-                    bio_mod = gnm.get_L5PC()
-                    # bio_mod = None
-                else:
-                    from neuron import h, gui
-                    del h
-                    # importlib.reload(h)
-                    # importlib.reload(neuron)
-
-
-                    get_standard_model = importlib.import_module(
-                        f"neuron_simulations.neuron_models.{config['biophysical_model']}.get_standard_model")
-                    bio_mod = get_standard_model.create_cell()[0]
-
-                model = recursive_neuronal_model.RecursiveNeuronModel.build_david_data_model(config, bio_mod)
+                model = build_model_using_neuron(config)
                 # pass
             else:
                 model = neuronal_model.NeuronConvNet.build_model_from_config(config)
@@ -211,17 +204,8 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
             elif config.architecture_type == "FullNeuronNetwork":
                 model = fully_connected_temporal_seperated.FullNeuronNetwork(config)
             elif config.network_architecture_structure == "recursive":
-                if "biophysical_model" not in config or config['biophysical_model'] == 'L5PC_david':
-                    bio_mod = gnm.get_L5PC()
-                    # bio_mod = None
-                else:
-                    get_standard_model = importlib.import_module(
-                        f"neuron_simulations.neuron_models.{config['biophysical_model']}.get_standard_model")
-                    bio_mod = get_standard_model.create_cell()[0]
-
-                model = recursive_neuronal_model.RecursiveNeuronModel.build_david_data_model(config, bio_mod)
+                model = build_model_using_neuron(config)
                 model.load(config)
-                # pass
             else:
                 model = neuronal_model.NeuronConvNet.load(os.path.join(MODELS_DIR, *config.model_path))
                 # pass
