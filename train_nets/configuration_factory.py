@@ -181,11 +181,14 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
             elif config.architecture_type == "FullNeuronNetwork":
                 model = fully_connected_temporal_seperated.FullNeuronNetwork(config)
             elif config.network_architecture_structure == "recursive":
-                if "biophysical_model" not in config or config['biophysical_model'] == 'L5PC_david':
+                if "biophysical_model" not  in config or config['biophysical_model'] == 'L5PC_david':
+                    importlib.reload(neuron)
+                    from neuron import h, gui
                     bio_mod = gnm.get_L5PC()
-                    importlib.reload(gnm)
                     # bio_mod = None
                 else:
+                    importlib.reload(neuron)
+                    from neuron import h, gui
                     get_standard_model = importlib.import_module(
                         f"neuron_simulations.neuron_models.{config['biophysical_model']}.get_standard_model")
                     bio_mod = get_standard_model.create_cell()[0]
