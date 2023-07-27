@@ -1,3 +1,4 @@
+import importlib
 import json
 import os.path
 from datetime import datetime
@@ -178,11 +179,15 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
             elif config.architecture_type == "FullNeuronNetwork":
                 model = fully_connected_temporal_seperated.FullNeuronNetwork(config)
             elif config.network_architecture_structure == "recursive":
-                # if config.biophysic_model:
-                bio_model  = get_L5PC()
-                # else:
-                    # bio_model =
-                model = recursive_neuronal_model.RecursiveNeuronModel.build_david_data_model(config, bio_model)
+                if "biophysical_model" not in config or config['biophysical_model'] == 'L5PC_david':
+                    bio_mod = get_L5PC()
+                    # bio_mod = None
+                else:
+                    get_standard_model = importlib.import_module(
+                        f"neuron_simulations.neuron_models.{config['biophysical_model']}.get_standard_model")
+                    bio_mod = get_standard_model.create_cell()[0]
+
+                model = recursive_neuronal_model.RecursiveNeuronModel.build_david_data_model(config, bio_mod)
                 # pass
             else:
                 model = neuronal_model.NeuronConvNet.build_model_from_config(config)
@@ -195,8 +200,15 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
             elif config.architecture_type == "FullNeuronNetwork":
                 model = fully_connected_temporal_seperated.FullNeuronNetwork(config)
             elif config.network_architecture_structure == "recursive":
-                L5PC = get_L5PC()
-                model = recursive_neuronal_model.RecursiveNeuronModel.build_david_data_model(config, L5PC)
+                if "biophysical_model" not in config or config['biophysical_model'] == 'L5PC_david':
+                    bio_mod = get_L5PC()
+                    # bio_mod = None
+                else:
+                    get_standard_model = importlib.import_module(
+                        f"neuron_simulations.neuron_models.{config['biophysical_model']}.get_standard_model")
+                    bio_mod = get_standard_model.create_cell()[0]
+
+                model = recursive_neuronal_model.RecursiveNeuronModel.build_david_data_model(config, bio_mod)
                 model.load(config)
                 # pass
             else:
