@@ -212,7 +212,7 @@ def config_factory(save_model_to_config_dir=True, config_new_path=None, generate
                 model = fully_connected_temporal_seperated.FullNeuronNetwork(config)
             elif config.network_architecture_structure == "recursive":
                 if "biophysical_model" not in config or config['biophysical_model'] == 'L5PC_david':
-                    bio_mod = get_L5PC()
+                    bio_mod = gnm.get_L5PC()
                     # bio_mod = None
                 else:
                     get_standard_model = importlib.import_module(
