@@ -38,7 +38,7 @@ def get_files_by_filer_from_dir(data_path,regex_str:str='.*',ido_format=False):
     return files
 
 def load_files_names(data_path,files_filter_regex: str = ".*") -> Tuple[List[str], List[str], List[str]]:
-    ido_format = False
+    ido_format = True
     path_func= lambda x: glob.glob(os.path.join(*([data_path,"*"+x+"*",'*']+([''] if ido_format else []))))
     train_files =  path_func('train')
     if len(train_files)==0:
