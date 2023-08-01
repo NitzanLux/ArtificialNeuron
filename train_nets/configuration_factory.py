@@ -368,7 +368,7 @@ def arange_kernel_by_layers(kernels, layers, expend=False):
 if __name__ == '__main__':
     # restore_last_n_configs(100)
     configs = []
-    configurations_name = "ido_data"
+    configurations_name = "ido_data_1"
     # configurations_name = 'morph'
     # base_layer = [54] + [12] * 6
     params = dict(batch_size_train=12,channel_output_number=16)
