@@ -353,6 +353,7 @@ def parse_sim_experiment_file_ido(sim_experiment_folder, print_logs=False):
 
 
 def parse_sim_experiment_file(sim_experiment_file, print_logs=False):
+    print(sim_experiment_file)
     if not os.path.isfile(sim_experiment_file):
         return parse_sim_experiment_file_ido(sim_experiment_file)
     """:DVT_PCA_model is """
