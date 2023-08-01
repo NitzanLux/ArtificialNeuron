@@ -52,7 +52,7 @@ class SimulationDataGenerator():
                  ignore_time_from_start=20, y_train_soma_bias=-67.7, y_soma_threshold=Y_SOMA_THRESHOLD,
                  y_DTV_threshold=3.0, generator_name='',
                  shuffle_files=True, is_shuffle_data=True, number_of_traces_from_file=None,
-                 number_of_files=None, load_on_parallel=True, start_loading_while_training=True, start_loading_files_n_batches_from_end = 10):
+                 number_of_files=None, load_on_parallel=False, start_loading_while_training=True, start_loading_files_n_batches_from_end = 10):
         'data generator initialization'
         self.state = GeneratorState.TRAIN
 
@@ -276,7 +276,7 @@ class SimulationDataGenerator():
             th=[]
             for i in range(min(CPUS_COUNT,len(self.curr_files_to_use))):
                 # print("start_process")
-                th.append(threading.Thread(target=helper_queue_process,args=(q,self), daemon=True))
+                th.append(threading.Thread(target=helper_queue_process,args=(q,self), daemon=False))
                 th[-1].start()
             for i, f in enumerate(self.curr_files_to_use):
                 q.put((f,i))
