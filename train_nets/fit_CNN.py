@@ -565,7 +565,7 @@ def save_best_model(config_path):
             break
 
     else:
-        path = glob.glob(os.path.join(data_base_path, "*valid*"))
+        path = glob.glob(os.path.join(data_base_path, "*valid*"))[0]
         bpath, name = ntpath.split(path)
         model_gt = create_gt_and_save(path, name)
 
