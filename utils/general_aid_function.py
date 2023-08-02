@@ -47,16 +47,16 @@ def load_files_names(data_path,files_filter_regex: str = ".*") -> Tuple[List[str
     train_files = filter_file_names(train_files, files_filter_regex)
     print("train_files size %d" % (len(train_files)))
     if ido_format:
-        train_files = filter(lambda x:os.path.isdir(x),train_files)
+        train_files = list(filter(lambda x:os.path.isdir(x),train_files))
     valid_files = path_func('valid')
     valid_files = filter_file_names(valid_files, files_filter_regex)
     if ido_format:
-        valid_files = filter(lambda x:os.path.isdir(x),valid_files)
+        valid_files = list(filter(lambda x:os.path.isdir(x),valid_files))
     print("valid_files size %d" % (len(valid_files)))
     test_files = path_func('test')
     test_files = filter_file_names(test_files, files_filter_regex)
     if ido_format:
-        test_files = filter(lambda x:os.path.isdir(x),test_files)
+        test_files = list(filter(lambda x:os.path.isdir(x),test_files))
     print("test_files size %d" % (len(test_files)))
 
     return train_files, valid_files, test_files
