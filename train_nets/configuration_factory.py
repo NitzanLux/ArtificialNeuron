@@ -54,7 +54,8 @@ def surround_with_default_config_values(**kargs):
     ##default values can be overridden by kargs
     config = AttrDict(config_version=CURRENT_VERSION, input_window_size=200,
                       prediction_length=1,
-                      num_segments=2 * 639,
+                      # num_segments=2 * 639,
+                      # num_segments=2082,
                       # num_segments=2082,
                       num_syn_types=1, use_mixed_precision=False,
                       include_spikes=True,
@@ -113,7 +114,7 @@ def surround_with_default_config_values(**kargs):
         # channel_input_number=1278,  # synapse number
         channel_input_number=2082,  # synapse number
         inner_scope_channel_number=None,
-        channel_output_number= 1,
+        channel_output_number = 12,
         activation_function_name="LeakyReLU",
         activation_function_kargs=dict(negative_slope=0.025),
         # activation_function_kargs=dict(negative_slope=0.001),
@@ -368,11 +369,11 @@ def arange_kernel_by_layers(kernels, layers, expend=False):
 if __name__ == '__main__':
     # restore_last_n_configs(100)
     configs = []
-    configurations_name = "ido_data_1"
+    configurations_name = "test_d"
     # configurations_name = 'morph'
     # base_layer = [54] + [12] * 6
     params = dict(batch_size_train=12,channel_output_number=16)
-    for k in range(2):
+    for k in range(1):
         print(k)
         torch_seed, numpy_seed, random_seed = get_seeds()
 
